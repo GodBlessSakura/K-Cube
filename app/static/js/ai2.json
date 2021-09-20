@@ -1,0 +1,279 @@
+{
+  "nodes": [
+    {
+      "id": "Artificial_Intelligence",
+      "group": 0
+    },
+    {
+      "id": "Data_Mining",
+      "group": 1
+    },
+    {
+      "id": "Machine_Learning",
+      "group": 1
+    },
+    {
+      "id": "Computer_Vision",
+      "group": 1
+    },
+    {
+      "id": "Natural_Language_Processing",
+      "group": 1
+    },
+    {
+      "id": "Robotics",
+      "group": 1
+    },
+    {
+      "id": "Information_Retrieval",
+      "group": 1
+    },
+    {
+      "id": "Human-computer_Interaction",
+      "group": 1
+    },
+    {
+      "id": "Anomaly_Detection",
+      "group": 2
+    },
+    {
+      "id": "Association_Rule_Learning",
+      "group": 2
+    },
+    {
+      "id": "Clustering",
+      "group": 2
+    },
+    {
+      "id": "Classification",
+      "group": 2
+    },
+    {
+      "id": "Regression",
+      "group": 2
+    },
+    {
+      "id": "Summarization",
+      "group": 2
+    },
+    {
+      "id": "Embedding",
+      "group": 2
+    },
+    {
+      "id": "Dimensionality_Reduction",
+      "group": 2
+    },
+    {
+      "id": "Supervised_Learning",
+      "group": 2
+    },
+    {
+      "id": "UnSupervised_Learning",
+      "group": 2
+    },
+    {
+      "id": "Semi-Supervised_Learning",
+      "group": 2
+    },
+    {
+      "id": "Reinforcement_Learning",
+      "group": 2
+    },
+    {
+      "id": "Self_Learning",
+      "group": 2
+    },
+    {
+      "id": "Artificial_Neural_Networks",
+      "group": 2
+    },
+    {
+      "id": "Decision_Trees",
+      "group": 2
+    },
+    {
+      "id": "Support_Vector_Machines",
+      "group": 2
+    },
+    {
+      "id": "Regression_Analysis",
+      "group": 2
+    },
+    {
+      "id": "Bayesian_Networks",
+      "group": 2
+    },
+    {
+      "id": "Genetic_Algorithms",
+      "group": 2
+    }
+  ],
+  "links": [
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Data_Mining",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Machine_Learning",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Computer_Vision",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Natural_Language_Processing",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Robotics",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Information_Retrieval",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Artificial_Intelligence",
+      "target": "Human-computer_Interaction",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Anomaly_Detection",
+      "value": "Subtask"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Association_Rule_Learning",
+      "value": "Subtask"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Clustering",
+      "value": "Subtask"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Classification",
+      "value": "Subtask"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Regression",
+      "value": "Subtask"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Summarization",
+      "value": "Subtask"
+    },
+    {
+      "source": "Data_Mining",
+      "target": "Embedding",
+      "value": "Subtask"
+    },
+    {
+      "source": "Embedding",
+      "target": "Dimensionality_Reduction",
+      "value": "Aka"
+    },
+    {
+      "source": "Dimensionality_Reduction",
+      "target": "Embedding",
+      "value": "Aka"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Supervised_Learning",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "UnSupervised_Learning",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Semi-Supervised_Learning",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Reinforcement_Learning",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Self_Learning",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Anomaly_Detection",
+      "value": "Subtask"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Association_Rule_Learning",
+      "value": "Subtask"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Clustering",
+      "value": "Subtask"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Classification",
+      "value": "Subtask"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Regression",
+      "value": "Subtask"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Embedding",
+      "value": "Subtask"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Artificial_Neural_Networks",
+      "value": "Subconcept"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Decision_Trees",
+      "value": "Techniques"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Support_Vector_Machines",
+      "value": "Techniques"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Regression_Analysis",
+      "value": "Techniques"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Bayesian_Networks",
+      "value": "Techniques"
+    },
+    {
+      "source": "Machine_Learning",
+      "target": "Genetic_Algorithms",
+      "value": "Techniques"
+    }
+  ]
+}

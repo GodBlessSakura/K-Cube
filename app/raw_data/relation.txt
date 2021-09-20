@@ -1,0 +1,134 @@
+List (abstract data type)	Subtopic_in	Abstract data type
+Queue (abstract data type)	Subtopic_in	Abstract data type
+Stack (abstract data type)	Subtopic_in	Abstract data type
+Tree (data structure)	Subtopic_in	Abstract data type
+List of algorithms	Subtopic_in	Algorithm
+Search algorithm	Subtopic_in	Algorithm
+Sorting algorithm	Subtopic_in	Algorithm
+AI control problem	Subtopic_in	Artificial intelligence
+Automated planning and scheduling	Subtopic_in	Artificial intelligence
+Computer vision	Subtopic_in	Artificial intelligence
+Data mining	Subtopic_in	Artificial Intelligence
+Distributed artificial intelligence	Subtopic_in	Artificial intelligence
+Ethics of artificial intelligence	Subtopic_in	Artificial intelligence
+History of artificial intelligence	Subtopic_in	Artificial intelligence
+Information retrieval	Subtopic_in	Artificial Intelligence
+Knowledge representation and reasoning	Subtopic_in	Artificial intelligence
+Machine learning	Subtopic_in	Artificial intelligence
+Natural language processing	Subtopic_in	Artificial intelligence
+Philosophy of artificial intelligence	Subtopic_in	Artificial intelligence
+Robotics	Subtopic_in	Artificial Intelligence
+Binary search tree	Subtopic_in	Binary tree
+3D reconstruction	Subtopic_in	Computer vision
+Activity recognition	Subtopic_in	Computer vision
+Anomaly detection	Subtopic_in	Computer vision
+Automatic summarization	Subtopic_in	Computer vision
+Content-based image retrieval	Subtopic_in	Computer vision
+Image restoration	Subtopic_in	Computer vision
+Image segmentation	Subtopic_in	Computer vision
+Motion analysis	Subtopic_in	Computer vision
+Object detection	Subtopic_in	Computer vision
+Visual inspection	Subtopic_in	Computer vision
+Do while loop	Subtopic_in	Conditional loop
+For loop	Subtopic_in	Conditional loop
+While loop	Subtopic_in	Conditional loop
+Conditional (computer programming)	Subtopic_in	Control flow
+Conditional loop	Subtopic_in	Control flow
+Nested function	Subtopic_in	Control flow
+Switch statement	Subtopic_in	Control flow
+Data mining	Subtopic_in	Data analysis
+Anomaly detection	Subtopic_in	Data mining
+Association rule learning	Subtopic_in	Data mining
+Automatic summarization	Subtopic_in	Data mining
+Cluster analysis	Subtopic_in	Data mining
+Data processing	Subtopic_in	Data mining
+Dimensionality reduction	Subtopic_in	Data mining
+Regression analysis	Subtopic_in	Data mining
+Statistical classification	Subtopic_in	Data mining
+Abstract data type	Subtopic_in	Data structure
+List of data structures	Subtopic_in	Data structure
+Network embedding	Subtopic_in	Dimensionality reduction
+Hierarchical clustering	Subtopic_in	Document clustering
+k-means clustering	Subtopic_in	Document clustering
+Call-by-reference	Subtopic_in	Evaluation strategy
+Call-by-value	Subtopic_in	Evaluation strategy
+Divide-and-conquer algorithm	Subtopic_in	Function
+Evaluation strategy	Subtopic_in	Function
+Functional (C++)	Subtopic_in	Function
+Bayesian network	Subtopic_in	Graphical model
+Complete-linkage clustering	Subtopic_in	Hierarchical clustering
+Single-linkage clustering	Subtopic_in	Hierarchical clustering
+Backward chaining	Subtopic_in	Inference engine
+Forward chaining	Subtopic_in	Inference engine
+Information retrieval models	Subtopic_in	Information retrieval
+Boolean model of information retrieval	Subtopic_in	Information retrieval models
+Fuzzy retrieval	Subtopic_in	Information retrieval models
+Vector space model	Subtopic_in	Information retrieval models
+Computer data storage	Subtopic_in	Information system
+Data mining	Subtopic_in	Information system
+Data structures	Subtopic_in	Information system
+Database	Subtopic_in	Information system
+Decision support system	Subtopic_in	Information system
+Enterprise information system	Subtopic_in	Information system
+Information retrieval	Subtopic_in	Information system
+World wide web	Subtopic_in	Information system
+Inference engine	Subtopic_in	Knowledge-based systems
+Knowledge base	Subtopic_in	Knowledge-based systems
+Doubly linked list	Subtopic_in	Linked list
+Singly linked list	Subtopic_in	Linked list
+Array data structure	Subtopic_in	List (abstract data type)
+Linked list	Subtopic_in	List (abstract data type)
+Active learning (machine learning)	Subtopic_in	Machine learning
+Anomaly detection	Subtopic_in	Machine learning
+Association rule learning	Subtopic_in	Machine learning
+Cluster analysis	Subtopic_in	Machine learning
+Decision tree	Subtopic_in	Machine learning
+Deep learning	Subtopic_in	Machine learning
+Dimensionality reduction	Subtopic_in	Machine learning
+Feature learning	Subtopic_in	Machine learning
+Federated learning	Subtopic_in	Machine learning
+Genetic algorithm	Subtopic_in	Machine learning
+Graphical model	Subtopic_in	Machine learning
+Multi-task learning	Subtopic_in	Machine learning
+Regression analysis	Subtopic_in	Machine learning
+Reinforcement learning	Subtopic_in	Machine learning
+Semantic analysis (machine learning)	Subtopic_in	Machine learning
+Semi-supervised learning	Subtopic_in	Machine learning
+Statistical classification	Subtopic_in	Machine learning
+Supervised learning	Subtopic_in	Machine learning
+Support-vector machine	Subtopic_in	Machine learning
+Unsupervised learning	Subtopic_in	Machine learning
+Stemming	Subtopic_in	Morphology
+Information extraction	Subtopic_in	Natural language processing
+Language model	Subtopic_in	Natural language processing
+Language resource	Subtopic_in	Natural language processing
+Lexical semantics	Subtopic_in	Natural language processing
+Machine translation	Subtopic_in	Natural language processing
+Morphology (linguistics)	Subtopic_in	Natural language processing
+Natural language generation	Subtopic_in	Natural language processing
+Phonology	Subtopic_in	Natural language processing
+Pragmatics	Subtopic_in	Natural language processing
+Speech recognition	Subtopic_in	Natural language processing
+Graph neural network	Subtopic_in	Network embedding
+Spectral clustering	Subtopic_in	Network embedding
+C++ Classes	Subtopic_in	Object-oriented programming
+Constructor (object-oriented programming)	Subtopic_in	Object-oriented programming
+Encapsulation (computer programming)	Subtopic_in	Object-oriented programming
+Member variable	Subtopic_in	Object-oriented programming
+Object (computer science)	Subtopic_in	Object-oriented programming
+Binary search algorithm	Subtopic_in	Search algorithm
+Genetic algorithm	Subtopic_in	Search algorithm
+Hill climbing	Subtopic_in	Search algorithm
+Linear search	Subtopic_in	Search algorithm
+Simulated annealing	Subtopic_in	Search algorithm
+Binary search tree	Subtopic_in	Search tree
+Cosine similarity	Subtopic_in	Similarity measure
+Inner product space	Subtopic_in	Similarity measure
+Bubble sort	Subtopic_in	Sorting algorithm
+Insertion sort	Subtopic_in	Sorting algorithm
+Insertion sort	Subtopic_in	Sorting algorithm
+Insertion sort	Subtopic_in	Sorting algorithm
+Selection sort	Subtopic_in	Sorting algorithm
+C string handling	Subtopic_in	String
+Binary tree	Subtopic_in	Tree (data structure)
+Search tree	Subtopic_in	Tree (data structure)

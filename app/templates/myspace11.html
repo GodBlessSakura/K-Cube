@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Visualization Demo</title>
+    <!--Bootstrap Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../static/images/logo.jpg">
+    <!--Nifty Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/nifty.min.css" rel="stylesheet">
+
+    <!--Nifty Premium Icon [ DEMONSTRATION ]-->
+    <link href="../static/css/nifty-demo-icons.min.css" rel="stylesheet">
+    <link href="../static/css/nifty-demo.min.css" rel="stylesheet">
+    <link href="../static/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--JAVASCRIPT-->
+    <!--=================================================-->
+    <!--Pace - Page Load Progress Par [OPTIONAL]-->
+    <link href="../static/css/pace.min.css" rel="stylesheet">
+    <script src="../static/js/pace.min.js"></script>
+
+    <!--jQuery [ REQUIRED ]-->
+    <script src="../static/js/jquery-2.2.4.min.js"></script>
+
+    <!--BootstrapJS [ RECOMMENDED ]-->
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <!--NiftyJS [ RECOMMENDED ]-->
+    <script src="../static/js/nifty.min.js"></script>
+    <script src="../static/js/icons.js"></script>
+
+    <script src="../static/js/echarts.min.js"></script>
+    <script src="../static/js/tags.js"></script>
+    <!--=================================================-->
+    <!--Demo script [ DEMONSTRATION ]-->
+    <script src="../static/js/nifty-demo.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <style type="text/css">
+        #tagsList {position:relative; width:250px; height:250px; }
+        #tagsList a {position:absolute; top:0px; left:0px; font-family: Microsoft YaHei; color:gray; font-weight:bold; text-decoration:none; padding: 3px 6px; }
+        #tagsList a:hover { color:#249e92; letter-spacing:2px; visibility:visible; transition-delay: 2s;-webkit-transition-delay: 2s;}
+        #search:focus{
+            border: 1px solid #249e92;
+        }
+
+        /**设置div边框的大小以及颜色*/
+            .d1{
+                height: 200px;
+                width: 200px;
+                border: 1px solid red;
+                border-collapse: collapse;
+            }
+        /**设置行间距以及与左间距*/
+            .row-margin {
+                margin-top:60px;
+                margin-left: 15%;
+            <!--margin-right: 30%;-->
+            }
+        /**设置列间距*/
+            .col-margin {
+                margin-left: 30px;
+            }
+        /**设置文字位置以及大小*/
+            .text-style{
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%,-50%);
+                font-size: 24px;
+            }
+
+
+
+    </style>
+</head>
+
+<body>
+
+<div id="container" class="effect aside-float aside-bright mainnav-sm">
+
+    <!--NAVBAR-->
+    <!--===================================================-->
+    <header id="navbar">
+        <div id="navbar-container" class="boxed">
+
+            <!--Brand logo & name-->
+            <!--================================-->
+            <div class="navbar-header">
+                <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                    <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">
+                    <div class="brand-title">
+                        <span class="brand-text">KG-Cube</span>
+                    </div>
+                </a>
+            </div>
+            <!--================================-->
+            <!--End brand logo & name-->
+
+
+            <!--Navbar Dropdown-->
+            <!--================================-->
+            <div class="navbar-content clearfix">
+                <ul class="nav navbar-top-links pull-left">
+
+                    <!--Navigation toogle button-->
+                    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+                    <li class="tgl-menu-btn">
+                        <a class="mainnav-toggle" href="#">
+                            <i class="demo-pli-view-list"></i>
+                        </a>
+                    </li>
+
+                </ul>
+                <ul class="nav navbar-top-links pull-left">
+
+                    <h4>Knowledge Graph Visualization: Build</h4>
+
+                </ul>
+            </div>
+            <!--================================-->
+            <!--End Navbar Dropdown-->
+
+        </div>
+    </header>
+    <!--===================================================-->
+    <!--END NAVBAR-->
+
+    <div class="boxed">
+
+        <!--CONTENT CONTAINER-->
+        <!--===================================================-->
+        <div id="content-container">
+
+            <!--Page content-->
+            <!--===================================================-->
+            <div id="page-content">
+
+                <h4 class="text-main pad-btm bord-btm"></h4>
+                <div class="row">
+                    <!--  <div class="col-lg-6"></div>-->
+                    <!--搜索-->
+                    <div class="col-lg-2"></div>
+                    <div class="col-lg-4">
+                        <div class="input-group" >
+                            <input type="text" id="search_index" onkeydown="entersearch1(event)" class="form-control input-lg"  placeholder="Please input a keywords...">
+                            <span class="input-group-addon btn btn-mint"  onclick="jump()">Search</span>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="row"></div>
+                <!--8个方框-->
+                <div class="row row-margin">
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                </div>
+                <div class="row row-margin">
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                    <div class="col-lg-3 d1 col-margin"><div class="text-style"><a href="mykg.html?keyword=DataMining">DataMining</a></div></div>
+                </div>
+
+            </div>
+            <!--===================================================-->
+            <!--End page content-->
+
+
+        </div>
+        <!--===================================================-->
+        <!--END CONTENT CONTAINER-->
+
+
+        <!--MAIN NAVIGATION-->
+        <!--===================================================-->
+        <nav id="mainnav-container">
+            <div id="mainnav">
+
+                <!--Menu-->
+                <!--================================-->
+                <div id="mainnav-menu-wrap">
+                    <div class="nano">
+                        <div class="nano-content">
+
+                            <ul id="mainnav-menu" class="list-group">
+
+                                <!--Category name-->
+                                <li class="list-header">Visualization</li>
+
+                                <!--Menu list item-->
+
+
+                                <!--Menu list item-->
+                                <li>
+                                    <a href="{{ url_for('main.get_all_relation') }}">
+                                        <i class="fa fa-share-alt" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>2D</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('main.fold') }}">
+                                        <i class="fa fa-cube" style="width:24px"></i>
+						                    <span class="menu-title">
+                                                <strong>3D</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('main.tree') }}">
+                                        <i class="fa fa-sitemap" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>Tree</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('main.search') }}">
+                                        <!--                                            <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">-->
+                                        <i class="fa fa-search" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>Search</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('main.construction') }}">
+                                        <i class="fa fa-pencil-square-o" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>My Space</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('main.logout') }}">
+                                        <i class="fa fa-cube" style="width:24px"></i>
+						                    <span class="menu-title">
+                                                <strong>User Center</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                            </ul>
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <!--================================-->
+                <!--End menu-->
+
+            </div>
+        </nav>
+        <!--===================================================-->
+        <!--END MAIN NAVIGATION-->
+
+    </div>
+
+    <!-- FOOTER -->
+    <!--===================================================-->
+    <footer id="footer">
+
+        <p class="pad-lft">Copyright&#0169; 2021 Qing &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;All Rights Reserved </p>
+
+    </footer>
+    <!--===================================================-->
+    <!-- END FOOTER -->
+
+    <!-- SCROLL PAGE BUTTON -->
+    <!--===================================================-->
+    <button class="scroll-top btn">
+        <i class="pci-chevron chevron-up"></i>
+    </button>
+    <!--===================================================-->
+</div>
+<!--===================================================-->
+<!-- END OF CONTAINER -->
+<script  src="../static/js/echarts.js"></script>
+<script  src="../static/js/option11.js"></script>
+<script  src="../static/js/events-func.js"></script>
+<script src="../static/css/iconfont.js"></script>
+
+<!--    <script type="module">-->
+<!--    import iojson from '../static/js/index.js'-->
+<!--    window.iojson = iojson-->
+<!--  </script>-->
+<script type="text/javascript">
+   function jump(){
+		 var searchval = document.getElementById("search_index").value;
+		window.location.href='mykg.html?keyword='+searchval;
+	 }
+	 function entersearch1(event){
+		    if (event.keyCode == 13)
+		       {
+		    	jump();
+		       }
+		}
+</script>
+<style type="text/css">  /*adjust list to side-to-side array*/
+#node {list-style-type:none;margin:-22px;padding:0;overflow:hidden;}
+#node li{float:left;padding: 32px;}
+#node li:hover{background-color: #484848;}
+
+#node2 {list-style-type:none;margin:-22px;padding:0;overflow:hidden;}
+#node2 li{float:left;padding: 32px;}
+#node2 li:hover{background-color: #484848;}
+</style>
+</body>
+</html>

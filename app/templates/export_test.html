@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="export">导出</button>
+    <input type="file" id="file">
+    <button id="button">获取内容</button>
+    <script>
+        function getId(id) {
+            return document.getElementById(id)
+        }
+        const exportBtn = getId("export");
+        const fileEle = document.getElementById('file');
+        const buttonEle = document.getElementById('button');
+
+        let person = {
+            name: "王老五",
+            age: 20
+        }
+
+        // 导出json文件
+        exportBtn.onclick = exportJSON.bind(this, person, "test.json")
+        function exportJSON(data, filename) {
+            console.log(data, "data");
+            if (typeof data === "object") {
+                data = JSON.stringify(data, undefined, 4);
+            }
+            var blob = new Blob([data], { type: "text/json" }),
+                e = document.createEvent("MouseEvents"),
+                a = document.createElement("a");
+            a.download = filename;
+            a.href = window.URL.createObjectURL(blob);
+            a.dataset.downloadurl = ["text/json", a.download, a.href].join(":");
+            e.initMouseEvent(
+                "click",
+                true,
+                false,
+                window,
+                0,
+                0,
+                0,
+                0,
+                0,
+                false,
+                false,
+                false,
+                false,
+                0,
+                null
+            );
+            a.dispatchEvent(e);
+        }
+
+        // 导入json文件
+        buttonEle.onclick = function () {
+            var reader = new FileReader();//新建一个FileReader
+            reader.readAsText(fileEle.files[0], "UTF-8");//读取文件
+            reader.onload = function (evt) { //读取完文件之后会回来这里
+                var fileString = evt.target.result; // 读取文件内容
+                console.log(fileString);
+            }
+        };
+    </script>
+</body>
+
+</html>
