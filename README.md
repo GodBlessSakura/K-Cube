@@ -1,42 +1,5 @@
-# Flask_Blog_System
-A blog system written in flask that I developed when I study flask
-
-## Local Run
-
-  [Python 3+](https://www.python.org/downloads/) need be installed
-
-  ```
-  pip install -r requirements.txt
-  ```
-  
-  ```bash	
-  python manage.py runserver
-  ```
-  Navigate to http://127.0.0.1:5000, and then use xx@xx.com/xx to login.
-
-## Docker Run
-
-  ```bash	
-  docker pull luislu/microblog
-  docker run -d -p 5000:5000 luislu/microblog
-  ```
-  Navigate to http://127.0.0.1:5000, and then use xx@xx.com/xx to login.
-
-## Contents
-
-  - **Complete user authentication(Register,Email Verification,Login,Forget/Reset Password)**
-  ![alt text](https://github.com/luisxiaomai/Images/blob/master/Flask_Study_App/login.png)
-
-  
-  - **Simple Blog System** 
-  ![alt text](https://github.com/luisxiaomai/Images/blob/master/Flask_Study_App/Blog_Lite.png)
-  
-  - **RichText Editor** 
-  ![alt text](https://github.com/luisxiaomai/Images/blob/master/Flask_Study_App/editor.png)
-  
-  - **Markdown Editor** 
-  ![alt text](https://github.com/luisxiaomai/Images/blob/master/Flask_Study_App/comments.png)
-  
-
- 
-
+# K-Cube
+0.安装所需的库 执行pip install -r requirement.txt  
+2.先下载好neo4j图数据库，并配好环境。修改neo_db目录下的配置文件config.py,设置图数据库的账号和密码  
+4.切换到neo_db目录下，执行python create_graph.py 建立知识图谱  
+6.运行python app.py,浏览器打开localhost:5000即可查看  
