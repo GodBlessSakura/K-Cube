@@ -1,40 +1,27 @@
 from flask import Flask, render_template
 from flask_bootstrap import Bootstrap
 from flask_mail import Mail
-from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
-from flask_pagedown import PageDown
-from config import config
-from flask_uploads import UploadSet, configure_uploads, IMAGES, patch_request_class
-
+from app.config import config
+from app.blueprints.course import course
+from app.blueprints.job import job
+from app.blueprints.RESTful import RESTful
+from app.blueprints.uploads import uploads
+from app.blueprints.user import user
 bootstrap = Bootstrap()
 mail = Mail()
-moment = Moment()
-db = SQLAlchemy()
-login_manager = LoginManager()
-photos = UploadSet("photos", IMAGES)
-pagedown = PageDown()
 
-# if set to "strong", remeber me will not work
-login_manager.session_protection = "basic"
-login_manager.login_view = "auth.login"
 
-def create_app(config_name):
+def create_app(config_object):
     app = Flask(__name__)
-    app.config.from_object(config[config_name])
-    config[config_name].init_app(app)
+    if config_object is None:
+        config_object == config['default']
+    app.config.from_object(config_object)
 
-    from .main import main as main_blueprint
-    from .auth import auth as auth_blueprint
-    app.register_blueprint(main_blueprint)
-    app.register_blueprint(auth_blueprint, url_prefix="/auth")
+    app.register_blueprint(course)
+    app.register_blueprint(job, url_prefix="/job")
+    app.register_blueprint(RESTful, url_prefix="/RESTful")
+    app.register_blueprint(uploads, url_prefix="/uploads")
+    app.register_blueprint(user, url_prefix="/user")
     bootstrap.init_app(app)
     mail.init_app(app)
-    moment.init_app(app)
-    db.init_app(app)
-    login_manager.init_app(app)
-    pagedown.init_app(app)
-    configure_uploads(app,photos)
-    patch_request_class(app)
     return app
