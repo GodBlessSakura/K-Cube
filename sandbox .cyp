@@ -30,7 +30,7 @@ CREATE (:Permission {
     canUploadPhoto: false,
     canOwnDraft: true
 }),(:Permission {
-    role: "student",
+    role: "restricted",
     canCreateGraphConcept: false,
     canCreateCourse: false,
     canCreateJob: false,
@@ -54,21 +54,33 @@ RETURN user;
 
 MATCH (permission:Permission{role: "teacher"})
 CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: "alice1234", userName:"alice.J", email:"alice@polyu.fake.hk"})
--[password_set:WEB_IS_AUTHENTICATED_BY]->(:Credential {saltedHash: "1234"})
+ON CREATE 
+    SET 
+        permission_grant.creationDate = timestamp()
+RETURN user;
+
+:param userId => "bob2021";
+:param userName => "bob.J";
+:param email => "bob@polyu.fake.hk";
+:param saltedHash => "1234"
+MATCH (permission:Permission{role: "restricted"})
+CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: $userId, userName: $userName, email: $email})
+-[password_set:WEB_IS_AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash, salt: $salt})
 ON CREATE 
     SET 
         password_set.creationDate = timestamp(),
         permission_grant.creationDate = timestamp()
 RETURN user;
 
-MATCH (permission:Permission{role: "student"})
-CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: "bob2021", userName:"bob.J", email:"bob@polyu.fake.hk"})
--[password_set:WEB_IS_AUTHENTICATED_BY]->(:Credential {saltedHash: "1234"})
+//give user a role
+MATCH
+    (permission:Permission{role: $role}),
+    (user:User{userId: $useerId})
+MERGE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user)
 ON CREATE 
     SET 
-        password_set.creationDate = timestamp(),
         permission_grant.creationDate = timestamp()
-RETURN user;
+RETURN user, permission_grant, permission;
 
 //create course
 :param userId => "jerry2021";

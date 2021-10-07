@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Visualization Demo</title>
+    <link rel="shortcut icon" href="../static/images/logo.jpg">
+
+    <!-- Vuetify stylesheet -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+
+
+    <!-- material icon stylesheet -->
+    <link href="https://fonts.googleapis.com/css?family=Material+Icons" rel="stylesheet">
+    <!--=================================================-->
+    {% block head %}{% endblock %}
+</head>
+
+<body>
+    <div id="nav">
+        <v-app>
+            <v-app-bar>
+                <a href="{{ url_for('index') }}">
+                    <v-img src="../static/images/logo.png" link max-height="35" max-width="35">
+                    </v-img>
+                </a>
+                <v-btn text href="{{ url_for('index') }}">KG-Cube</v-btn>
+                <v-spacer></v-spacer>
+                {% if session['user'] %}
+                <v-menu offset-y>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn text v-bind="attrs" v-on="on">
+                            {{session['user'].name}}
+                        </v-btn>
+                    </template>
+                    <v-list>
+                        <v-list-item href="{{ url_for('user.profile') }}">
+                            <v-list-item-title>Edit Profile</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item href="{{ url_for('user.logout') }}">
+                            <v-list-item-title>Logout</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
+                {% else %}
+                <v-dialog v-model="shouldShowLoginForm" persistent max-width="600px">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn text v-bind="attrs" v-on="on">
+                            Login
+                        </v-btn>
+                    </template>
+                    <v-card>
+                        <v-card-title>
+                            <span class="text-h5">User Profile</span>
+                        </v-card-title>
+                        <v-card-text>
+                            <v-container>
+                                <v-row>
+                                    <v-col cols="12" sm="6" md="4">
+                                        <v-text-field label="Legal first name*" required></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" sm="6" md="4">
+                                        <v-text-field label="Legal middle name"
+                                            hint="example of helper text only on focus">
+                                        </v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" sm="6" md="4">
+                                        <v-text-field label="Legal last name*" hint="example of persistent helper text"
+                                            persistent-hint required></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12">
+                                        <v-text-field label="Email*" required></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12">
+                                        <v-text-field label="Password*" type="password" required></v-text-field>
+                                    </v-col>
+                                    <v-col cols="12" sm="6">
+                                        <v-select :items="['0-17', '18-29', '30-54', '54+']" label="Age*" required>
+                                        </v-select>
+                                    </v-col>
+                                    <v-col cols="12" sm="6">
+                                        <v-autocomplete
+                                            :items="['Skiing', 'Ice hockey', 'Soccer', 'Basketball', 'Hockey', 'Reading', 'Writing', 'Coding', 'Basejump']"
+                                            label="Interests" multiple></v-autocomplete>
+                                    </v-col>
+                                </v-row>
+                            </v-container>
+                            <small>*indicates required field</small>
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-spacer></v-spacer>
+                            <v-btn color="blue darken-1" text @click="shouldShowLoginForm = false">
+                                Close
+                            </v-btn>
+                            <v-btn color="blue darken-1" text @click="shouldShowLoginForm = false">
+                                Save
+                            </v-btn>
+                        </v-card-actions>
+                    </v-card>
+                </v-dialog>
+                {% endif %}
+
+            </v-app-bar>
+            <v-navigation-drawer permanent expand-on-hover mini-variant-width="50">
+
+                <v-divider></v-divider>
+                <v-list nav dense>
+                    <v-list-item link href="{{ url_for('index') }}">
+                        <v-list-item-icon>
+                            <v-icon>dvr</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Catalogue</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item link href="{{ url_for('comprehensive.graph') }}">
+                        <v-list-item-icon>
+                            <v-icon>insights</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Comprehensive</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item link href="{{ url_for('job.bubble') }}">
+                        <v-list-item-icon>
+                            <v-icon>work</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Jobs</v-list-item-title>
+                    </v-list-item>
+                    {% if session['permission'] and session['permission'].canOwnDraft %}
+                    <v-list-item link href="{{ url_for('draft.my_space') }}">
+                        <v-list-item-icon>
+                            <v-icon>folder</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>My Space</v-list-item-title>
+                    </v-list-item>
+                    {% endif %}
+                    {% if session['permission'] and session['permission'].role == 'admin' %}
+                    <v-list-item link href="{{ url_for('admin.Panel') }}">
+                        <v-list-item-icon>
+                            <v-icon>admin_panel_settings</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Admin Panel</v-list-item-title>
+                    </v-list-item>
+                    {% endif %}
+                </v-list>
+            </v-navigation-drawer>
+        </v-app>
+
+    </div>
+
+    <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+
+    <script>
+        Vue.use(Vuetify)
+        var app = new Vue({
+            el: '#nav',
+            data: () => ({
+                shouldShowLoginForm: false
+            }),
+            delimiters: ['[[', ']]'],
+            vuetify: new Vuetify(),
+        })
+    </script>
+    {% block body %}{% endblock %}
+
+</body>
+
+
+</html>
