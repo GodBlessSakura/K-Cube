@@ -30,12 +30,12 @@ def create_app(config_object):
     @app.route('/')
     def index():
         return render_template('index.html')
-    from . import db
-    db.init_app(app)
+    from . import api_driver
+    api_driver.init_app(app)
 
     @app.cli.command("set-admin")
     @click.argument("userid")
     def set_admin(userid):
         click.echo(userid)
-        click.echo(db.get_db().assign_role(userid,"admin"))
+        click.echo(api_driver.get_api_driver().user.assign_role(userid,"admin"))
     return app

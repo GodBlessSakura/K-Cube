@@ -1,25 +1,24 @@
 from flask import Blueprint, render_template, abort, redirect, request
-from app.db import get_db
-user = Blueprint('user',__name__, template_folder='templates')
-@user.route('/')
+from app.api_driver import get_api_driver
+
+user = Blueprint("user", __name__, template_folder="templates")
+
+
+@user.route("/")
 def back():
-    return redirect('/')
+    return redirect("/")
 
-@user.route('/profile')
+
+@user.route("/profile")
 def profile():
-    return render_template('user/profile.html')
-    
+    return render_template("user/profile.html")
 
-@user.route('/logout')
+
+@user.route("/logout")
 def logout():
-    return redirect('/')
+    return redirect("/")
 
 
-@user.route('/authenticate')
+@user.route("/authenticate")
 def authenticate():
-    return redirect('/')
-
-@user.route('/check-unused-id/', methods = ['GET'])
-def checkUnusedUserId():
-    userId = request.args
-    return get_db().check_used_userId(userId)
+    return redirect("/")
