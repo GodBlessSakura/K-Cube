@@ -48,7 +48,7 @@ CREATE (:Permission {
 :param email => "bob@polyu.fake.hk";
 :param saltedHash => "1234"
 MATCH (permission:Permission{role: "restricted"})
-CREATE (permission)<-[permission_grant:USER_HAS_PERMISSION]-(user:User {userId: $userId, userName: $userName, email: $email})
+CREATE (permission)<-[permission_grant:PRIVILEGED_OF]-(user:User {userId: $userId, userName: $userName, email: $email})
 -[password_set:AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash, salt: $salt})
 ON CREATE 
     SET 
@@ -60,7 +60,7 @@ RETURN user;
 MATCH
     (permission:Permission{role: $role}),
     (user:User{userId: $useerId})
-MERGE (permission)<-[permission_grant:USER_HAS_PERMISSION]-(user)
+MERGE (permission)<-[permission_grant:PRIVILEGED_OF]-(user)
 ON CREATE 
     SET 
         permission_grant.creationDate = timestamp()
@@ -71,13 +71,14 @@ RETURN user, permission_grant, permission;
 :param course_name => "Introduction of computer science"
 :param imageURL => '../static/image.jpg'
 :param course_code => "COMP0001"
-MATCH (:User{userId:"jerry2021"})-[:USER_HAS_PERMISSION]->(:Permission{canCreateCourse:true, canCreateGraphConcept:true})
-MERGE (course:Course{displayName: $course_name, imageURL: $imageURL})-[:COURSE_DESCRIBE]->(:GraphConcept{name: $course_code})
+MATCH (:User{userId:"jerry2021"})-[:PRIVILEGED_OF]->(:Permission{canCreateCourse:true, canCreateGraphConcept:true})
+MERGE (courseConcept:GraphConcept{name: $course_code})
+MERGE (course:Course{displayName: $course_name, imageURL: $imageURL})-[:COURSE_DESCRIBE]->(courseConcept)
 
 
 //create GraphConcepts
 :param userId => "alice1234";
-MATCH (:User{userId:$userId})-[:USER_HAS_PERMISSION]->(:Permission{canCreateGraphConcept:true})
+MATCH (:User{userId:$userId})-[:PRIVILEGED_OF]->(:Permission{canCreateGraphConcept:true})
 MERGE (:GraphConcept{name: "COMP0001"})
 MERGE (:GraphConcept{name: "data structure"})
 MERGE (:GraphConcept{name: "tree algorithm"});
@@ -85,22 +86,22 @@ MERGE (:GraphConcept{name: "tree algorithm"});
 //create admin defind graph relationships
 :param userId => 'jerry2021';
 :param r_name => 'related';
-MATCH (approver:User{userId: $userId})-[:USER_HAS_PERMISSION]->(:Permission {canProposeRelationship: true, canApproveRelationship: true})
+MATCH (approver:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission {canProposeRelationship: true, canApproveRelationship: true})
 MERGE (r:ProposedGraphRelationshipName{name: $r_name})
 MERGE (r)<-[:USER_APPROVE]-(approver);
 
 //create user defined graph relationships
 :param userId => 'alice1234';
 :param r_name => 'further reading';
-MATCH (proposer:User{userId: $userId})-[:USER_HAS_PERMISSION]->(:Permission {canProposeRelationship: true})
+MATCH (proposer:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission {canProposeRelationship: true})
 MERGE (r:ProposedGraphRelationshipName{name:  $r_name})
 MERGE (r)<-[:USER_PROPOSE]-(proposer);
 
-//approve an user defined graph relationships
+//approve a proposed graph relationships
 :param userId => 'jerry2021';
 :param r_name => 'further reading';
-MATCH (approver:User{userId: $userId})-[:USER_HAS_PERMISSION]->(:Permission {canApproveRelationship: true})
-MERGE (r:ProposedGraphRelationshipName{name: $r_name})
+MATCH (approver:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission {canApproveRelationship: true})
+MATCH (r:ProposedGraphRelationshipName{name: $r_name})
 MERGE (r)<-[:USER_APPROVE]-(approver);
 
 //create draft
@@ -108,7 +109,7 @@ MERGE (r)<-[:USER_APPROVE]-(approver);
 :param userId => 'alice1234';
 :param courseCode => "COMP0001"
 MATCH
-    (owner:User{userId: $userId})-[:USER_HAS_PERMISSION]-(:Permission{canCreateDraft: true, canOwnDraft: true}),
+    (owner:User{userId: $userId})-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOwnDraft: true}),
     (course:Course)-[:COURSE_DESCRIBE]->(:GraphConcept{name: courseCode})
 MERGE (user)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)
 ON CREATE
@@ -126,8 +127,8 @@ RETURN draft;
 :param ownerId -> 'alice1234';
 :param courseCode => "COMP0001";
 MATCH
-    (user:User{userId: $createrId})-[:USER_HAS_PERMISSION]-(:Permission{canCreateDraft: true, canOperateDraftForOthers: true}),
-    (owner:User{userId: $ownerId})-[:USER_HAS_PERMISSION]-(:Permission{canOwnDraft: true}),
+    (user:User{userId: $createrId})-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOperateDraftForOthers: true}),
+    (owner:User{userId: $ownerId})-[:PRIVILEGED_OF]-(:Permission{canOwnDraft: true}),
     (course:Course)<-[:DRAFT_DESCRIBE]-(:GraphConcept{name: courseCode})
 MERGE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)
 ON CREATE
@@ -146,8 +147,8 @@ RETURN draft;
 :param r_name => 'related';
 :param t_name => 'data type'
 MATCH
-    (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})-[:USER_HAS_PERMISSION]->(:Permission{canCreateGraphConcept: true}),
-    (approved_graph_relationship:ProposedGraphRelationshipName{name: $r_name})<-[:USER_APPROVE]-(:User)-[:USER_HAS_PERMISSION]->(:Permission{canApproveRelationship: true})
+    (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canCreateGraphConcept: true}),
+    (approved_graph_relationship:ProposedGraphRelationshipName{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})
 MERGE (h:GraphConcept{name: $h_name})
 MERGE (t:GraphConcept{name: $t_name})
 MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name}]-> (t)
@@ -166,8 +167,8 @@ RETURN draft;
 :param t_name => 'data type'
 MATCH
     (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $ownerId}),
-    (:User{userId: $userId})-[:USER_HAS_PERMISSION]->(:Permission{canCreateGraphConcept: true, canOperateDraftForOthers: true}),
-    (approved_graph_relationship:ProposedGraphRelationshipName{name: $r_name})<-[:USER_APPROVE]-(:User)-[:USER_HAS_PERMISSION]->(:Permission{canApproveRelationship: true})
+    (:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canCreateGraphConcept: true, canOperateDraftForOthers: true}),
+    (approved_graph_relationship:ProposedGraphRelationshipName{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})
 MERGE (h:GraphConcept{name: $h_name})
 MERGE (t:GraphConcept{name: $t_name})
 MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name}]-> (t)
