@@ -142,47 +142,43 @@ ON CREATE
         draft.status = "unpublished"
 RETURN draft;
 
-//create triples for my draft that may create node
-:param draftId => "alice.draft_123";
-:param ownerId => 'alice';
+//create triples for draft that may create node
+:param draftId => "alice1234.draft_123";
+:param userId => 'alice1234';
 :param h_name => 'COMP0001';
 :param r_name => 'related';
-:param t_name => 'data type';
+:param t_name => 'data type'
 MATCH
-    (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $ownerId})-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true,canCreateGraphConcept: true}),
-    (approved_gr:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})
+    (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true, canCreateGraphConcept: true}),
+    (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveProposal: true})
 MERGE (h:GraphConcept{name: $h_name})
 MERGE (t:GraphConcept{name: $t_name})
-MERGE (dr:DraftRelationship{draftId: $draftId, head: $h_name,relationship: $r_name, tail: $t_name})
-ON CREATE
-    SET
-        draft.lastModified = timestamp(),
-        dr.creationDate = timestamp()
-MERGE (approved_gr)<-[:DRAFT_REFERING]-(dr)<-[:DRAFT_CONTAINS]->(draft)
-MERGE    (h) <-[:DRAFT_HEAD]-(dr)-[:DRAFT_TAIL]-> (t)
-return h, approved_gr, t, dr
-    
+MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name}]-> (t)
+SET
+    draft.lastModified = timestamp(),
+    r.creationDate = timestamp(),
+    r.draftId = draft.draftId
+RETURN draft;
 
-//create triples for others' draft that may create node
+//create triples for others; draft that may create node
 :param draftId => "alice1234.draft_123";
 :param operatorId => 'jerry2021';
+:param ownerId -> 'alice1234';
 :param h_name => 'COMP0001';
 :param r_name => 'related';
-:param t_name => 'data type';
+:param t_name => 'data type'
 MATCH
-    (draft:Draft{draftId: $draftId}),
-    (:User{userId: $operatorId})-[:PRIVILEGED_OF]->(:Permission{canOperateDraftForOthers: true,canCreateGraphConcept: true}),
-    (approved_gr:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})
+    (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $ownerId})-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true}),
+    (:User{userId: $operatorId})-[:PRIVILEGED_OF]->(:Permission{canCreateGraphConcept: true, canCreateDraftForOthers: true}),
+    (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveProposal: true})
 MERGE (h:GraphConcept{name: $h_name})
 MERGE (t:GraphConcept{name: $t_name})
-MERGE (dr:DraftRelationship{draftId: $draftId, head: $h_name,relationship: $r_name, tail: $t_name})
+MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name, r.draftId = draft.draftId}]-> (t)
 ON CREATE
     SET
         draft.lastModified = timestamp(),
-        dr.creationDate = timestamp()
-MERGE (approved_gr)<-[:DRAFT_REFERING]-(dr)<-[:DRAFT_CONTAINS]->(draft)
-MERGE    (h) <-[:DRAFT_HEAD]-(dr)-[:DRAFT_TAIL]-> (t)
-return h, approved_gr, t, dr
+        r.creationDate = timestamp(),
+RETURN draft;
 
 
 //public graph
@@ -191,16 +187,14 @@ MATCH (selected_draft:Draft{status: $want_status})
 WITH selected_draft.draftId as published_id
 CALL {
     WITH published_id
-    MATCH 
-        (h) <-[:DRAFT_HEAD]-(dr{draftId: published_id})-[:DRAFT_TAIL]-> (t),
-        (dr)-[:DRAFT_REFERING]->(r:GraphRelationship)
-    RETURN h, r, t , count(*) AS total
+    MATCH (h:GraphConcept)-[r:GRAPH_RELATIONSHIP{draftId: published_id}]->(t:GraphConcept)
+    RETURN h.name, r.name, t.name , count(*) AS vote
 }
-RETURN h, dr.relationship, t , total;
+RETURN *;
 
 //publish a draft
-:param userId => 'alice';
-:param draftId => "alice.draft_123";
+:param userId => 'alice1234'
+:param draftId => "alice1234.draft 123"
 MATCH
     (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})
 SET draft.status = "published"

@@ -20,6 +20,9 @@
 </head>
 
 <body>
+    <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <div id="nav">
         <v-app>
             <v-app-bar>
@@ -53,50 +56,63 @@
                         </v-btn>
                     </template>
                     <v-card>
-                        <v-card-title>
-                            <span class="text-h5">User Profile</span>
-                        </v-card-title>
                         <v-card-text>
                             <v-container>
-                                <v-row>
-                                    <v-col cols="12" sm="6" md="4">
-                                        <v-text-field label="Legal first name*" required></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" sm="6" md="4">
-                                        <v-text-field label="Legal middle name"
-                                            hint="example of helper text only on focus">
-                                        </v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" sm="6" md="4">
-                                        <v-text-field label="Legal last name*" hint="example of persistent helper text"
-                                            persistent-hint required></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12">
-                                        <v-text-field label="Email*" required></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12">
-                                        <v-text-field label="Password*" type="password" required></v-text-field>
-                                    </v-col>
-                                    <v-col cols="12" sm="6">
-                                        <v-select :items="['0-17', '18-29', '30-54', '54+']" label="Age*" required>
-                                        </v-select>
-                                    </v-col>
-                                    <v-col cols="12" sm="6">
-                                        <v-autocomplete
-                                            :items="['Skiing', 'Ice hockey', 'Soccer', 'Basketball', 'Hockey', 'Reading', 'Writing', 'Coding', 'Basejump']"
-                                            label="Interests" multiple></v-autocomplete>
-                                    </v-col>
-                                </v-row>
+                                <v-tabs v-model="tab">
+                                    <v-tab :key="login">Login </v-tab>
+                                    <v-tab :key="register">Register </v-tab>
+                                </v-tabs>
+                                <v-tabs-items v-model="tab">
+                                    <v-tab-item :key="login">
+                                        <v-card flat>
+                                            <v-form ref="loginFormControl" v-model="loginForm.valid" lazy-validation>
+                                                <v-text-field v-model="loginForm.id" :rules="loginForm.idRules"
+                                                    label="UserId" required></v-text-field>
+                                                <v-text-field v-model="loginForm.password" type="password"
+                                                    :rules="loginForm.passwordRules" label="password" required>
+                                                </v-text-field>
+
+                                                <v-btn @click="loginFormLogin">
+                                                    login
+                                                </v-btn>
+                                            </v-form>
+                                        </v-card>
+                                    </v-tab-item>
+                                    <v-tab-item :key="register">
+                                        <v-card flat>
+                                            <v-form ref="registerFormControl" v-model="registerForm.valid"
+                                                lazy-validation>
+                                                <v-text-field v-model="registerForm.id" :rules="registerForm.idRules"
+                                                    label="UserId" required></v-text-field>
+                                                <v-text-field v-model="registerForm.name"
+                                                    :rules="registerForm.nameRules" label="Name" required>
+                                                </v-text-field>
+
+                                                <v-text-field v-model="registerForm.email"
+                                                    :rules="registerForm.emailRules" label="E-mail" required>
+                                                </v-text-field>
+                                                <v-text-field v-model="registerForm.password" type="password"
+                                                    :rules="registerForm.passwordRules" label="password" required>
+                                                </v-text-field>
+                                                <v-text-field v-model="registerForm.password2" type="password"
+                                                    :rules="registerForm.password2Rules" label="confirm password"
+                                                    required>
+                                                </v-text-field>
+
+                                                <v-btn :disabled="!registerForm.valid" color="success" class="mr-4"
+                                                    @click="registerFormValidate">
+                                                    Validate
+                                                </v-btn>
+                                            </v-form>
+                                        </v-card>
+                                    </v-tab-item>
+                                </v-tabs-items>
                             </v-container>
-                            <small>*indicates required field</small>
                         </v-card-text>
                         <v-card-actions>
                             <v-spacer></v-spacer>
                             <v-btn color="blue darken-1" text @click="shouldShowLoginForm = false">
                                 Close
-                            </v-btn>
-                            <v-btn color="blue darken-1" text @click="shouldShowLoginForm = false">
-                                Save
                             </v-btn>
                         </v-card-actions>
                     </v-card>
@@ -134,6 +150,14 @@
                         <v-list-item-title>My Space</v-list-item-title>
                     </v-list-item>
                     {% endif %}
+                    {% if session['permission'] and session['permission'].canProposeRelationship %}
+                    <v-list-item link href="{{ url_for('draft.my_space') }}">
+                        <v-list-item-icon>
+                            <v-icon>forum</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>Collaborate</v-list-item-title>
+                    </v-list-item>
+                    {% endif %}
                     {% if session['permission'] and session['permission'].role == 'admin' %}
                     <v-list-item link href="{{ url_for('admin.Panel') }}">
                         <v-list-item-icon>
@@ -148,17 +172,66 @@
 
     </div>
 
-    <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js">
-    </script>
-    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
 
     <script>
         Vue.use(Vuetify)
         var app = new Vue({
             el: '#nav',
             data: () => ({
-                shouldShowLoginForm: false
+                shouldShowLoginForm: false,
+                tab: 'register',
+                login: 'login',
+                register: 'register',
+                registerForm: {
+                    valid: true,
+                    id: '',
+                    idRules: [
+                        v => !!v || 'UserId is required',
+                        v => v.length > 3 || 'UserId should be more then 3 charactors',
+                        v => /^[a-zA-Z0-9]+$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]+$/.test(v) || 'UserId must start with alphabetic characters.'
+                    ],
+                    name: '',
+                    nameRules: [
+                        v => !!v || 'Name is required',
+                        v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                    ],
+                    email: '',
+                    emailRules: [
+                        v => !!v || 'E-mail is required',
+                        v => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) || 'E-mail must be in valid format',
+                    ],
+                    password: '',
+                    passwordRules: [
+                        v => !!v || 'Password is required',
+                    ],
+                    password2: '',
+                    password2Rules: [
+                        v => !!v || 'Password is required',
+                        v => v == app._data.registerForm.password || 'Two password are different'
+                    ],
+                },
+                loginForm: {
+                    valid: true,
+                    id: '',
+                    idRules: [
+                        v => !!v || 'UserId is required',
+                    ],
+                    password: '',
+                    passwordRules: [
+                        v => !!v || 'UserId is required',
+                    ],
+                }
             }),
+            methods: {
+                registerFormValidate() {
+                    this.$refs.registerFormControl.validate()
+
+                },
+                loginFormLogin() {
+                    console.log({ userId: this.loginForm.id, password: this.loginForm.password })
+                }
+            },
             delimiters: ['[[', ']]'],
             vuetify: new Vuetify(),
         })
