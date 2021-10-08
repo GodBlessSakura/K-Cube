@@ -191,14 +191,17 @@ MATCH (selected_draft:Draft{status: $want_status})
 WITH selected_draft.draftId as published_id
 CALL {
     WITH published_id
-    MATCH (h) <-[:DRAFT_HEAD]-(dr{draftId: published_id})-[:DRAFT_TAIL]-> (t)
-    RETURN h, dr.name, t , count(*) AS total
+    MATCH 
+        (h) <-[:DRAFT_HEAD]-(dr{draftId: published_id})-[:DRAFT_TAIL]-> (t),
+        (dr)-[:DRAFT_REFERING]->(r:GraphRelationship)
+    RETURN h, r, t , count(*) AS total
 }
-RETURN *;
+RETURN h, dr.relationship, t , total;
 
 //publish a draft
 :param userId => 'alice';
+:param draftId => "alice.draft_123";
 MATCH
-    (draft:Draft{draftId: "alice.draft_123"})<-[:USER_OWN]-(:User{userId: $userId})
-SET draft.published = true
+    (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})
+SET draft.status = "published"
 RETURN draft;
