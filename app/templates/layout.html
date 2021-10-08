@@ -183,7 +183,7 @@
                 login: 'login',
                 register: 'register',
                 registerForm: {
-                    valid: true,
+                    valid: false,
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
@@ -212,10 +212,13 @@
                     ],
                 },
                 loginForm: {
-                    valid: true,
+                    valid: false,
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
+                        v => v.length > 3 || 'UserId should be more then 3 charactors',
+                        v => /^[a-zA-Z0-9]+$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]+$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     password: '',
                     passwordRules: [
@@ -228,8 +231,43 @@
                     this.$refs.registerFormControl.validate()
 
                 },
+                registerFormSubmit() {
+                    if (this.registerForm.valid) {
+                        fetch("{{ url_for('user.register') }}", {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userId: this.registerForm.id, password: this.registerForm.password,
+                                email: this.registerForm.email, userName: this.registerForm.name
+                            })
+                        }).then(response => {
+                            console.log(response)
+                            if (response.success) {
+                                location.reload()
+                            }
+                        })
+                    }
+                },
                 loginFormLogin() {
-                    console.log({ userId: this.loginForm.id, password: this.loginForm.password })
+                    if (this.loginForm.valid) {
+                        fetch("{{ url_for('user.login') }}", {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ userId: this.loginForm.id, password: this.loginForm.password })
+
+                        }).then(response => {
+                            console.log(response)
+                            if (response.success) {
+                                location.reload()
+                            }
+                        })
+                    }
                 }
             },
             delimiters: ['[[', ']]'],

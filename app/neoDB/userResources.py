@@ -8,8 +8,7 @@ class userResources:
 
     def list_userId(self):
         def _query(tx):
-            query = """
-MATCH (user:User)
+            query = """MATCH (user:User)
 RETURN user.userId;"""
             result = tx.run(query)
             try:
@@ -22,8 +21,7 @@ RETURN user.userId;"""
 
     def is_userId_used(self, userId) -> bool:
         def _query(tx):
-            query = """
-OPTIONAL MATCH (n:User{userId: $userId})
+            query = """OPTIONAL MATCH (n:User{userId: $userId})
 RETURN n IS NOT NULL AS Predicate;"""
             result = tx.run(query, userId=userId)
             try:
@@ -37,13 +35,12 @@ RETURN n IS NOT NULL AS Predicate;"""
 
     def create_user(self, userId, userName, email, password):
         ph = PasswordHasher()
-        saltedHash = ph.hash("password")
+        saltedHash = ph.hash(password)
 
         def _query(tx):
-            query = """
-MATCH (permission:Permission{role: "restricted"})
+            query = """MATCH (permission:Permission{role: "restricted"})
 CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: $userId, userName: $userName, email: $email})
--[password_set:WEB_IS_AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash, salt: $salt})
+-[password_set:AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash, salt: $salt})
 ON CREATE 
     SET 
         password_set.creationDate = timestamp(),
@@ -57,7 +54,7 @@ RETURN user;"""
                 saltedHash=saltedHash,
             )
             try:
-                return result[0]
+                return [record for record in result][0]
             except ServiceUnavailable as exception:
                 raise exception
 
@@ -70,8 +67,7 @@ RETURN user;"""
         role,
     ):
         def _query(tx):
-            query = """
-MATCH
+            query = """MATCH
     (permission:Permission{role: $role}),
     (user:User{userId: $useerId})
 MERGE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user)
@@ -81,7 +77,51 @@ ON CREATE
 RETURN user, permission_grant, permission;"""
             result = tx.run(query, userId=userId, role=role)
             try:
-                return result[0]
+                return [record for record in result][0]
+            except ServiceUnavailable as exception:
+                raise exception
+
+        with self.base_resources.driver.session() as session:
+            return session.write_transaction(_query)
+
+
+    def authenticate_user(self, userId, password):
+        def _query(tx):
+            query = """MATCH (user:User{userId: $userId})-[:AUTHENTICATED_BY]->(password:Credential)
+RETURN user, password.saltedHash as hash;"""
+            result = tx.run(query, userId=userId)
+            try:
+                rows = [record for record in result]
+                if len(rows) > 0:
+                    saltedHash = rows[0]["hash"]
+                    ph = PasswordHasher()
+                    if ph.verify(saltedHash, password):
+                        return rows[0]["user"]
+                    else:
+                        return None
+            except ServiceUnavailable as exception:
+                raise exception
+
+        with self.base_resources.driver.session() as session:
+            return session.write_transaction(_query)
+
+
+    def get_user_permission(self, userId):
+        def _query(tx):
+            query = """MATCH 
+    (:User{userId: $userId})-[:PRIVILEGED_OF]->(permissions:Permission),
+RETURN permissions;"""
+            result = tx.run(query, userId=userId)
+            try:
+                permission = dict()
+                for row in [record for record in result]:
+                    for key in row['permissions']["properties"]:
+                        if key not in permission:
+                            permission[key] = row['permissions']["properties"][key]
+                        else:
+                            if not permission[key]:
+                                permission[key] = row['permissions']["properties"][key]
+                return permission
             except ServiceUnavailable as exception:
                 raise exception
 
