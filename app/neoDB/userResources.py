@@ -36,8 +36,7 @@ class userResources:
 
     def list_userId(self):
         def _query(tx):
-            query = """MATCH (user:User)
-RETURN user.userId;"""
+            query = " ".join(["MATCH (user:User)", "RETURN user.userId;"])
             result = tx.run(query)
             try:
                 return [record for record in result]
@@ -49,8 +48,12 @@ RETURN user.userId;"""
 
     def is_userId_used(self, userId) -> bool:
         def _query(tx):
-            query = """OPTIONAL MATCH (n:User{userId: $userId})
-RETURN n IS NOT NULL AS Predicate;"""
+            query = " ".join(
+                [
+                    "OPTIONAL MATCH (n:User{userId: $userId})",
+                    "RETURN n IS NOT NULL AS Predicate;",
+                ]
+            )
             result = tx.run(query, userId=userId)
             try:
                 for record in result:
@@ -66,13 +69,17 @@ RETURN n IS NOT NULL AS Predicate;"""
         saltedHash = ph.hash(password)
 
         def _query(tx):
-            query = """MATCH (permission:Permission{role: "restricted"})
-CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: $userId, userName: $userName, email: $email})
--[password_set:AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash})
-SET 
-    password_set.creationDate = timestamp(),
-    permission_grant.creationDate = timestamp()
-RETURN user;"""
+            query = " ".join(
+                [
+                    "MATCH (permission:Permission{role: 'restricted'})",
+                    "CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: $userId, userName: $userName, email: $email})",
+                    "-[password_set:AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash})",
+                    "SET ",
+                    "password_set.creationDate = timestamp(),",
+                    "permission_grant.creationDate = timestamp()",
+                    "RETURN user;",
+                ]
+            )
             result = tx.run(
                 query,
                 userId=userId,
@@ -94,14 +101,18 @@ RETURN user;"""
         role,
     ):
         def _query(tx):
-            query = """MATCH
-    (permission:Permission{role: $role}),
-    (user:User{userId: $useerId})
-MERGE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user)
-ON CREATE 
-    SET 
-        permission_grant.creationDate = timestamp()
-RETURN user, permission_grant, permission;"""
+            query = " ".join(
+                [
+                    "MATCH",
+                    "(permission:Permission{role: $role}),",
+                    "(user:User{userId: $useerId})",
+                    "MERGE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user)",
+                    "ON CREATE",
+                    "SET",
+                    "permission_grant.creationDate = timestamp()",
+                    "RETURN user, permission_grant, permission;",
+                ]
+            )
             result = tx.run(query, userId=userId, role=role)
             try:
                 return [record for record in result][0]
@@ -113,8 +124,12 @@ RETURN user, permission_grant, permission;"""
 
     def authenticate_user(self, userId, password):
         def _query(tx):
-            query = """MATCH (user:User{userId: $userId})-[:AUTHENTICATED_BY]->(password:Credential)
-RETURN user, password.saltedHash as hash;"""
+            query = " ".join(
+                [
+                    "MATCH (user:User{userId: $userId})-[:AUTHENTICATED_BY]->(password:Credential)",
+                    "RETURN user, password.saltedHash as hash;",
+                ]
+            )
             result = tx.run(query, userId=userId)
             try:
                 rows = [record for record in result]
@@ -133,9 +148,12 @@ RETURN user, password.saltedHash as hash;"""
 
     def get_user_permission(self, userId):
         def _query(tx):
-            query = """MATCH 
-    (:User{userId: $userId})-[:PRIVILEGED_OF]->(permissions:Permission),
-RETURN permissions;"""
+            query = " ".join(
+                [
+                    "MATCH    (:User{userId: $userId})-[:PRIVILEGED_OF]->(permissions:Permission),",
+                    "RETURN permissions;",
+                ]
+            )
             result = tx.run(query, userId=userId)
             try:
                 permission = dict()
