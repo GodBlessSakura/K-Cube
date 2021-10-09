@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, abort, redirect, request, jsonify
+from flask import Blueprint, render_template, abort, redirect, request, jsonify, session
 from app.api_driver import get_api_driver
 
 user = Blueprint("user", __name__, template_folder="templates")
@@ -18,10 +18,29 @@ def profile():
 def register():
     userId = request.json["userId"]
     password = request.json["password"]
+    email = request.json["email"]
+    userName = request.json["userName"]
+    if userId and password and email and userName:
+        user = get_api_driver().user.create_user(
+            userId=userId, password=password, email=email, userName=userName
+        )
+        if user:
+            session["user"] = user
+            try:
+                session["permission"] = get_api_driver().user.get_user_permission(
+                    userId=user["userId"]
+                )
+
+            except:
+                pass
+            finally:
+                return jsonify({"success":True})
+    return jsonify({"success":False})
 
 
 @user.route("/logout")
 def logout():
+    session.clear()
     return redirect("/")
 
 
@@ -31,18 +50,16 @@ def login():
     userId = request.json["userId"]
     password = request.json["password"]
     if userId and password:
-        user = get_api_driver().user.authenticate_user(userId, password)
+        user = get_api_driver().user.authenticate_user(userId=userId, password=password)
         if user is not None:
             session["user"] = user
-            return jsonify(success=False)
             try:
                 session["permission"] = get_api_driver().user.get_user_permission(
-                    user["userId"]
+                    userId=user["userId"]
                 )
 
             except:
                 pass
             finally:
-                return jsonify(success=True)
-    return jsonify(success=False)
-    return str(not get_api_driver().user.is_userId_used(userId))
+                return jsonify({"success":True})
+    return jsonify({"success":False})

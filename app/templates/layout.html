@@ -38,7 +38,7 @@
                 <v-menu offset-y>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn text v-bind="attrs" v-on="on">
-                            {{session['user'].name}}
+                            {{session['user'].userName}}
                         </v-btn>
                     </template>
                     <v-list>
@@ -67,14 +67,14 @@
                                 <v-tabs-items v-model="tab">
                                     <v-tab-item :key="login">
                                         <v-card flat>
-                                            <v-form ref="loginFormControl" v-model="loginForm.valid" lazy-validation>
+                                            <v-form ref="loginFormControl" lazy-validation>
                                                 <v-text-field v-model="loginForm.id" :rules="loginForm.idRules"
                                                     label="UserId" required></v-text-field>
                                                 <v-text-field v-model="loginForm.password" type="password"
                                                     :rules="loginForm.passwordRules" label="password" required>
                                                 </v-text-field>
 
-                                                <v-btn @click="loginFormLogin">
+                                                <v-btn @click="loginFormLogin" color="success">
                                                     login
                                                 </v-btn>
                                             </v-form>
@@ -82,8 +82,7 @@
                                     </v-tab-item>
                                     <v-tab-item :key="register">
                                         <v-card flat>
-                                            <v-form ref="registerFormControl" v-model="registerForm.valid"
-                                                lazy-validation>
+                                            <v-form ref="registerFormControl" lazy-validation>
                                                 <v-container>
                                                     <v-row align="center">
                                                         <v-col cols="6">
@@ -135,6 +134,11 @@
                                                                 label="confirm password" required>
                                                             </v-text-field>
                                                         </v-col>
+                                                    </v-row>
+                                                    <v-row>
+                                                        <v-btn @click="registerFormSubmit" color="success">
+                                                            register
+                                                        </v-btn>
                                                     </v-row>
                                                 </v-container>
                                             </v-form>
@@ -230,22 +234,23 @@
                 userIdAvaliableCheckBox: false,
                 userIdAvaliableChecking: false,
                 registerForm: {
-                    valid: false,
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 || 'UserId should be more then 3 charactors',
-                        v => /^[a-zA-Z0-9]+$/.test(v) || 'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]+$/.test(v) || 'UserId must start with alphabetic characters.'
+                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors',
+                        v => /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]{4,30}$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
-                        v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                        v => v.length > 3 && v.length < 31 || 'Name should be anything between 4 and 30 charactors',
+                        v => /^[a-zA-Z0-9\s]{4,30}$/.test(v) || 'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
                         v => !!v || 'E-mail is required',
+                        v => v.length < 320 || 'A valid email should have less then 320 characters',
                         v => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) || 'E-mail must be in valid format',
                     ],
                     password: '',
@@ -259,13 +264,12 @@
                     ],
                 },
                 loginForm: {
-                    valid: false,
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 || 'UserId should be more then 3 charactors',
-                        v => /^[a-zA-Z0-9]+$/.test(v) || 'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]+$/.test(v) || 'UserId must start with alphabetic characters.'
+                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors',
+                        v => /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]{4,30}$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     password: '',
                     passwordRules: [
@@ -280,18 +284,19 @@
                         fetch("{{ url_for('RESTful.isUserIdAvaliable') }}?userId=" + this.$refs.registerFormUserIdControl.value, {
                             method: 'GET',
                             cache: 'no-store',
-                        }).then(response => {
-                            response.json().then(body => {
+                        })
+                            .then(response => response.json())
+                            .then(body => {
                                 this.userIdAvaliableChecking = false
                                 if (body.avaliable) {
                                     this.userIdAvaliableCheckBox = true
                                 }
                             })
-                        })
                     }
                 },
                 registerFormSubmit() {
-                    if (this.registerForm.valid) {
+                    if (this.$refs.registerFormControl.validate()) {
+                        this.progress.show = true
                         fetch("{{ url_for('user.register') }}", {
                             method: 'POST',
                             cache: 'no-store',
@@ -302,16 +307,31 @@
                                 userId: this.registerForm.id, password: this.registerForm.password,
                                 email: this.registerForm.email, userName: this.registerForm.name
                             })
-                        }).then(response => {
-
-                            if (response.json().success) {
-                                location.reload()
-                            }
                         })
+                            .then(response => {
+                                return response.json()
+                            })
+                            .then(body => {
+                                this.progress.show = false
+                                if (body.success) {
+                                    location.reload()
+                                }
+                                else {
+                                    if (body.message) {
+                                        this.errorSnackBar.message = body.message
+                                        this.errorSnackBar.show = true
+                                    }
+                                    else {
+                                        this.errorSnackBar.message = 'Registration failed for unkown reason.'
+                                        this.errorSnackBar.show = true
+                                    }
+                                }
+                            })
+
                     }
                 },
                 loginFormLogin() {
-                    if (this.loginForm.valid) {
+                    if (this.$refs.loginFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.login') }}", {
                             method: 'POST',
@@ -321,16 +341,27 @@
                             },
                             body: JSON.stringify({ userId: this.loginForm.id, password: this.loginForm.password })
 
-                        }).then(response => {
-                            this.progress.show = false
-                            if (response.json().success) {
-                                location.reload()
-                            }
-                            else {
-                                this.errorSnackBar.message = 'incorrect username or password'
-                                this.errorSnackBar.show = true
-                            }
                         })
+                            .then(response => {
+                                return response.json()
+                            })
+                            .then(body => {
+                                this.progress.show = false
+                                if (body.success) {
+                                    location.reload()
+                                }
+                                else {
+                                    if (body.message) {
+                                        this.errorSnackBar.message = body.message
+                                        this.errorSnackBar.show = true
+                                    }
+                                    else {
+                                        this.errorSnackBar.message = 'incorrect username or password'
+                                        this.errorSnackBar.show = true
+                                    }
+                                }
+
+                            })
                     }
                 }
             },
@@ -338,7 +369,7 @@
             vuetify: new Vuetify(),
         })
     </script>
-    {% macro  echartsCDN() %}
+    {% macro echartsCDN() %}
     <script src="https://cdn.jsdelivr.net/npm/@vue/composition-api@1.0.5"></script>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-echarts@6.0.0"></script>
