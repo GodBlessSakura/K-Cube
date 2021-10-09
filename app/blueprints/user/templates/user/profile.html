@@ -1,12 +1,21 @@
 {% extends "layout.html" %}
-{% block body %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-sheet>123</v-sheet>
+<v-btn class="mx-2" fab dark color="indigo">
+    <v-icon dark>
+        mdi-plus
+    </v-icon>
+</v-btn>
+{% endblock %}
+{% block VueComponentScript %}
 <script>
-    // Vue.use(Vuetify)
-    // var app = new Vue({
-    //     el: '#nav',
-    //     data: {},
-    //     delimiters: ['[[', ']]'],
-    //     vuetify: new Vuetify(),
-    // })
+    Vue.component('app-content', {
+        data: () => ({
+        }),
+        methods: {
+        },
+        template: '#content'
+    })
 </script>
 {% endblock %}

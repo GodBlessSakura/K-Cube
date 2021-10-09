@@ -72,7 +72,7 @@ class userResources:
             query = " ".join(
                 [
                     "MATCH (permission:Permission{role: 'restricted'})",
-                    "CREATE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user:User {userId: $userId, userName: $userName, email: $email})",
+                    "CREATE (permission)<-[permission_grant:PRIVILEGED_OF]-(user:User {userId: $userId, userName: $userName, email: $email})",
                     "-[password_set:AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash})",
                     "SET ",
                     "password_set.creationDate = timestamp(),",
@@ -105,8 +105,8 @@ class userResources:
                 [
                     "MATCH",
                     "(permission:Permission{role: $role}),",
-                    "(user:User{userId: $useerId})",
-                    "MERGE (permission)<-[permission_grant:WEB_HAS_PERMISSION]-(user)",
+                    "(user:User{userId: $userId})",
+                    "MERGE (permission)<-[permission_grant:PRIVILEGED_OF]-(user)",
                     "ON CREATE",
                     "SET",
                     "permission_grant.creationDate = timestamp()",
@@ -150,7 +150,7 @@ class userResources:
         def _query(tx):
             query = " ".join(
                 [
-                    "MATCH    (:User{userId: $userId})-[:PRIVILEGED_OF]->(permissions:Permission),",
+                    "MATCH    (:User{userId: $userId})-[:PRIVILEGED_OF]->(permissions:Permission)",
                     "RETURN permissions;",
                 ]
             )
@@ -158,13 +158,14 @@ class userResources:
             try:
                 permission = dict()
                 for row in [record for record in result]:
-                    for key in row["permissions"]["properties"]:
+                    print(row)
+                    for key, value in row["permissions"].items():
                         if key not in permission:
-                            permission[key] = row["permissions"]["properties"][key]
+                            permission[key] = value
                         else:
                             if not permission[key]:
-                                permission[key] = row["permissions"]["properties"][key]
-                return dict(permission.items())
+                                permission[key] = value
+                return permission
             except ServiceUnavailable as exception:
                 raise exception
 

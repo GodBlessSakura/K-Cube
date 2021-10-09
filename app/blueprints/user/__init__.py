@@ -46,7 +46,6 @@ def logout():
 
 @user.route("/login", methods=["POST"])
 def login():
-    print(request.json)
     userId = request.json["userId"]
     password = request.json["password"]
     if userId and password:
@@ -57,9 +56,10 @@ def login():
                 session["permission"] = get_api_driver().user.get_user_permission(
                     userId=user["userId"]
                 )
+                print(session["permission"])
 
-            except:
-                pass
+            except Exception as e:
+                print(e)
             finally:
                 return jsonify({"success":True})
     return jsonify({"success":False})

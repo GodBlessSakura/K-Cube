@@ -1,15 +1,35 @@
 {% extends "layout.html" %}
-{% block body %}
-<script src="https://cdn.jsdelivr.net/npm/@vue/composition-api@1.0.5"></script>
-<script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2"></script>
-<script src="https://cdn.jsdelivr.net/npm/vue-echarts@6.0.0"></script>
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card>
+    <v-tabs v-model="tab" center-active>
+        <v-tab>Panel</v-tab>
+        <v-tab>Create course</v-tab>
+        <v-tab>Upload Image</v-tab>
+    </v-tabs>
+    <v-tabs-items v-model="tab">
+        <v-tab-item>
+        </v-tab-item>
+        <v-tab-item>
+        </v-tab-item>
+        <v-tab-item>
+            <v-form id="imageForm" method="post" action="{{ url_for('uploads.image') }}" enctype="multipart/form-data">
+                <v-file-input accept="image/*" name="file" label="File input" required></v-file-input>
+                <v-btn type="submit" color="success" form="imageForm">Upload</v-btn>
+            </v-form>
+        </v-tab-item>
+    </v-tabs-items>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
 <script>
-    // Vue.use(Vuetify)
-    // var app = new Vue({
-    //     el: '#nav',
-    //     data: {},
-    //     delimiters: ['[[', ']]'],
-    //     vuetify: new Vuetify(),
-    // })
+    Vue.component('app-content', {
+        data: () => ({
+            tab: ['panel', 'createCourse', 'uploadImage'].indexOf(new URLSearchParams(window.location.search).get('tab')),
+        }),
+        methods: {
+        },
+        template: '#content'
+    })
 </script>
 {% endblock %}

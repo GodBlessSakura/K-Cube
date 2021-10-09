@@ -27,7 +27,7 @@
         <v-app>
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
-            <v-app-bar>
+            <v-app-bar app>
                 <a href="{{ url_for('index') }}">
                     <v-img src="../static/images/logo.png" link max-height="35" max-width="35">
                     </v-img>
@@ -38,7 +38,7 @@
                 <v-menu offset-y>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn text v-bind="attrs" v-on="on">
-                            {{session['user'].userName}}
+                            {{session['user'].userName}}<v-icon>arrow_drop_down</v-icon>
                         </v-btn>
                     </template>
                     <v-list>
@@ -158,19 +158,20 @@
                 {% endif %}
 
             </v-app-bar>
-            <v-navigation-drawer permanent expand-on-hover mini-variant-width="50">
+            <v-navigation-drawer permanent expand-on-hover mini-variant :mini-variant.sync="miniSync"
+                mini-variant-width="50" app>
 
                 <v-divider></v-divider>
                 <v-list nav dense>
                     <v-list-item link href="{{ url_for('index') }}">
                         <v-list-item-icon>
-                            <v-icon>dvr</v-icon>
+                            <v-icon>device_hub</v-icon>
                         </v-list-item-icon>
                         <v-list-item-title>Catalogue</v-list-item-title>
                     </v-list-item>
                     <v-list-item link href="{{ url_for('comprehensive.graph') }}">
                         <v-list-item-icon>
-                            <v-icon>insights</v-icon>
+                            <v-icon>hub</v-icon>
                         </v-list-item-icon>
                         <v-list-item-title>Comprehensive</v-list-item-title>
                     </v-list-item>
@@ -197,7 +198,7 @@
                     </v-list-item>
                     {% endif %}
                     {% if session['permission'] and session['permission'].role == 'admin' %}
-                    <v-list-item link href="{{ url_for('admin.Panel') }}">
+                    <v-list-item link href="{{ url_for('admin.panel') }}">
                         <v-list-item-icon>
                             <v-icon>admin_panel_settings</v-icon>
                         </v-list-item-icon>
@@ -215,6 +216,12 @@
                     </v-btn>
                 </template>
             </v-snackbar>
+            </v-app-bar>
+            <v-main>
+                <v-container fluid>
+                    <app-content></app-content>
+                </v-container>
+            </v-main>
         </v-app>
 
     </div>
@@ -222,9 +229,16 @@
 
     <script>
         Vue.use(Vuetify)
+    </script>
+    <script type="text/x-template" id="content">
+        {% block VueComponent %} {% endblock %}
+    </script>
+    {% block VueComponentScript %} {% endblock %}
+    <script>
         var app = new Vue({
             el: '#nav',
             data: () => ({
+                miniSync: true,
                 errorSnackBar: { show: false, message: '' },
                 progress: { show: false },
                 shouldShowLoginForm: false,
@@ -237,21 +251,21 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors',
-                        v => /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors', v =>
+                            /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
                         v => /^[a-zA-Z][a-zA-Z0-9]{4,30}$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
-                        v => v.length > 3 && v.length < 31 || 'Name should be anything between 4 and 30 charactors',
-                        v => /^[a-zA-Z0-9\s]{4,30}$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                        v => v.length > 3 && v.length < 31 || 'Name should be anything between 4 and 30 charactors', v =>
+                            /^[a-zA-Z0-9\s]{4,30}$/.test(v) || 'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
                         v => !!v || 'E-mail is required',
-                        v => v.length < 320 || 'A valid email should have less then 320 characters',
-                        v => /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) || 'E-mail must be in valid format',
+                        v => v.length < 320 || 'A valid email should have less then 320 characters', v =>
+                            /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) || 'E-mail must be in valid format',
                     ],
                     password: '',
                     passwordRules: [
@@ -267,8 +281,8 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors',
-                        v => /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors', v =>
+                            /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
                         v => /^[a-zA-Z][a-zA-Z0-9]{4,30}$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     password: '',
@@ -281,7 +295,8 @@
                 checkUserIdAvaliability() {
                     this.userIdAvaliableChecking = true
                     if (this.$refs.registerFormUserIdControl.valid) {
-                        fetch("{{ url_for('RESTful.isUserIdAvaliable') }}?userId=" + this.$refs.registerFormUserIdControl.value, {
+                        fetch("{{ url_for('RESTful.isUserIdAvaliable') }}?userId=" +
+                            this.$refs.registerFormUserIdControl.value, {
                             method: 'GET',
                             cache: 'no-store',
                         })
@@ -374,7 +389,6 @@
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue-echarts@6.0.0"></script>
     {% endmacro %}
-    {% block body %}{% endblock %}
 
 </body>
 
