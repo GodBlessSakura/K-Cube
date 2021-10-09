@@ -3,10 +3,7 @@ from app.api_driver import get_api_driver
 from . import RESTful
 
 
-@RESTful.route("/check-unused-userId", methods=["GET"])
-def checkUnusedUserId():
+@RESTful.route("/user/isUserIdAvaliable", methods=["GET"])
+def isUserIdAvaliable():
     userId = request.args["userId"]
-    return str(not get_api_driver().user.is_userId_used(userId))
-
-
-
+    return jsonify({"avaliable": not get_api_driver().user.is_userId_used(userId)})

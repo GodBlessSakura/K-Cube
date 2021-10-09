@@ -24,9 +24,12 @@ CREATE CONSTRAINT course_uid_constraint IF NOT EXISTS ON (n:Course) ASSERT n.dis
 CREATE CONSTRAINT GraphConcept_uid_constraint IF NOT EXISTS ON (n:GraphConcept) ASSERT n.name IS UNIQUE;
 CREATE CONSTRAINT GraphRelationship_uid_constraint IF NOT EXISTS ON (n:GraphRelationship) ASSERT n.name IS UNIQUE;
 CREATE CONSTRAINT job_uid_constraint IF NOT EXISTS ON (n:Job) ASSERT n.jobId IS UNIQUE;
-CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.studentId IS UNIQUE;""".split('\n'):
+CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.studentId IS UNIQUE;""".split(
+            "\n"
+        ):
+
             def _query(tx):
-                
+
                 result = tx.run(query)
                 try:
                     return [record for record in result]
@@ -39,3 +42,34 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
 
     def close(self):
         self.driver.close()
+
+
+# https://stackoverflow.com/questions/6307761/how-to-decorate-all-functions-of-a-class-without-typing-it-over-and-over-for-eac
+# example:
+# @for_all_methods(sanitize_args_and_kwargs)
+# class userResources:
+def for_all_methods(decorator):
+    def decorate(cls):
+        for attr in cls.__dict__:  # there's propably a better way to do this
+            if callable(getattr(cls, attr)):
+                setattr(cls, attr, decorator(getattr(cls, attr)))
+        return cls
+
+    return decorate
+
+
+# the actual sanitize logic's implementation
+def sanitize(value):
+
+    return value
+
+
+def sanitize_args_and_kwargs(function):
+    def wrapper(*args, **kwargs):
+        for each in args:
+            each = sanitize(each)
+        for key in kwargs:
+            kwargs[key] = sanitize(kwargs[key])
+        return function(*args, **kwargs)
+
+    return wrapper

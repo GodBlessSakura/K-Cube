@@ -25,6 +25,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <div id="nav">
         <v-app>
+            <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
+            </v-progress-linear>
             <v-app-bar>
                 <a href="{{ url_for('index') }}">
                     <v-img src="../static/images/logo.png" link max-height="35" max-width="35">
@@ -82,27 +84,59 @@
                                         <v-card flat>
                                             <v-form ref="registerFormControl" v-model="registerForm.valid"
                                                 lazy-validation>
-                                                <v-text-field v-model="registerForm.id" :rules="registerForm.idRules"
-                                                    label="UserId" required></v-text-field>
-                                                <v-text-field v-model="registerForm.name"
-                                                    :rules="registerForm.nameRules" label="Name" required>
-                                                </v-text-field>
-
-                                                <v-text-field v-model="registerForm.email"
-                                                    :rules="registerForm.emailRules" label="E-mail" required>
-                                                </v-text-field>
-                                                <v-text-field v-model="registerForm.password" type="password"
-                                                    :rules="registerForm.passwordRules" label="password" required>
-                                                </v-text-field>
-                                                <v-text-field v-model="registerForm.password2" type="password"
-                                                    :rules="registerForm.password2Rules" label="confirm password"
-                                                    required>
-                                                </v-text-field>
-
-                                                <v-btn :disabled="!registerForm.valid" color="success" class="mr-4"
-                                                    @click="registerFormValidate">
-                                                    Validate
-                                                </v-btn>
+                                                <v-container>
+                                                    <v-row align="center">
+                                                        <v-col cols="6">
+                                                            <v-text-field ref="registerFormUserIdControl"
+                                                                v-model="registerForm.id" :rules="registerForm.idRules"
+                                                                label="UserId" required>
+                                                            </v-text-field>
+                                                        </v-col>
+                                                        <v-col cols="2">
+                                                            <v-btn small color="success"
+                                                                :loading="userIdAvaliableChecking"
+                                                                :disabled="!(this.$refs.registerFormUserIdControl && this.$refs.registerFormUserIdControl.valid)"
+                                                                @click="checkUserIdAvaliability">
+                                                                Check
+                                                            </v-btn>
+                                                        </v-col>
+                                                        <v-col cols="4">
+                                                            <v-checkbox v-model="userIdAvaliableCheckBox"
+                                                                :ripple="false" label='avaliable' readonly></v-checkbox>
+                                                        </v-col>
+                                                    </v-row>
+                                                    <v-row>
+                                                        <v-col>
+                                                            <v-text-field v-model="registerForm.name"
+                                                                :rules="registerForm.nameRules" label="Name" required>
+                                                            </v-text-field>
+                                                        </v-col>
+                                                    </v-row>
+                                                    <v-row>
+                                                        <v-col>
+                                                            <v-text-field v-model="registerForm.email"
+                                                                :rules="registerForm.emailRules" label="E-mail"
+                                                                required>
+                                                            </v-text-field>
+                                                        </v-col>
+                                                    </v-row>
+                                                    <v-row>
+                                                        <v-col>
+                                                            <v-text-field v-model="registerForm.password"
+                                                                type="password" :rules="registerForm.passwordRules"
+                                                                label="password" required>
+                                                            </v-text-field>
+                                                        </v-col>
+                                                    </v-row>
+                                                    <v-row>
+                                                        <v-col>
+                                                            <v-text-field v-model="registerForm.password2"
+                                                                type="password" :rules="registerForm.password2Rules"
+                                                                label="confirm password" required>
+                                                            </v-text-field>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-container>
                                             </v-form>
                                         </v-card>
                                     </v-tab-item>
@@ -168,6 +202,15 @@
                     {% endif %}
                 </v-list>
             </v-navigation-drawer>
+            <v-snackbar v-model="errorSnackBar.show">
+                ${ errorSnackBar.message }
+
+                <template v-slot:action="{ attrs }">
+                    <v-btn color="pink" text v-bind="attrs" @click="errorSnackBar.show = false">
+                        Close
+                    </v-btn>
+                </template>
+            </v-snackbar>
         </v-app>
 
     </div>
@@ -178,10 +221,14 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
+                errorSnackBar: { show: false, message: '' },
+                progress: { show: false },
                 shouldShowLoginForm: false,
                 tab: 'register',
                 login: 'login',
                 register: 'register',
+                userIdAvaliableCheckBox: false,
+                userIdAvaliableChecking: false,
                 registerForm: {
                     valid: false,
                     id: '',
@@ -227,9 +274,21 @@
                 }
             }),
             methods: {
-                registerFormValidate() {
-                    this.$refs.registerFormControl.validate()
-
+                checkUserIdAvaliability() {
+                    this.userIdAvaliableChecking = true
+                    if (this.$refs.registerFormUserIdControl.valid) {
+                        fetch("{{ url_for('RESTful.isUserIdAvaliable') }}?userId=" + this.$refs.registerFormUserIdControl.value, {
+                            method: 'GET',
+                            cache: 'no-store',
+                        }).then(response => {
+                            response.json().then(body => {
+                                this.userIdAvaliableChecking = false
+                                if (body.avaliable) {
+                                    this.userIdAvaliableCheckBox = true
+                                }
+                            })
+                        })
+                    }
                 },
                 registerFormSubmit() {
                     if (this.registerForm.valid) {
@@ -244,8 +303,8 @@
                                 email: this.registerForm.email, userName: this.registerForm.name
                             })
                         }).then(response => {
-                            console.log(response)
-                            if (response.success) {
+
+                            if (response.json().success) {
                                 location.reload()
                             }
                         })
@@ -253,6 +312,7 @@
                 },
                 loginFormLogin() {
                     if (this.loginForm.valid) {
+                        this.progress.show = true
                         fetch("{{ url_for('user.login') }}", {
                             method: 'POST',
                             cache: 'no-store',
@@ -262,18 +322,27 @@
                             body: JSON.stringify({ userId: this.loginForm.id, password: this.loginForm.password })
 
                         }).then(response => {
-                            console.log(response)
-                            if (response.success) {
+                            this.progress.show = false
+                            if (response.json().success) {
                                 location.reload()
+                            }
+                            else {
+                                this.errorSnackBar.message = 'incorrect username or password'
+                                this.errorSnackBar.show = true
                             }
                         })
                     }
                 }
             },
-            delimiters: ['[[', ']]'],
+            delimiters: ['${', '}'],
             vuetify: new Vuetify(),
         })
     </script>
+    {% macro  echartsCDN() %}
+    <script src="https://cdn.jsdelivr.net/npm/@vue/composition-api@1.0.5"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.1.2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-echarts@6.0.0"></script>
+    {% endmacro %}
     {% block body %}{% endblock %}
 
 </body>
