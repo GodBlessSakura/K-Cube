@@ -3,19 +3,51 @@
 {% block VueComponent %}
 <v-card>
     <v-tabs v-model="tab" center-active>
-        <v-tab>Panel</v-tab>
-        <v-tab>Create course</v-tab>
-        <v-tab>Upload Image</v-tab>
+        <v-tab herf="?tab='panel">Panel</v-tab>
+        <v-tab herf="?tab='createCourse">Create course</v-tab>
+        <v-tab herf="?tab='uploadImage">Upload Image</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab">
         <v-tab-item>
         </v-tab-item>
         <v-tab-item>
+            <v-card flat>
+                <v-form ref="courseFormControl">
+                    <v-container>
+                        <v-row>
+                            <v-text-field v-model="courseForm.courseCode" :rules="courseForm.courseCodeRules"
+                                label="Cource Code" required>
+                            </v-text-field>
+                        </v-row>
+                        <v-row>
+
+                            <v-text-field v-model="courseForm.courseName" :rules="courseForm.courseNameRules"
+                                label="Course Name" required>
+                            </v-text-field>
+
+                        </v-row>
+                        <v-row>
+                            <v-text-fieldv-model="courseForm.imageUrl" :rules="courseForm.imageUrlRules" :items="imagesUrl"
+                                required>
+                                <template v-slot:item="{ item }">
+                                    <v-img :src="item" height="40" contain></v-img>
+                                </template>
+                            </v-select>
+                        </v-row>
+                        <v-row>
+                            <v-btn @click="courseFormSubmit" color="success">
+                                Create
+                            </v-btn>
+                        </v-row>
+                    </v-container>
+                </v-form>
+            </v-card>
+
         </v-tab-item>
         <v-tab-item>
-            <v-form id="imageForm" method="post" action="{{ url_for('uploads.image') }}" enctype="multipart/form-data">
-                <v-file-input accept="image/*" name="file" label="File input" required></v-file-input>
-                <v-btn type="submit" color="success" form="imageForm">Upload</v-btn>
+            <v-form ref="imageForm">
+                <v-file-input accept="image/*" name="file" label="File input" multiple required></v-file-input>
+                <v-btn @click="uploadImage" color="success">Upload</v-btn>
             </v-form>
         </v-tab-item>
     </v-tabs-items>
@@ -25,9 +57,60 @@
 <script>
     Vue.component('app-content', {
         data: () => ({
+            imagesUrl: [
+                //{% for url in imagesUrl %}
+                '{{ url | safe}}',
+                //{% endfor %}
+            ],
             tab: ['panel', 'createCourse', 'uploadImage'].indexOf(new URLSearchParams(window.location.search).get('tab')),
+            courseForm: {
+                courseCode: '',
+                courseCodeRules: [v => !!v || 'Course code is required',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Course code can only contains alphanumeric characters and space.'],
+                courseName: '',
+                courseNameRules: [v => !!v || 'Course name is required',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Course name can only contains alphanumeric characters and space.'],
+                imageUrl: '',
+                imageUrlRules: [],
+            }
         }),
         methods: {
+            courseFormSubmit() {
+
+            },
+            uploadImage() {
+                if (this.$refs.imageForm.validate()) {
+                    let formData = new FormData(this.$refs.imageForm.$el)
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('uploads.image') }}", {
+                        method: 'POST',
+                        cache: 'no-store',
+                        body: formData
+                    })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.success) {
+                                this.$root.completeSnackBar.message = 'success'
+                                this.$root.completeSnackBar.show = true
+                                this.$refs.imageForm.reset()
+                            }
+                            else {
+                                if (body.message) {
+                                    this.$root.errorSnackBar.message = body.message
+                                    this.$root.errorSnackBar.show = true
+                                }
+                                else {
+                                    this.$root.errorSnackBar.message = 'unexpected error'
+                                    this.$root.errorSnackBar.show = true
+                                }
+                            }
+
+                        })
+                }
+            }
         },
         template: '#content'
     })

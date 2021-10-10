@@ -85,18 +85,19 @@
                                             <v-form ref="registerFormControl" lazy-validation>
                                                 <v-container>
                                                     <v-row align="center">
-                                                        <v-col cols="6">
+                                                        <v-col cols="4">
                                                             <v-text-field ref="registerFormUserIdControl"
                                                                 v-model="registerForm.id" :rules="registerForm.idRules"
                                                                 label="UserId" required>
                                                             </v-text-field>
                                                         </v-col>
-                                                        <v-col cols="2">
-                                                            <v-btn small color="success"
+                                                        <v-col cols="4">
+                                                            <v-btn small
+                                                                :color="registerForm.isUserIdAvaliable? 'success':'error'"
                                                                 :loading="userIdAvaliableChecking"
                                                                 :disabled="!(this.$refs.registerFormUserIdControl && this.$refs.registerFormUserIdControl.valid)"
-                                                                @click="checkUserIdAvaliability">
-                                                                Check
+                                                                @click="checkUserIdAvaliability($event)">
+                                                                ${registerForm.isUserIdAvaliable? 'Check':'Try again'}
                                                             </v-btn>
                                                         </v-col>
                                                         <v-col cols="4">
@@ -209,9 +210,16 @@
             </v-navigation-drawer>
             <v-snackbar v-model="errorSnackBar.show">
                 ${ errorSnackBar.message }
-
                 <template v-slot:action="{ attrs }">
                     <v-btn color="pink" text v-bind="attrs" @click="errorSnackBar.show = false">
+                        Close
+                    </v-btn>
+                </template>
+            </v-snackbar>
+            <v-snackbar v-model="completeSnackBar.show">
+                ${ completeSnackBar.message }
+                <template v-slot:action="{ attrs }">
+                    <v-btn color="blue" text v-bind="attrs" @click="completeSnackBar.show = false">
                         Close
                     </v-btn>
                 </template>
@@ -240,6 +248,7 @@
             data: () => ({
                 miniSync: true,
                 errorSnackBar: { show: false, message: '' },
+                completeSnackBar: { show: false, message: '' },
                 progress: { show: false },
                 shouldShowLoginForm: false,
                 tab: 'register',
@@ -248,6 +257,7 @@
                 userIdAvaliableCheckBox: false,
                 userIdAvaliableChecking: false,
                 registerForm: {
+                    isUserIdAvaliable: true,
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
@@ -292,19 +302,24 @@
                 }
             }),
             methods: {
-                checkUserIdAvaliability() {
+                checkUserIdAvaliability(btn) {
+                    console.log(btn)
                     this.userIdAvaliableChecking = true
                     if (this.$refs.registerFormUserIdControl.valid) {
-                        fetch("{{ url_for('RESTful.isUserIdAvaliable') }}?userId=" +
+                        fetch("{{ url_for('user.isUserIdAvaliable') }}?userId=" +
                             this.$refs.registerFormUserIdControl.value, {
                             method: 'GET',
                             cache: 'no-store',
                         })
                             .then(response => response.json())
                             .then(body => {
+                                this.registerForm.isUserIdAvaliable = body.avaliable
                                 this.userIdAvaliableChecking = false
                                 if (body.avaliable) {
                                     this.userIdAvaliableCheckBox = true
+                                }
+                                else {
+                                    this.userIdAvaliableCheckBox = false
                                 }
                             })
                     }

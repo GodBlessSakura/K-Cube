@@ -24,16 +24,17 @@ import click
 from flask.cli import FlaskGroup
 
 mail = Mail()
-
+import os
 
 def create_app(config_object):
     app = Flask(__name__)
-
     if config_object is None:
         config_object == config["default"]
     # https://stackoverflow.com/questions/26080872/secret-key-not-set-in-flask-session-using-the-flask-session-extension
     app.secret_key = "super secret key"
     app.config["SESSION_TYPE"] = "filesystem"
+    app.config["upload_image_directory"] = os.path.join("uploads","image")
+
     app.config.from_object(config_object)
     app.register_blueprint(admin, url_prefix="/admin")
     app.register_blueprint(comprehensive, url_prefix="/comprehensive")

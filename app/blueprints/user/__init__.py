@@ -34,8 +34,8 @@ def register():
             except:
                 pass
             finally:
-                return jsonify({"success":True})
-    return jsonify({"success":False})
+                return jsonify({"success": True})
+    return jsonify({"success": False})
 
 
 @user.route("/logout")
@@ -61,5 +61,13 @@ def login():
             except Exception as e:
                 print(e)
             finally:
-                return jsonify({"success":True})
-    return jsonify({"success":False})
+                return jsonify({"success": True})
+    return jsonify({"success": False})
+
+
+@user.route("/isUserIdAvaliable", methods=["GET"])
+def isUserIdAvaliable():
+    userId = request.args["userId"]
+    return jsonify(
+        {"avaliable": not get_api_driver().user.is_userId_used(userId=userId)}
+    )
