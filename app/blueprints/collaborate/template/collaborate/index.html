@@ -1,0 +1,34 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card>
+    <v-tabs v-model="tab" center-active>
+        <v-tab herf="?tab=relationship">Suggest KG relationship</v-tab>
+    </v-tabs>
+    <v-tabs-items v-model="tab">
+        <v-tab-item>
+            <collaborate-relationship></collaborate-relationship>
+        </v-tab-item>
+    </v-tabs-items>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+            tab: ['relationship'].indexOf(new URLSearchParams(window.location.search).get('tab')),
+        }),
+        methods: {
+        },
+        template: '#content'
+    })
+</script>
+
+{% import 'admin/relationship.html' as relationship %}
+<script type="text/x-template" id="adminPanel">
+    {{ relationship.component() }}
+</script>
+{{ relationship.script() }}
+
+
+{% endblock %}
