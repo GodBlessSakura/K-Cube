@@ -8,6 +8,15 @@ user = Blueprint("user", __name__, template_folder="templates")
 def back():
     return redirect("/")
 
+@user.route("/permission")
+def permission():
+    if "user" in session and "userId" in session["user"]:
+        try:
+            session["permission"] = get_api_driver().user.get_user_permission(
+                userId=session["user"]["userId"])
+        except:
+            pass
+    return redirect("/")
 
 @user.route("/profile")
 def profile():

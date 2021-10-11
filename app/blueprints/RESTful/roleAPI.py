@@ -66,7 +66,6 @@ def remove_user_role(userId):
             result = get_api_driver().user.removeRole(
                 userId=userId, role=request.json["role"]
             )
-
             return jsonify({"success": True, "message": "remove done"})
         except Exception as e:
             raise e
