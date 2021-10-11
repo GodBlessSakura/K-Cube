@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Visualization Demo</title>
+    <!--Bootstrap Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../static/images/logo.jpg">
+    <!--Nifty Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/nifty.min.css" rel="stylesheet">
+
+    <!--Nifty Premium Icon [ DEMONSTRATION ]-->
+    <link href="../static/css/nifty-demo-icons.min.css" rel="stylesheet">
+    <link href="../static/css/nifty-demo.min.css" rel="stylesheet">
+    <link href="../static/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--JAVASCRIPT-->
+    <!--=================================================-->
+    <!--Pace - Page Load Progress Par [OPTIONAL]-->
+    <link href="../static/css/pace.min.css" rel="stylesheet">
+    <script src="../static/js/pace.min.js"></script>
+
+    <!--jQuery [ REQUIRED ]-->
+    <script src="../static/js/jquery-2.2.4.min.js"></script>
+
+    <!--BootstrapJS [ RECOMMENDED ]-->
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <!--NiftyJS [ RECOMMENDED ]-->
+    <script src="../static/js/nifty.min.js"></script>
+    <script src="../static/js/icons.js"></script>
+
+    <script src="../static/js/echarts.min.js"></script>
+    <script src="../static/js/tags.js"></script>
+    <!--=================================================-->
+    <!--Demo script [ DEMONSTRATION ]-->
+    <script src="../static/js/nifty-demo.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <style type="text/css">
+        #tagsList {position:relative; width:250px; height:250px; }
+        #tagsList a {position:absolute; top:0px; left:0px; font-family: Microsoft YaHei; color:gray; font-weight:bold; text-decoration:none; padding: 3px 6px; }
+        #tagsList a:hover { color:#249e92; letter-spacing:2px; visibility:visible; transition-delay: 2s;-webkit-transition-delay: 2s;}
+        #search:focus{
+            border: 1px solid #249e92;
+        }
+
+        /**设置div边框的大小以及颜色*/
+            .d1{
+                height: 200px;
+                width: 200px;
+                border: 1px solid gray;
+                border-collapse: collapse;
+                border-radius:25px;
+                /**background:-webkit-gradient(linear, 0% 0%, 0% 100%,from(#FFFF99), to(#6666CC));/*谷歌*/
+                /**background:-webkit-gradient(linear, 0% 0%, 0% 100%,from(#836f98), to(#6666CC));/*谷歌*/
+                /**background:-webkit-gradient(linear, 0% 0%, 0% 100%,from(#25bb9b), to(#0ccc3f));/*谷歌*/
+            }
+        /**设置行间距以及与左间距*/
+            .row-margin {
+                margin-top:60px;
+                margin-left: 30px;
+            }
+        /**设置列间距*/
+            .col-margin {
+                margin-left: 30px;
+            }
+        /**设置文字位置以及大小*/
+            .text-style{
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%,-50%);
+                font-size: 24px;
+                /**background-color: #249e92;*/
+                color: white;
+            }
+/**设置图片大小*/
+        .img-style{
+            height: 80px;
+            width: 80px;
+        }
+
+
+    </style>
+</head>
+
+<body>
+
+<div id="container" class="effect aside-float aside-bright mainnav-lg">
+
+    <!--NAVBAR-->
+    <!--===================================================-->
+    <header id="navbar">
+        <div id="navbar-container" class="boxed">
+
+            <!--Brand logo & name-->
+            <!--================================-->
+            <div class="navbar-header">
+                <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                    <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">
+                    <div class="brand-title">
+                        <span class="brand-text">KG-Cube</span>
+                    </div>
+                </a>
+            </div>
+            <!--================================-->
+            <!--End brand logo & name-->
+
+
+            <!--Navbar Dropdown-->
+            <!--================================-->
+            <div class="navbar-content clearfix">
+                <ul class="nav navbar-top-links pull-left">
+
+                    <!--Navigation toogle button-->
+                    <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+                    <li class="tgl-menu-btn">
+                        <a class="mainnav-toggle" href="#">
+                            <i class="demo-pli-view-list"></i>
+                        </a>
+                    </li>
+
+                </ul>
+                <ul class="nav navbar-top-links pull-left">
+
+                    <h4>Knowledge Graph Visualization: Build</h4>
+
+                </ul>
+            </div>
+            <!--================================-->
+            <!--End Navbar Dropdown-->
+
+        </div>
+    </header>
+    <!--===================================================-->
+    <!--END NAVBAR-->
+
+    <div class="boxed">
+
+        <!--CONTENT CONTAINER-->
+        <!--===================================================-->
+        <div id="content-container">
+
+            <!--Page content-->
+            <!--===================================================-->
+            <div id="page-content">
+
+                <h4 class="text-main pad-btm bord-btm"></h4>
+                <div class="row">
+                    <!--  <div class="col-lg-6"></div>-->
+                    <!--搜索-->
+                    <div class="col-lg-2"></div>
+                    <div class="col-lg-4">
+                        <div class="input-group" >
+                            <input type="text" id="search_index" onkeydown="entersearch1(event)" class="form-control input-lg"  placeholder="Please input a keyword! eg:COMP1011">
+                            <span class="input-group-addon btn btn-mint"  onclick="jump()">Search</span>
+                        </div>
+                    </div>
+
+                </div>
+                <!--<div class="row" style="height: 40px;"></div>
+                 <div class="row" >
+                    <div class="col-lg-8" style="height: 800px;width: 950px" id="guanxi">
+                </div>
+                    <div class="col-lg-2" style="height: 800px;width: 1px"> </div>
+                    <div  class="col-lg-4" style="height:800px; width:300px">
+                        <div style="height:250px; width:300px">
+                            <div class="btn">
+                                <ul id="node">
+                                    <li onclick=addNode()><svg class="icon" aria-hidden="true"><use xlink:href="#icon-add"></use></svg></li>
+                                    <li onclick=deleteNode()><svg class="icon" aria-hidden="true"><use xlink:href="#icon-subtract"></use></svg></li>
+                                    <li onclick=importJSON()><svg class="icon" aria-hidden="true"><use xlink:href="#icon-edit"></use></svg></li>
+                                </ul>
+                            </div>
+                            <div class="add-box" style="padding:3px">
+                                <div>
+                                    <label>New node</label>
+                                    <input tabindex="109" id="input1" type="text" autocomplete="off"/>
+                                </div>
+        &lt;!&ndash;                        <div><label>Add node</label>&ndash;&gt;
+        &lt;!&ndash;                            <input tabindex="110" autocomplete="off" />&ndash;&gt;
+        &lt;!&ndash;                        </div>&ndash;&gt;
+
+                            </div>
+                            <div class="btn">
+                                <ul id="node2">
+                                    <li onclick=addLink()><svg class="icon" aria-hidden="true"><use xlink:href="#icon-add"></use></svg></li>
+                                    <li onclick=deleteLink()><svg class="icon" aria-hidden="true"><use xlink:href="#icon-subtract"></use></svg></li>
+                                    <li onclick=exportJSON()><svg id="exportBTN" class="icon" aria-hidden="true"><use xlink:href="#icon-edit"></use></svg></li>
+                                </ul>
+                            </div>
+                            <div class="add-box" style="padding:3px">
+                                <table>
+                                    <tr>
+                                        <td>Head node</td>
+                                        <td><input type="text" id="input_head" value="" /></td>
+                                    </tr>
+
+                                    <tr>
+                                        <td>Tail node</td>
+                                        <td><input type="text"id="input_tail"value="" /></td>
+                                    </tr>
+                                </table>
+        &lt;!&ndash;                        <div><label>Add node</label>&ndash;&gt;
+        &lt;!&ndash;                            <input tabindex="110" autocomplete="off" />&ndash;&gt;
+        &lt;!&ndash;                        </div>&ndash;&gt;
+
+                            </div>
+                            <div id="container1" style="height: 100%"></div>
+                        </div>
+                        <div  class="col-lg-4" id="tagsList" style="height:450px; width:300px">
+                        <a href="#" data="COMP1433" >COMP1433</a>
+                        <a href="#" data="COMP2011">COMP2011</a>
+                        <a href="#" data="COMP3133">COMP3133</a>
+                        <a href="#" data="COMP4431">COMP4431</a>
+                        <a href="#" data="COMP4432">COMP4432</a>
+                        <a href="#" data="COMP1011">COMP1011</a>
+                        <a href="#" data="COMP3423">COMP3423</a>
+                        <a href="#" data="COMP4422">COMP4422</a>
+                        <a href="#" data="COMP4423">COMP4423</a>
+                        <a href="#" data="COMP4433">COMP4433</a>
+                        <a href="#" data="COMP4434">COMP4434</a>
+                    </div>
+                    </div>
+
+                </div>-->
+
+                <div class="row"></div>
+                <!--8个方框-->
+                <div class="row row-margin">
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="class1" href="{{ url_for('main.myspace') }}?keyword=COMP1011"  style="text-align:center" target= "_blank">&nbsp &nbsp Example (COMP1011)</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/1.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class2" onclick="class2()">Subject1</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/2.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class3" onclick="class3()">Subject2</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/3.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class4" onclick="class4()">Subject3</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/4.png"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row row-margin">
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class5" onclick="class5()">Subject4</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/5.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class6" onclick="class6()">Subject5</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/6.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class7" onclick="class7()">Subject6</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/7.png"></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 d1 col-margin">
+                        <div class="text-style">
+                            <a id="Class8" onclick="class8()">Subject7</a>
+                            <br/>
+                            <div class="img-style"><img src="../static/images/img/8.png"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <!--===================================================-->
+            <!--End page content-->
+
+
+        </div>
+        <!--===================================================-->
+        <!--END CONTENT CONTAINER-->
+
+
+        <!--MAIN NAVIGATION-->
+        <!--===================================================-->
+        <nav id="mainnav-container">
+            <div id="mainnav">
+
+                <!--Menu-->
+                <!--================================-->
+                <div id="mainnav-menu-wrap">
+                    <div class="nano">
+                        <div class="nano-content">
+
+                            <ul id="mainnav-menu" class="list-group">
+
+                                <!--Category name-->
+                                <li class="list-header">Visualization</li>
+
+                                <!--Menu list item-->
+
+
+                                <!--Menu list item-->
+                                <li>
+                                    <a href="{{ url_for('main.get_all_relation') }}">
+                                        <i class="fa fa-share-alt" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>Comprehensive</strong>
+                                            </span>
+                                    </a>
+                                </li>
+<!--                                <li>-->
+<!--                                    <a href="{{ url_for('main.fold') }}">-->
+<!--                                        <i class="fa fa-cube" style="width:24px"></i>-->
+<!--						                    <span class="menu-title">-->
+<!--                                                <strong>3D</strong>-->
+<!--                                            </span>-->
+<!--                                    </a>-->
+<!--                                </li>-->
+<!--                                <li>-->
+<!--                                    <a href="{{ url_for('main.tree') }}">-->
+<!--                                        <i class="fa fa-sitemap" style="width:24px"></i>-->
+<!--                                            <span class="menu-title">-->
+<!--                                                <strong>Tree</strong>-->
+<!--                                            </span>-->
+<!--                                    </a>-->
+<!--                                </li>-->
+<!--                                <li>-->
+<!--                                    <a href="{{ url_for('main.search') }}">-->
+<!--                                        &lt;!&ndash;                                            <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">&ndash;&gt;-->
+<!--                                        <i class="fa fa-search" style="width:24px"></i>-->
+<!--                                            <span class="menu-title">-->
+<!--                                                <strong>Search</strong>-->
+<!--                                            </span>-->
+<!--                                    </a>-->
+<!--                                </li>-->
+                                <li>
+                                    <a href="{{ url_for('main.construction') }}">
+                                        <i class="fa fa-pencil-square-o" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>My Space</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ url_for('main.logout') }}">
+                                        <i class="fa fa-cube" style="width:24px"></i>
+						                    <span class="menu-title">
+                                                <strong>User Center</strong>
+                                            </span>
+                                    </a>
+                                </li>
+                            </ul>
+
+
+
+                        </div>
+                    </div>
+                </div>
+                <!--================================-->
+                <!--End menu-->
+
+            </div>
+        </nav>
+        <!--===================================================-->
+        <!--END MAIN NAVIGATION-->
+
+    </div>
+
+    <!-- FOOTER -->
+    <!--===================================================-->
+    <footer id="footer">
+
+        <p class="pad-lft">Copyright&#0169; 2021 Qing &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;All Rights Reserved </p>
+
+    </footer>
+    <!--===================================================-->
+    <!-- END FOOTER -->
+
+    <!-- SCROLL PAGE BUTTON -->
+    <!--===================================================-->
+    <button class="scroll-top btn">
+        <i class="pci-chevron chevron-up"></i>
+    </button>
+    <!--===================================================-->
+</div>
+<!--===================================================-->
+<!-- END OF CONTAINER -->
+<script  src="../static/js/echarts.js"></script>
+<script  src="../static/js/option11.js"></script>
+<script  src="../static/js/events-func.js"></script>
+<script src="../static/css/iconfont.js"></script>
+
+<!--    <script type="module">-->
+<!--    import iojson from '../static/js/index.js'-->
+<!--    window.iojson = iojson-->
+<!--  </script>-->
+<script type="text/javascript">
+    function jump(){
+		 var searchval = document.getElementById("search_index").value;
+<!--		window.location.href='http://127.0.0.1:5000/templates/mykg.html?keyword='+searchval;-->
+		window.location.href="{{ url_for('main.myspace') }}?keyword=" + searchval;
+	 }
+	 function entersearch1(event){
+		    if (event.keyCode == 13)
+		       {
+		    	jump();
+		       }
+		}
+var user_name = "{{user_name}}";
+function class2(){
+    let dom = document.getElementById('Class2');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class2"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP2011";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+function class3(){
+    let dom = document.getElementById('Class3');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class3"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP1433";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+function class4(){
+    let dom = document.getElementById('Class4');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class4"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP3133";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+function class5(){
+    let dom = document.getElementById('Class5');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class5"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP4431";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+function class6(){
+    let dom = document.getElementById('Class6');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class6"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP4133";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+function class7(){
+    let dom = document.getElementById('Class7');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class7"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP4434";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+function class8(){
+    let dom = document.getElementById('Class8');
+    let keyword = JSON.parse(localStorage.getItem(user_name+"Class8"))
+    if(keyword==null){
+        window.location.href="{{ url_for('main.myspace') }}?keyword=COMP2011";
+    }
+    else{
+        window.location.href="{{ url_for('main.myspace') }}?keyword=" + keyword;
+    }
+}
+
+
+</script>
+<style type="text/css">  /*adjust list to side-to-side array*/
+#node {list-style-type:none;margin:-22px;padding:0;overflow:hidden;}
+#node li{float:left;padding: 32px;}
+#node li:hover{background-color: #484848;}
+
+#node2 {list-style-type:none;margin:-22px;padding:0;overflow:hidden;}
+#node2 li{float:left;padding: 32px;}
+#node2 li:hover{background-color: #484848;}
+</style>
+</body>
+</html>

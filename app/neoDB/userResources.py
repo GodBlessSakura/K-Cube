@@ -16,12 +16,12 @@ def check_user_info(function):
             raise InvalidRequest("E-mail must be in valid format")
         if (
             "userId" in kwargs
-            and re.search("^[a-zA-Z][a-zA-Z0-9]{4,30}$", kwargs["userId"]) == None
+            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,100}$", kwargs["userId"]) == None
         ):
             raise InvalidRequest("Invalid userId pattern.")
         if (
             "name" in kwargs
-            and re.search("^[a-zA-Z0-9\s]{4,30}$", kwargs["name"]) == None
+            and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["name"]) == None
         ):
             raise InvalidRequest("Invalid name pattern.")
         return function(self, **kwargs)
@@ -88,7 +88,8 @@ class userResources:
                 saltedHash=saltedHash,
             )
             try:
-                return dict([record for record in result][0].items())
+                rows = [record for record in result]
+                return dict(rows[0]["user"].items())
             except ConstraintError as e:
                 raise e
             except Exception as exception:
@@ -113,6 +114,35 @@ class userResources:
                     "SET",
                     "permission_grant.creationDate = timestamp()",
                     "RETURN user, permission_grant, permission;",
+                ]
+            )
+            try:
+                result = tx.run(query, userId=userId, role=role)
+                return [
+                    {
+                        "user": dict(record["user"].items()),
+                        "permission_grant": dict(record["permission_grant"].items()),
+                        "permission": dict(record["permission"].items()),
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def removeRole(
+        self,
+        userId,
+        role,
+    ):
+        def _query(tx):
+            query = " ".join(
+                [
+                    "MATCH",
+                    "(permission:Permission{role: $role})<-[permission_grant:PRIVILEGED_OF]-(user:User{userId: $userId})",
+                    "DELETE permission_grant;",
                 ]
             )
             try:

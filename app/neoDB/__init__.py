@@ -51,18 +51,19 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
         )
         queries.extend(
             [
-                """MERGE (:Permission {
-    role: "admin",
-    canCreateGraphConcept: true,
-    canCreateCourse: true,
-    canCreateJob: true,
-    canCreateDraft: true,
-    canProposeRelationship: true,
-    canApproveRelationship: true,
-    canOperateDraftForOthers: true,
-    canUploadPhoto: true,
-    canOwnDraft: true
-});""",
+                """MERGE (p:Permission {
+    role: "admin"})
+    SET
+    p.canAssignRole = true,
+    p.canCreateGraphConcept = true,
+    p.canCreateCourse = true,
+    p.canCreateJob = true,
+    p.canCreateDraft = true,
+    p.canProposeRelationship = true,
+    p.canApproveRelationship = true,
+    p.canOperateDraftForOthers = true,
+    p.canUploadPhoto = true,
+    p.canOwnDraft = true;""",
                 """MERGE (:Permission {
     role: "teacher",
     canCreateGraphConcept: true,
@@ -105,6 +106,9 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
             self.user = userResources(driver=self.driver)
             from .courseResources import courseResources
             self.course = courseResources(driver=self.driver)
+            from .adminResources import adminResources
+            self.admin = adminResources(driver=self.driver)
+
 
     def close(self):
         self.driver.close()

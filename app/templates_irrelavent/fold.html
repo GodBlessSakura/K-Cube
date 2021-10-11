@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <style> body { margin: 0; } </style>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Visualization: 3D</title>
+
+    <!--Bootstrap Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="shortcut icon" href="../static/images/logo.jpg">
+    <!--Nifty Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/nifty.min.css" rel="stylesheet">
+
+
+    <!--Nifty Premium Icon [ DEMONSTRATION ]-->
+    <link href="../static/css/nifty-demo-icons.min.css" rel="stylesheet">
+
+
+    <!--Demo [ DEMONSTRATION ]-->
+    <link href="../static/css/nifty-demo-icons.min.css" rel="stylesheet">
+    <link href="../static/css/nifty-demo.min.css" rel="stylesheet">
+    <link href="../static/css/font-awesome.min.css" rel="stylesheet">
+
+
+
+    <!--JAVASCRIPT-->
+    <!--=================================================-->
+
+    <!--Pace - Page Load Progress Par [OPTIONAL]-->
+    <link href="../static/css/pace.min.css" rel="stylesheet">
+
+    <script src="../static/js/pace.min.js"></script>
+
+
+
+    <!--jQuery [ REQUIRED ]-->
+    <script src="../static/js/jquery-2.2.4.min.js"></script>
+
+
+    <!--BootstrapJS [ RECOMMENDED ]-->
+    <script src="../static/js/bootstrap.min.js"></script>
+
+
+    <!--NiftyJS [ RECOMMENDED ]-->
+    <script src="../static/js/nifty.min.js"></script>
+    <script src="../static/js/icons.js"></script>
+
+
+    <script src="../static/js/echarts.min.js"></script>
+
+
+    <!--=================================================-->
+
+    <!--Demo script [ DEMONSTRATION ]-->
+    <script src="../static/js/nifty-demo.min.js"></script>
+    <script src="//unpkg.com/three"></script>
+  <script src="//unpkg.com/three/examples/js/renderers/CSS2DRenderer.js"></script>
+<script src="//unpkg.com/dat.gui"></script>
+  <script src="//unpkg.com/3d-force-graph"></script>
+  <script src="//unpkg.com/three-spritetext"></script>
+<!--    <script src="../static/js/jquery.min.js"> </script>-->
+<!--  <script src="../../dist/3d-force-graph.js"></script>-->
+
+  <style>
+    .node-label {
+      font-size: 12px;
+      padding: 1px 4px;
+      border-radius: 8px;
+      background-color: rgba(0,0,0,0.5);
+      user-select: none;
+    }
+  </style>
+
+
+</head>
+
+<body>
+
+    <div id="container" class="effect aside-float aside-bright mainnav-sm">
+
+        <!--NAVBAR-->
+        <!--===================================================-->
+        <header id="navbar">
+            <div id="navbar-container" class="boxed">
+
+                <!--Brand logo & name-->
+                <!--================================-->
+                <div class="navbar-header">
+                    <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                        <img src="../static/images/logo.jpg" alt="Nifty Logo" class="brand-icon">
+                        <div class="brand-title">
+                            <span class="brand-text">KG-Cube</span>
+                        </div>
+                    </a>
+                </div>
+                <!--================================-->
+                <!--End brand logo & name-->
+
+
+                <!--Navbar Dropdown-->
+                <!--================================-->
+                <div class="navbar-content clearfix">
+                    <ul class="nav navbar-top-links pull-left">
+
+                        <!--Navigation toogle button-->
+                        <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+                        <li class="tgl-menu-btn">
+                            <a class="mainnav-toggle" href="#">
+                                <i class="demo-pli-view-list"></i>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <ul class="nav navbar-top-links pull-left">
+                        <h4>Knowledge Graph Visualization: 3D</h4>
+
+                    </ul>
+                </div>
+                <!--================================-->
+                <!--End Navbar Dropdown-->
+
+            </div>
+        </header>
+        <!--===================================================-->
+        <!--END NAVBAR-->
+
+        <div class="boxed">
+
+            <!--CONTENT CONTAINER-->
+            <!--===================================================-->
+            <div id="content-container">
+
+                <!--Page content-->
+                <!--===================================================-->
+                <div id="page-content">
+
+<!--                    <div class="row" style="height: 800px;" id="guanxi"></div>-->
+                    <div id="3d-graph"></div>
+                </div>
+                <!--===================================================-->
+                <!--End page content-->
+
+
+            </div>
+            <!--===================================================-->
+            <!--END CONTENT CONTAINER-->
+
+
+            <!--MAIN NAVIGATION-->
+            <!--===================================================-->
+            <nav id="mainnav-container">
+                <div id="mainnav">
+
+                    <!--Menu-->
+                    <!--================================-->
+                    <div id="mainnav-menu-wrap">
+                        <div class="nano">
+                            <div class="nano-content">
+
+                                <ul id="mainnav-menu" class="list-group">
+
+                                    <!--Category name-->
+						            <li class="list-header">Visualization</li>
+
+                                    <!--Menu list item-->
+
+
+                                    <!--Menu list item-->
+                                    <li>
+                                        <a href="{{ url_for('main.get_all_relation') }}">
+                                            <i class="fa fa-share-alt" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>2D</strong>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+						                <a href="{{ url_for('main.fold') }}">
+						                    <i class="fa fa-cube" style="width:24px"></i>
+						                    <span class="menu-title">
+                                                <strong>3D</strong>
+                                            </span>
+						                </a>
+						            </li>
+                                    <li>
+                                        <a href="{{ url_for('main.tree') }}">
+                                            <i class="fa fa-sitemap" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>Tree</strong>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ url_for('main.search') }}">
+<!--                                            <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">-->
+                                            <i class="fa fa-search" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>Search</strong>
+                                            </span>
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a href="{{ url_for('main.construction') }}">
+                                            <i class="fa fa-pencil-square-o" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>My Space</strong>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <!--================================-->
+                    <!--End menu-->
+
+                </div>
+            </nav>
+            <!--===================================================-->
+            <!--END MAIN NAVIGATION-->
+
+        </div>
+        <!-- FOOTER -->
+        <!--===================================================-->
+        <footer id="footer">
+
+           <p class="pad-lft">Copyright&#0169; 2021 Qing  &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;All Rights Reserved </p>
+
+        </footer>
+        <!--===================================================-->
+        <!-- END FOOTER -->
+
+        <!-- SCROLL PAGE BUTTON -->
+        <!--===================================================-->
+        <button class="scroll-top btn">
+            <i class="pci-chevron chevron-up"></i>
+        </button>
+        <!--===================================================-->
+    </div>
+    <!--===================================================-->
+    <!-- END OF CONTAINER -->
+    <script>
+  const controls = { 'Level': '4th year'};
+    var gui = new dat.GUI();
+    gui.domElement.style = 'position:absolute;top:100px;right:50px';
+<!--    gui.domElement.style = 'position: absolute; right: -100px; top: -100px;';-->
+    gui.add(controls, 'Level', ['1th year', '2th year', '3th year', '4th year'])
+      .onChange(orientation=>  {
+      if (orientation=='1th year'){
+      Graph.jsonUrl('../static/js/ai1.json');
+      }
+      else if(orientation=='2th year'){
+      Graph.jsonUrl('../static/js/ai2.json');
+      }
+      else if(orientation=='3th year'){
+      Graph.jsonUrl('../static/js/ai3.json');
+      }
+      else{
+      Graph.jsonUrl('../static/js/ai.json');
+      }
+
+
+});
+
+  const elem = document.getElementById('3d-graph');
+    const Graph = ForceGraph3D({
+      extraRenderers: [new THREE.CSS2DRenderer()]
+    })
+    (elem)
+<!--      .backgroundColor('#696969')-->
+      .jsonUrl('../static/js/ai.json')
+      .nodeAutoColorBy('group')
+      .nodeThreeObject(node => {
+        const nodeEl = document.createElement('div');
+        nodeEl.textContent = node.id;
+        nodeEl.style.color = node.color;
+        nodeEl.className = 'node-label';
+        return new THREE.CSS2DObject(nodeEl);
+      })
+      .nodeThreeObjectExtend(true)
+
+      .linkThreeObjectExtend(true)
+        .linkThreeObject(link => {
+          // extend link with text sprite
+          const sprite = new SpriteText(`${link.value}`);
+          sprite.color = 'grey';
+          sprite.textHeight = 1.5;
+          return sprite;
+        })
+        .linkPositionUpdate((sprite, { start, end }) => {
+          const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
+            [c]: start[c] + (end[c] - start[c]) / 2 // calc middle point
+          })));
+
+          // Position sprite
+          Object.assign(sprite.position, middlePos);
+        })
+        .onNodeHover(node => elem.style.cursor = node ? 'pointer' : null)
+        .onNodeClick(node => {
+          // Aim at node from outside it
+          const distance = 60;
+          const distRatio = 1 + distance/Math.hypot(node.x, node.y, node.z);
+
+          Graph.cameraPosition(
+            { x: node.x * distRatio, y: node.y * distRatio, z: node.z * distRatio }, // new position
+            node, // lookAt ({ x, y, z })
+            3000  // ms transition duration
+          );
+        })
+        .onNodeRightClick(node => window.open(`https://en.wikipedia.org/wiki/${node.id}`, '_blank'))
+        .linkThreeObjectExtend(true)
+        .linkThreeObject(link => {
+          // extend link with text sprite
+          const sprite = new SpriteText(`${link.value}`);
+          sprite.color = 'lightgrey';
+          sprite.textHeight = 1.5;
+          return sprite;
+        })
+        .linkPositionUpdate((sprite, { start, end }) => {
+          const middlePos = Object.assign(...['x', 'y', 'z'].map(c => ({
+            [c]: start[c] + (end[c] - start[c]) / 2 // calc middle point
+          })));
+
+          // Position sprite
+          Object.assign(sprite.position, middlePos);
+        })
+    ;
+    let angle = 0;
+    setInterval(() => {
+      if (isRotationActive) {
+        Graph.cameraPosition({
+          x: distance * Math.sin(angle),
+          z: distance * Math.cos(angle)
+        });
+        angle += Math.PI / 300;
+      }
+    }, 10);
+
+<!--    document.getElementById('rotationToggle').addEventListener('click', event => {-->
+<!--    -->
+<!--    });-->
+
+<!--    let isAnimationActive = true;-->
+<!--    document.getElementById('animationToggle').addEventListener('click', event => {-->
+
+<!--    });-->
+  </script>
+
+</body>
+</html>

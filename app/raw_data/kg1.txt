@@ -1,0 +1,167 @@
+ArtificialIntelligence,NaturalLanguageProcessing,Subconcept,General,General
+ArtificialIntelligence,KnowledgeRepresentationAndReasoning,Subconcept,General,General
+ArtificialIntelligence,AutomatedPlanningAndScheduling,Subconcept,General,General
+ArtificialIntelligence,AIControlProblem,Subconcept,General,General
+ArtificialIntelligence,PhilosophyOfArtificialIntelligence,Subconcept,General,General
+ArtificialIntelligence,DistributedArtificialIntelligence,Subconcept,General,General
+ArtificialIntelligence,ComputerVision,Subconcept,General,General
+ArtificialIntelligence,DataMining,Subconcept,General,General
+ArtificialIntelligence,InformationRetrieval,Subconcept,General,General
+ArtificialIntelligence,Robotics,Subconcept,General,General
+InformationSystem,Database,Subconcept,General,General
+InformationSystem,ComputerDataStorage,Subconcept,General,General
+InformationSystem,DataMining,Subconcept,General,General
+InformationSystem,EnterpriseInformationSystem,Subconcept,General,General
+InformationSystem,DecisionSupportSystem,Subconcept,General,General
+InformationSystem,DataStructures,Subconcept,General,General
+NaturalLanguageProcessing,DataStructures,Subconcept,General,General
+NaturalLanguageProcessing,InformationExtraction,Subtask,General,General
+NaturalLanguageProcessing,DataStructures,Subconcept,General,General
+NaturalLanguageProcessing,InformationExtraction,Subtask,General,General
+NaturalLanguageProcessing,DataStructures,Subconcept,General,General
+NaturalLanguageProcessing,InformationExtraction,Subtask,General,General
+NaturalLanguageProcessing,MachineTranslation,Subtask,General,General
+NaturalLanguageProcessing,Pragmatics,Subconcept,General,General
+NaturalLanguageProcessing,NaturalLanguageGeneration,Subtask,General,General
+NaturalLanguageProcessing,SpeechRecognition,Subtask,General,General
+NaturalLanguageProcessing,LexicalSemantics,Subconcept,General,General
+NaturalLanguageProcessing,MorphologyLinguistics,Subconcept,General,General
+NaturalLanguageProcessing,Phonology,Subconcept,General,General
+NaturalLanguageProcessing,LanguageResource,Subconcept,General,General
+NaturalLanguageProcessing,NLPApplications,Subconcept,General,General
+NaturalLanguageProcessing,LanguageModel,Technique,General,General
+DataMining,DataProcessing,Subtask,General,General
+DataMining,AssociationRuleLearning,Subtask,General,General
+DataMining,ClusterAnalysis,Subtask,General,General
+DataMining,AnomalyDetection,Subtask,General,General
+DataMining,StatisticalClassification,Subtask,General,General
+DataMining,RegressionAnalysis,Subtask,General,General
+DataMining,AutomaticSummarization,Subtask,General,General
+DataMining,DimensionalityReduction,Subtask,General,General
+
+ComputerVision,ActivityRecognition,Subtask,General,General
+ComputerVision,AnomalyDetection,Subtask,General,General
+ComputerVision,AutomaticSummarization,Subtask,General,General
+ComputerVision,Content-basedImage,Subtask,General,General
+
+ComputerVision,ImageRestoration,Subtask,General,General
+ComputerVision,ImageSegmentation,Subtask,General,General
+ComputerVision,MotionAnalysis,Subtask,General,General
+ComputerVision,ObjectDetection,Subtask,General,General
+ComputerVision,3DReconstruction,Subtask,General,General
+
+MachineLearning,SupervisedLearning,Subconcept,General,General
+MachineLearning,UnsupervisedLearning,Subconcept,General,General
+
+MachineLearning,ReinforcementLearning,Subconcept,General,General
+MachineLearning,Multi-taskLearning,Subconcept,General,General
+MachineLearning,Semi-supervisedLearning,Subconcept,General,General
+
+MachineLearning,ActiveLearning ,Subconcept,General,General
+MachineLearning,Multi-taskLearning,Subconcept,General,General
+MachineLearning,AnomalyDetection,Subtask,General,General
+
+MachineLearning,AnomalyDetection,Subtask,General,General
+MachineLearning,AssociationRuleLearning,Subtask,General,General
+MachineLearning,ClusterAnalysis,Subtask,General,General
+MachineLearning,StatisticalClassification,Subtask,General,General
+
+MachineLearning,RegressionAnalysis,Subtask,General,General
+MachineLearning,DimensionalityReduction,Subtask,General,General
+MachineLearning,SemanticAnalysis,Subtask,General,General
+MachineLearning,FederatedLearning,Technique,General,General
+MachineLearning,GeneticAlgorithm,Technique,General,General
+MachineLearning,DecisionTree,Technique,General,General
+MachineLearning,SupportVectorMachine,Technique,General,General
+
+MachineLearning,FeatureLearning,Technique,General,General
+MachineLearning,GraphicalModel,Technique,General,General
+MachineLearning,BayesianNetwork,Technique,General,General
+
+MachineLearning,DeepLearning,Technique,General,General
+MachineLearning,NetworkEmbedding,Technique,General,General
+MachineLearning,GraphNeuralNetwork,Technique,General,General
+
+NetworkEmbedding,SpectralClustering,Technique,General,General
+DataAnalysis,DataProcessing,Subconcept,General,General
+DataAnalysis,DataMining,Technique,General,General
+DataAnalysis,Statistics,Fundamental,General,General
+
+
+	Technique_in	Network embedding	General
+	Subconcept_in		General
+Data mining	Technique_in	Data analysis	General
+
+Data analysis (basics)	Fundamental_to	Data analysis	General
+Statistics (basics)	Fundamental_to	Statistics	General
+Data analysis (basics)	Subconcept_in	COMP1433	1
+Data processing	Subconcept_in	COMP1433	1
+Statistics (basics)	Subconcept_in	COMP1433	1
+Linear algebra	Subconcept_in	COMP1433	1
+Calculus	Subconcept_in	COMP1433	1
+Data collection	Subtask_in	Data processing	1
+Data visualization	Subtask_in	Data processing	1
+Data cleansing	Subtask_in	Data processing	1
+Linear regression	Technique_in	Statistics	1
+Time series analysis	Technique_in	Statistics	1
+Vector space	Subconcept_in	Linear algebra	1
+Matrix (mathematics)	Subconcept_in	Linear algebra	1
+Integral	Subconcept_in	Calculus	1
+List of data structures	Subconcept_in	COMP2011	2
+List of algorithms	Subconcept_in	COMP2011	2
+Abstract data type	Subconcept_in	COMP2011	2
+Tree (data structure)	Subconcept_in	COMP2011	2
+Sorting algorithm	Subconcept_in	COMP2011	2
+Search algorithm	Subconcept_in	COMP2011	2
+List (abstract data type)	Subconcept_in	Abstract data type	2
+Stack (abstract data type)	Subconcept_in	Abstract data type	2
+Queue (abstract data type)	Subconcept_in	Abstract data type	2
+Array data structure	Subconcept_in	List of data structures	2
+Linked list	Subconcept_in	List of data structures	2
+Tree (data structure)	Subconcept_in	List of data structures	2
+Binary tree	Subconcept_in	Tree (data structure)	2
+Search tree	Subconcept_in	Tree (data structure)	2
+Binary search tree	Subconcept_in	Search tree	2
+Binary search tree	Subconcept_in	Binary tree	2
+Merge sort	Technique_in	Sorting algorithm	2
+Quicksort	Technique_in	Sorting algorithm	2
+Bubble sort	Technique_in	Sorting algorithm	2
+Selection sort	Technique_in	Sorting algorithm	2
+Insertion sort	Technique_in	Sorting algorithm	2
+Binary search algorithm	Technique_in	Search algorithm	2
+Linear search	Technique_in	Search algorithm	2
+Natural language processing (basics)	Fundamental_to	Natural language processing	General
+Chinese character encoding	Subconcept_in	COMP3133	3
+Natural language processing (basics)	Subconcept_in	COMP3133	3
+NLP applications	Subconcept_in	COMP3133	3
+Morphology (linguistics)	Subconcept_in	Natural language processing (basics)	3
+Semantic analysis (machine learning)	Subconcept_in	Natural language processing (basics)	3
+Parsing	Subconcept_in	Natural language processing (basics)	3
+Discourse analysis	Subconcept_in	Natural language processing (basics)	3
+Coreference	Subconcept_in	Natural language processing (basics)	3
+Word-sense disambiguation	Subconcept_in	Natural language processing (basics)	3
+Language model	Subconcept_in	Natural language processing (basics)	3
+Stemming	Subtask_in	Morphology (linguistics)	3
+Sentiment analysis	Subconcept_in	NLP applications	3
+Dialogue system	Subconcept_in	NLP applications	3
+Question answering	Subconcept_in	NLP applications	3
+Automatic summarization	Subconcept_in	NLP applications	3
+Machine translation	Subconcept_in	NLP applications	3
+Information extraction	Subconcept_in	NLP applications	3
+Artificial intelligence (basics)	Fundamental_to	Artificial intelligence	General
+Artificial intelligence (basics)	Subconcept_in	COMP4431	4
+Knowledge-based systems	Subconcept_in	COMP4431	4
+Intelligent agent	Subconcept_in	COMP4431	4
+Machine learning	Subconcept_in	COMP4431	4
+Knowledge representation and reasoning	Subconcept_in	COMP4431	4
+History of artificial intelligence	Subconcept_in	Artificial intelligence (basics)	4
+Ethics of artificial intelligence	Subconcept_in	Artificial intelligence (basics)	4
+Knowledge base	Subconcept_in	Knowledge-based systems	4
+Inference engine	Subconcept_in	Knowledge-based systems	4
+Forward chaining	Subconcept_in	Inference engine	4
+Backward chaining	Subconcept_in	Inference engine	4
+
+InformationSystem,DataStructures,Subconcept,General,General
+ArtificialIntelligence,NaturalLanguageProcessing,Subconcept,General,General
+ArtificialIntelligence,NaturalLanguageProcessing,Subconcept,General,General
+ArtificialIntelligence,NaturalLanguageProcessing,Subconcept,General,General

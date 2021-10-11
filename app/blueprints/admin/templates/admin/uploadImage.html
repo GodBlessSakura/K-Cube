@@ -1,0 +1,56 @@
+{% macro component() %}
+<v-form ref="imageForm">
+    <v-file-input accept="image/*" name="file" label="File input" multiple required></v-file-input>
+    <v-btn @click="uploadImage" color="success">Upload</v-btn>
+</v-form>
+{% endmacro %}
+{% macro script() %}
+<script>
+    Vue.component('admin-uploadImage-form', {
+        data: () => ({
+
+        }),
+        methods: {
+            uploadImage() {
+                if (this.$refs.imageForm.validate()) {
+                    let formData = new FormData(this.$refs.imageForm.$el)
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('uploads.image') }}", {
+                        method: 'POST',
+                        cache: 'no-store',
+                        body: formData
+                    })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.success) {
+                                if (body.message) {
+                                    this.$root.completeSnackBar.message = body.message
+                                }
+                                else {
+                                    this.$root.completeSnackBar.message = 'success'
+                                }
+                                this.$root.completeSnackBar.show = true
+                                this.$refs.imageForm.reset()
+                            }
+                            else {
+                                if (body.message) {
+                                    this.$root.errorSnackBar.message = body.message
+                                    this.$root.errorSnackBar.show = true
+                                }
+                                else {
+                                    this.$root.errorSnackBar.message = 'unexpected error'
+                                    this.$root.errorSnackBar.show = true
+                                }
+                            }
+
+                        })
+                }
+            }
+        },
+        template: '#adminUploadImage'
+    })
+</script>
+{% endmacro %}

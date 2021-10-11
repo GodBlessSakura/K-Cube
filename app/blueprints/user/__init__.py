@@ -32,12 +32,15 @@ def register():
             )
         except ConstraintError:
             return jsonify({"success": False, "message": "The chosen UserId is already token. Choose another one."})
+        
         if user:
             session["user"] = user
             try:
+                print(user["userId"])
                 session["permission"] = get_api_driver().user.get_user_permission(
                     userId=user["userId"]
                 )
+                print("permission get")
             finally:
                 return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete register request"})

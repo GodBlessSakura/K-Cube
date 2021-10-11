@@ -8,12 +8,12 @@ def check_user_info(function):
     def wrapper(self, *args, **kwargs):
         if (
             "displayName" in kwargs
-            and re.search("^[a-zA-Z0-9\s]{4,30}$", kwargs["displayName"]) == None
+            and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["displayName"]) == None
         ):
             raise InvalidRequest("Invalid course display name pattern")
         if (
             "name" in kwargs
-            and re.search("^[a-zA-Z0-9\s]{4,30}$", kwargs["name"]) == None
+            and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["name"]) == None
         ):
             raise InvalidRequest("Invalid name pattern.")
         return function(self, **kwargs)
@@ -29,9 +29,9 @@ class courseResources:
         def _query(tx):
                 query = " ".join(
                     [
-                        "MERGE (courseConcept:GraphConcept{name: $course_code})",
-                        "MERGE (course:Course{displayName: $course_name})-[:COURSE_DESCRIBE]->(courseConcept)",
-                        "SET course.imageURL = $imageURL",
+                        "MERGE (courseConcept:GraphConcept{name: $name})",
+                        "MERGE (course:Course)-[:COURSE_DESCRIBE]->(courseConcept)",
+                        "SET course.imageURL = $imageURL, course.displayName = $displayName",
                         "RETURN course, courseConcept"
                     ]
                 )

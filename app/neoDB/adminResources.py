@@ -1,10 +1,9 @@
-from neo4j.exceptions import Exception
 from argon2 import PasswordHasher
 
 
 class adminResources:
-    def __init__(self, base):
-        self.base_resources = base
+    def __init__(self, driver):
+        self.driver = driver
 
     def list_all_except_credential(self):
         def _query(tx):
@@ -15,11 +14,11 @@ class adminResources:
             )
             result = tx.run(query)
             try:
-                return [record for record in result]
+                return result
             except Exception as exception:
                 raise exception
 
-        with self.base_resources.driver.session() as session:
+        with self.driver.session() as session:
             return session.write_transaction(_query)
 
     def readOnly_query(self, query) -> bool:
@@ -34,9 +33,41 @@ class adminResources:
             result = tx.run(query)
             try:
                 for record in result:
-                    return record["Predicate"]
+                    return record
             except Exception as exception:
                 raise exception
 
-        with self.base_resources.driver.session() as session:
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def listPermission(self):
+        def _query(tx):
+            query = " ".join(["MATCH (permission:Permission)", "RETURN permission"])
+            result = tx.run(query)
+            try:
+                return [dict(record["permission"].items()) for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def listUserPermission(self):
+        def _query(tx):
+            query = " ".join(
+                [
+                    "MATCH (user:User)-[:PRIVILEGED_OF]->(permission:Permission)",
+                    "RETURN user, collect(permission.role) as roles",
+                ]
+            )
+            result = tx.run(query)
+            try:
+                return [
+                    {"user": dict(record["user"].items()), "roles": record["roles"]}
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
             return session.write_transaction(_query)

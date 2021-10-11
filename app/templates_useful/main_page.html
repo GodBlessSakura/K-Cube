@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph Visualization Demo</title>
+    <!--Bootstrap Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../static/images/logo.jpg">
+    <!--Nifty Stylesheet [ REQUIRED ]-->
+    <link href="../static/css/nifty.min.css" rel="stylesheet">
+
+    <!--Nifty Premium Icon [ DEMONSTRATION ]-->
+    <link href="../static/css/nifty-demo-icons.min.css" rel="stylesheet">
+    <link href="../static/css/nifty-demo.min.css" rel="stylesheet">
+    <link href="../static/css/font-awesome.min.css" rel="stylesheet">
+
+    <!--JAVASCRIPT-->
+    <!--=================================================-->
+    <!--Pace - Page Load Progress Par [OPTIONAL]-->
+    <link href="../static/css/pace.min.css" rel="stylesheet">
+    <script src="../static/js/pace.min.js"></script>
+
+    <!--jQuery [ REQUIRED ]-->
+    <script src="../static/js/jquery-2.2.4.min.js"></script>
+
+    <!--BootstrapJS [ RECOMMENDED ]-->
+    <script src="../static/js/bootstrap.min.js"></script>
+
+    <!--NiftyJS [ RECOMMENDED ]-->
+    <script src="../static/js/nifty.min.js"></script>
+    <script src="../static/js/icons.js"></script>
+
+    <script src="../static/js/echarts.min.js"></script>
+    <script src="../static/js/tags.js"></script>
+    <!--=================================================-->
+    <!--Demo script [ DEMONSTRATION ]-->
+    <script src="../static/js/nifty-demo.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+    <style type="text/css">
+    #tagsList {position:relative; width:250px; height:250px; }
+#tagsList a {position:absolute; top:0px; left:0px; font-family: Microsoft YaHei; color:gray; font-weight:bold; text-decoration:none; padding: 3px 6px; }
+#tagsList a:hover { color:#249e92; letter-spacing:2px; visibility:visible; transition-delay: 2s;-webkit-transition-delay: 2s;}
+#search:focus{
+    border: 1px solid #249e92;
+}
+
+    </style>
+</head>
+
+<body>
+
+    <div id="container" class="effect aside-float aside-bright mainnav-lg">
+
+        <!--NAVBAR-->
+        <!--===================================================-->
+        <header id="navbar">
+            <div id="navbar-container" class="boxed">
+
+                <!--Brand logo & name-->
+                <!--================================-->
+                <div class="navbar-header">
+                    <a href="{{ url_for('main.index') }}" class="navbar-brand">
+                        <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">
+                        <div class="brand-title">
+                            <span class="brand-text">KG-Cube</span>
+                        </div>
+                    </a>
+                </div>
+                <!--================================-->
+                <!--End brand logo & name-->
+
+
+                <!--Navbar Dropdown-->
+                <!--================================-->
+                <div class="navbar-content clearfix">
+                    <ul class="nav navbar-top-links pull-left">
+
+                        <!--Navigation toogle button-->
+                        <!--~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~-->
+                        <li class="tgl-menu-btn">
+                            <a class="mainnav-toggle" href="#">
+                                <i class="demo-pli-view-list"></i>
+                            </a>
+                        </li>
+
+                    </ul>
+                    <ul class="nav navbar-top-links pull-left">
+
+                        <h4>Knowledge Graph Visualization: Main Page</h4>
+
+                    </ul>
+                </div>
+                <!--================================-->
+                <!--End Navbar Dropdown-->
+
+            </div>
+        </header>
+        <!--===================================================-->
+        <!--END NAVBAR-->
+
+        <div class="boxed">
+
+            <!--CONTENT CONTAINER-->
+            <!--===================================================-->
+            <div id="content-container">
+
+                <!--Page content-->
+                <!--===================================================-->
+                <div id="page-content">
+
+					<h4 class="text-main pad-btm bord-btm"></h4>
+
+              <div class="row">
+              <!--  <div class="col-lg-6">
+
+
+                    </div>-->
+                    <div class="col-lg-2"></div>
+                    <div class="col-lg-4" style="left:220px;">
+                        <div class="input-group" >
+                            <input type="text" id="search" class="form-control input-lg"  placeholder="Please input a keywords...">
+                            <span class="input-group-addon btn btn-mint"  onclick="search()">Search</span>
+
+                        </div>
+                    </div>
+
+                    </div>
+                    <div class="row" style="height: 15px;"></div>
+                     <div class="row" >
+                        <div class="col-lg-8" style="left:170px; height: 800px;width: 950px" id="guanxi">
+                    </div>
+
+                    </div>
+
+
+                </div>
+                <!--===================================================-->
+                <!--End page content-->
+
+
+            </div>
+            <!--===================================================-->
+            <!--END CONTENT CONTAINER-->
+
+
+            <!--MAIN NAVIGATION-->
+            <!--===================================================-->
+            <nav id="mainnav-container">
+                <div id="mainnav">
+
+                    <!--Menu-->
+                    <!--================================-->
+                    <div id="mainnav-menu-wrap">
+                        <div class="nano">
+                            <div class="nano-content">
+
+                                <ul id="mainnav-menu" class="list-group">
+
+                                    <!--Category name-->
+						            <li class="list-header">Visualization</li>
+
+                                    <!--Menu list item-->
+
+
+                                    <!--Menu list item-->
+                                    <li>
+                                        <a href="{{ url_for('main.get_all_relation') }}">
+                                            <i class="fa fa-share-alt" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>Comprehensive</strong>
+                                            </span>
+                                        </a>
+                                    </li>
+<!--                                    <li>-->
+<!--						                <a href="{{ url_for('main.fold') }}">-->
+<!--						                    <i class="fa fa-cube" style="width:24px"></i>-->
+<!--						                    <span class="menu-title">-->
+<!--                                                <strong>3D</strong>-->
+<!--                                            </span>-->
+<!--						                </a>-->
+<!--						            </li>-->
+<!--                                    <li>-->
+<!--                                        <a href="{{ url_for('main.tree') }}">-->
+<!--                                            <i class="fa fa-sitemap" style="width:24px"></i>-->
+<!--                                            <span class="menu-title">-->
+<!--                                                <strong>Tree</strong>-->
+<!--                                            </span>-->
+<!--                                        </a>-->
+<!--                                    </li>-->
+<!--                                    <li>-->
+<!--                                        <a href="{{ url_for('main.search') }}">-->
+<!--&lt;!&ndash;                                            <img src="../static/images/logo.png" alt="Nifty Logo" class="brand-icon">&ndash;&gt;-->
+<!--                                            <i class="fa fa-search" style="width:24px"></i>-->
+<!--                                            <span class="menu-title">-->
+<!--                                                <strong>Search</strong>-->
+<!--                                            </span>-->
+<!--                                        </a>-->
+<!--                                    </li>-->
+                                    <li>
+                                        <a href="{{ url_for('main.construction') }}">
+                                            <i class="fa fa-pencil-square-o" style="width:24px"></i>
+                                            <span class="menu-title">
+                                                <strong>My Space</strong>
+                                            </span>
+                                        </a>
+                                    </li>
+                                </ul>
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <!--================================-->
+                    <!--End menu-->
+
+                </div>
+            </nav>
+            <!--===================================================-->
+            <!--END MAIN NAVIGATION-->
+
+        </div>
+
+        <!-- FOOTER -->
+        <!--===================================================-->
+        <footer id="footer">
+
+           <p class="pad-lft">Copyright&#0169; 2021 Qing &nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;All Rights Reserved </p>
+
+        </footer>
+        <!--===================================================-->
+        <!-- END FOOTER -->
+
+        <!-- SCROLL PAGE BUTTON -->
+        <!--===================================================-->
+        <button class="scroll-top btn">
+            <i class="pci-chevron chevron-up"></i>
+        </button>
+        <!--===================================================-->
+    </div>
+    <!--===================================================-->
+    <!-- END OF CONTAINER -->
+    <script  src="../static/js/echarts.js"></script>
+    <script  src="../static/js/option11.js"></script>
+    <script  src="../static/js/events-func.js"></script>
+    <script src="../static/css/iconfont.js"></script>
+
+<script type="text/javascript">
+var chartDom = document.getElementById('guanxi');
+var myChart = echarts.init(chartDom);
+var option;
+
+myChart.showLoading();
+$.getJSON('../static/js/les-miserables.json', function (graph) {
+    myChart.hideLoading();
+
+    graph.nodes.forEach(function (node) {
+        node.label = {
+            show: node.symbolSize > 0
+        };
+    });
+
+    option = {
+        title: {
+<!--            text: 'Courses',-->
+<!--            subtext: 'Circular layout',-->
+            top: 'bottom',
+            left: 'right'
+        },
+        tooltip: {},
+<!--        legend: [{-->
+<!--            data: graph.categories.map(function (a) {-->
+<!--                return a.name;-->
+<!--            })-->
+<!--        }],-->
+        animationDurationUpdate: 1500,
+        animationEasingUpdate: 'quinticInOut',
+        color:["#ADD8E6","#87CEFA","#1E90FF","#0000CD","#00008B"],
+        series: [
+            {
+                name: 'Les Miserables',
+                type: 'graph',
+                layout: 'circular',
+                circular: {
+                    rotateLabel: true
+                },
+                data: graph.nodes,
+                links: graph.links,
+                categories: graph.categories,
+                roam: true,
+
+                label: {
+                    position: 'right',
+                    formatter: '{b}'
+                },
+                lineStyle: {
+                    color: 'source',
+                    curveness: 0.3
+                }
+            }
+        ]
+    };
+
+    myChart.setOption(option);
+});
+
+
+myChart.on('click', function (param){
+        //获取节点点击的数组序号
+        if (param.dataType == 'node') {
+            let name = param.name;
+            if(name=="AI"){
+                window.location.href="{{ url_for('main.get_all_relation') }}";
+            }
+            else{
+                window.open("{{ url_for('main.myspace') }}?keyword=" + name);
+
+            }
+
+        }
+    });
+
+</script>
+</body>
+</html>

@@ -261,15 +261,15 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors', v =>
-                            /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]{4,30}$/.test(v) || 'UserId must start with alphabetic characters.'
+                        v => v.length > 3 && v.length < 101 || 'UserId should be anything between 4 and 100 charactors', v =>
+                            /^[a-zA-Z0-9]{4,100}$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
-                        v => v.length > 3 && v.length < 31 || 'Name should be anything between 4 and 30 charactors', v =>
-                            /^[a-zA-Z0-9\s]{4,30}$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                        v => v.length > 3 && v.length < 101 || 'Name should be anything between 4 and 100 charactors', v =>
+                            /^[a-zA-Z0-9\s]{4,100}$/.test(v) || 'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
@@ -291,9 +291,9 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 31 || 'UserId should be anything between 4 and 30 charactors', v =>
-                            /^[a-zA-Z0-9]{4,30}$/.test(v) || 'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]{4,30}$/.test(v) || 'UserId must start with alphabetic characters.'
+                        v => v.length > 3 && v.length < 101 || 'UserId should be anything between 4 and 100 charactors', v =>
+                            /^[a-zA-Z0-9]{4,100}$/.test(v) || 'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) || 'UserId must start with alphabetic characters.'
                     ],
                     password: '',
                     passwordRules: [

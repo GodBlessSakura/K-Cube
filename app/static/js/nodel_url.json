@@ -1,0 +1,95 @@
+{
+  "ArtificialIntelligence": {
+    "url1": "https://en.wikipedia.org/wiki/Artificial_Intelligence"
+  },
+  "DataMining": {
+    "url1": "https://en.wikipedia.org/wiki/Data_Mining"
+  },
+  "MachineLearning": {
+    "url1": "https://en.wikipedia.org/wiki/Machine_Learning"
+  },
+  "ComputerVision": {
+    "url1": "https://en.wikipedia.org/wiki/Computer_Vision"
+  },
+  "NaturalLanguageProcessing": {
+    "url1": "https://en.wikipedia.org/wiki/Natural_Language_Processing"
+  },
+  "Robotics": {
+    "url1": "https://en.wikipedia.org/wiki/Robotics"
+  },
+  "InformationRetrieval": {
+    "url1": "https://en.wikipedia.org/wiki/Information_Retrieval"
+  },
+  "Human-computerInteraction": {
+    "url1": "https://en.wikipedia.org/wiki/Human-computer_Interaction"
+  },
+  "AnomalyDetection": {
+    "url1": "https://en.wikipedia.org/wiki/Anomaly_Detection"
+  },
+  "AssociationRule_Learning": {
+    "url1": "https://en.wikipedia.org/wiki/Association_Rule_Learning"
+  },
+  "Clustering": {
+    "url1": "https://en.wikipedia.org/wiki/Clustering"
+  },
+  "Classification": {
+    "url1": "https://en.wikipedia.org/wiki/Classification"
+  },
+  "Regression": {
+    "url1": "https://en.wikipedia.org/wiki/Regression"
+  },
+  "Summarization": {
+    "url1": "https://en.wikipedia.org/wiki/Summarization"
+  },
+  "Embedding": {
+    "url1": "https://en.wikipedia.org/wiki/Embedding"
+  },
+  "DimensionalityReduction": {
+    "url1": "https://en.wikipedia.org/wiki/Dimensionality_Reduction"
+  },
+  "NetworkEmbedding": {
+    "url1": "https://en.wikipedia.org/wiki/Network_Embedding"
+  },
+  "NodeRepresentation_Learning": {
+    "url1": "https://en.wikipedia.org/wiki/Node_Representation_Learning"
+  },
+  "SupervisedLearning": {
+    "url1": "https://en.wikipedia.org/wiki/Supervised_Learning"
+  },
+  "UnSupervisedLearning": {
+    "url1": "https://en.wikipedia.org/wiki/UnSupervised_Learning"
+  },
+  "Semi-SupervisedLearning": {
+    "url1": "https://en.wikipedia.org/wiki/Semi-Supervised_Learning"
+  },
+  "ReinforcementLearning": {
+    "url1": "https://en.wikipedia.org/wiki/Reinforcement_Learning"
+  },
+  "SelfLearning": {
+    "url1": "https://en.wikipedia.org/wiki/Self_Learning"
+  },
+  "ArtificialNeural_Networks": {
+    "url1": "https://en.wikipedia.org/wiki/Artificial_Neural_Networks"
+  },
+  "DecisionTrees": {
+    "url1": "https://en.wikipedia.org/wiki/Decision_Trees"
+  },
+  "SupportVector_Machines": {
+    "url1": "https://en.wikipedia.org/wiki/Support_Vector_Machines"
+  },
+  "RegressionAnalysis": {
+    "url1": "https://en.wikipedia.org/wiki/Regression_Analysis"
+  },
+  "BayesianNetworks": {
+    "url1": "https://en.wikipedia.org/wiki/Bayesian_Networks"
+  },
+  "GeneticAlgorithms": {
+    "url1": "https://en.wikipedia.org/wiki/Genetic_Algorithms"
+  },
+  "GraphNeuralNetworks": {
+    "url1": "https://en.wikipedia.org/wiki/Graph_Neural_Networks"
+  },
+  "SpectralEmbedding": {
+    "url1": "https://en.wikipedia.org/wiki/Spectral_Embedding"
+  }
+}
