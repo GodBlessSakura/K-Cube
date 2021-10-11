@@ -1,4 +1,4 @@
-from neo4j.exceptions import ServiceUnavailable
+from neo4j.exceptions import Exception
 from argon2 import PasswordHasher
 
 
@@ -16,7 +16,7 @@ class adminResources:
             result = tx.run(query)
             try:
                 return [record for record in result]
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.base_resources.driver.session() as session:
@@ -35,7 +35,7 @@ class adminResources:
             try:
                 for record in result:
                     return record["Predicate"]
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.base_resources.driver.session() as session:

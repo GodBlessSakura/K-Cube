@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, abort, redirect, request, jsonify, session
 from app.api_driver import get_api_driver
-
+from neo4j.exceptions import ConstraintError
 user = Blueprint("user", __name__, template_folder="templates")
 
 
@@ -16,26 +16,31 @@ def profile():
 
 @user.route("/register", methods=["POST"])
 def register():
-    userId = request.json["userId"]
-    password = request.json["password"]
-    email = request.json["email"]
-    userName = request.json["userName"]
-    if userId and password and email and userName:
-        user = get_api_driver().user.create_user(
-            userId=userId, password=password, email=email, userName=userName
-        )
+    if (
+        "userId" in request.json
+        and "password" in request.json
+        and "email" in request.json
+        and "userName" in request.json
+    ):
+        userId = request.json["userId"]
+        password = request.json["password"]
+        email = request.json["email"]
+        userName = request.json["userName"]
+        try:
+            user = get_api_driver().user.create_user(
+                userId=userId, password=password, email=email, userName=userName
+            )
+        except ConstraintError:
+            return jsonify({"success": False, "message": "The chosen UserId is already token. Choose another one."})
         if user:
             session["user"] = user
             try:
                 session["permission"] = get_api_driver().user.get_user_permission(
                     userId=user["userId"]
                 )
-
-            except:
-                pass
             finally:
                 return jsonify({"success": True})
-    return jsonify({"success": False})
+    return jsonify({"success": False, "message": "incomplete register request"})
 
 
 @user.route("/logout")
@@ -46,9 +51,9 @@ def logout():
 
 @user.route("/login", methods=["POST"])
 def login():
-    userId = request.json["userId"]
-    password = request.json["password"]
-    if userId and password:
+    if "userId" in request.json and "password" in request.json:
+        userId = request.json["userId"]
+        password = request.json["password"]
         user = get_api_driver().user.authenticate_user(userId=userId, password=password)
         if user is not None:
             session["user"] = user
@@ -56,13 +61,11 @@ def login():
                 session["permission"] = get_api_driver().user.get_user_permission(
                     userId=user["userId"]
                 )
-                print(session["permission"])
-
             except Exception as e:
-                print(e)
+                return jsonify({"success": False})
             finally:
                 return jsonify({"success": True})
-    return jsonify({"success": False})
+    return jsonify({"success": False, "message": "incomplete login request"})
 
 
 @user.route("/isUserIdAvaliable", methods=["GET"])

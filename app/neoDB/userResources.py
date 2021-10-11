@@ -1,4 +1,4 @@
-from neo4j.exceptions import ServiceUnavailable
+from neo4j.exceptions import ConstraintError
 from argon2 import PasswordHasher
 from . import for_all_methods
 from app import InvalidRequest
@@ -31,8 +31,8 @@ def check_user_info(function):
 
 @for_all_methods(check_user_info)
 class userResources:
-    def __init__(self, base):
-        self.driver = base
+    def __init__(self, driver):
+        self.driver = driver
 
     def list_userId(self):
         def _query(tx):
@@ -40,7 +40,7 @@ class userResources:
             result = tx.run(query)
             try:
                 return [record for record in result]
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
@@ -58,7 +58,7 @@ class userResources:
             try:
                 for record in result:
                     return record["Predicate"]
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
@@ -89,7 +89,9 @@ class userResources:
             )
             try:
                 return dict([record for record in result][0].items())
-            except ServiceUnavailable as exception:
+            except ConstraintError as e:
+                raise e
+            except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
@@ -113,10 +115,10 @@ class userResources:
                     "RETURN user, permission_grant, permission;",
                 ]
             )
-            result = tx.run(query, userId=userId, role=role)
             try:
+                result = tx.run(query, userId=userId, role=role)
                 return [record for record in result][0]
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
@@ -140,7 +142,7 @@ class userResources:
                         return dict(rows[0]["user"].items())
                     else:
                         return None
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
@@ -166,7 +168,7 @@ class userResources:
                             if not permission[key]:
                                 permission[key] = value
                 return permission
-            except ServiceUnavailable as exception:
+            except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:

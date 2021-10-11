@@ -27,7 +27,7 @@
 
                         </v-row>
                         <v-row>
-                            <v-text-fieldv-model="courseForm.imageUrl" :rules="courseForm.imageUrlRules" :items="imagesUrl"
+                            <v-select label="Image url" v-model="courseForm.imageUrl" :rules="courseForm.imageUrlRules" :items="imagesUrl"
                                 required>
                                 <template v-slot:item="{ item }">
                                     <v-img :src="item" height="40" contain></v-img>
