@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, session
 
 
 class InvalidRequest(Exception):
@@ -26,6 +26,7 @@ from flask.cli import FlaskGroup
 mail = Mail()
 import os
 
+
 def create_app(config_object):
     app = Flask(__name__)
     if config_object is None:
@@ -33,7 +34,7 @@ def create_app(config_object):
     # https://stackoverflow.com/questions/26080872/secret-key-not-set-in-flask-session-using-the-flask-session-extension
     app.secret_key = "super secret key"
     app.config["SESSION_TYPE"] = "filesystem"
-    app.config["upload_image_directory"] = os.path.join("uploads","image")
+    app.config["upload_image_directory"] = os.path.join("uploads", "image")
 
     app.config.from_object(config_object)
     app.register_blueprint(admin, url_prefix="/admin")
@@ -64,5 +65,14 @@ def create_app(config_object):
         click.echo(
             api_driver.get_api_driver().user.assign_role(userId=userid, role="admin")
         )
+
+    @app.before_request
+    def renew_permission():
+        if "user" in session:
+            session[
+                "permission"
+            ] = api_driver.get_api_driver().user.get_user_permission(
+                userId=session["user"]["userId"]
+            )
 
     return app

@@ -63,6 +63,7 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
     p.canApproveRelationship = true,
     p.canOperateDraftForOthers = true,
     p.canUploadPhoto = true,
+    p.canAccessAdminPanel = true,
     p.canOwnDraft = true;""",
                 """MERGE (:Permission {
     role: "teacher",

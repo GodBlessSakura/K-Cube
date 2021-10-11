@@ -142,12 +142,20 @@ class userResources:
                 [
                     "MATCH",
                     "(permission:Permission{role: $role})<-[permission_grant:PRIVILEGED_OF]-(user:User{userId: $userId})",
-                    "DELETE permission_grant;",
+                    "DELETE permission_grant",
+                    "RETURN user, permission_grant, permission;",
                 ]
             )
             try:
                 result = tx.run(query, userId=userId, role=role)
-                return [record for record in result][0]
+                return [
+                    {
+                        "user": dict(record["user"].items()),
+                        "permission_grant": dict(record["permission_grant"].items()),
+                        "permission": dict(record["permission"].items()),
+                    }   
+                    for record in result
+                ][0]
             except Exception as exception:
                 raise exception
 

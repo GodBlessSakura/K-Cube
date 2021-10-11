@@ -1,11 +1,19 @@
 {% macro component() %}
 <v-card>
-    <v-treeview dense open-on-click :items="permissions"></v-treeview>
-    <v-data-table :headers="roles" :items="users" :items-per-page="500">
+    <v-card-title>
+        <v-treeview dense open-on-click :items="permissions"></v-treeview>
+    </v-card-title>
+    <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details></v-text-field>
+    <v-data-table :headers="roles" :items="users" :items-per-page="500" multi-sort :search="search">
         <template v-slot:item="{ item }">
-            <v-simple-checkbox readonly :value="item" v-if="typeof item  == 'boolean'">
-            </v-simple-checkbox>
-            <v-chip v-else>${item}</v-chip>
+            <tr>
+                <td v-for="(value, name) in item">
+                    <v-simple-checkbox readonly :value="value" v-if="typeof value  == 'boolean'"
+                        @click="flipRole(item.userId , name, value)">
+                    </v-simple-checkbox>
+                    <v-chip v-else>${item.userId}</v-chip>
+                </td>
+            </tr>
         </template>
     </v-data-table>
 </v-card>
@@ -16,7 +24,8 @@
         data: () => ({
             users: [],
             roles: [],
-            permissions: []
+            permissions: [],
+            search: ""
         }),
         methods: {
             loadData() {
@@ -31,11 +40,11 @@
                     .then(response => {
                         return response.json()
                     })
-                    .then(permissions => {
-                        if (permissions) {
-                            this.roles = [{ Text: "UserId", value: 'userId' }, ...permissions
-                                .map(p => { return { Text: p.role, value: p.role } })]
-                            this.permissions = permissions.map(p => {
+                    .then(body => {
+                        if (body.permissions) {
+                            this.roles = [{ text: "UserId", value: 'userId' }, ...body.permissions
+                                .map(p => { return { text: p.role, value: p.role } })]
+                            this.permissions = body.permissions.map(p => {
                                 return {
                                     name: p.role, children: Object.keys(p)
                                         .map(k => { return { name: k + ' : ' + p[k] } })
@@ -51,19 +60,16 @@
                                 .then(response => {
                                     return response.json()
                                 })
-                                .then(users => {
+                                .then(body => {
                                     this.$root.progress.show = false
-                                    if (users) {
-                                        console.log(users)
-                                        this.users = users.map(u => {
+                                    if (body.users) {
+                                        this.users = body.users.map(u => {
                                             user_row = { userId: u.user.userId }
                                             this.permissions.forEach(element => {
                                                 user_row[element.name] = u.roles.includes(element.name)
                                             });
                                             return user_row
                                         })
-                                        console.log(this.users)
-                                        console.log(this.roles)
                                     }
                                     else {
                                         if (body.message) {
@@ -89,12 +95,47 @@
                             }
                         }
                     })
+            },
+            flipRole(userId, role, value) {
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.put_delete_user_role') }}" + userId, {
+                    method: value ? "DELETE" : "PUT",
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role: role
+                    })
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+
+                        this.$root.progress.show = false
+                        if (body.success) {
+                            this.$root.progress.show = true
+                            this.loadData()
+                        }
+                        else {
+                            if (body.message) {
+                                this.errorSnackBar.message = body.message
+                                this.errorSnackBar.show = true
+                            }
+                            else {
+                                this.errorSnackBar.message = 'Unexpected error on getting role information.'
+                                this.errorSnackBar.show = true
+                            }
+                        }
+                    })
             }
         },
         template: '#adminUserRole',
         created: function () {
             this.loadData()
-        }
+        },
+        delimiters: ['${', '}'],
     })
 </script>
 {% endmacro %}

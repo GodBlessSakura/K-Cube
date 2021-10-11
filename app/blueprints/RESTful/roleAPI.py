@@ -11,7 +11,9 @@ def listPermission():
     if not session["permission"] or not session["permission"]["canAssignRole"]:
         return InvalidRequest("unauthorized operation")
     try:
-        return jsonify(get_api_driver().admin.listPermission())
+        return jsonify(
+            {"permissions": get_api_driver().admin.listPermission(), "success": True}
+        )
     except Exception as e:
         raise e
 
@@ -21,38 +23,51 @@ def listUserPermission():
     if not session["permission"] or not session["permission"]["canAssignRole"]:
         return InvalidRequest("unauthorized operation")
     try:
-        return jsonify(get_api_driver().admin.listUserPermission())
+        return jsonify(
+            {
+                "users": get_api_driver().admin.listUserPermission(),
+                "success": True,
+            }
+        )
     except Exception as e:
         raise e
 
 
-@RESTful.route(api + "<userId>", methods=["PUT"])
+@RESTful.route(api, defaults={"userId": None}, methods=["PUT", "DELETE"])
+@RESTful.route(api + "<userId>", methods=["PUT", "DELETE"])
+def put_delete_user_role(userId):
+    if request.method == "PUT":
+        return assign_user_role(userId)
+    if request.method == "DELETE":
+        return remove_user_role(userId)
+
+
 def assign_user_role(userId):
     if not session["permission"] or not session["permission"]["canAssignRole"]:
         return InvalidRequest("unauthorized operation")
-    if "role" in request.json:
+    if "role" in request.json and userId is not None:
         try:
-            return jsonify(
+            result = jsonify(
                 get_api_driver().user.assign_role(
                     userId=userId, role=request.json["role"]
                 )
             )
+            return jsonify({"success": True, "message": "assign done"})
         except Exception as e:
             raise e
-    return jsonify({"success": False, "message": "incomplete login request"})
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "<userId>", methods=["DELETE"])
 def remove_user_role(userId):
     if not session["permission"] or not session["permission"]["canAssignRole"]:
         return InvalidRequest("unauthorized operation")
-    if "role" in request.json:
+    if "role" in request.json and userId is not None:
         try:
-            return jsonify(
-                get_api_driver().user.removeRole(
-                    userId=userId, role=request.json["role"]
-                )
+            result = get_api_driver().user.removeRole(
+                userId=userId, role=request.json["role"]
             )
+
+            return jsonify({"success": True, "message": "remove done"})
         except Exception as e:
             raise e
-    return jsonify({"success": False, "message": "incomplete login request"})
+    return jsonify({"success": False, "message": "incomplete request"})
