@@ -39,7 +39,8 @@ class userResources:
             query = " ".join(["MATCH (user:User)", "RETURN user.userId;"])
             result = tx.run(query)
             try:
-                return [record for record in result]
+                rows = [record for record in result]
+                return [row["user.userId"] for row in rows]
             except Exception as exception:
                 raise exception
 

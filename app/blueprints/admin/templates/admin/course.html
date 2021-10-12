@@ -82,12 +82,12 @@
                             }
                             else {
                                 if (body.message) {
-                                    this.errorSnackBar.message = body.message
-                                    this.errorSnackBar.show = true
+                                    this.$root.errorSnackBar.message = body.message
+                                    this.$root.errorSnackBar.show = true
                                 }
                                 else {
-                                    this.errorSnackBar.message = 'Creation failed for unkown reason.'
-                                    this.errorSnackBar.show = true
+                                    this.$root.errorSnackBar.message = 'Creation failed for unkown reason.'
+                                    this.$root.errorSnackBar.show = true
                                 }
                             }
                         })

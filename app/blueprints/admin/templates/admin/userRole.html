@@ -8,7 +8,7 @@
         <template v-slot:item="{ item }">
             <tr>
                 <td v-for="(value, name) in item">
-                    <v-simple-checkbox readonly :value="value" v-if="typeof value  == 'boolean'"
+                    <v-simple-checkbox readonly color="info" :value="value" v-if="typeof value  == 'boolean'"
                         @click="flipRole(item.userId , name, value)">
                     </v-simple-checkbox>
                     <v-chip v-else>${item.userId}</v-chip>
@@ -73,12 +73,12 @@
                                     }
                                     else {
                                         if (body.message) {
-                                            this.errorSnackBar.message = body.message
-                                            this.errorSnackBar.show = true
+                                            this.$root.errorSnackBar.message = body.message
+                                            this.$root.errorSnackBar.show = true
                                         }
                                         else {
-                                            this.errorSnackBar.message = 'Unexpected error on getting user information.'
-                                            this.errorSnackBar.show = true
+                                            this.$root.errorSnackBar.message = 'Unexpected error on getting user information.'
+                                            this.$root.errorSnackBar.show = true
                                         }
                                     }
                                 })
@@ -86,12 +86,12 @@
                         }
                         else {
                             if (body.message) {
-                                this.errorSnackBar.message = body.message
-                                this.errorSnackBar.show = true
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
                             }
                             else {
-                                this.errorSnackBar.message = 'Unexpected error on getting role information.'
-                                this.errorSnackBar.show = true
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting role information.'
+                                this.$root.errorSnackBar.show = true
                             }
                         }
                     })
@@ -120,12 +120,12 @@
                         }
                         else {
                             if (body.message) {
-                                this.errorSnackBar.message = body.message
-                                this.errorSnackBar.show = true
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
                             }
                             else {
-                                this.errorSnackBar.message = 'Unexpected error on getting role information.'
-                                this.errorSnackBar.show = true
+                                this.$root.errorSnackBar.message = 'Unexpected error on setting role assignment.'
+                                this.$root.errorSnackBar.show = true
                             }
                         }
                     })

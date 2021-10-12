@@ -109,6 +109,8 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
             self.course = courseResources(driver=self.driver)
             from .adminResources import adminResources
             self.admin = adminResources(driver=self.driver)
+            from .relationshipResources import relationshipResources
+            self.relationship = relationshipResources(driver=self.driver)
 
 
     def close(self):
