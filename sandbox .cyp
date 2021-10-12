@@ -113,10 +113,10 @@ MERGE (r)<-[:USER_APPROVE]-(approver);
 MATCH
     (owner:User{userId: $userId})-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOwnDraft: true}),
     (course:Course)-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})
-MERGE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)
+MERGE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)-[:COURSE_DESCRIBE]->(courseConcept)
 ON CREATE
     set 
-        draft.draftId = owner.userId + "." + replace($draftName," ", "_"),
+        draft.draftId = owner.userId + "." + replace($courseConcept.name," ", "_") + "." + replace($draftName," ", "_"),
         draft.name = $draftName,
         draft.creationDate = timestamp(),
         draft.lastModified = timestamp(),
