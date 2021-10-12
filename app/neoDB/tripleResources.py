@@ -58,12 +58,12 @@ class tripleResources:
 
     def createtriple(self, draftId, userId,h_name,r_name,t_name):
         def _query(tx):
-            query = "\n".join(
+            query = " ".join(
                 [
                     "MATCH (user:User{userId: $userId})"
                     "-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true, canCreateGraphConcept: true})",
-                    "WITH DISTINCT user"
-                    "MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(user)"
+                    "WITH DISTINCT user",
+                    "MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(user)",
                     "WITH DISTINCT draft",
                     "MATCH (approved_graph_relationship:GraphRelationship{name: $r_name})"
                     "<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})",
@@ -103,18 +103,19 @@ class tripleResources:
                     "MATCH (h:GraphConcept{name: $h_name})",
                     "MATCH (t:GraphConcept{name: $t_name})",
                     "MATCH (h) -[r:GRAPH_RELATIONSHIP{name: $r_name, draftId : draft.draftId}]-> (t)",
+                    "WITH h.name as h_name, r.name as r_name, t.name as t_name, r, draft",
                     "DELETE r",
                     "SET draft.lastModified = timestamp()",
-                    "RETURN h.name, r.name, t.name;"
+                    "RETURN h_name, r_name, t_name;"
                 ]
             )
             result = tx.run(query, draftId=draftId, userId = userId,h_name=h_name,r_name=r_name,t_name=t_name)
             try:
                 row = [record for record in result][0]
                 return {
-                    "h_name":row["h.name"],
-                    "r_name":row["r.name"],
-                    "t_name":row["t.name"]
+                    "h_name":row["h_name"],
+                    "r_name":row["r_name"],
+                    "t_name":row["t_name"]
                     }
             except Exception as exception:
                 raise exception

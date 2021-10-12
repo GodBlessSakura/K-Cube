@@ -30,7 +30,7 @@ def mergeTriple(draftId):
                     r_name=request.json["r_name"],
                     t_name=request.json["t_name"],
                 )
-                return jsonify({"success": True})
+                return jsonify({"success": True, "triple": result})
             except Exception as e:
                 raise e
         return jsonify({"success": False, "message": "incomplete request"})
@@ -57,7 +57,7 @@ def deleteTriple(draftId):
                     r_name=request.json["r_name"],
                     t_name=request.json["t_name"],
                 )
-                return jsonify({"success": True})
+                return jsonify({"success": True, "triple": result})
             except Exception as e:
                 raise e
         return jsonify({"success": False, "message": "incomplete request"})

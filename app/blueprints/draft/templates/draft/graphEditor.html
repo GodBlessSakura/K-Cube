@@ -9,8 +9,11 @@
                 <v-text-field v-model="h_name" :rules="nameRules" label="head entity"></v-text-field>
                 <v-select v-model="r_name" :items="relationships" label="relationship"></v-select>
                 <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"></v-text-field>
-                <v-btn @click="createTriple">
+                <v-btn @click="createTriple" v-if="!selectingEdge">
                     Create link
+                </v-btn>
+                <v-btn color="red" @click="deleteTriple" v-else>
+                    delete link
                 </v-btn>
             </v-form>
         </v-card>
@@ -34,6 +37,7 @@
             edges: null,
             network: null,
             tripleDialog: false,
+            selectingEdge: false,
         }),
         methods: {
             loadData() {
@@ -60,7 +64,7 @@
                                 this.edges.add({
                                     from: triple.h_name,
                                     to: triple.t_name,
-                                    label: triple.r_name
+                                    label: triple.r_name,
                                 })
                                 nodes.add(triple.h_name)
                                 nodes.add(triple.t_name)
@@ -75,26 +79,46 @@
                                 edges: this.edges,
                             };
                             let container = document.getElementById("editor");
-                            let options = {};
+                            let options = {
+                                nodes: {
+                                    shape: 'circle',
+                                    font: {
+                                        size: 8
+                                    }
+                                },
+                                physics: {
+                                    repulsion: {
+                                        springLength: 800
+                                    }
+                                }
+                            };
                             this.network = new vis.Network(container, data, options);
                             self = this
                             this.network.on('selectNode', (event) => {
-                                self.tripleDialog = true;
+                                console.log(event)
+                                if (self.selectingEdge) {
+                                    self.h_name = ''
+                                    self.r_name = ''
+                                    self.t_name = ''
+                                }
                                 if (!self.h_name) {
                                     self.h_name = event.nodes[0]
                                 }
                                 else {
                                     self.t_name = event.nodes[0]
                                 }
+                                self.selectingEdge = false
+                                self.tripleDialog = true;
                             })
                             this.network.on('selectEdge', (event) => {
                                 self.tripleDialog = true;
-                                if (!self.h_name) {
-                                    self.h_name = event.nodes[0]
-                                }
-                                else {
-                                    self.t_name = event.nodes[0]
-                                }
+                                console.log(event)
+                                edgeData = this.edges.get(event.edges[0])
+                                console.log(edgeData)
+                                self.h_name = edgeData.from
+                                self.r_name = edgeData.label
+                                self.t_name = edgeData.to
+                                self.selectingEdge = true
                             })
 
                         }
@@ -139,7 +163,7 @@
             createTriple() {
                 if (this.$refs.tripleForm.validate()) {
                     fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
-                        method: 'put',
+                        method: 'PUT',
                         cache: 'no-store',
                         headers: {
                             'Content-Type': 'application/json'
@@ -154,8 +178,33 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.success) {
-                                this.relationships = body.relationships
+                            if (body.triple) {
+                                let triple = body.triple
+                                if (this.nodes.get({
+                                    filter: (element =>
+                                        element.id == triple.h_name
+                                    )
+                                }).length < 1) {
+                                    this.nodes.add({
+                                        id: triple.h_name, label: triple.h_name
+                                    })
+                                }
+                                if (this.nodes.get({
+                                    filter: (element =>
+                                        element.id == triple.t_name
+                                    )
+                                }).length < 1) {
+                                    this.nodes.add({
+                                        id: triple.t_name, label: triple.t_name
+                                    })
+                                }
+                                this.edges.add({
+                                    from: triple.h_name,
+                                    to: triple.t_name,
+                                    label: triple.r_name,
+                                })
+                                console.log(this.nodes)
+                                console.log(this.edges)
                             }
                             else {
                                 if (body.message) {
@@ -163,7 +212,51 @@
                                     this.$root.errorSnackBar.show = true
                                 }
                                 else {
-                                    this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                                    this.$root.errorSnackBar.message = 'Unexpected error when creating triple.'
+                                    this.$root.errorSnackBar.show = true
+                                }
+                            }
+                        })
+                }
+            },
+            deleteTriple() {
+                if (this.$refs.tripleForm.validate()) {
+                    fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            h_name: this.h_name, r_name: this.r_name,
+                            t_name: this.t_name,
+                        })
+                    })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.triple) {
+                                let triple = body.triple
+                                this.edges.get({
+                                    filter: (edge) => {
+                                        return edge.from == triple.h_name &&
+                                            edge.to == triple.t_name &&
+                                            edge.label == triple.r_name
+                                    }
+                                }).forEach(removedEdge => {
+                                    this.edges.remove(removedEdge.id)
+                                })
+                                console.log(this.edges)
+                            }
+                            else {
+                                if (body.message) {
+                                    this.$root.errorSnackBar.message = body.message
+                                    this.$root.errorSnackBar.show = true
+                                }
+                                else {
+                                    this.$root.errorSnackBar.message = 'Unexpected error when deleted triple.'
                                     this.$root.errorSnackBar.show = true
                                 }
                             }
