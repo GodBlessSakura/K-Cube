@@ -35,7 +35,7 @@ from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 
 
-class APIDriver():
+class APIDriver:
     def __init__(self, uri, user, password):
         self.driver = GraphDatabase.driver(uri, auth=(user, password), encrypted=False)
         queries = """CREATE CONSTRAINT user_uid_constraint IF NOT EXISTS ON (n:User) ASSERT n.userId IS UNIQUE;
@@ -103,15 +103,34 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
 
             with self.driver.session() as session:
                 session.write_transaction(_query)
+
             from .userResources import userResources
+
             self.user = userResources(driver=self.driver)
+
             from .courseResources import courseResources
+
             self.course = courseResources(driver=self.driver)
+
             from .adminResources import adminResources
+
             self.admin = adminResources(driver=self.driver)
+
             from .relationshipResources import relationshipResources
+
             self.relationship = relationshipResources(driver=self.driver)
 
+            from .draftResources import draftResources
+
+            self.draft = draftResources(driver=self.driver)
+
+            from .tripleResources import tripleResources
+
+            self.triple = tripleResources(driver=self.driver)
+
+            from .graphResources import graphResources
+
+            self.graph = graphResources(driver=self.driver)
 
     def close(self):
         self.driver.close()

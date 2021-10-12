@@ -6,6 +6,19 @@ api = "/relationship/"
 from . import RESTful
 
 
+@RESTful.route(api + "approved")
+def listApprovedRelationships():
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "relationships": get_api_driver().relationship.listApprovedRelationships(),
+            }
+        )
+    except Exception as e:
+        raise e
+
+
 @RESTful.route(api)
 def getRelationShipView():
     if "user" not in session or "userId" not in session["user"]:
@@ -18,8 +31,10 @@ def getRelationShipView():
     try:
         return jsonify(
             {
-            "success": True,
-            "relationships": get_api_driver().relationship.listRelationship(userId=session["user"]["userId"])
+                "success": True,
+                "relationships": get_api_driver().relationship.listRelationship(
+                    userId=session["user"]["userId"]
+                ),
             }
         )
     except Exception as e:

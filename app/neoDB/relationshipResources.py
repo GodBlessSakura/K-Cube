@@ -125,3 +125,20 @@ class relationshipResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def listApprovedRelationships(self):
+        def _query(tx):
+            query = " ".join(
+                [
+                    "MATCH (r:GraphRelationship)<-[:USER_APPROVE]-(approvers:User)",
+                    "RETURN DISTINCT r.name",
+                ]
+            )
+            result = tx.run(query)
+            try:
+                return [record["r.name"] for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

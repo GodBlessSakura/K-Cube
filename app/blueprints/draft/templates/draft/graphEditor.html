@@ -1,0 +1,182 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card style="height: 100%; width: 100%;">
+    <div id="editor" style="height: 80vh; width: 90vw;"></div>
+    <v-dialog v-model="tripleDialog" width="500">
+        <v-card>
+            <v-form ref="tripleForm">
+                <v-text-field v-model="h_name" :rules="nameRules" label="head entity"></v-text-field>
+                <v-select v-model="r_name" :items="relationships" label="relationship"></v-select>
+                <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"></v-text-field>
+                <v-btn @click="createTriple">
+                    Create link
+                </v-btn>
+            </v-form>
+        </v-card>
+    </v-dialog>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+{{ layout.visCDN() }}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+            relationships: [],
+            nameRules: [v => !!v || 'Course code is required',
+            v => v.length > 3 && v.length < 101 || 'Course code should be anything between 4 and 100 charactors',
+            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Course code can only contains alphanumeric characters and space.'
+            ],
+            h_name: '',
+            t_name: '',
+            r_name: '',
+            nodes: null,
+            edges: null,
+            network: null,
+            tripleDialog: false,
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.draft') }}" + 'render/' + '{{ draftId }}', {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.draft && body.triples) {
+                            this.nodes = new vis.DataSet([]);
+                            this.edges = new vis.DataSet([
+                            ]);
+                            let nodes = new Set()
+                            nodes.add(body.draft.root)
+                            body.triples.forEach(triple => {
+                                this.edges.add({
+                                    from: triple.h_name,
+                                    to: triple.t_name,
+                                    label: triple.r_name
+                                })
+                                nodes.add(triple.h_name)
+                                nodes.add(triple.t_name)
+                            });
+                            nodes.forEach(node => {
+                                this.nodes.add({
+                                    id: node, label: node
+                                })
+                            })
+                            let data = {
+                                nodes: this.nodes,
+                                edges: this.edges,
+                            };
+                            let container = document.getElementById("editor");
+                            let options = {};
+                            this.network = new vis.Network(container, data, options);
+                            self = this
+                            this.network.on('selectNode', (event) => {
+                                self.tripleDialog = true;
+                                if (!self.h_name) {
+                                    self.h_name = event.nodes[0]
+                                }
+                                else {
+                                    self.t_name = event.nodes[0]
+                                }
+                            })
+                            this.network.on('selectEdge', (event) => {
+                                self.tripleDialog = true;
+                                if (!self.h_name) {
+                                    self.h_name = event.nodes[0]
+                                }
+                                else {
+                                    self.t_name = event.nodes[0]
+                                }
+                            })
+
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting draft information.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+                fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.relationships) {
+                            this.relationships = body.relationships
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+            },
+            createTriple() {
+                if (this.$refs.tripleForm.validate()) {
+                    fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
+                        method: 'put',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            h_name: this.h_name, r_name: this.r_name,
+                            t_name: this.t_name,
+                        })
+                    })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.success) {
+                                this.relationships = body.relationships
+                            }
+                            else {
+                                if (body.message) {
+                                    this.$root.errorSnackBar.message = body.message
+                                    this.$root.errorSnackBar.show = true
+                                }
+                                else {
+                                    this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                                    this.$root.errorSnackBar.show = true
+                                }
+                            }
+                        })
+                }
+            }
+        },
+        created: function () {
+            this.loadData()
+
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

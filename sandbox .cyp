@@ -131,12 +131,12 @@ RETURN draft;
 MATCH
     (:User{userId: $operatorId})-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOperateDraftForOthers: true}),
     (owner:User{userId: $ownerId})-[:PRIVILEGED_OF]-(:Permission{canOwnDraft: true}),
-    (course:Course)<-[:DRAFT_DESCRIBE]-(:GraphConcept{name: courseCode})
+    (:Course)<-[:COURSE_DESCRIBE]->(:GraphConcept{name: courseCode})
 MERGE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)
 ON CREATE
     set 
         draft.draftId = owner.userId + "." + replace($draftName," ", "_"),
-        draft.name = $draftName,
+        draft.draftName = $draftName,
         draft.creationDate = timestamp(),
         draft.lastModified = timestamp(),
         draft.status = "unpublished"
@@ -150,7 +150,7 @@ RETURN draft;
 :param t_name => 'data type'
 MATCH
     (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true, canCreateGraphConcept: true}),
-    (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveProposal: true})
+    (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})
 MERGE (h:GraphConcept{name: $h_name})
 MERGE (t:GraphConcept{name: $t_name})
 MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name}]-> (t)
@@ -170,7 +170,7 @@ RETURN draft;
 MATCH
     (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $ownerId})-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true}),
     (:User{userId: $operatorId})-[:PRIVILEGED_OF]->(:Permission{canCreateGraphConcept: true, canCreateDraftForOthers: true}),
-    (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveProposal: true})
+    (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)-[:PRIVILEGED_OF]->(:Permission{canApproveRelationship: true})
 MERGE (h:GraphConcept{name: $h_name})
 MERGE (t:GraphConcept{name: $t_name})
 MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name, r.draftId = draft.draftId}]-> (t)

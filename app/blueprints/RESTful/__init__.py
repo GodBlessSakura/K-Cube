@@ -6,3 +6,4 @@ from . import draftAPI
 from . import graphAPI
 from . import relationshipAPI
 from . import roleAPI
+from . import tripleAPI

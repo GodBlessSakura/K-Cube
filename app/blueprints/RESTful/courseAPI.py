@@ -23,6 +23,16 @@ def courseCreate():
                 displayName=displayName, name=name, imageURL=imageURL
             )
             return jsonify({"success": True})
-        except ConfigurationError as e:
+        except Exception as e:
             return jsonify({"success": False, "message": str(e)})
     return jsonify({"success": False, "message": "incomplete request"})
+
+
+@RESTful.route(api, methods=["GET"])
+def listCourse():
+    try:
+        return jsonify(
+            {"success": True, "courses": get_api_driver().course.listCourse()}
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
