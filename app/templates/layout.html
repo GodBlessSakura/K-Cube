@@ -45,9 +45,6 @@
                         <v-list-item href="{{ url_for('user.profile') }}">
                             <v-list-item-title>Edit Profile</v-list-item-title>
                         </v-list-item>
-                        <v-list-item href="{{ url_for('user.permission') }}">
-                            <v-list-item-title>Refresh Permission</v-list-item-title>
-                        </v-list-item>
                         <v-list-item href="{{ url_for('user.logout') }}">
                             <v-list-item-title>Logout</v-list-item-title>
                         </v-list-item>
@@ -194,7 +191,7 @@
                     </v-list-item>
                     {% endif %}
                     {% if session['permission'] and session['permission'].canProposeRelationship %}
-                    <v-list-item link href="{{ url_for('draft.my_space') }}">
+                    <v-list-item link href="{{ url_for('collaborate.index') }}">
                         <v-list-item-icon>
                             <v-icon>forum</v-icon>
                         </v-list-item-icon>

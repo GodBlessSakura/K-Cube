@@ -198,7 +198,6 @@ class userResources:
             try:
                 permission = dict()
                 for row in [record for record in result]:
-                    print(row)
                     for key, value in row["permissions"].items():
                         if key not in permission:
                             permission[key] = value

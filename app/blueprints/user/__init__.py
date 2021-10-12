@@ -8,8 +8,8 @@ user = Blueprint("user", __name__, template_folder="templates")
 def back():
     return redirect("/")
 
-@user.route("/permission")
-def permission():
+@user.route("/refreshPermission")
+def refreshPermission():
     if "user" in session and "userId" in session["user"]:
         try:
             session["permission"] = get_api_driver().user.get_user_permission(
@@ -45,11 +45,9 @@ def register():
         if user:
             session["user"] = user
             try:
-                print(user["userId"])
                 session["permission"] = get_api_driver().user.get_user_permission(
                     userId=user["userId"]
                 )
-                print("permission get")
             finally:
                 return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete register request"})

@@ -13,6 +13,7 @@ class InvalidRequest(Exception):
 from flask_mail import Mail
 from app.config import config
 from app.blueprints.admin import admin
+from app.blueprints.collaborate import collaborate
 from app.blueprints.comprehensive import comprehensive
 from app.blueprints.draft import draft
 from app.blueprints.job import job
@@ -38,6 +39,7 @@ def create_app(config_object):
 
     app.config.from_object(config_object)
     app.register_blueprint(admin, url_prefix="/admin")
+    app.register_blueprint(collaborate, url_prefix="/collaborate")
     app.register_blueprint(comprehensive, url_prefix="/comprehensive")
     app.register_blueprint(draft, url_prefix="/draft")
     app.register_blueprint(job, url_prefix="/job")
@@ -66,13 +68,13 @@ def create_app(config_object):
             api_driver.get_api_driver().user.assign_role(userId=userid, role="admin")
         )
 
-    # @app.before_request
-    # def renew_permission():
-    #     if "user" in session and "userId" in session["user"]:
-    #         session[
-    #             "permission"
-    #         ] = api_driver.get_api_driver().user.get_user_permission(
-    #             userId=session["user"]["userId"]
-    #         )
+    @app.before_request
+    def renew_permission():
+        if "user" in session and "userId" in session["user"]:
+            session[
+                "permission"
+            ] = api_driver.get_api_driver().user.get_user_permission(
+                userId=session["user"]["userId"]
+            )
 
     return app
