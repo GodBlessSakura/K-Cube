@@ -13,6 +13,10 @@
         methods: {
             uploadImage() {
                 if (this.$refs.imageForm.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
                     let formData = new FormData(this.$refs.imageForm.$el)
                     this.$root.progress.show = true
                     fetch("{{ url_for('uploads.image') }}", {

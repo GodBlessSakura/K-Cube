@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, abort, redirect, request, jsonify, session
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
+from app import InvalidRequest
+
 user = Blueprint("user", __name__, template_folder="templates")
 
 
@@ -8,15 +10,18 @@ user = Blueprint("user", __name__, template_folder="templates")
 def back():
     return redirect("/")
 
+
 @user.route("/refreshPermission")
 def refreshPermission():
     if "user" in session and "userId" in session["user"]:
         try:
             session["permission"] = get_api_driver().user.get_user_permission(
-                userId=session["user"]["userId"])
+                userId=session["user"]["userId"]
+            )
         except:
             pass
     return redirect("/")
+
 
 @user.route("/profile")
 def profile():
@@ -40,8 +45,13 @@ def register():
                 userId=userId, password=password, email=email, userName=userName
             )
         except ConstraintError:
-            return jsonify({"success": False, "message": "The chosen UserId is already token. Choose another one."})
-        
+            return jsonify(
+                {
+                    "success": False,
+                    "message": "The chosen UserId is already token. Choose another one.",
+                }
+            )
+
         if user:
             session["user"] = user
             try:
@@ -84,3 +94,16 @@ def isUserIdAvaliable():
     return jsonify(
         {"avaliable": not get_api_driver().user.is_userId_used(userId=userId)}
     )
+
+
+@user.route("renew_permission")
+def renew_permission():
+    if "user" in session and "userId" in session["user"]:
+        try:
+            session["permission"] = get_api_driver().user.get_user_permission(
+                userId=session["user"]["userId"]
+            )
+            return jsonify({"success": True})
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+    return InvalidRequest("unauthorized operation")

@@ -105,6 +105,10 @@
             },
             submitDraft() {
                 if (this.$refs.draftControl.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.createDraft', courseCode = courseCode) }}", {
                         method: 'POST',
@@ -144,8 +148,8 @@
                         })
                 }
             },
-            openGraph(windowEvent, clickEvent){
-                window.location.replace("{{ url_for('draft.edit_draft') }}"+'/'+clickEvent.item.draftId)
+            openGraph(windowEvent, clickEvent) {
+                window.location.replace("{{ url_for('draft.edit_draft') }}" + '/' + clickEvent.item.draftId)
             },
         },
         created: function () {

@@ -68,13 +68,4 @@ def create_app(config_object):
             api_driver.get_api_driver().user.assign_role(userId=userid, role="admin")
         )
 
-    @app.before_request
-    def renew_permission():
-        if "user" in session and "userId" in session["user"]:
-            session[
-                "permission"
-            ] = api_driver.get_api_driver().user.get_user_permission(
-                userId=session["user"]["userId"]
-            )
-
     return app

@@ -23,7 +23,12 @@
     <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
-    <div id="nav">
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+    <div id="nav" v-cloak>
         <v-app>
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
@@ -37,7 +42,7 @@
                 {% if session['user'] %}
                 <v-menu offset-y>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn text v-bind="attrs" v-on="on">
+                        <v-btn text v-bind="attrs" v-on="on" style="text-transform: none !important;">
                             {{session['user'].userName}}<v-icon>arrow_drop_down</v-icon>
                         </v-btn>
                     </template>
@@ -224,6 +229,14 @@
                     </v-btn>
                 </template>
             </v-snackbar>
+            <v-snackbar v-model="bePatientSnackBar.show" :timeout="2000">
+                A http request is already submitting in progress. Thank you for your patience.
+                <template v-slot:action="{ attrs }">
+                    <v-btn color="blue" text v-bind="attrs" @click="bePatientSnackBar.show = false">
+                        Close
+                    </v-btn>
+                </template>
+            </v-snackbar>
             </v-app-bar>
             <v-main>
                 <v-container fluid>
@@ -249,6 +262,7 @@
                 miniSync: true,
                 errorSnackBar: { show: false, message: '' },
                 completeSnackBar: { show: false, message: '' },
+                bePatientSnackBar: { show: false },
                 progress: { show: false },
                 shouldShowLoginForm: false,
                 tab: 'register',

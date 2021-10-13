@@ -113,6 +113,10 @@
                     })
             },
             flipProposal(name, value) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.relationshipProposal') }}", {
                     method: value ? "DELETE" : "PUT",
@@ -131,7 +135,6 @@
 
                         this.$root.progress.show = false
                         if (body.success) {
-                            this.$root.progress.show = true
                             this.loadData()
                         }
                         else {
@@ -148,6 +151,10 @@
             },
             //{% if session['permission'] and session['permission'].canApproveRelationship %}               
             flipApproval(name, value) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.relationshipApproval') }}", {
                     method: value ? "DELETE" : "PUT",
@@ -166,7 +173,6 @@
 
                         this.$root.progress.show = false
                         if (body.success) {
-                            this.$root.progress.show = true
                             this.loadData()
                         }
                         else {
@@ -184,6 +190,10 @@
             //{% endif  %}
             submitSuggestion() {
                 if (this.$refs.suggestionControl.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.createProposal') }}", {
                         method: 'PUT',

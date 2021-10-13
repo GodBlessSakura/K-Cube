@@ -53,6 +53,10 @@
         methods: {
             Submit() {
                 if (this.$refs.control.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.courseCreate') }}", {
                         method: 'POST',

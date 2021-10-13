@@ -97,6 +97,10 @@
                     })
             },
             flipRole(userId, role, value) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.put_delete_user_role') }}" + userId, {
                     method: value ? "DELETE" : "PUT",
@@ -115,7 +119,6 @@
 
                         this.$root.progress.show = false
                         if (body.success) {
-                            this.$root.progress.show = true
                             this.loadData()
                         }
                         else {

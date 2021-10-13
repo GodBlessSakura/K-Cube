@@ -2,22 +2,50 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
-    <div id="editor" style="height: 80vh; width: 90vw;"></div>
-    <v-dialog v-model="tripleDialog" width="500">
-        <v-card>
+    <div style="height: 80vh; width: 90vw;">
+        <div id="editor" style="height: 100%; width: 100%;"></div>
+        <v-fab-transition>
+            <v-btn color="primary" absolute bottom right fab @click="network.fit()">
+                <v-icon>fit_screen</v-icon>
+            </v-btn>
+        </v-fab-transition>
+    </div>
+    <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
+        <v-sheet>
             <v-form ref="tripleForm">
-                <v-text-field v-model="h_name" :rules="nameRules" label="head entity"></v-text-field>
-                <v-select v-model="r_name" :items="relationships" label="relationship"></v-select>
-                <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"></v-text-field>
-                <v-btn @click="createTriple" v-if="!selectingEdge">
-                    Create link
-                </v-btn>
-                <v-btn color="red" @click="deleteTriple" v-else>
-                    delete link
-                </v-btn>
+                <v-container>
+                    <v-row>
+                        <v-btn :ripple="false" color="error" plain block small @click="unselectAll" elevation="2">
+                            dismiss
+                            <v-icon right>
+                                clear_all
+                            </v-icon>
+                        </v-btn>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <v-text-field v-model="h_name" :rules="nameRules" label="head entity"></v-text-field>
+                        </v-col>
+                        <v-col>
+                            <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship">
+                            </v-select>
+                        </v-col>
+                        <v-col>
+                            <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"></v-text-field>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-btn @click="createTriple" v-if="!selectingEdge">
+                            Create link
+                        </v-btn>
+                        <v-btn color="error" @click="deleteTriple" v-else>
+                            delete link
+                        </v-btn>
+                    </v-row>
+                </v-container>
             </v-form>
-        </v-card>
-    </v-dialog>
+        </v-sheet>
+    </v-bottom-sheet>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
@@ -26,9 +54,9 @@
     Vue.component('app-content', {
         data: () => ({
             relationships: [],
-            nameRules: [v => !!v || 'Course code is required',
-            v => v.length > 3 && v.length < 101 || 'Course code should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Course code can only contains alphanumeric characters and space.'
+            nameRules: [v => !!v || 'Name is required',
+            v => v.length > 3 && v.length < 101 || 'Name should be anything between 4 and 100 charactors',
+            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Name can only contains alphanumeric characters and space.'
             ],
             h_name: '',
             t_name: '',
@@ -36,7 +64,7 @@
             nodes: null,
             edges: null,
             network: null,
-            tripleDialog: false,
+            tripleBottomSheet: false,
             selectingEdge: false,
         }),
         methods: {
@@ -80,11 +108,24 @@
                             };
                             let container = document.getElementById("editor");
                             let options = {
-                                nodes: {
-                                    shape: 'circle',
+                                interaction: {
+                                    selectConnectedEdges: false,
+                                },
+                                edges: {
                                     font: {
-                                        size: 8
-                                    }
+                                        size: 12,
+                                        align: 'horizontal',
+                                        vadjust: 0
+                                    },
+                                    length: 250,
+                                    arrows: {
+                                        to: true
+                                    },
+                                    smooth: false,
+                                },
+                                nodes: {
+                                    shape: 'dot',
+                                    size: 30,
                                 },
                                 physics: {
                                     repulsion: {
@@ -95,11 +136,8 @@
                             this.network = new vis.Network(container, data, options);
                             self = this
                             this.network.on('selectNode', (event) => {
-                                console.log(event)
                                 if (self.selectingEdge) {
-                                    self.h_name = ''
-                                    self.r_name = ''
-                                    self.t_name = ''
+                                    self.clearForm()
                                 }
                                 if (!self.h_name) {
                                     self.h_name = event.nodes[0]
@@ -108,11 +146,10 @@
                                     self.t_name = event.nodes[0]
                                 }
                                 self.selectingEdge = false
-                                self.tripleDialog = true;
+                                self.tripleBottomSheet = true;
                             })
                             this.network.on('selectEdge', (event) => {
-                                self.tripleDialog = true;
-                                console.log(event)
+                                self.tripleBottomSheet = true;
                                 edgeData = this.edges.get(event.edges[0])
                                 console.log(edgeData)
                                 self.h_name = edgeData.from
@@ -161,7 +198,12 @@
                     })
             },
             createTriple() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
                 if (this.$refs.tripleForm.validate()) {
+                    this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
                         method: 'PUT',
                         cache: 'no-store',
@@ -179,6 +221,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
+                                unselectAll()
                                 let triple = body.triple
                                 if (this.nodes.get({
                                     filter: (element =>
@@ -203,8 +246,7 @@
                                     to: triple.t_name,
                                     label: triple.r_name,
                                 })
-                                console.log(this.nodes)
-                                console.log(this.edges)
+                                this.network.redraw()
                             }
                             else {
                                 if (body.message) {
@@ -220,7 +262,12 @@
                 }
             },
             deleteTriple() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
                 if (this.$refs.tripleForm.validate()) {
+                    this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
                         method: 'DELETE',
                         cache: 'no-store',
@@ -238,6 +285,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
+                                unselectAll()
                                 let triple = body.triple
                                 this.edges.get({
                                     filter: (edge) => {
@@ -248,7 +296,6 @@
                                 }).forEach(removedEdge => {
                                     this.edges.remove(removedEdge.id)
                                 })
-                                console.log(this.edges)
                             }
                             else {
                                 if (body.message) {
@@ -262,6 +309,17 @@
                             }
                         })
                 }
+            },
+            unselectAll() {
+                this.tripleBottomSheet = false
+                this.clearForm()
+                this.network.unselectAll()
+            },
+            clearForm() {
+                this.h_name = ''
+                this.r_name = ''
+                this.t_name = ''
+                this.$refs.tripleForm.resetValidation()
             }
         },
         created: function () {
