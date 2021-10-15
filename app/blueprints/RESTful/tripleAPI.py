@@ -6,9 +6,11 @@ from neo4j.exceptions import ConstraintError
 api = "/triple/"
 from . import RESTful
 
+
 @RESTful.route(api)
 def triple():
     pass
+
 
 @RESTful.route(api + "<draftId>", methods=["PUT"])
 def mergeTriple(draftId):
@@ -62,3 +64,36 @@ def deleteTriple(draftId):
                 raise e
         return jsonify({"success": False, "message": "incomplete request"})
     return InvalidRequest("unauthorized operation")
+
+
+@RESTful.route(api+'unreachable/')
+def unreachable():
+    pass
+
+
+@RESTful.route(api + "unreachable/<draftId>", methods=["DELETE"])
+def deleteUnreachable(draftId):
+    if (
+        "permission" in session
+        and "canOwnDraft" in session["permission"]
+        and session["permission"]["canOwnDraft"]
+    ):
+        try:
+            result = get_api_driver().triple.deleteUnreachable(
+                draftId=draftId,
+                userId=session["user"]["userId"],
+            )
+            return jsonify({"success": True, "triples": result})
+        except Exception as e:
+            raise e
+        return jsonify({"success": False, "message": "incomplete request"})
+    return InvalidRequest("unauthorized operation")
+
+@RESTful.route(api + "aggregated")
+def aggregatedTriple():
+    try:
+        result = get_api_driver().triple.aggregateTriple()
+        return jsonify({"success": True, "triples": result})
+    except Exception as e:
+        raise e
+    return jsonify({"success": False, "message": "incomplete request"})

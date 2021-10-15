@@ -1,21 +1,207 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
-<v-sheet>123</v-sheet>
-<v-btn class="mx-2" fab dark color="indigo">
-    <v-icon dark>
-        mdi-plus
-    </v-icon>
-</v-btn>
+<v-card style="height: 100%; width: 100%;">
+    <div style="height: 80vh; width: 90vw;">
+        <div id="editor" style="height: 100%; width: 100%;"></div>
+        <v-fab-transition>
+            <v-btn color="primary" absolute bottom right fab @click="networkFit">
+                <v-icon>fit_screen</v-icon>
+            </v-btn>
+        </v-fab-transition>
+    </div>
+</v-card>
 {% endblock %}
 {% block VueComponentScript %}
+{{ layout.visCDN() }}
 <script>
+    /*https://github.com/almende/vis/issues/2567
+    getter and setter proxy of vue will mess up the vis
+    */
+    nodes = new vis.DataSet([]);
+    edges = new vis.DataSet([]);
+    network = undefined
+    function edgeIdFromNames(h_name, r_name, t_name) {
+        return h_name + '.' + r_name + '.' + t_name
+    }
+    function nodeColorFactory({ isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+        let color = {
+            border: isTempory ? '#ff8787' : isNew ? '#47f5be' : '#87a3ff',
+            background: isTempory ? '#ffbfbf' : isNew ? '#bfffeb' : '#b6c9fc',
+            highlight: {
+                border: isTempory ? '#ff4d4d' : '#bf87ff',
+                background: isTempory ? '#ff8787' : '#d7b6fc',
+            }
+        }
+        return color
+    }
+    function edgeColorFactory({ isTempory = undefined, isNew = undefined }) {
+        let nodeColor = nodeColorFactory({ isTempory: isTempory, isNew: isNew })
+        let color = {
+            color: nodeColor.border,
+            highlight: nodeColor.highlight.border
+        }
+        return color
+    }
+    function nodeFactory({ name, imageURL, title = undefined, isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+        let node = {
+            shape: imageURL ? 'circularImage' : 'dot',
+            size: 30,
+            id: name, label: name,
+            image: imageURL ? imageURL : undefined,
+            color: nodeColorFactory({ isTempory: isTempory, isRoot: isRoot, isNew: isNew }),
+            fixed: isRoot ? true : undefined,
+            title: title,
+        }
+        return node
+    }
+    function edgeFactory({ from, to, label, title = undefined, isTempory = undefined, isNew = undefined }) {
+        let edge = {
+            font: {
+                size: 12,
+                align: 'horizontal',
+                vadjust: 0
+            },
+            length: 250,
+            arrows: {
+                to: true
+            },
+            smooth: false,
+            from: from, to: to, label: label,
+            id: edgeIdFromNames(from, label, to),
+            dashed: isTempory ? 'dashed' : undefined,
+            color: edgeColorFactory({ isTempory: isTempory, isNew: isNew }),
+            title: title,
+        }
+        return edge
+
+    }
     Vue.component('app-content', {
         data: () => ({
+            relationships: [],
+            nameRules: [v => !!v || 'Name is required',
+            v => v.length > 3 && v.length < 101 || 'Name should be anything between 4 and 100 charactors',
+            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+            ],
         }),
         methods: {
+            loadData() {
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.aggregatedTriple') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.triples) {
+
+                            let nodeSet = new Set()
+                            body.triples.forEach(triple => {
+                                edges.add(
+                                    edgeFactory({
+                                        from: triple.h_name,
+                                        to: triple.t_name,
+                                        label: triple.r_name
+                                    }
+                                    )
+                                )
+                                nodeSet.add(triple.h_name)
+                                nodeSet.add(triple.t_name)
+                            });
+                            nodeSet.forEach(node => {
+                                nodes.add(nodeFactory({ name: node }))
+                            })
+                            let data = {
+                                nodes: nodes,
+                                edges: edges,
+                            };
+                            let container = document.getElementById("editor");
+                            let options = {
+                                interaction: {
+                                    selectConnectedEdges: false,
+                                },
+                                physics: {
+                                    repulsion: {
+                                        springLength: 800
+                                    }
+                                }
+                            };
+                            network = new vis.Network(container, data, options);
+                            self = this
+                            network.on('selectNode', (event) => {
+                                if (self.isSelectingEdge) {
+                                    self.clearForm()
+                                }
+                                if (!self.h_name || this.focusing == "head") {
+                                    self.h_name = event.nodes[0]
+                                }
+                                else {
+                                    self.t_name = event.nodes[0]
+                                }
+                                self.isSelectingEdge = false
+                                self.tripleBottomSheet = true;
+                            })
+                            network.on('selectEdge', (event) => {
+                                self.tripleBottomSheet = true;
+                                edgeData = edges.get(event.edges[0])
+                                self.h_name = edgeData.from
+                                self.r_name = edgeData.label
+                                self.t_name = edgeData.to
+                                self.isSelectingEdge = true
+                            })
+
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting draft information.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+                fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.relationships) {
+                            this.relationships = body.relationships
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+            },
+            networkFit(){
+                network.fit()
+            }
         },
-        template: '#content'
+        created: function () {
+            this.loadData()
+
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
     })
 </script>
 {% endblock %}

@@ -2,11 +2,19 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
+    <v-switch readonly inset :loading="publishLoading" v-model="publishSwitch"
+        :label="publishSwitch?'published':'unpublished'" @click="toggleStatus">
+    </v-switch>
     <div style="height: 80vh; width: 90vw;">
         <div id="editor" style="height: 100%; width: 100%;"></div>
         <v-fab-transition>
-            <v-btn color="primary" absolute bottom right fab @click="network.fit()">
+            <v-btn color="primary" absolute bottom right fab @click="networkFit()">
                 <v-icon>fit_screen</v-icon>
+            </v-btn>
+        </v-fab-transition>
+        <v-fab-transition>
+            <v-btn color="primary" absolute top right fab @click="removeUnreachable">
+                <v-icon>cleaning_services</v-icon>
             </v-btn>
         </v-fab-transition>
     </div>
@@ -60,13 +68,16 @@
     nodes = new vis.DataSet([]);
     edges = new vis.DataSet([]);
     network = undefined
+    function edgeIdFromNames(h_name, r_name, t_name) {
+        return h_name + '.' + r_name + '.' + t_name
+    }
     function nodeColorFactory({ isTempory = undefined, isRoot = undefined, isNew = undefined }) {
         let color = {
-            border: isTempory ? '#ff8787' : isNew ? '#7dffd6' : '#87a3ff',
+            border: isTempory ? '#ff8787' : isNew ? '#47f5be' : '#87a3ff',
             background: isTempory ? '#ffbfbf' : isNew ? '#bfffeb' : '#b6c9fc',
             highlight: {
-                border: '#bf87ff',
-                background: '#d7b6fc',
+                border: isTempory ? '#ff4d4d' : '#bf87ff',
+                background: isTempory ? '#ff8787' : '#d7b6fc',
             }
         }
         return color
@@ -104,7 +115,7 @@
             },
             smooth: false,
             from: from, to: to, label: label,
-            id: from + '.' + label + '.' + to,
+            id: edgeIdFromNames(from, label, to),
             dashed: isTempory ? 'dashed' : undefined,
             color: edgeColorFactory({ isTempory: isTempory, isNew: isNew }),
             title: title,
@@ -122,12 +133,13 @@
             h_name: '',
             t_name: '',
             r_name: '',
-            nodes: null,
-            edges: null,
-            network: null,
             tripleBottomSheet: false,
             isSelectingEdge: false,
-            focusing: ''
+            focusing: '',
+            wasNewNode: [],
+            wasNewEdge: [],
+            publishLoading: true,
+            publishSwitch: null
         }),
         methods: {
             loadData() {
@@ -145,6 +157,8 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.draft && body.triples) {
+                            this.publishLoading = false
+                            this.publishSwitch = body.draft.status == "published"
                             let nodeSet = new Set()
                             nodeSet.add(body.draft.root)
                             body.triples.forEach(triple => {
@@ -200,7 +214,6 @@
                             network.on('selectEdge', (event) => {
                                 self.tripleBottomSheet = true;
                                 edgeData = edges.get(event.edges[0])
-                                console.log(edgeData)
                                 self.h_name = edgeData.from
                                 self.r_name = edgeData.label
                                 self.t_name = edgeData.to
@@ -270,32 +283,37 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
+                                this.wasNewNode.forEach(nodeId => {
+                                    nodes.update({ id: nodeId, color: nodeColorFactory({}) })
+                                })
+                                this.wasNewEdge.forEach(edgeId => {
+                                    edges.update({ id: edgeId, color: edgeColorFactory({}) })
+                                })
                                 this.unselectAll()
                                 let triple = body.triple
-                                if (nodes.get({
-                                    filter: (element =>
-                                        element.id == triple.h_name
-                                    )
-                                }).length < 1) {
-                                    nodes.add(nodeFactory({
-                                        name: triple.h_name, isNew: true
-                                    }))
-                                }
-                                if (nodes.get({
-                                    filter: (element =>
-                                        element.id == triple.t_name
-                                    )
-                                }).length < 1) {
-                                    nodes.add(nodeFactory({
-                                        name: triple.t_name, isNew: true
-                                    }))
-                                }
-                                edges.add(edgeFactory({
+                                [triple.h_name, triple.t_name].forEach(name => {
+                                    if (nodes.get({
+                                        filter: (element =>
+                                            element.id == name
+                                        )
+                                    }).length < 1) {
+                                        nodes.add(nodeFactory({
+                                            name: name, isNew: true
+                                        }))
+                                        this.wasNewNode.push(name)
+                                    }
+                                    else {
+                                        nodes.update({ id: name, color: nodeColorFactory({}) })
+                                    }
+                                })
+                                let newEdge = edgeFactory({
                                     from: triple.h_name,
                                     to: triple.t_name,
                                     label: triple.r_name,
                                     isNew: true
-                                }))
+                                })
+                                edges.add(newEdge)
+                                this.wasNewEdge.push(newEdge.id)
                             }
                             else {
                                 if (body.message) {
@@ -336,14 +354,19 @@
                             if (body.triple) {
                                 this.unselectAll()
                                 let triple = body.triple
-                                edges.get({
-                                    filter: (edge) => {
-                                        return edge.from == triple.h_name &&
-                                            edge.to == triple.t_name &&
-                                            edge.label == triple.r_name
+                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
+                                edges.remove(id)
+                                let nodeSet = new Set()
+                                nodes.forEach(n => {
+                                    if (edges.get({
+                                        filter: (edge) => {
+                                            return edge.from == n.id ||
+                                                edge.to == n.id
+                                        }
+                                    }).length < 1) {
+                                        console.log(n.id)
+                                        nodes.update({ id: n.id, color: nodeColorFactory({ isTempory: true }) })
                                     }
-                                }).forEach(removedEdge => {
-                                    edges.remove(removedEdge.id)
                                 })
                             }
                             else {
@@ -359,6 +382,56 @@
                         })
                 }
             },
+            removeUnreachable() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.unreachable') }}" + '{{ draftId }}', {
+                    method: 'DELETE',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.triples) {
+                            this.unselectAll()
+                            body.triples.forEach(triple => {
+                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
+                                edges.remove(id)
+                                [triple.h_name, triple.t_name].forEach(n => {
+                                    if (edges.get({
+                                        filter: (edge) => {
+                                            return edge.from == n.id ||
+                                                edge.to == n.id
+                                        }
+                                    }).length < 1) {
+                                        console.log(n.id)
+                                        nodes.remove(n.id)
+                                    }
+                                })
+
+                            })
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error when deleted triple.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+
+            },
             unselectAll() {
                 this.tripleBottomSheet = false
                 this.clearForm()
@@ -373,14 +446,29 @@
             nodeFieldFocus(event) {
                 this.focusing = event
                 if (event == "head") {
-                    network.selectNodes([this.h_name], false)
+                    try {
+                        network.selectNodes([this.h_name], false)
+                    }
+                    catch {
+
+                    }
                 }
                 else {
-                    network.selectNodes([this.t_name], false)
+                    try {
+                        network.selectNodes([this.t_name], false)
+                    }
+                    catch {
+
+                    }
                 }
             },
             nodeFieldChange(event) {
-                network.selectNodes([event], false)
+                try {
+                    network.selectNodes([event], false)
+                }
+                catch {
+
+                }
                 this.isTripleExist()
             },
             edgeFieldChange(event) {
@@ -389,15 +477,60 @@
             isTripleExist() {
                 network.unselectAll()
                 if (this.h_name, this.r_name, this.t_name) {
-                    let id = this.h_name + '.' + this.r_name + '.' + this.t_name
-                    if (edges.get(id).length > 0) {
-                        network.selectEdges([id])
-                        this.isSelectingEdge = true
+                    let id = edgeIdFromNames(this.h_name, this.r_name, this.t_name)
+                    try {
+                        if (edges.get(id).length > 0) {
+                            network.selectEdges([id])
+                            this.isSelectingEdge = true
+                        }
+
+                    }
+                    catch {
+
                     }
                 }
                 else {
 
                 }
+            },
+            toggleStatus() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                this.publishLoading = true
+                fetch("{{ url_for('RESTful.setDraftStatus') }}/" + '{{ draftId }}', {
+                    method: 'PUT',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: this.publishSwitch ? "unpublished" : "published" })
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.status) {
+                            this.publishSwitch = body.status == "published"
+                            this.publishLoading = false
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error when deleted triple.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+            },
+            networkFit(){
+                network.fit()
             }
         },
         created: function () {

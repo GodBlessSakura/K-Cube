@@ -5,9 +5,12 @@ from neo4j.exceptions import ConstraintError
 
 api = "/draft/"
 from . import RESTful
+
+
 @RESTful.route(api)
 def draft():
     abort(404)
+
 
 @RESTful.route(api + "list/<courseCode>", methods=["POST"])
 def createDraft(courseCode):
@@ -83,3 +86,26 @@ def getGraph(draftId):
             raise e
     return InvalidRequest("unauthorized operation")
 
+@RESTful.route(api + "status", defaults={"draftId": None}, methods=["PUT"])
+@RESTful.route(api + "status/<draftId>", methods=["PUT"])
+def setDraftStatus(draftId):
+    if (
+        "permission" in session
+        and "canOwnDraft" in session["permission"]
+        and session["permission"]["canOwnDraft"]
+    ):
+        if "status" in request.json:
+            try:
+                return jsonify(
+                    {
+                        "success": True,
+                        "status": get_api_driver().draft.setStatus(
+                            draftId=draftId,
+                            userId=session["user"]["userId"],
+                            status=request.json["status"],
+                        ),
+                    }
+                )
+            except Exception as e:
+                raise e
+    return InvalidRequest("unauthorized operation")

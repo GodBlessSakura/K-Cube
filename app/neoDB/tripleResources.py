@@ -21,6 +21,8 @@ def check_info(function):
             and re.search("^[a-zA-Z][a-zA-Z0-9]{3,100}$", kwargs["userId"]) == None
         ):
             raise InvalidRequest("Invalid name pattern.")
+        if ("status" in kwargs and kwargs["status"] not in ["published", "unpublished"]):
+            raise InvalidRequest("Invalid name pattern.")
         return function(self, **kwargs)
 
     return wrapper
@@ -98,8 +100,6 @@ class tripleResources:
                     "MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})"
                     "-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true})",
                     "WITH DISTINCT draft",
-                    "MATCH (draft:Draft{draftId: $draftId})",
-                    "WITH DISTINCT draft",
                     "MATCH (h:GraphConcept{name: $h_name})",
                     "MATCH (t:GraphConcept{name: $t_name})",
                     "MATCH (h) -[r:GRAPH_RELATIONSHIP{name: $r_name, draftId : draft.draftId}]-> (t)",
@@ -117,6 +117,65 @@ class tripleResources:
                     "r_name":row["r_name"],
                     "t_name":row["t_name"]
                     }
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def deleteUnreachable(self,draftId,userId):
+        def _query(tx):
+            query = " ".join(
+                [
+                    "MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})"
+                    "-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true})",
+                    "WITH DISTINCT draft",
+                    "MATCH (root:GraphConcept)<-[:COURSE_DESCRIBE]-(:Course)<-[:DRAFT_DESCRIBE]-(draft:Draft)",
+                    "WITH draft, root",
+                    "MATCH reachable=(root)-[:GRAPH_RELATIONSHIP*{draftId : draft.draftId}]-(:GraphConcept)",
+                    "UNWIND relationships(reachable) AS reachable_relationships",
+                    "WITH collect(id(reachable_relationships)) as reachable_id, draft",
+                    "MATCH (h)-[r:GRAPH_RELATIONSHIP{draftId : draft.draftId}]->(t)",
+                    "WHERE NOT id(r) IN reachable_id",
+                    "WITH collect(h.name) as h_name, collect(r.name) as r_name, collect(t.name) as t_name, r, draft",
+                    "DELETE r",
+                    "SET draft.lastModified = timestamp()",
+                    "RETURN h_name, r_name, t_name;"
+                ]
+            )
+            result = tx.run(query, draftId=draftId, userId = userId)
+            try:
+                return [{
+                    "h_name":record["h_name"],
+                    "r_name":record["r_name"],
+                    "t_name":record["t_name"]
+                    } for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def aggregateTriple(self):
+        def _query(tx):
+            query = " ".join(
+                [
+                    "MATCH (selected_draft:Draft{status: 'published'})",
+                    "WITH selected_draft.draftId as published_id",
+                    "WITH published_id",
+                    "MATCH (h:GraphConcept)-[r:GRAPH_RELATIONSHIP]->(t:GraphConcept)",
+                    "WHERE r.draftId in published_id",
+                    "RETURN h.name, r.name, t.name , count(*) AS vote"
+                ]
+            )
+            result = tx.run(query)
+            try:
+                return [{
+                    "h_name":record["h.name"],
+                    "r_name":record["r.name"],
+                    "t_name":record["t.name"],
+                    "vote": record["vote"],
+                    } for record in result]
             except Exception as exception:
                 raise exception
 

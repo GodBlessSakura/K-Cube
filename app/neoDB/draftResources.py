@@ -21,6 +21,8 @@ def check_info(function):
             and re.search("^[a-zA-Z][a-zA-Z0-9]{3,100}$", kwargs["userId"]) == None
         ):
             raise InvalidRequest("Invalid name pattern.")
+        if "status" in kwargs and kwargs["status"] not in ["published", "unpublished"]:
+            raise InvalidRequest("Invalid name pattern.")
         return function(self, **kwargs)
 
     return wrapper
@@ -49,6 +51,31 @@ class draftResources:
                 draft["root"] = row["root"]
                 draft["course"] = dict(row["course"].items())
                 return draft
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def setStatus(self, draftId, userId, status):
+        def _query(tx):
+            query = " ".join(
+                [
+                    "MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(owner:User{userId: $userId})"
+                    "-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOwnDraft: true})",
+                    "WITH DISTINCT draft",
+                    "SET draft.status = $status",
+                    "RETURN draft.status;",
+                ]
+            )
+            result = tx.run(
+                query,
+                draftId=draftId,
+                userId=userId,
+                status=status,
+            )
+            try:
+                return [record for record in result][0]["draft.status"]
             except Exception as exception:
                 raise exception
 
