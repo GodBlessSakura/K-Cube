@@ -31,7 +31,7 @@ class tripleResources:
     def __init__(self, driver):
         self.driver = driver
     
-    def gettriple(self, draftId,userId):
+    def getTriples(self, draftId,userId):
         def _query(tx):
             query = " ".join(
                 [

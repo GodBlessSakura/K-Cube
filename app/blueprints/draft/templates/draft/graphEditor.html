@@ -24,18 +24,21 @@
                     </v-row>
                     <v-row>
                         <v-col>
-                            <v-text-field v-model="h_name" :rules="nameRules" label="head entity"></v-text-field>
+                            <v-text-field v-model="h_name" :rules="nameRules" label="head entity"
+                                @focus="nodeFieldFocus('head')" @input="nodeFieldChange"></v-text-field>
                         </v-col>
                         <v-col>
-                            <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship">
+                            <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship"
+                                @input="edgeFieldChange">
                             </v-select>
                         </v-col>
                         <v-col>
-                            <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"></v-text-field>
+                            <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"
+                                @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"></v-text-field>
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-btn @click="createTriple" v-if="!selectingEdge">
+                        <v-btn @click="createTriple" v-if="!isSelectingEdge">
                             Create link
                         </v-btn>
                         <v-btn color="error" @click="deleteTriple" v-else>
@@ -51,6 +54,64 @@
 {% block VueComponentScript %}
 {{ layout.visCDN() }}
 <script>
+    /*https://github.com/almende/vis/issues/2567
+    getter and setter proxy of vue will mess up the vis
+    */
+    nodes = new vis.DataSet([]);
+    edges = new vis.DataSet([]);
+    network = undefined
+    function nodeColorFactory({ isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+        let color = {
+            border: isTempory ? '#ff8787' : isNew ? '#7dffd6' : '#87a3ff',
+            background: isTempory ? '#ffbfbf' : isNew ? '#bfffeb' : '#b6c9fc',
+            highlight: {
+                border: '#bf87ff',
+                background: '#d7b6fc',
+            }
+        }
+        return color
+    }
+    function edgeColorFactory({ isTempory = undefined, isNew = undefined }) {
+        let nodeColor = nodeColorFactory({ isTempory: isTempory, isNew: isNew })
+        let color = {
+            color: nodeColor.border,
+            highlight: nodeColor.highlight.border
+        }
+        return color
+    }
+    function nodeFactory({ name, imageURL, title = undefined, isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+        let node = {
+            shape: imageURL ? 'circularImage' : 'dot',
+            size: 30,
+            id: name, label: name,
+            image: imageURL ? imageURL : undefined,
+            color: nodeColorFactory({ isTempory: isTempory, isRoot: isRoot, isNew: isNew }),
+            fixed: isRoot ? true : undefined,
+            title: title,
+        }
+        return node
+    }
+    function edgeFactory({ from, to, label, title = undefined, isTempory = undefined, isNew = undefined }) {
+        let edge = {
+            font: {
+                size: 12,
+                align: 'horizontal',
+                vadjust: 0
+            },
+            length: 250,
+            arrows: {
+                to: true
+            },
+            smooth: false,
+            from: from, to: to, label: label,
+            id: from + '.' + label + '.' + to,
+            dashed: isTempory ? 'dashed' : undefined,
+            color: edgeColorFactory({ isTempory: isTempory, isNew: isNew }),
+            title: title,
+        }
+        return edge
+
+    }
     Vue.component('app-content', {
         data: () => ({
             relationships: [],
@@ -65,7 +126,8 @@
             edges: null,
             network: null,
             tripleBottomSheet: false,
-            selectingEdge: false,
+            isSelectingEdge: false,
+            focusing: ''
         }),
         methods: {
             loadData() {
@@ -83,49 +145,36 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.draft && body.triples) {
-                            this.nodes = new vis.DataSet([]);
-                            this.edges = new vis.DataSet([
-                            ]);
-                            let nodes = new Set()
-                            nodes.add(body.draft.root)
+                            let nodeSet = new Set()
+                            nodeSet.add(body.draft.root)
                             body.triples.forEach(triple => {
-                                this.edges.add({
-                                    from: triple.h_name,
-                                    to: triple.t_name,
-                                    label: triple.r_name,
-                                })
-                                nodes.add(triple.h_name)
-                                nodes.add(triple.t_name)
+                                edges.add(
+                                    edgeFactory({
+                                        from: triple.h_name,
+                                        to: triple.t_name,
+                                        label: triple.r_name
+                                    }
+                                    )
+                                )
+                                nodeSet.add(triple.h_name)
+                                nodeSet.add(triple.t_name)
                             });
-                            nodes.forEach(node => {
-                                this.nodes.add({
-                                    id: node, label: node
-                                })
+                            nodeSet.forEach(node => {
+                                nodes.add(nodeFactory({ name: node }))
                             })
+                            nodes.update(nodeFactory({
+                                name: body.draft.root,
+                                imageURL: body.draft.course.imageURL,
+                                isRoot: true
+                            }))
                             let data = {
-                                nodes: this.nodes,
-                                edges: this.edges,
+                                nodes: nodes,
+                                edges: edges,
                             };
                             let container = document.getElementById("editor");
                             let options = {
                                 interaction: {
                                     selectConnectedEdges: false,
-                                },
-                                edges: {
-                                    font: {
-                                        size: 12,
-                                        align: 'horizontal',
-                                        vadjust: 0
-                                    },
-                                    length: 250,
-                                    arrows: {
-                                        to: true
-                                    },
-                                    smooth: false,
-                                },
-                                nodes: {
-                                    shape: 'dot',
-                                    size: 30,
                                 },
                                 physics: {
                                     repulsion: {
@@ -133,29 +182,29 @@
                                     }
                                 }
                             };
-                            this.network = new vis.Network(container, data, options);
+                            network = new vis.Network(container, data, options);
                             self = this
-                            this.network.on('selectNode', (event) => {
-                                if (self.selectingEdge) {
+                            network.on('selectNode', (event) => {
+                                if (self.isSelectingEdge) {
                                     self.clearForm()
                                 }
-                                if (!self.h_name) {
+                                if (!self.h_name || this.focusing == "head") {
                                     self.h_name = event.nodes[0]
                                 }
                                 else {
                                     self.t_name = event.nodes[0]
                                 }
-                                self.selectingEdge = false
+                                self.isSelectingEdge = false
                                 self.tripleBottomSheet = true;
                             })
-                            this.network.on('selectEdge', (event) => {
+                            network.on('selectEdge', (event) => {
                                 self.tripleBottomSheet = true;
-                                edgeData = this.edges.get(event.edges[0])
+                                edgeData = edges.get(event.edges[0])
                                 console.log(edgeData)
                                 self.h_name = edgeData.from
                                 self.r_name = edgeData.label
                                 self.t_name = edgeData.to
-                                self.selectingEdge = true
+                                self.isSelectingEdge = true
                             })
 
                         }
@@ -221,32 +270,32 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
-                                unselectAll()
+                                this.unselectAll()
                                 let triple = body.triple
-                                if (this.nodes.get({
+                                if (nodes.get({
                                     filter: (element =>
                                         element.id == triple.h_name
                                     )
                                 }).length < 1) {
-                                    this.nodes.add({
-                                        id: triple.h_name, label: triple.h_name
-                                    })
+                                    nodes.add(nodeFactory({
+                                        name: triple.h_name, isNew: true
+                                    }))
                                 }
-                                if (this.nodes.get({
+                                if (nodes.get({
                                     filter: (element =>
                                         element.id == triple.t_name
                                     )
                                 }).length < 1) {
-                                    this.nodes.add({
-                                        id: triple.t_name, label: triple.t_name
-                                    })
+                                    nodes.add(nodeFactory({
+                                        name: triple.t_name, isNew: true
+                                    }))
                                 }
-                                this.edges.add({
+                                edges.add(edgeFactory({
                                     from: triple.h_name,
                                     to: triple.t_name,
                                     label: triple.r_name,
-                                })
-                                this.network.redraw()
+                                    isNew: true
+                                }))
                             }
                             else {
                                 if (body.message) {
@@ -285,16 +334,16 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
-                                unselectAll()
+                                this.unselectAll()
                                 let triple = body.triple
-                                this.edges.get({
+                                edges.get({
                                     filter: (edge) => {
                                         return edge.from == triple.h_name &&
                                             edge.to == triple.t_name &&
                                             edge.label == triple.r_name
                                     }
                                 }).forEach(removedEdge => {
-                                    this.edges.remove(removedEdge.id)
+                                    edges.remove(removedEdge.id)
                                 })
                             }
                             else {
@@ -313,13 +362,42 @@
             unselectAll() {
                 this.tripleBottomSheet = false
                 this.clearForm()
-                this.network.unselectAll()
+                network.unselectAll()
             },
             clearForm() {
                 this.h_name = ''
                 this.r_name = ''
                 this.t_name = ''
                 this.$refs.tripleForm.resetValidation()
+            },
+            nodeFieldFocus(event) {
+                this.focusing = event
+                if (event == "head") {
+                    network.selectNodes([this.h_name], false)
+                }
+                else {
+                    network.selectNodes([this.t_name], false)
+                }
+            },
+            nodeFieldChange(event) {
+                network.selectNodes([event], false)
+                this.isTripleExist()
+            },
+            edgeFieldChange(event) {
+                this.isTripleExist()
+            },
+            isTripleExist() {
+                network.unselectAll()
+                if (this.h_name, this.r_name, this.t_name) {
+                    let id = this.h_name + '.' + this.r_name + '.' + this.t_name
+                    if (edges.get(id).length > 0) {
+                        network.selectEdges([id])
+                        this.isSelectingEdge = true
+                    }
+                }
+                else {
+
+                }
             }
         },
         created: function () {

@@ -74,7 +74,7 @@ def getGraph(draftId):
                     "draft": get_api_driver().draft.getDraft(
                         draftId=draftId, userId=session["user"]["userId"]
                     ),
-                    "triples": get_api_driver().triple.gettriple(
+                    "triples": get_api_driver().triple.getTriples(
                         draftId=draftId, userId=session["user"]["userId"]
                     ),
                 }

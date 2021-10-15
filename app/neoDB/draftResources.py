@@ -37,9 +37,9 @@ class draftResources:
                 [
                     "MATCH (owner:User{userId: $userId})",
                     "WITH DISTINCT owner",
-                    "MATCH (courseConcept:GraphConcept)<-[:COURSE_DESCRIBE]-()<-[:DRAFT_DESCRIBE]-"
+                    "MATCH (courseConcept:GraphConcept)<-[:COURSE_DESCRIBE]-(course:Course)<-[:DRAFT_DESCRIBE]-"
                     "(draft:Draft{draftId: $draftId})<-[:USER_OWN]-(owner)",
-                    "RETURN draft, courseConcept.name as root",
+                    "RETURN draft, courseConcept.name as root, course",
                 ]
             )
             result = tx.run(query, draftId=draftId, userId=userId)
@@ -47,6 +47,7 @@ class draftResources:
                 row = [record for record in result][0]
                 draft = dict(row["draft"].items())
                 draft["root"] = row["root"]
+                draft["course"] = dict(row["course"].items())
                 return draft
             except Exception as exception:
                 raise exception
