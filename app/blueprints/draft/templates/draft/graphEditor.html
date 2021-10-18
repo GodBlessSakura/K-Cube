@@ -5,7 +5,7 @@
     <v-switch readonly inset :loading="publishLoading" v-model="publishSwitch"
         :label="publishSwitch?'published':'unpublished'" @click="toggleStatus">
     </v-switch>
-    <div style="height: 80vh; width: 90vw;">
+    <div style="height: 75vh; width: 90vw;">
         <div id="editor" style="height: 100%; width: 100%;"></div>
         <v-fab-transition>
             <v-btn color="primary" absolute bottom right fab @click="networkFit()">
@@ -32,8 +32,8 @@
                     </v-row>
                     <v-row>
                         <v-col>
-                            <v-text-field v-model="h_name" :rules="nameRules" label="head entity"
-                                @focus="nodeFieldFocus('head')" @input="nodeFieldChange"></v-text-field>
+                            <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
+                                @focus="nodeFieldFocus('head')" @input="nodeFieldChange"></v-combobox>
                         </v-col>
                         <v-col>
                             <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship"
@@ -41,8 +41,8 @@
                             </v-select>
                         </v-col>
                         <v-col>
-                            <v-text-field v-model="t_name" :rules="nameRules" label="tail entity"
-                                @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"></v-text-field>
+                            <v-combobox v-model="t_name" :items="concepts" :rules="nameRules" label="tail entity"
+                                @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"></v-combobox>
                         </v-col>
                     </v-row>
                     <v-row>
@@ -139,7 +139,8 @@
             wasNewNode: [],
             wasNewEdge: [],
             publishLoading: true,
-            publishSwitch: null
+            publishSwitch: null,
+            concepts: []
         }),
         methods: {
             loadData() {
@@ -258,6 +259,32 @@
                             }
                         }
                     })
+                fetch("{{ url_for('RESTful.listEntity') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.entities) {
+                            this.concepts = body.entities.map(e => e.concept.name)
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
             },
             createTriple() {
                 if (this.$root.progress.show == true) {
@@ -290,7 +317,7 @@
                                     edges.update({ id: edgeId, color: edgeColorFactory({}) })
                                 })
                                 this.unselectAll()
-                                let triple = body.triple
+                                let triple = body.triple;
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (nodes.get({
                                         filter: (element =>
@@ -305,6 +332,7 @@
                                     else {
                                         nodes.update({ id: name, color: nodeColorFactory({}) })
                                     }
+                                    if (!this.concepts.includes(name))this.concepts.push(name)
                                 })
                                 let newEdge = edgeFactory({
                                     from: triple.h_name,
@@ -404,7 +432,7 @@
                             this.unselectAll()
                             body.triples.forEach(triple => {
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
-                                edges.remove(id)
+                                edges.remove(id);
                                 [triple.h_name, triple.t_name].forEach(n => {
                                     if (edges.get({
                                         filter: (edge) => {
@@ -483,14 +511,17 @@
                             network.selectEdges([id])
                             this.isSelectingEdge = true
                         }
+                        else{
+                            this.isSelectingEdge = false
+                        }
 
                     }
                     catch {
-
+                        this.isSelectingEdge = false
                     }
                 }
                 else {
-
+                    this.isSelectingEdge = false
                 }
             },
             toggleStatus() {
@@ -529,7 +560,7 @@
                         }
                     })
             },
-            networkFit(){
+            networkFit() {
                 network.fit()
             }
         },

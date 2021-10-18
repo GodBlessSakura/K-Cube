@@ -55,7 +55,7 @@
         }
         return node
     }
-    function edgeFactory({ from, to, label, title = undefined, isTempory = undefined, isNew = undefined }) {
+    function edgeFactory({ from, to, label, vote, title = undefined, isTempory = undefined, isNew = undefined }) {
         let edge = {
             font: {
                 size: 12,
@@ -71,7 +71,8 @@
             id: edgeIdFromNames(from, label, to),
             dashed: isTempory ? 'dashed' : undefined,
             color: edgeColorFactory({ isTempory: isTempory, isNew: isNew }),
-            title: title,
+            title: "Suggested by " + vote + " teacher" + (vote > 1 ? 's.' : '.'),
+            width: vote,
         }
         return edge
 
@@ -104,7 +105,8 @@
                                     edgeFactory({
                                         from: triple.h_name,
                                         to: triple.t_name,
-                                        label: triple.r_name
+                                        label: triple.r_name,
+                                        vote: triple.userVote
                                     }
                                     )
                                 )
@@ -113,6 +115,13 @@
                             });
                             nodeSet.forEach(node => {
                                 nodes.add(nodeFactory({ name: node }))
+                            })
+                            body.courses.forEach(course => {
+                                
+                                nodes.update(nodeFactory({
+                                    name: course.concept.name,
+                                    imageURL: course.course.imageURL,
+                                }))
                             })
                             let data = {
                                 nodes: nodes,
@@ -130,28 +139,6 @@
                                 }
                             };
                             network = new vis.Network(container, data, options);
-                            self = this
-                            network.on('selectNode', (event) => {
-                                if (self.isSelectingEdge) {
-                                    self.clearForm()
-                                }
-                                if (!self.h_name || this.focusing == "head") {
-                                    self.h_name = event.nodes[0]
-                                }
-                                else {
-                                    self.t_name = event.nodes[0]
-                                }
-                                self.isSelectingEdge = false
-                                self.tripleBottomSheet = true;
-                            })
-                            network.on('selectEdge', (event) => {
-                                self.tripleBottomSheet = true;
-                                edgeData = edges.get(event.edges[0])
-                                self.h_name = edgeData.from
-                                self.r_name = edgeData.label
-                                self.t_name = edgeData.to
-                                self.isSelectingEdge = true
-                            })
 
                         }
                         else {
@@ -165,34 +152,8 @@
                             }
                         }
                     })
-                fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
-                    .then(response => {
-                        return response.json()
-                    })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        if (body.relationships) {
-                            this.relationships = body.relationships
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
-                                this.$root.errorSnackBar.show = true
-                            }
-                        }
-                    })
             },
-            networkFit(){
+            networkFit() {
                 network.fit()
             }
         },

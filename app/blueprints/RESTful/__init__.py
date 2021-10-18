@@ -7,3 +7,4 @@ from . import graphAPI
 from . import relationshipAPI
 from . import roleAPI
 from . import tripleAPI
+from . import entityAPI

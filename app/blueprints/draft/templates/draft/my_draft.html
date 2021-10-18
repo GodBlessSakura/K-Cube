@@ -8,6 +8,7 @@
                 <v-expansion-panel>
                     <v-expansion-panel-header>
                         {{ courseCode }}
+                        <v-icon right>note_add</v-icon>
                     </v-expansion-panel-header>
                     <v-expansion-panel-content>
                         <v-form ref="draftControl">
@@ -27,12 +28,39 @@
         </v-row>
         <v-row>
             <v-data-table :headers="headers" style="width:100%" :items="drafts" :items-per-page="500" multi-sort
-                :search="search" @dblclick:row="openGraph">
+                :search="search">
                 <template v-slot:item.creationDate="{ item }">
-                    ${item.creationDate}
+                    ${item.creationDate | formatDate}
                 </template>
                 <template v-slot:item.lastModified="{ item }">
-                    ${item.lastModified }
+                    ${item.lastModified | formatDate}
+                </template>
+                <template v-slot:item.actions="{ item }">
+                    <v-icon small class="mr-2" @click="openGraph(item)">
+                        mdi-pencil
+                    </v-icon>
+                    <v-icon small class="mr-2" @click="copyGraph(item)">
+                        file_copy
+                    </v-icon>
+                    <v-dialog v-model="cloneDiaglog" max-width="500px">
+                        <v-card>
+                            <v-card-title>Cloning: ${cloneSourceDraftId}</v-card-title>
+                            <v-card-actions>
+                                <v-form ref="cloneControl">
+
+                                    <v-select :rules="courseCodeRules" v-model="cloneCourseCode" :items="courseCodes"
+                                        label="Course code">
+                                    </v-select>
+                                    <v-text-field v-model="cloneDraftName" :rules="draftNameRules" dense
+                                        label="Draft Name">
+                                    </v-text-field>
+                                    <v-btn small @click="submitClone">
+                                        submit
+                                    </v-btn>
+                                </v-form>
+                            </v-card-actions>
+                        </v-card>
+                    </v-dialog>
                 </template>
             </v-data-table>
         </v-row>
@@ -42,6 +70,11 @@
 {% endblock %}
 {% block VueComponentScript %}
 <script>
+    Vue.filter("formatDate", (value) => {
+        if (value) {
+            return (new Date(value)).toLocaleString("en-US", {})
+        }
+    })
     Vue.component('app-content', {
         data: () => ({
             search: '',
@@ -63,12 +96,22 @@
                     text: 'Status',
                     value: 'status',
                 },
+                {
+                    text: 'Actions',
+                    value: 'actions',
+                },
             ],
             draftControl: true,
             draftName: '',
             draftNameRules: [v => !!v || 'Draft name is required',
             v => v.length > 3 && v.length < 101 || 'Draft name  should be anything between 4 and 100 charactors',
             v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Draft name  can only contains alphanumeric characters and space.'],
+            cloneDiaglog: false,
+            cloneSourceDraftId: "",
+            cloneDraftName: "",
+            cloneCourseCode: "",
+            courseCodes: [],
+            courseCodeRules: [v => !!v || 'Course code is required']
         }),
         methods: {
             loadData() {
@@ -98,6 +141,33 @@
                             }
                             else {
                                 this.$root.errorSnackBar.message = 'Unexpected error on getting drafts information.'
+                                this.$root.errorSnackBar.show = true
+                            }
+                        }
+                    })
+                fetch("{{ url_for('RESTful.listCourse') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        let colPerRow = 4
+                        if (body.courses) {
+                            this.courseCodes = body.courses.map(course => course.concept.name)
+                        }
+                        else {
+                            if (body.message) {
+                                this.$root.errorSnackBar.message = body.message
+                                this.$root.errorSnackBar.show = true
+                            }
+                            else {
+                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
                                 this.$root.errorSnackBar.show = true
                             }
                         }
@@ -148,9 +218,61 @@
                         })
                 }
             },
-            openGraph(windowEvent, clickEvent) {
-                window.location.replace("{{ url_for('draft.edit_draft') }}" + '/' + clickEvent.item.draftId)
+            openGraph(item) {
+                window.location.replace("{{ url_for('draft.edit_draft') }}" + '/' + item.draftId)
             },
+            copyGraph(item) {
+                this.cloneSourceDraftId = item.draftId
+                this.cloneDiaglog = true
+            },
+            submitClone() {
+                if (this.$refs.cloneControl.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.draft') }}" + 'clone/' + this.cloneSourceDraftId, {
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            draftName: this.cloneDraftName,
+                            name: this.cloneCourseCode
+                        })
+                    })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.success) {
+                                if (body.message) {
+                                    this.$root.completeSnackBar.message = body.message
+                                }
+                                else {
+                                    this.$root.completeSnackBar.message = 'success'
+                                }
+
+                                this.$root.completeSnackBar.show = true
+                                this.$refs.cloneControl.reset();
+                            }
+                            else {
+                                if (body.message) {
+                                    this.$root.errorSnackBar.message = body.message
+                                    this.$root.errorSnackBar.show = true
+                                }
+                                else {
+                                    this.$root.errorSnackBar.message = 'Creation failed for unkown reason.'
+                                    this.$root.errorSnackBar.show = true
+                                }
+                            }
+                            this.cloneDiaglog = false
+                        })
+                }
+            }
         },
         created: function () {
             this.loadData()

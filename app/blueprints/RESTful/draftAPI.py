@@ -42,6 +42,37 @@ def createDraft(courseCode):
     return InvalidRequest("unauthorized operation")
 
 
+@RESTful.route(api + "clone/<draftId>", methods=["POST"])
+def cloneDraft(draftId):
+    if (
+        "permission" in session
+        and "canOwnDraft" in session["permission"]
+        and session["permission"]["canOwnDraft"]
+    ):
+        if "draftName" in request.json and "name" in request.json:
+            try:
+                return jsonify(
+                    {
+                        "success": True,
+                        "drafts": get_api_driver().draft.cloneDraft(
+                            name=request.json["name"],
+                            userId=session["user"]["userId"],
+                            draftName=request.json["draftName"],
+                            draftId=draftId,
+                        ),
+                    }
+                )
+            except ConstraintError as e:
+                return jsonify(
+                    {
+                        "success": False,
+                        "message": "Draft with same name already exists, try another name.",
+                    }
+                )
+        return jsonify({"success": False, "message": "incomplete request"})
+    return InvalidRequest("unauthorized operation")
+
+
 @RESTful.route(api + "list/<courseCode>", methods=["GET"])
 def listDraft(courseCode):
     if (
@@ -85,6 +116,7 @@ def getGraph(draftId):
         except Exception as e:
             raise e
     return InvalidRequest("unauthorized operation")
+
 
 @RESTful.route(api + "status", defaults={"draftId": None}, methods=["PUT"])
 @RESTful.route(api + "status/<draftId>", methods=["PUT"])

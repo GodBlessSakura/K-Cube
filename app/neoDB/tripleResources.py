@@ -72,10 +72,9 @@ class tripleResources:
                     "WITH DISTINCT approved_graph_relationship, draft",
                     "MERGE (h:GraphConcept{name: $h_name})",
                     "MERGE (t:GraphConcept{name: $t_name})",
-                    "MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name}]-> (t)",
+                    "MERGE (h) -[r:GRAPH_RELATIONSHIP{name: approved_graph_relationship.name, draftId: draft.draftId}]-> (t)",
                     "SET draft.lastModified = timestamp(),",
-                    "r.creationDate = timestamp(),",
-                    "r.draftId = draft.draftId",
+                    "r.creationDate = timestamp()",
                     "RETURN h.name, r.name, t.name;"
                 ]
             )
@@ -160,12 +159,12 @@ class tripleResources:
         def _query(tx):
             query = " ".join(
                 [
-                    "MATCH (selected_draft:Draft{status: 'published'})",
-                    "WITH selected_draft.draftId as published_id",
-                    "WITH published_id",
+                    "MATCH (selected_draft:Draft{status: 'published'})<-[:USER_OWN]-(owner:User)",
+                    "WITH selected_draft.draftId as published_id, owner.userId as userId",
+                    "WITH published_id, userId",
                     "MATCH (h:GraphConcept)-[r:GRAPH_RELATIONSHIP]->(t:GraphConcept)",
                     "WHERE r.draftId in published_id",
-                    "RETURN h.name, r.name, t.name , count(*) AS vote"
+                    "RETURN h.name, r.name, t.name , count(distinct published_id) AS draftVote, count(distinct userId) AS userVote"
                 ]
             )
             result = tx.run(query)
@@ -174,7 +173,8 @@ class tripleResources:
                     "h_name":record["h.name"],
                     "r_name":record["r.name"],
                     "t_name":record["t.name"],
-                    "vote": record["vote"],
+                    "draftVote": record["draftVote"],
+                    "userVote": record["userVote"],
                     } for record in result]
             except Exception as exception:
                 raise exception

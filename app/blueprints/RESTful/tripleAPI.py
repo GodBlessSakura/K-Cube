@@ -66,7 +66,7 @@ def deleteTriple(draftId):
     return InvalidRequest("unauthorized operation")
 
 
-@RESTful.route(api+'unreachable/')
+@RESTful.route(api + "unreachable/")
 def unreachable():
     pass
 
@@ -89,11 +89,18 @@ def deleteUnreachable(draftId):
         return jsonify({"success": False, "message": "incomplete request"})
     return InvalidRequest("unauthorized operation")
 
+
 @RESTful.route(api + "aggregated")
 def aggregatedTriple():
     try:
         result = get_api_driver().triple.aggregateTriple()
-        return jsonify({"success": True, "triples": result})
+        return jsonify(
+            {
+                "success": True,
+                "triples": result,
+                "courses": get_api_driver().course.listCourse(),
+            }
+        )
     except Exception as e:
         raise e
     return jsonify({"success": False, "message": "incomplete request"})

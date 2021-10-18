@@ -5,7 +5,7 @@ from app import InvalidRequest
 import re
 
 # this would force the function to ignore all positional argument
-def check_user_info(function):
+def check_info(function):
     def wrapper(self, *args, **kwargs):
         if "email" in kwargs and len(kwargs["email"]) >= 320:
             raise InvalidRequest("A valid email should have less then 320 characters")
@@ -29,7 +29,7 @@ def check_user_info(function):
     return wrapper
 
 
-@for_all_methods(check_user_info)
+@for_all_methods(check_info)
 class userResources:
     def __init__(self, driver):
         self.driver = driver

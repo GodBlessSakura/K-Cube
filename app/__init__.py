@@ -47,7 +47,6 @@ def create_app(config_object):
     app.register_blueprint(uploads, url_prefix="/uploads")
     app.register_blueprint(user, url_prefix="/user")
     mail.init_app(app)
-
     @app.errorhandler(InvalidRequest)
     def handle_bad_request(e):
         return jsonify({"message": e.message}), 400

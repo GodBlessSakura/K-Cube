@@ -132,5 +132,9 @@ CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.s
 
             self.graph = graphResources(driver=self.driver)
 
+            from .entityResources import entityResources
+
+            self.entity = entityResources(driver=self.driver)
+
     def close(self):
         self.driver.close()
