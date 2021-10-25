@@ -9,8 +9,7 @@ from flask import (
     url_for,
     current_app,
 )
-from app import InvalidRequest
-
+from app.authorizer import authorize_with
 
 uploads = Blueprint(
     "uploads",
@@ -21,9 +20,8 @@ import os
 
 
 @uploads.route("/image", methods=["post"])
+@authorize_with(["canUploadPhoto"])
 def image():
-    if not session["permission"] or not session["permission"]["canUploadPhoto"]:
-        return InvalidRequest("unauthorized operation")
     if "file" not in request.files:
         return jsonify({"success": False, "message": "Form input 'file' is empty"})
     files = request.files.getlist("file")

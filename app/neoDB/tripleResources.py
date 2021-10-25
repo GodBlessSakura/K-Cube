@@ -1,7 +1,6 @@
 from neo4j.exceptions import ConstraintError
 from argon2 import PasswordHasher
 from .resourcesGuard import for_all_methods,  reject_invalid
-from app import InvalidRequest
 import re
 
 

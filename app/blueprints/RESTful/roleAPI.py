@@ -1,15 +1,14 @@
 from flask import jsonify, session, request
 from app.api_driver import get_api_driver
-from app import InvalidRequest
+from app.authorizer import authorize_with
 
 api = "/role/"
 from . import RESTful
 
 
 @RESTful.route(api + "/permissions", methods=["GET"])
+@authorize_with(["canAssignRole"])
 def listPermission():
-    if not session["permission"] or not session["permission"]["canAssignRole"]:
-        return InvalidRequest("unauthorized operation")
     try:
         return jsonify(
             {"permissions": get_api_driver().admin.listPermission(), "success": True}
@@ -19,9 +18,8 @@ def listPermission():
 
 
 @RESTful.route(api, methods=["GET"])
+@authorize_with(["canAssignRole"])
 def listUserPermission():
-    if not session["permission"] or not session["permission"]["canAssignRole"]:
-        return InvalidRequest("unauthorized operation")
     try:
         return jsonify(
             {
@@ -35,6 +33,7 @@ def listUserPermission():
 
 @RESTful.route(api, defaults={"userId": None}, methods=["PUT", "DELETE"])
 @RESTful.route(api + "<userId>", methods=["PUT", "DELETE"])
+@authorize_with(["canAssignRole"])
 def put_delete_user_role(userId):
     if request.method == "PUT":
         return assign_user_role(userId)
@@ -43,8 +42,6 @@ def put_delete_user_role(userId):
 
 
 def assign_user_role(userId):
-    if not session["permission"] or not session["permission"]["canAssignRole"]:
-        return InvalidRequest("unauthorized operation")
     if "role" in request.json and userId is not None:
         try:
             result = jsonify(
@@ -59,8 +56,6 @@ def assign_user_role(userId):
 
 
 def remove_user_role(userId):
-    if not session["permission"] or not session["permission"]["canAssignRole"]:
-        return InvalidRequest("unauthorized operation")
     if "role" in request.json and userId is not None:
         try:
             result = get_api_driver().user.removeRole(

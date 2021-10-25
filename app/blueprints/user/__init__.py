@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, abort, redirect, request, jsonify, session
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
-from app import InvalidRequest
+from app.authorizer import authorize_with
 
 user = Blueprint("user", __name__, template_folder="templates")
 
@@ -12,15 +12,14 @@ def back():
 
 
 @user.route("/refreshPermission")
+@authorize_with([],require_userId=True)
 def refreshPermission():
-    if "user" in session and "userId" in session["user"]:
-        try:
-            session["permission"] = get_api_driver().user.get_user_permission(
-                userId=session["user"]["userId"]
-            )
-        except:
-            pass
-    return redirect("/")
+    try:
+        session["permission"] = get_api_driver().user.get_user_permission(
+            userId=session["user"]["userId"]
+        )
+    finally:
+        return redirect("/")
 
 
 @user.route("/profile")
@@ -96,14 +95,3 @@ def isUserIdAvaliable():
     )
 
 
-@user.route("renew_permission")
-def renew_permission():
-    if "user" in session and "userId" in session["user"]:
-        try:
-            session["permission"] = get_api_driver().user.get_user_permission(
-                userId=session["user"]["userId"]
-            )
-            return jsonify({"success": True})
-        except Exception as e:
-            return jsonify({"success": False, "message": str(e)})
-    return InvalidRequest("unauthorized operation")

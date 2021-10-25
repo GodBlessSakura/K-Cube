@@ -29,7 +29,14 @@ def sanitize_args_and_kwargs(function):
     return wrapper
 
 
-from app import InvalidRequest
+class InvalidRequest(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
+        
 import re
 
 # this would force the function to ignore all positional argument

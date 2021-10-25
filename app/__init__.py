@@ -1,15 +1,5 @@
 from flask import Flask, render_template, jsonify, session, g
 
-
-class InvalidRequest(Exception):
-    def __init__(self, message):
-        self.message = message
-        super().__init__(self.message)
-
-    def __str__(self):
-        return self.message
-
-
 from flask_mail import Mail
 from app.config import config
 from app.blueprints.admin import admin
@@ -22,10 +12,17 @@ from app.blueprints.uploads import uploads
 from app.blueprints.user import user
 import click
 
-from flask.cli import FlaskGroup
-
 mail = Mail()
 import os
+
+
+class IncompleteRequest(Exception):
+    def __init__(self, message):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message
 
 
 def create_app(config_object):
@@ -47,9 +44,20 @@ def create_app(config_object):
     app.register_blueprint(uploads, url_prefix="/uploads")
     app.register_blueprint(user, url_prefix="/user")
     mail.init_app(app)
-    @app.errorhandler(InvalidRequest)
+    from authorizer import UnauthorizedRequest
+    from neoDB.resourcesGuard import InvalidRequest
+
+    @app.errorhandler(UnauthorizedRequest)
     def handle_bad_request(e):
         return jsonify({"message": e.message}), 400
+
+    @app.errorhandler(InvalidRequest)
+    def handle_bad_request(e):
+        return jsonify({"success": False, "message": e.message})
+
+    @app.errorhandler(IncompleteRequest)
+    def handle_bad_request(e):
+        return jsonify({"success": False, "message": e.message})
 
     @app.route("/")
     def index():

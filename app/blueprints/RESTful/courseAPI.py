@@ -1,15 +1,14 @@
 from flask import jsonify, session, request
 from app.api_driver import get_api_driver
-from app import InvalidRequest
+from app.authorizer import authorize_with
 
 api = "/course/"
 from . import RESTful
 
 
 @RESTful.route(api, methods=["POST"])
+@authorize_with(["canCreateCourse"])
 def courseCreate():
-    if not session["permission"] or not session["permission"]["canCreateCourse"]:
-        return InvalidRequest("unauthorized operation")
     if (
         "displayName" in request.json
         and "name" in request.json

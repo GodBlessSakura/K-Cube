@@ -1,6 +1,6 @@
 from flask import jsonify, session, request
 from app.api_driver import get_api_driver
-from app import InvalidRequest
+from app.authorizer import authorize_with
 
 api = "/relationship/"
 from . import RESTful
@@ -20,14 +20,10 @@ def listApprovedRelationships():
 
 
 @RESTful.route(api)
+@authorize_with(
+    [["canProposeRelationship", "canApproveRelationship"]], require_userId=True
+)
 def getRelationShipView():
-    if "user" not in session or "userId" not in session["user"]:
-        raise InvalidRequest("unauthorized operation")
-    if not session["permission"] or (
-        not session["permission"]["canProposeRelationship"]
-        and not session["permission"]["canApproveRelationship"]
-    ):
-        raise InvalidRequest("unauthorized operation")
     try:
         return jsonify(
             {
@@ -42,9 +38,8 @@ def getRelationShipView():
 
 
 @RESTful.route(api + "proposal", methods=["PUT", "DELETE"])
+@authorize_with(["canProposeRelationship"], require_userId=True)
 def relationshipProposal():
-    if not session["permission"] or not session["permission"]["canProposeRelationship"]:
-        return InvalidRequest("unauthorized operation")
     if request.method == "PUT":
         return createProposal()
     if request.method == "DELETE":
@@ -53,7 +48,7 @@ def relationshipProposal():
 
 @RESTful.route(api, methods=["PUT"])
 def createProposal():
-    if "name" in request.json and "user" in session and "userId" in session["user"]:
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.createProposal(
@@ -68,7 +63,7 @@ def createProposal():
 
 @RESTful.route(api, methods=["PUT"])
 def removeProposal():
-    if "name" in request.json and "user" in session and "userId" in session["user"]:
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.removeProposal(
@@ -82,9 +77,8 @@ def removeProposal():
 
 
 @RESTful.route(api + "approval", methods=["PUT", "DELETE"])
+@authorize_with(["canApproveRelationship"], require_userId=True)
 def relationshipApproval():
-    if not session["permission"] or not session["permission"]["canApproveRelationship"]:
-        return InvalidRequest("unauthorized operation")
     if request.method == "PUT":
         return createApproval()
     if request.method == "DELETE":
@@ -93,7 +87,7 @@ def relationshipApproval():
 
 @RESTful.route(api, methods=["PUT"])
 def createApproval():
-    if "name" in request.json and "user" in session and "userId" in session["user"]:
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.createApproval(
@@ -108,7 +102,7 @@ def createApproval():
 
 @RESTful.route(api, methods=["PUT"])
 def removeApproval():
-    if "name" in request.json and "user" in session and "userId" in session["user"]:
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.removeApproval(

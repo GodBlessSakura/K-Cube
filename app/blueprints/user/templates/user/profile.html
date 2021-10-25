@@ -2,7 +2,7 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-card>
-    <v-btn @click="renewPermission">renew permission</v-btn>
+    <v-btn href="{{ url_for('user.refreshPermission') }}">renew permission</v-btn>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
@@ -17,7 +17,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('user.renew_permission') }}", {
+                fetch("{{ url_for('user.refreshPermission') }}", {
                     method: 'GET',
                     cache: 'no-store',
                     headers: {

@@ -1,6 +1,5 @@
 from flask import jsonify, session, request, abort
 from app.api_driver import get_api_driver
-from app import InvalidRequest
 from neo4j.exceptions import ConstraintError
 
 api = "/entity/"
@@ -19,4 +18,3 @@ def listEntity():
         )
     except Exception as e:
         raise e
-    return InvalidRequest("unauthorized operation")
