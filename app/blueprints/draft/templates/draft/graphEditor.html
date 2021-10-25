@@ -145,7 +145,7 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.draft') }}" + 'render/' + '{{ draftId }}', {
+                let draftPromise = fetch("{{ url_for('RESTful.draft') }}" + 'render/' + '{{ draftId }}', {
                     method: 'GET',
                     cache: 'no-store',
                     headers: {
@@ -156,7 +156,6 @@
                         return response.json()
                     })
                     .then(body => {
-                        this.$root.progress.show = false
                         if (body.draft && body.triples) {
                             this.publishLoading = false
                             this.publishSwitch = body.draft.status == "published"
@@ -233,7 +232,7 @@
                             }
                         }
                     })
-                fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
+                let relationshipPromise = fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
                     method: 'GET',
                     cache: 'no-store',
                     headers: {
@@ -244,7 +243,6 @@
                         return response.json()
                     })
                     .then(body => {
-                        this.$root.progress.show = false
                         if (body.relationships) {
                             this.relationships = body.relationships
                         }
@@ -259,7 +257,7 @@
                             }
                         }
                     })
-                fetch("{{ url_for('RESTful.listEntity') }}", {
+                let entityPromise = fetch("{{ url_for('RESTful.listEntity') }}", {
                     method: 'GET',
                     cache: 'no-store',
                     headers: {
@@ -270,7 +268,6 @@
                         return response.json()
                     })
                     .then(body => {
-                        this.$root.progress.show = false
                         if (body.entities) {
                             this.concepts = body.entities.map(e => e.concept.name)
                         }
@@ -285,6 +282,9 @@
                             }
                         }
                     })
+                Promise.all([draftPromise, relationshipPromise, entityPromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
             },
             createTriple() {
                 if (this.$root.progress.show == true) {
@@ -332,7 +332,7 @@
                                     else {
                                         nodes.update({ id: name, color: nodeColorFactory({}) })
                                     }
-                                    if (!this.concepts.includes(name))this.concepts.push(name)
+                                    if (!this.concepts.includes(name)) this.concepts.push(name)
                                 })
                                 let newEdge = edgeFactory({
                                     from: triple.h_name,
@@ -511,7 +511,7 @@
                             network.selectEdges([id])
                             this.isSelectingEdge = true
                         }
-                        else{
+                        else {
                             this.isSelectingEdge = false
                         }
 

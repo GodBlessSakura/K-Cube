@@ -20,35 +20,18 @@
                     let formData = new FormData(this.$refs.imageForm.$el)
                     this.$root.progress.show = true
                     fetch("{{ url_for('uploads.image') }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        body: formData
-                    })
+                            method: 'POST',
+                            cache: 'no-store',
+                            body: formData
+                        })
                         .then(response => {
                             return response.json()
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.success) {
-                                if (body.message) {
-                                    this.$root.completeSnackBar.message = body.message
-                                }
-                                else {
-                                    this.$root.completeSnackBar.message = 'success'
-                                }
-                                this.$root.completeSnackBar.show = true
-                                this.$refs.imageForm.reset()
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'unexpected error'
-                                    this.$root.errorSnackBar.show = true
-                                }
-                            }
+                            this.$root.responseSnackBar(body,
+                                'unexpected error',
+                                false, this.$refs.imageForm.reset)
 
                         })
                 }

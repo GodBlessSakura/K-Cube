@@ -34,7 +34,8 @@
             </v-progress-linear>
             <v-app-bar app>
                 <a href="{{ url_for('index') }}">
-                    <v-img src="{{ url_for('static', filename='images/logo.png') }}" link max-height="35" max-width="35">
+                    <v-img src="{{ url_for('static', filename='images/logo.png') }}" link max-height="35"
+                        max-width="35">
                     </v-img>
                 </a>
                 <v-btn text href="{{ url_for('index') }}">KG-Cube</v-btn>
@@ -260,10 +261,20 @@
             el: '#nav',
             data: () => ({
                 miniSync: true,
-                errorSnackBar: { show: false, message: '' },
-                completeSnackBar: { show: false, message: '' },
-                bePatientSnackBar: { show: false },
-                progress: { show: false },
+                errorSnackBar: {
+                    show: false,
+                    message: ''
+                },
+                completeSnackBar: {
+                    show: false,
+                    message: ''
+                },
+                bePatientSnackBar: {
+                    show: false
+                },
+                progress: {
+                    show: false
+                },
                 shouldShowLoginForm: false,
                 tab: 'register',
                 login: 'login',
@@ -275,21 +286,28 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 101 || 'UserId should be anything between 4 and 100 charactors', v =>
-                            /^[a-zA-Z0-9]{4,100}$/.test(v) || 'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) || 'UserId must start with alphabetic characters.'
+                        v => v.length > 3 && v.length < 101 ||
+                        'UserId should be anything between 4 and 100 charactors', v =>
+                        /^[a-zA-Z0-9]{4,100}$/.test(v) ||
+                        'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) ||
+                        'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
-                        v => v.length > 3 && v.length < 101 || 'Name should be anything between 4 and 100 charactors', v =>
-                            /^[a-zA-Z0-9\s]{4,100}$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                        v => v.length > 3 && v.length < 101 ||
+                        'Name should be anything between 4 and 100 charactors', v =>
+                        /^[a-zA-Z0-9\s]{4,100}$/.test(v) ||
+                        'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
                         v => !!v || 'E-mail is required',
-                        v => v.length < 320 || 'A valid email should have less then 320 characters', v =>
-                            /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) || 'E-mail must be in valid format',
+                        v => v.length < 320 || 'A valid email should have less then 320 characters',
+                        v =>
+                        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) ||
+                        'E-mail must be in valid format',
                     ],
                     password: '',
                     passwordRules: [
@@ -305,9 +323,12 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 101 || 'UserId should be anything between 4 and 100 charactors', v =>
-                            /^[a-zA-Z0-9]{4,100}$/.test(v) || 'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) || 'UserId must start with alphabetic characters.'
+                        v => v.length > 3 && v.length < 101 ||
+                        'UserId should be anything between 4 and 100 charactors', v =>
+                        /^[a-zA-Z0-9]{4,100}$/.test(v) ||
+                        'UserId can only contains alphanumeric characters.',
+                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) ||
+                        'UserId must start with alphabetic characters.'
                     ],
                     password: '',
                     passwordRules: [
@@ -321,18 +342,17 @@
                     this.userIdAvaliableChecking = true
                     if (this.$refs.registerFormUserIdControl.valid) {
                         fetch("{{ url_for('user.isUserIdAvaliable') }}?userId=" +
-                            this.$refs.registerFormUserIdControl.value, {
-                            method: 'GET',
-                            cache: 'no-store',
-                        })
+                                this.$refs.registerFormUserIdControl.value, {
+                                    method: 'GET',
+                                    cache: 'no-store',
+                                })
                             .then(response => response.json())
                             .then(body => {
                                 this.registerForm.isUserIdAvaliable = body.avaliable
                                 this.userIdAvaliableChecking = false
                                 if (body.avaliable) {
                                     this.userIdAvaliableCheckBox = true
-                                }
-                                else {
+                                } else {
                                     this.userIdAvaliableCheckBox = false
                                 }
                             })
@@ -342,34 +362,24 @@
                     if (this.$refs.registerFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.register') }}", {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userId: this.registerForm.id, password: this.registerForm.password,
-                                email: this.registerForm.email, userName: this.registerForm.name
+                                method: 'POST',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    userId: this.registerForm.id,
+                                    password: this.registerForm.password,
+                                    email: this.registerForm.email,
+                                    userName: this.registerForm.name
+                                })
                             })
-                        })
                             .then(response => {
                                 return response.json()
                             })
                             .then(body => {
                                 this.progress.show = false
-                                if (body.success) {
-                                    location.reload()
-                                }
-                                else {
-                                    if (body.message) {
-                                        this.errorSnackBar.message = body.message
-                                        this.errorSnackBar.show = true
-                                    }
-                                    else {
-                                        this.errorSnackBar.message = 'Registration failed for unkown reason.'
-                                        this.errorSnackBar.show = true
-                                    }
-                                }
+                                this.responseSnackBar(body, 'Registration failed for unkown reason.', true)
                             })
 
                     }
@@ -378,34 +388,43 @@
                     if (this.$refs.loginFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.login') }}", {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ userId: this.loginForm.id, password: this.loginForm.password })
+                                method: 'POST',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    userId: this.loginForm.id,
+                                    password: this.loginForm.password
+                                })
 
-                        })
+                            })
                             .then(response => {
                                 return response.json()
                             })
                             .then(body => {
                                 this.progress.show = false
-                                if (body.success) {
-                                    location.reload()
-                                }
-                                else {
-                                    if (body.message) {
-                                        this.errorSnackBar.message = body.message
-                                        this.errorSnackBar.show = true
-                                    }
-                                    else {
-                                        this.errorSnackBar.message = 'incorrect username or password'
-                                        this.errorSnackBar.show = true
-                                    }
-                                }
-
+                                this.responseSnackBar(body, 'incorrect username or password', true)
                             })
+                    }
+                },
+                responseSnackBar(body, defaultMessage, reloadOnSuccess, onSuccess = () => {}) {
+                    if (body.success) {
+                        if (reloadOnSuccess) {
+                            location.reload()
+                        } else if (body.message) {
+                            this.completeSnackBar.message = body.message
+                        } else {
+                            this.completeSnackBar.message = 'success'
+                        }
+                        this.completeSnackBar.show = true
+                        onSuccess()
+                    } else if (body.message) {
+                        this.errorSnackBar.message = body.message
+                        this.errorSnackBar.show = true
+                    } else {
+                        this.errorSnackBar.message = defaultMessage
+                        this.errorSnackBar.show = true
                     }
                 }
             },

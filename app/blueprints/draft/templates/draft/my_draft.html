@@ -79,8 +79,7 @@
         data: () => ({
             search: '',
             drafts: [],
-            headers: [
-                {
+            headers: [{
                     text: 'Draft name',
                     value: 'draftName',
                 },
@@ -104,8 +103,11 @@
             draftControl: true,
             draftName: '',
             draftNameRules: [v => !!v || 'Draft name is required',
-            v => v.length > 3 && v.length < 101 || 'Draft name  should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Draft name  can only contains alphanumeric characters and space.'],
+                v => v.length > 3 && v.length < 101 ||
+                'Draft name  should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Draft name  can only contains alphanumeric characters and space.'
+            ],
             cloneDiaglog: false,
             cloneSourceDraftId: "",
             cloneDraftName: "",
@@ -116,62 +118,61 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.listDraft', courseCode = courseCode) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                let draftPromise = fetch("{{ url_for('RESTful.listDraft', courseCode = courseCode) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
-                        this.$root.progress.show = false
                         let colPerRow = 4
                         if (body.drafts) {
                             body.drafts.forEach(d => {
                                 this.drafts.push(d)
                             })
-                        }
-                        else {
+                        } else {
                             if (body.message) {
                                 this.$root.errorSnackBar.message = body.message
                                 this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting drafts information.'
+                            } else {
+                                this.$root.errorSnackBar.message =
+                                    'Unexpected error on getting drafts information.'
                                 this.$root.errorSnackBar.show = true
                             }
                         }
                     })
-                fetch("{{ url_for('RESTful.listCourse') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                let coursePromise = fetch("{{ url_for('RESTful.listCourse') }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
-                        this.$root.progress.show = false
                         let colPerRow = 4
                         if (body.courses) {
                             this.courseCodes = body.courses.map(course => course.concept.name)
-                        }
-                        else {
+                        } else {
                             if (body.message) {
                                 this.$root.errorSnackBar.message = body.message
                                 this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                            } else {
+                                this.$root.errorSnackBar.message =
+                                    'Unexpected error on getting relationship information.'
                                 this.$root.errorSnackBar.show = true
                             }
                         }
                     })
+                Promise.all([draftPromise, coursePromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
             },
             submitDraft() {
                 if (this.$refs.draftControl.validate()) {
@@ -181,40 +182,21 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.createDraft', courseCode = courseCode) }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            draftName: this.draftName,
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                draftName: this.draftName,
+                            })
                         })
-                    })
                         .then(response => {
                             return response.json()
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.success) {
-                                if (body.message) {
-                                    this.$root.completeSnackBar.message = body.message
-                                }
-                                else {
-                                    this.$root.completeSnackBar.message = 'success'
-                                }
-                                this.$root.completeSnackBar.show = true
-                                this.$refs.draftControl.reset();
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'Creation failed for unkown reason.'
-                                    this.$root.errorSnackBar.show = true
-                                }
-                            }
+                            this.$root.responseSnackBar(body, 'Creation failed for unkown reason.')
                         })
                 }
             },
@@ -232,43 +214,25 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.draft') }}" + 'clone/' + this.cloneSourceDraftId, {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            draftName: this.cloneDraftName,
-                            name: this.cloneCourseCode
-                        })
-                    })
+                    fetch("{{ url_for('RESTful.draft') }}" + 'clone/' + this
+                            .cloneSourceDraftId, {
+                                method: 'POST',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    draftName: this.cloneDraftName,
+                                    name: this.cloneCourseCode
+                                })
+                            })
                         .then(response => {
                             return response.json()
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.success) {
-                                if (body.message) {
-                                    this.$root.completeSnackBar.message = body.message
-                                }
-                                else {
-                                    this.$root.completeSnackBar.message = 'success'
-                                }
-
-                                this.$root.completeSnackBar.show = true
-                                this.$refs.cloneControl.reset();
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'Creation failed for unkown reason.'
-                                    this.$root.errorSnackBar.show = true
-                                }
-                            }
+                            this.$root.responseSnackBar(body, 'Creation failed for unkown reason.')
+                            this.$refs.cloneControl.reset()
                             this.cloneDiaglog = false
                         })
                 }

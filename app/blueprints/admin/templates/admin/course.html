@@ -40,12 +40,18 @@
 
             courseCode: '',
             courseCodeRules: [v => !!v || 'Course code is required',
-            v => v.length > 3 && v.length < 101 || 'Course code should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Course code can only contains alphanumeric characters and space.'],
+                v => v.length > 3 && v.length < 101 ||
+                'Course code should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Course code can only contains alphanumeric characters and space.'
+            ],
             courseName: '',
             courseNameRules: [v => !!v || 'Course name is required',
-            v => v.length > 3 && v.length < 101 || 'Course name should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Course name can only contains alphanumeric characters and space.'],
+                v => v.length > 3 && v.length < 101 ||
+                'Course name should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Course name can only contains alphanumeric characters and space.'
+            ],
             imageUrl: '',
             imageUrlRules: [],
 
@@ -59,41 +65,25 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.courseCreate') }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            displayName: this.courseName, imageURL: this.imageUrl,
-                            name: this.courseCode,
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                displayName: this.courseName,
+                                imageURL: this.imageUrl,
+                                name: this.courseCode,
+                            })
                         })
-                    })
                         .then(response => {
                             return response.json()
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.success) {
-                                if (body.message) {
-                                    this.$root.completeSnackBar.message = body.message
-                                }
-                                else {
-                                    this.$root.completeSnackBar.message = 'success'
-                                }
-                                this.$root.completeSnackBar.show = true
-                                this.control.reset()
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'Creation failed for unkown reason.'
-                                    this.$root.errorSnackBar.show = true
-                                }
-                            }
+                            this.$root.responseSnackBar(body,
+                                'Creation failed for unkown reason.',
+                                false, this.control.reset)
                         })
                 }
             },

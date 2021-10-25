@@ -8,8 +8,7 @@
 {% block VueComponentScript %}
 <script>
     Vue.component('app-content', {
-        data: () => ({
-        }),
+        data: () => ({}),
         methods: {
             renewPermission() {
                 if (this.$root.progress.show == true) {
@@ -18,37 +17,17 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('user.refreshPermission') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
-
-                        if (body.success) {
-                            this.$root.progress.show = false
-                            if (body.message) {
-                                this.$root.completeSnackBar.message = body.message
-                            }
-                            else {
-                                this.$root.completeSnackBar.message = 'success'
-                            }
-                            this.$root.completeSnackBar.show = true
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on renewing permission.'
-                                this.$root.errorSnackBar.show = true
-                            }
-                        }
+                        this.$root.responseSnackBar(body, 'Unexpected error on renewing permission.')
                     })
             }
         },

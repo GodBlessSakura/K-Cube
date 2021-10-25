@@ -31,32 +31,46 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.listPermission') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
                         if (body.permissions) {
-                            this.roles = [{ text: "UserId", value: 'userId' }, ...body.permissions
-                                .map(p => { return { text: p.role, value: p.role } })]
+                            this.roles = [{
+                                    text: "UserId",
+                                    value: 'userId'
+                                }, ...body.permissions
+                                .map(p => {
+                                    return {
+                                        text: p.role,
+                                        value: p.role
+                                    }
+                                })
+                            ]
                             this.permissions = body.permissions.map(p => {
                                 return {
-                                    name: p.role, children: Object.keys(p)
-                                        .map(k => { return { name: k + ' : ' + p[k] } })
+                                    name: p.role,
+                                    children: Object.keys(p)
+                                        .map(k => {
+                                            return {
+                                                name: k + ' : ' + p[k]
+                                            }
+                                        })
                                 }
                             })
                             fetch("{{ url_for('RESTful.listUserPermission') }}", {
-                                method: 'GET',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                            })
+                                    method: 'GET',
+                                    cache: 'no-store',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                })
                                 .then(response => {
                                     return response.json()
                                 })
@@ -64,33 +78,34 @@
                                     this.$root.progress.show = false
                                     if (body.users) {
                                         this.users = body.users.map(u => {
-                                            user_row = { userId: u.user.userId }
+                                            user_row = {
+                                                userId: u.user.userId
+                                            }
                                             this.permissions.forEach(element => {
-                                                user_row[element.name] = u.roles.includes(element.name)
+                                                user_row[element.name] = u.roles
+                                                    .includes(element.name)
                                             });
                                             return user_row
                                         })
-                                    }
-                                    else {
+                                    } else {
                                         if (body.message) {
                                             this.$root.errorSnackBar.message = body.message
                                             this.$root.errorSnackBar.show = true
-                                        }
-                                        else {
-                                            this.$root.errorSnackBar.message = 'Unexpected error on getting user information.'
+                                        } else {
+                                            this.$root.errorSnackBar.message =
+                                                'Unexpected error on getting user information.'
                                             this.$root.errorSnackBar.show = true
                                         }
                                     }
                                 })
 
-                        }
-                        else {
+                        } else {
                             if (body.message) {
                                 this.$root.errorSnackBar.message = body.message
                                 this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting role information.'
+                            } else {
+                                this.$root.errorSnackBar.message =
+                                    'Unexpected error on getting role information.'
                                 this.$root.errorSnackBar.show = true
                             }
                         }
@@ -103,34 +118,23 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.put_delete_user_role') }}" + userId, {
-                    method: value ? "DELETE" : "PUT",
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        role: role
+                        method: value ? "DELETE" : "PUT",
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            role: role
+                        })
                     })
-                })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
 
                         this.$root.progress.show = false
-                        if (body.success) {
-                            this.loadData()
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on setting role assignment.'
-                                this.$root.errorSnackBar.show = true
-                            }
-                        }
+                        this.$root.responseSnackBar(body, 'Unexpected error on setting role assignment.',
+                            false, this.loadData)
                     })
             }
         },

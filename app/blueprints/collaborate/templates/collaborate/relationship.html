@@ -60,8 +60,7 @@
 <script>
     Vue.component('collaborate-relationship', {
         data: () => ({
-            headers: [
-                {
+            headers: [{
                     text: 'Relationship name',
                     value: 'name',
                 },
@@ -79,19 +78,22 @@
             suggestionControl: true,
             suggestionName: '',
             suggestionNameRules: [v => !!v || 'Relationship name is required',
-            v => v.length > 3 && v.length < 101 || 'Relationship name  should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Relationship name  can only contains alphanumeric characters and space.'],
+                v => v.length > 3 && v.length < 101 ||
+                'Relationship name  should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Relationship name  can only contains alphanumeric characters and space.'
+            ],
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.getRelationShipView') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -99,14 +101,13 @@
                         this.$root.progress.show = false
                         if (body.relationships) {
                             this.relationships = body.relationships
-                        }
-                        else {
+                        } else {
                             if (body.message) {
                                 this.$root.errorSnackBar.message = body.message
                                 this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
+                            } else {
+                                this.$root.errorSnackBar.message =
+                                    'Unexpected error on getting relationship information.'
                                 this.$root.errorSnackBar.show = true
                             }
                         }
@@ -119,34 +120,23 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.relationshipProposal') }}", {
-                    method: value ? "DELETE" : "PUT",
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: name
+                        method: value ? "DELETE" : "PUT",
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name
+                        })
                     })
-                })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
 
                         this.$root.progress.show = false
-                        if (body.success) {
-                            this.loadData()
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on setting proposal status.'
-                                this.$root.errorSnackBar.show = true
-                            }
-                        }
+                        this.$root.responseSnackBar(body, 'Unexpected error on setting proposal status.',
+                            false, this.loadData)
                     })
             },
             //{% if session['permission'] and session['permission'].canApproveRelationship %}               
@@ -157,34 +147,23 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.relationshipApproval') }}", {
-                    method: value ? "DELETE" : "PUT",
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        name: name
+                        method: value ? "DELETE" : "PUT",
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: name
+                        })
                     })
-                })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
 
                         this.$root.progress.show = false
-                        if (body.success) {
-                            this.loadData()
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on setting proposal status.'
-                                this.$root.errorSnackBar.show = true
-                            }
-                        }
+                        this.$root.responseSnackBar(body, 'Unexpected error on setting proposal status.',
+                            false, this.loadData)
                     })
             },
             //{% endif  %}
@@ -196,40 +175,23 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.createProposal') }}", {
-                        method: 'PUT',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            name: this.suggestionName,
+                            method: 'PUT',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                name: this.suggestionName,
+                            })
                         })
-                    })
                         .then(response => {
                             return response.json()
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.success) {
-                                if (body.message) {
-                                    this.$root.completeSnackBar.message = body.message
-                                }
-                                else {
-                                    this.$root.completeSnackBar.message = 'success'
-                                }
-                                this.$root.completeSnackBar.show = true
-                                this.$refs.suggestionControl.reset();
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'Creation failed for unkown reason.'
-                                    this.$root.errorSnackBar.show = true
-                                }
-                            }
+                            this.$root.responseSnackBar(body,
+                                'Creation failed for unkown reason.',
+                                false, this.$refs.suggestionControl)
                         })
                 }
             }
