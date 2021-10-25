@@ -379,7 +379,8 @@
                             })
                             .then(body => {
                                 this.progress.show = false
-                                this.responseSnackBar(body, 'Registration failed for unkown reason.', true)
+                                this.responseSnackBar(body, 'Registration failed for unkown reason.',
+                                    location.reload)
                             })
 
                     }
@@ -404,15 +405,14 @@
                             })
                             .then(body => {
                                 this.progress.show = false
-                                this.responseSnackBar(body, 'incorrect username or password', true)
+                                this.responseSnackBar(body, 'incorrect username or password', location
+                                    .reload)
                             })
                     }
                 },
                 responseSnackBar(body, defaultMessage, reloadOnSuccess, onSuccess = () => {}) {
                     if (body.success) {
-                        if (reloadOnSuccess) {
-                            location.reload()
-                        } else if (body.message) {
+                        if (body.message) {
                             this.completeSnackBar.message = body.message
                         } else {
                             this.completeSnackBar.message = 'success'
@@ -426,6 +426,16 @@
                         this.errorSnackBar.message = defaultMessage
                         this.errorSnackBar.show = true
                     }
+                },
+                errorDisplay(body, defaultMessage) {
+                    if (body.message) {
+                        this.errorSnackBar.message = body.message
+                        this.errorSnackBar.show = true
+                    } else {
+                        this.errorSnackBar.message = defaultMessage
+                        this.errorSnackBar.show = true
+                    }
+
                 }
             },
             delimiters: ['${', '}'],

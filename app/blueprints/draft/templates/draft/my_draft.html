@@ -135,14 +135,8 @@
                                 this.drafts.push(d)
                             })
                         } else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            } else {
-                                this.$root.errorSnackBar.message =
-                                    'Unexpected error on getting drafts information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                            this.$root.errorDisplay(body,
+                                    'Unexpected error on getting drafts information.')
                         }
                     })
                 let coursePromise = fetch("{{ url_for('RESTful.listCourse') }}", {
@@ -160,14 +154,8 @@
                         if (body.courses) {
                             this.courseCodes = body.courses.map(course => course.concept.name)
                         } else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            } else {
-                                this.$root.errorSnackBar.message =
-                                    'Unexpected error on getting relationship information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                            this.$root.errorDisplay(body,
+                                    'Unexpected error on getting relationship information.')
                         }
                     })
                 Promise.all([draftPromise, coursePromise]).then(_ => {
@@ -196,7 +184,8 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            this.$root.responseSnackBar(body, 'Creation failed for unkown reason.')
+                            this.$root.responseSnackBar(body, 'Creation failed for unkown reason.',
+                                this.loadData)
                         })
                 }
             },
@@ -231,7 +220,8 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            this.$root.responseSnackBar(body, 'Creation failed for unkown reason.')
+                            this.$root.responseSnackBar(body, 'Creation failed for unkown reason.',
+                                this.loadData)
                             this.$refs.cloneControl.reset()
                             this.cloneDiaglog = false
                         })

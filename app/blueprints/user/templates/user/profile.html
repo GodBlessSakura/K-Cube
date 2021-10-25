@@ -27,7 +27,8 @@
                         return response.json()
                     })
                     .then(body => {
-                        this.$root.responseSnackBar(body, 'Unexpected error on renewing permission.')
+                        this.$root.responseSnackBar(body, 'Unexpected error on renewing permission.',
+                            location.reload)
                     })
             }
         },

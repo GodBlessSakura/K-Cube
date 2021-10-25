@@ -21,10 +21,16 @@
     nodes = new vis.DataSet([]);
     edges = new vis.DataSet([]);
     network = undefined
+
     function edgeIdFromNames(h_name, r_name, t_name) {
         return h_name + '.' + r_name + '.' + t_name
     }
-    function nodeColorFactory({ isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+
+    function nodeColorFactory({
+        isTempory = undefined,
+        isRoot = undefined,
+        isNew = undefined
+    }) {
         let color = {
             border: isTempory ? '#ff8787' : isNew ? '#47f5be' : '#87a3ff',
             background: isTempory ? '#ffbfbf' : isNew ? '#bfffeb' : '#b6c9fc',
@@ -35,27 +41,56 @@
         }
         return color
     }
-    function edgeColorFactory({ isTempory = undefined, isNew = undefined }) {
-        let nodeColor = nodeColorFactory({ isTempory: isTempory, isNew: isNew })
+
+    function edgeColorFactory({
+        isTempory = undefined,
+        isNew = undefined
+    }) {
+        let nodeColor = nodeColorFactory({
+            isTempory: isTempory,
+            isNew: isNew
+        })
         let color = {
             color: nodeColor.border,
             highlight: nodeColor.highlight.border
         }
         return color
     }
-    function nodeFactory({ name, imageURL, title = undefined, isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+
+    function nodeFactory({
+        name,
+        imageURL,
+        title = undefined,
+        isTempory = undefined,
+        isRoot = undefined,
+        isNew = undefined
+    }) {
         let node = {
             shape: imageURL ? 'circularImage' : 'dot',
             size: 30,
-            id: name, label: name,
+            id: name,
+            label: name,
             image: imageURL ? imageURL : undefined,
-            color: nodeColorFactory({ isTempory: isTempory, isRoot: isRoot, isNew: isNew }),
+            color: nodeColorFactory({
+                isTempory: isTempory,
+                isRoot: isRoot,
+                isNew: isNew
+            }),
             fixed: isRoot ? true : undefined,
             title: title,
         }
         return node
     }
-    function edgeFactory({ from, to, label, vote, title = undefined, isTempory = undefined, isNew = undefined }) {
+
+    function edgeFactory({
+        from,
+        to,
+        label,
+        vote,
+        title = undefined,
+        isTempory = undefined,
+        isNew = undefined
+    }) {
         let edge = {
             font: {
                 size: 12,
@@ -67,10 +102,15 @@
                 to: true
             },
             smooth: false,
-            from: from, to: to, label: label,
+            from: from,
+            to: to,
+            label: label,
             id: edgeIdFromNames(from, label, to),
             dashed: isTempory ? 'dashed' : undefined,
-            color: edgeColorFactory({ isTempory: isTempory, isNew: isNew }),
+            color: edgeColorFactory({
+                isTempory: isTempory,
+                isNew: isNew
+            }),
             title: "Suggested by " + vote + " teacher" + (vote > 1 ? 's.' : '.'),
             width: vote,
         }
@@ -81,17 +121,19 @@
         data: () => ({
             relationships: [],
             nameRules: [v => !!v || 'Name is required',
-            v => v.length > 3 && v.length < 101 || 'Name should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                v => v.length > 3 && v.length < 101 ||
+                'Name should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Name can only contains alphanumeric characters and space.'
             ],
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.aggregatedTriple') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -107,17 +149,18 @@
                                         to: triple.t_name,
                                         label: triple.r_name,
                                         vote: triple.userVote
-                                    }
-                                    )
+                                    })
                                 )
                                 nodeSet.add(triple.h_name)
                                 nodeSet.add(triple.t_name)
                             });
                             nodeSet.forEach(node => {
-                                nodes.add(nodeFactory({ name: node }))
+                                nodes.add(nodeFactory({
+                                    name: node
+                                }))
                             })
                             body.courses.forEach(course => {
-                                
+
                                 nodes.update(nodeFactory({
                                     name: course.concept.name,
                                     imageURL: course.course.imageURL,
@@ -140,16 +183,10 @@
                             };
                             network = new vis.Network(container, data, options);
 
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting draft information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting draft information.')
+
                         }
                     })
             },

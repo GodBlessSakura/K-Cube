@@ -68,10 +68,16 @@
     nodes = new vis.DataSet([]);
     edges = new vis.DataSet([]);
     network = undefined
+
     function edgeIdFromNames(h_name, r_name, t_name) {
         return h_name + '.' + r_name + '.' + t_name
     }
-    function nodeColorFactory({ isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+
+    function nodeColorFactory({
+        isTempory = undefined,
+        isRoot = undefined,
+        isNew = undefined
+    }) {
         let color = {
             border: isTempory ? '#ff8787' : isNew ? '#47f5be' : '#87a3ff',
             background: isTempory ? '#ffbfbf' : isNew ? '#bfffeb' : '#b6c9fc',
@@ -82,27 +88,55 @@
         }
         return color
     }
-    function edgeColorFactory({ isTempory = undefined, isNew = undefined }) {
-        let nodeColor = nodeColorFactory({ isTempory: isTempory, isNew: isNew })
+
+    function edgeColorFactory({
+        isTempory = undefined,
+        isNew = undefined
+    }) {
+        let nodeColor = nodeColorFactory({
+            isTempory: isTempory,
+            isNew: isNew
+        })
         let color = {
             color: nodeColor.border,
             highlight: nodeColor.highlight.border
         }
         return color
     }
-    function nodeFactory({ name, imageURL, title = undefined, isTempory = undefined, isRoot = undefined, isNew = undefined }) {
+
+    function nodeFactory({
+        name,
+        imageURL,
+        title = undefined,
+        isTempory = undefined,
+        isRoot = undefined,
+        isNew = undefined
+    }) {
         let node = {
             shape: imageURL ? 'circularImage' : 'dot',
             size: 30,
-            id: name, label: name,
+            id: name,
+            label: name,
             image: imageURL ? imageURL : undefined,
-            color: nodeColorFactory({ isTempory: isTempory, isRoot: isRoot, isNew: isNew }),
+            color: nodeColorFactory({
+                isTempory: isTempory,
+                isRoot: isRoot,
+                isNew: isNew
+            }),
             fixed: isRoot ? true : undefined,
             title: title,
         }
         return node
     }
-    function edgeFactory({ from, to, label, title = undefined, isTempory = undefined, isNew = undefined }) {
+
+    function edgeFactory({
+        from,
+        to,
+        label,
+        title = undefined,
+        isTempory = undefined,
+        isNew = undefined
+    }) {
         let edge = {
             font: {
                 size: 12,
@@ -114,10 +148,15 @@
                 to: true
             },
             smooth: false,
-            from: from, to: to, label: label,
+            from: from,
+            to: to,
+            label: label,
             id: edgeIdFromNames(from, label, to),
             dashed: isTempory ? 'dashed' : undefined,
-            color: edgeColorFactory({ isTempory: isTempory, isNew: isNew }),
+            color: edgeColorFactory({
+                isTempory: isTempory,
+                isNew: isNew
+            }),
             title: title,
         }
         return edge
@@ -127,8 +166,10 @@
         data: () => ({
             relationships: [],
             nameRules: [v => !!v || 'Name is required',
-            v => v.length > 3 && v.length < 101 || 'Name should be anything between 4 and 100 charactors',
-            v => /^[a-zA-Z0-9\s]+$/.test(v) || 'Name can only contains alphanumeric characters and space.'
+                v => v.length > 3 && v.length < 101 ||
+                'Name should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Name can only contains alphanumeric characters and space.'
             ],
             h_name: '',
             t_name: '',
@@ -146,12 +187,12 @@
             loadData() {
                 this.$root.progress.show = true
                 let draftPromise = fetch("{{ url_for('RESTful.draft') }}" + 'render/' + '{{ draftId }}', {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -167,14 +208,15 @@
                                         from: triple.h_name,
                                         to: triple.t_name,
                                         label: triple.r_name
-                                    }
-                                    )
+                                    })
                                 )
                                 nodeSet.add(triple.h_name)
                                 nodeSet.add(triple.t_name)
                             });
                             nodeSet.forEach(node => {
-                                nodes.add(nodeFactory({ name: node }))
+                                nodes.add(nodeFactory({
+                                    name: node
+                                }))
                             })
                             nodes.update(nodeFactory({
                                 name: body.draft.root,
@@ -204,8 +246,7 @@
                                 }
                                 if (!self.h_name || this.focusing == "head") {
                                     self.h_name = event.nodes[0]
-                                }
-                                else {
+                                } else {
                                     self.t_name = event.nodes[0]
                                 }
                                 self.isSelectingEdge = false
@@ -220,66 +261,46 @@
                                 self.isSelectingEdge = true
                             })
 
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting draft information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting draft information.')
                         }
                     })
                 let relationshipPromise = fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
                         if (body.relationships) {
                             this.relationships = body.relationships
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
                         }
                     })
                 let entityPromise = fetch("{{ url_for('RESTful.listEntity') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
                     .then(body => {
                         if (body.entities) {
                             this.concepts = body.entities.map(e => e.concept.name)
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+
                         }
                     })
                 Promise.all([draftPromise, relationshipPromise, entityPromise]).then(_ => {
@@ -294,16 +315,17 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
-                        method: 'PUT',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            h_name: this.h_name, r_name: this.r_name,
-                            t_name: this.t_name,
+                            method: 'PUT',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: this.h_name,
+                                r_name: this.r_name,
+                                t_name: this.t_name,
+                            })
                         })
-                    })
                         .then(response => {
                             return response.json()
                         })
@@ -311,26 +333,35 @@
                             this.$root.progress.show = false
                             if (body.triple) {
                                 this.wasNewNode.forEach(nodeId => {
-                                    nodes.update({ id: nodeId, color: nodeColorFactory({}) })
+                                    nodes.update({
+                                        id: nodeId,
+                                        color: nodeColorFactory({})
+                                    })
                                 })
                                 this.wasNewEdge.forEach(edgeId => {
-                                    edges.update({ id: edgeId, color: edgeColorFactory({}) })
+                                    edges.update({
+                                        id: edgeId,
+                                        color: edgeColorFactory({})
+                                    })
                                 })
                                 this.unselectAll()
                                 let triple = body.triple;
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (nodes.get({
-                                        filter: (element =>
-                                            element.id == name
-                                        )
-                                    }).length < 1) {
+                                            filter: (element =>
+                                                element.id == name
+                                            )
+                                        }).length < 1) {
                                         nodes.add(nodeFactory({
-                                            name: name, isNew: true
+                                            name: name,
+                                            isNew: true
                                         }))
                                         this.wasNewNode.push(name)
-                                    }
-                                    else {
-                                        nodes.update({ id: name, color: nodeColorFactory({}) })
+                                    } else {
+                                        nodes.update({
+                                            id: name,
+                                            color: nodeColorFactory({})
+                                        })
                                     }
                                     if (!this.concepts.includes(name)) this.concepts.push(name)
                                 })
@@ -342,16 +373,9 @@
                                 })
                                 edges.add(newEdge)
                                 this.wasNewEdge.push(newEdge.id)
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'Unexpected error when creating triple.'
-                                    this.$root.errorSnackBar.show = true
-                                }
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error when creating triple.')
                             }
                         })
                 }
@@ -364,16 +388,17 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
-                        method: 'DELETE',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            h_name: this.h_name, r_name: this.r_name,
-                            t_name: this.t_name,
+                            method: 'DELETE',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: this.h_name,
+                                r_name: this.r_name,
+                                t_name: this.t_name,
+                            })
                         })
-                    })
                         .then(response => {
                             return response.json()
                         })
@@ -387,25 +412,23 @@
                                 let nodeSet = new Set()
                                 nodes.forEach(n => {
                                     if (edges.get({
-                                        filter: (edge) => {
-                                            return edge.from == n.id ||
-                                                edge.to == n.id
-                                        }
-                                    }).length < 1) {
+                                            filter: (edge) => {
+                                                return edge.from == n.id ||
+                                                    edge.to == n.id
+                                            }
+                                        }).length < 1) {
                                         console.log(n.id)
-                                        nodes.update({ id: n.id, color: nodeColorFactory({ isTempory: true }) })
+                                        nodes.update({
+                                            id: n.id,
+                                            color: nodeColorFactory({
+                                                isTempory: true
+                                            })
+                                        })
                                     }
                                 })
-                            }
-                            else {
-                                if (body.message) {
-                                    this.$root.errorSnackBar.message = body.message
-                                    this.$root.errorSnackBar.show = true
-                                }
-                                else {
-                                    this.$root.errorSnackBar.message = 'Unexpected error when deleted triple.'
-                                    this.$root.errorSnackBar.show = true
-                                }
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error when deleted triple.')
                             }
                         })
                 }
@@ -417,12 +440,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.unreachable') }}" + '{{ draftId }}', {
-                    method: 'DELETE',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -431,31 +454,25 @@
                         if (body.triples) {
                             this.unselectAll()
                             body.triples.forEach(triple => {
-                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
+                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple
+                                    .t_name)
                                 edges.remove(id);
                                 [triple.h_name, triple.t_name].forEach(n => {
                                     if (edges.get({
-                                        filter: (edge) => {
-                                            return edge.from == n.id ||
-                                                edge.to == n.id
-                                        }
-                                    }).length < 1) {
+                                            filter: (edge) => {
+                                                return edge.from == n.id ||
+                                                    edge.to == n.id
+                                            }
+                                        }).length < 1) {
                                         console.log(n.id)
                                         nodes.remove(n.id)
                                     }
                                 })
 
                             })
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error when deleted triple.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error when deleted unreachable triple.')
                         }
                     })
 
@@ -476,16 +493,13 @@
                 if (event == "head") {
                     try {
                         network.selectNodes([this.h_name], false)
-                    }
-                    catch {
+                    } catch {
 
                     }
-                }
-                else {
+                } else {
                     try {
                         network.selectNodes([this.t_name], false)
-                    }
-                    catch {
+                    } catch {
 
                     }
                 }
@@ -493,8 +507,7 @@
             nodeFieldChange(event) {
                 try {
                     network.selectNodes([event], false)
-                }
-                catch {
+                } catch {
 
                 }
                 this.isTripleExist()
@@ -510,17 +523,14 @@
                         if (edges.get(id).length > 0) {
                             network.selectEdges([id])
                             this.isSelectingEdge = true
-                        }
-                        else {
+                        } else {
                             this.isSelectingEdge = false
                         }
 
-                    }
-                    catch {
+                    } catch {
                         this.isSelectingEdge = false
                     }
-                }
-                else {
+                } else {
                     this.isSelectingEdge = false
                 }
             },
@@ -532,13 +542,15 @@
                 this.$root.progress.show = true
                 this.publishLoading = true
                 fetch("{{ url_for('RESTful.setDraftStatus') }}/" + '{{ draftId }}', {
-                    method: 'PUT',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ status: this.publishSwitch ? "unpublished" : "published" })
-                })
+                        method: 'PUT',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            status: this.publishSwitch ? "unpublished" : "published"
+                        })
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -547,16 +559,9 @@
                         if (body.status) {
                             this.publishSwitch = body.status == "published"
                             this.publishLoading = false
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error when deleted triple.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error when publishing triple.')
                         }
                     })
             },

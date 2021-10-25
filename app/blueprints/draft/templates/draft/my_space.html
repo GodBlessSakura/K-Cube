@@ -28,18 +28,20 @@
 <script>
     Vue.component('app-content', {
         data: () => ({
-            rows: [[]]
+            rows: [
+                []
+            ]
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.listCourse') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -64,21 +66,14 @@
                             while (lastRow.length < colPerRow) {
                                 lastRow.push({})
                             }
-                        }
-                        else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            }
-                            else {
-                                this.$root.errorSnackBar.message = 'Unexpected error on getting relationship information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
                         }
                     })
             },
             selectCourse(courseCode) {
-                window.location.replace("{{ url_for('draft.my_space') }}/"+courseCode)
+                window.location.replace("{{ url_for('draft.my_space') }}/" + courseCode)
             }
         },
         created: function () {

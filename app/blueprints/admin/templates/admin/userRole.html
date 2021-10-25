@@ -88,26 +88,12 @@
                                             return user_row
                                         })
                                     } else {
-                                        if (body.message) {
-                                            this.$root.errorSnackBar.message = body.message
-                                            this.$root.errorSnackBar.show = true
-                                        } else {
-                                            this.$root.errorSnackBar.message =
-                                                'Unexpected error on getting user information.'
-                                            this.$root.errorSnackBar.show = true
-                                        }
+                                        this.$root.errorDisplay(body,'Unexpected error on getting user information.')
                                     }
                                 })
 
                         } else {
-                            if (body.message) {
-                                this.$root.errorSnackBar.message = body.message
-                                this.$root.errorSnackBar.show = true
-                            } else {
-                                this.$root.errorSnackBar.message =
-                                    'Unexpected error on getting role information.'
-                                this.$root.errorSnackBar.show = true
-                            }
+                            this.$root.errorDisplay(body,'Unexpected error on getting role information.')
                         }
                     })
             },
@@ -131,10 +117,9 @@
                         return response.json()
                     })
                     .then(body => {
-
                         this.$root.progress.show = false
                         this.$root.responseSnackBar(body, 'Unexpected error on setting role assignment.',
-                            false, this.loadData)
+                            this.loadData)
                     })
             }
         },
