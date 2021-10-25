@@ -1,37 +1,4 @@
 from neo4j import GraphDatabase
-
-# https://stackoverflow.com/questions/6307761/how-to-decorate-all-functions-of-a-class-without-typing-it-over-and-over-for-eac
-# example:
-# @for_all_methods(sanitize_args_and_kwargs)
-# class userResources:
-def for_all_methods(decorator):
-    def wrapper(cls):
-        for attr in cls.__dict__:  # there's propably a better way to do this
-            if callable(getattr(cls, attr)):
-                setattr(cls, attr, decorator(getattr(cls, attr)))
-        return cls
-
-    return wrapper
-
-
-# the actual sanitize logic's implementation
-def sanitize(value):
-
-    return value
-
-
-def sanitize_args_and_kwargs(function):
-    def wrapper(*args, **kwargs):
-        for each in args:
-            each = sanitize(each)
-        for key in kwargs:
-            kwargs[key] = sanitize(kwargs[key])
-        return function(*args, **kwargs)
-
-    return wrapper
-
-
-from neo4j import GraphDatabase
 from neo4j.exceptions import ServiceUnavailable
 
 

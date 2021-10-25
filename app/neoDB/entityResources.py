@@ -1,18 +1,9 @@
 from neo4j.exceptions import ConstraintError
 from argon2 import PasswordHasher
-from . import for_all_methods
-from app import InvalidRequest
-import re
+from .resourcesGuard import for_all_methods, reject_invalid
 
 
-def check_info(function):
-    def wrapper(self, *args, **kwargs):
-        return function(self, **kwargs)
-
-    return wrapper
-
-
-@for_all_methods(check_info)
+@for_all_methods(reject_invalid)
 class entityResources:
     def __init__(self, driver):
         self.driver = driver
@@ -30,7 +21,9 @@ class entityResources:
             try:
                 return [
                     {
-                        "course": dict(record["course"].items()) if record["course"] is not None else None,
+                        "course": dict(record["course"].items())
+                        if record["course"] is not None
+                        else None,
                         "concept": dict(record["concept"].items()),
                     }
                     for record in result
