@@ -5,10 +5,14 @@ from app.authorizer import authorize_with
 api = "/course/"
 from . import RESTful
 
+@RESTful.route(api, methods=["GET"])
+def courseQuery():
+    if request.args.get("list"):
+        return courseList()
 
 @RESTful.route(api, methods=["POST"])
 @authorize_with(["canCreateCourse"])
-def courseCreate():
+def coursePost():
     if (
         "displayName" in request.json
         and "name" in request.json
@@ -28,10 +32,10 @@ def courseCreate():
 
 
 @RESTful.route(api, methods=["GET"])
-def listCourse():
+def courseList():
     try:
         return jsonify(
-            {"success": True, "courses": get_api_driver().course.listCourse()}
+            {"success": True, "courses": get_api_driver().course.courseList()}
         )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})

@@ -30,7 +30,7 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.listPermission') }}", {
+                fetch("{{ url_for('RESTful.roleQuery', listRolePermission=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -64,7 +64,7 @@
                                         })
                                 }
                             })
-                            fetch("{{ url_for('RESTful.listUserPermission') }}", {
+                            fetch("{{ url_for('RESTful.roleQuery', listUser=True ) }}", {
                                     method: 'GET',
                                     cache: 'no-store',
                                     headers: {
@@ -103,7 +103,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.put_delete_user_role') }}" + userId, {
+                fetch("{{ url_for('RESTful.role') }}" + userId, {
                         method: value ? "DELETE" : "PUT",
                         cache: 'no-store',
                         headers: {

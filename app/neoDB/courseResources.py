@@ -31,7 +31,7 @@ class courseResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listCourse(self):
+    def courseList(self):
         def _query(tx):
             query = " ".join(
                 [

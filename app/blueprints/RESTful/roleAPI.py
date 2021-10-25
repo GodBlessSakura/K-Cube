@@ -6,24 +6,29 @@ api = "/role/"
 from . import RESTful
 
 
-@RESTful.route(api + "/permissions", methods=["GET"])
+@RESTful.route(api, methods=["GET"])
 @authorize_with(["canAssignRole"])
-def listPermission():
+def roleQuery():
+    if request.args.get("listRolePermission"):
+        return roleList()
+    if request.args.get("listUser"):
+        return listUserRole()
+
+
+def roleList():
     try:
         return jsonify(
-            {"permissions": get_api_driver().admin.listPermission(), "success": True}
+            {"permissions": get_api_driver().admin.roleList(), "success": True}
         )
     except Exception as e:
         raise e
 
 
-@RESTful.route(api, methods=["GET"])
-@authorize_with(["canAssignRole"])
-def listUserPermission():
+def listUserRole():
     try:
         return jsonify(
             {
-                "users": get_api_driver().admin.listUserPermission(),
+                "users": get_api_driver().admin.listUserRole(),
                 "success": True,
             }
         )
@@ -34,7 +39,7 @@ def listUserPermission():
 @RESTful.route(api, defaults={"userId": None}, methods=["PUT", "DELETE"])
 @RESTful.route(api + "<userId>", methods=["PUT", "DELETE"])
 @authorize_with(["canAssignRole"])
-def put_delete_user_role(userId):
+def role(userId):
     if request.method == "PUT":
         return assign_user_role(userId)
     if request.method == "DELETE":

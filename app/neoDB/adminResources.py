@@ -40,7 +40,7 @@ class adminResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listPermission(self):
+    def roleList(self):
         def _query(tx):
             query = " ".join(["MATCH (permission:Permission)", "RETURN permission"])
             result = tx.run(query)
@@ -52,7 +52,7 @@ class adminResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listUserPermission(self):
+    def listUserRole(self):
         def _query(tx):
             query = " ".join(
                 [

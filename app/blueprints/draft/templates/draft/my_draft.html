@@ -118,13 +118,14 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                let draftPromise = fetch("{{ url_for('RESTful.listDraft', courseCode = courseCode) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                let draftPromise = fetch(
+                        "{{ url_for('RESTful.draftQuery', ofUser=True, courseCode = courseCode) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
                     .then(response => {
                         return response.json()
                     })
@@ -136,10 +137,10 @@
                             })
                         } else {
                             this.$root.errorDisplay(body,
-                                    'Unexpected error on getting drafts information.')
+                                'Unexpected error on getting drafts information.')
                         }
                     })
-                let coursePromise = fetch("{{ url_for('RESTful.listCourse') }}", {
+                let coursePromise = fetch("{{ url_for('RESTful.courseQuery', list=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -155,7 +156,7 @@
                             this.courseCodes = body.courses.map(course => course.concept.name)
                         } else {
                             this.$root.errorDisplay(body,
-                                    'Unexpected error on getting relationship information.')
+                                'Unexpected error on getting relationship information.')
                         }
                     })
                 Promise.all([draftPromise, coursePromise]).then(_ => {
@@ -169,7 +170,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.createDraft', courseCode = courseCode) }}", {
+                    fetch("{{ url_for('RESTful.draftPost', courseCode = courseCode) }}", {
                             method: 'POST',
                             cache: 'no-store',
                             headers: {
@@ -203,18 +204,18 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.draft') }}" + 'clone/' + this
-                            .cloneSourceDraftId, {
-                                method: 'POST',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    draftName: this.cloneDraftName,
-                                    name: this.cloneCourseCode
-                                })
+                    fetch("{{ url_for('RESTful.draftPost', clone=True) }}", {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                draftName: this.cloneDraftName,
+                                name: this.cloneCourseCode,
+                                sourceDraftId: this.cloneSourceDraftId
                             })
+                        })
                         .then(response => {
                             return response.json()
                         })

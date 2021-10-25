@@ -7,15 +7,19 @@ api = "/draft/"
 from . import RESTful
 
 
-@RESTful.route(api)
-def draft():
-    abort(404)
-
-
-@RESTful.route(api + "list/<courseCode>", methods=["POST"])
+@RESTful.route(api, methods=["GET"])
 @authorize_with(["canOwnDraft"])
-def createDraft(courseCode):
+def draftQuery():
+    if request.args.get("ofUser"):
+        return draftOfUser()
+
+
+@RESTful.route(api + "<courseCode>", methods=["POST"])
+@authorize_with(["canOwnDraft"])
+def draftPost(courseCode):
     if "draftName" in request.json:
+        if request.args.get("clone"):
+            return cloneDraft()
         try:
             return jsonify(
                 {
@@ -37,10 +41,12 @@ def createDraft(courseCode):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "clone/<draftId>", methods=["POST"])
-@authorize_with(["canOwnDraft"])
-def cloneDraft(draftId):
-    if "draftName" in request.json and "name" in request.json:
+def cloneDraft():
+    if (
+        "draftName" in request.json
+        and "name" in request.json
+        and "sourceDraftId" in request.json
+    ):
         try:
             return jsonify(
                 {
@@ -49,7 +55,7 @@ def cloneDraft(draftId):
                         name=request.json["name"],
                         userId=session["user"]["userId"],
                         draftName=request.json["draftName"],
-                        draftId=draftId,
+                        draftId=request.json["sourceDraftId"],
                     ),
                 }
             )
@@ -63,14 +69,12 @@ def cloneDraft(draftId):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "list/<courseCode>", methods=["GET"])
-@authorize_with(["canOwnDraft"])
-def listDraft(courseCode):
+def draftOfUser(courseCode):
     try:
         return jsonify(
             {
                 "success": True,
-                "drafts": get_api_driver().draft.listDraft(
+                "drafts": get_api_driver().draft.draftOfUser(
                     name=courseCode, userId=session["user"]["userId"]
                 ),
             }
@@ -79,9 +83,9 @@ def listDraft(courseCode):
         raise e
 
 
-@RESTful.route(api + "render/<draftId>", methods=["GET"])
+@RESTful.route(api + "draftTriples/<draftId>", methods=["GET"])
 @authorize_with(["canOwnDraft"])
-def getGraph(draftId):
+def draftTriples(draftId):
     try:
         return jsonify(
             {
@@ -98,10 +102,9 @@ def getGraph(draftId):
         raise e
 
 
-@RESTful.route(api + "status", defaults={"draftId": None}, methods=["PUT"])
 @RESTful.route(api + "status/<draftId>", methods=["PUT"])
 @authorize_with(["canOwnDraft"])
-def setDraftStatus(draftId):
+def draftStatusPut(draftId):
     if "status" in request.json:
         try:
             return jsonify(

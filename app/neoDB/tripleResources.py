@@ -69,7 +69,7 @@ class tripleResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
     
-    def deletetriple(self, draftId,userId,h_name,r_name,t_name):
+    def tripleDelete(self, draftId,userId,h_name,r_name,t_name):
         def _query(tx):
             query = " ".join(
                 [

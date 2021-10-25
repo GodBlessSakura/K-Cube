@@ -35,7 +35,7 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.listCourse') }}", {
+                fetch("{{ url_for('RESTful.courseQuery', list=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {

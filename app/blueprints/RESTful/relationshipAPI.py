@@ -6,7 +6,14 @@ api = "/relationship/"
 from . import RESTful
 
 
-@RESTful.route(api + "approved")
+@RESTful.route(api, methods=["GET"])
+def relationshipQuery():
+    if request.args.get("approved"):
+        return listApprovedRelationships()
+    if request.args.get("userView"):
+        return getRelationShipView()
+
+
 def listApprovedRelationships():
     try:
         return jsonify(
@@ -19,7 +26,6 @@ def listApprovedRelationships():
         raise e
 
 
-@RESTful.route(api)
 @authorize_with(
     [["canProposeRelationship", "canApproveRelationship"]], require_userId=True
 )
@@ -46,7 +52,7 @@ def relationshipProposal():
         return removeProposal()
 
 
-@RESTful.route(api, methods=["PUT"])
+@RESTful.route(api + "proposal", methods=["PUT"])
 def createProposal():
     if "name" in request.json:
         try:
@@ -61,7 +67,7 @@ def createProposal():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api, methods=["PUT"])
+@RESTful.route(api + "proposal", methods=["DELETE"])
 def removeProposal():
     if "name" in request.json:
         try:
@@ -85,7 +91,7 @@ def relationshipApproval():
         return removeApproval()
 
 
-@RESTful.route(api, methods=["PUT"])
+@RESTful.route(api + "approval", methods=["PUT"])
 def createApproval():
     if "name" in request.json:
         try:
@@ -100,7 +106,7 @@ def createApproval():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api, methods=["PUT"])
+@RESTful.route(api + "approval", methods=["PUT"])
 def removeApproval():
     if "name" in request.json:
         try:

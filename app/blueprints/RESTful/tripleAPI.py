@@ -7,14 +7,15 @@ api = "/triple/"
 from . import RESTful
 
 
-@RESTful.route(api)
-def triple():
-    pass
+@RESTful.route(api,methods=["GET"])
+def tripleQuery():
+    if request.args.get("aggregated"):
+        return aggregatedTriple()
 
 
 @RESTful.route(api + "<draftId>", methods=["PUT"])
 @authorize_with(["canOwnDraft"])
-def mergeTriple(draftId):
+def triplePut(draftId):
     if (
         "h_name" in request.json
         and "r_name" in request.json
@@ -35,14 +36,14 @@ def mergeTriple(draftId):
 
 @RESTful.route(api + "<draftId>", methods=["DELETE"])
 @authorize_with(["canOwnDraft"])
-def deleteTriple(draftId):
+def tripleDelete(draftId):
     if (
         "h_name" in request.json
         and "r_name" in request.json
         and "t_name" in request.json
     ):
         try:
-            result = get_api_driver().triple.deletetriple(
+            result = get_api_driver().triple.tripleDelete(
                 draftId=draftId,
                 userId=session["user"]["userId"],
                 h_name=request.json["h_name"],
@@ -55,14 +56,11 @@ def deleteTriple(draftId):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "unreachable/")
-def unreachable():
-    pass
 
 
 @RESTful.route(api + "unreachable/<draftId>", methods=["DELETE"])
 @authorize_with(["canOwnDraft"])
-def deleteUnreachable(draftId):
+def tripleUnreachableDelete(draftId):
     try:
         result = get_api_driver().triple.deleteUnreachable(
             draftId=draftId,
@@ -73,7 +71,6 @@ def deleteUnreachable(draftId):
         raise e
 
 
-@RESTful.route(api + "aggregated")
 def aggregatedTriple():
     try:
         result = get_api_driver().triple.aggregateTriple()
@@ -81,7 +78,7 @@ def aggregatedTriple():
             {
                 "success": True,
                 "triples": result,
-                "courses": get_api_driver().course.listCourse(),
+                "courses": get_api_driver().course.courseList(),
             }
         )
     except Exception as e:

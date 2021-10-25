@@ -87,7 +87,7 @@ class draftResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listDraft(self, userId, name):
+    def draftOfUser(self, userId, name):
         def _query(tx):
             query = " ".join(
                 [

@@ -87,7 +87,7 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.getRelationShipView') }}", {
+                fetch("{{ url_for('RESTful.relationshipQuery', userView=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {

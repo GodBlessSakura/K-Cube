@@ -130,8 +130,8 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.aggregatedTriple') }}", {
-                        method: 'GET',
+                fetch("{{ url_for('RESTful.tripleQuery', aggregated=True) }}", {
+                        method: 'POST',
                         cache: 'no-store',
                     })
                     .then(response => {

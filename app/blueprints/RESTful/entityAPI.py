@@ -6,8 +6,13 @@ api = "/entity/"
 from . import RESTful
 
 
-@RESTful.route(api + "list", methods=["GET"])
-def listEntity():
+@RESTful.route(api, methods=["GET"])
+def entityQuery():
+    if request.args.get("list"):
+        return entityList()
+
+
+def entityList():
 
     try:
         return jsonify(

@@ -49,7 +49,7 @@
                         <v-btn @click="createTriple" v-if="!isSelectingEdge">
                             Create link
                         </v-btn>
-                        <v-btn color="error" @click="deleteTriple" v-else>
+                        <v-btn color="error" @click="tripleDelete" v-else>
                             delete link
                         </v-btn>
                     </v-row>
@@ -186,7 +186,7 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                let draftPromise = fetch("{{ url_for('RESTful.draft') }}" + 'render/' + '{{ draftId }}', {
+                let draftPromise = fetch("{{ url_for('RESTful.draftTriples', draftId=draftId) }}" , {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -266,7 +266,7 @@
                                 'Unexpected error on getting draft information.')
                         }
                     })
-                let relationshipPromise = fetch("{{ url_for('RESTful.listApprovedRelationships') }}", {
+                let relationshipPromise = fetch("{{ url_for('RESTful.relationshipQuery', approved=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -284,7 +284,7 @@
                                 'Unexpected error on getting relationship information.')
                         }
                     })
-                let entityPromise = fetch("{{ url_for('RESTful.listEntity') }}", {
+                let entityPromise = fetch("{{ url_for('RESTful.entityQuery', list=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -314,7 +314,7 @@
                 }
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
+                    fetch("{{ url_for('RESTful.triplePut', draftId=draftId) }}", {
                             method: 'PUT',
                             cache: 'no-store',
                             headers: {
@@ -380,14 +380,14 @@
                         })
                 }
             },
-            deleteTriple() {
+            tripleDelete() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.triple') }}" + '{{ draftId }}', {
+                    fetch("{{ url_for('RESTful.tripleDelete', draftId=draftId) }}", {
                             method: 'DELETE',
                             cache: 'no-store',
                             headers: {
@@ -439,7 +439,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.unreachable') }}" + '{{ draftId }}', {
+                fetch("{{ url_for('RESTful.tripleUnreachableDelete' draftId=draftId) }}", {
                         method: 'DELETE',
                         cache: 'no-store',
                         headers: {
@@ -541,7 +541,7 @@
                 }
                 this.$root.progress.show = true
                 this.publishLoading = true
-                fetch("{{ url_for('RESTful.setDraftStatus') }}/" + '{{ draftId }}', {
+                fetch("{{ url_for('RESTful.draftStatusPut', draftId=draftId) }}/" , {
                         method: 'PUT',
                         cache: 'no-store',
                         headers: {
