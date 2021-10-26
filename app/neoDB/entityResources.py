@@ -1,6 +1,8 @@
 from neo4j.exceptions import ConstraintError
 from argon2 import PasswordHasher
 from .resourcesGuard import for_all_methods, reject_invalid
+import sys
+from .cypher import cypher
 
 
 @for_all_methods(reject_invalid)
@@ -8,15 +10,10 @@ class entityResources:
     def __init__(self, driver):
         self.driver = driver
 
-    def getEntities(self):
+    def list_entity(self):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (concept:GraphConcept)",
-                    "OPTIONAL MATCH (course:Course)-[:COURSE_DESCRIBE]->(concept:GraphConcept)",
-                    "RETURN course, concept",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
                 return [

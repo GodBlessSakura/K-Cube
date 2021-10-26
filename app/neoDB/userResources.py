@@ -1,6 +1,8 @@
 from neo4j.exceptions import ConstraintError
 from argon2 import PasswordHasher
 from .resourcesGuard import for_all_methods, reject_invalid
+import sys
+from .cypher import cypher
 
 
 @for_all_methods(reject_invalid)
@@ -9,8 +11,9 @@ class userResources:
         self.driver = driver
 
     def list_userId(self):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(["MATCH (user:User)", "RETURN user.userId;"])
+            query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
                 rows = [record for record in result]
@@ -22,13 +25,9 @@ class userResources:
             return session.write_transaction(_query)
 
     def is_userId_used(self, userId) -> bool:
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "OPTIONAL MATCH (n:User{userId: $userId})",
-                    "RETURN n IS NOT NULL AS Predicate;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
             try:
                 for record in result:
@@ -43,18 +42,9 @@ class userResources:
         ph = PasswordHasher()
         saltedHash = ph.hash(password)
 
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (permission:Permission{role: 'restricted'})",
-                    "CREATE (permission)<-[permission_grant:PRIVILEGED_OF]-(user:User {userId: $userId, userName: $userName, email: $email})",
-                    "-[password_set:AUTHENTICATED_BY]->(:Credential {saltedHash: $saltedHash})",
-                    "SET ",
-                    "password_set.creationDate = timestamp(),",
-                    "permission_grant.creationDate = timestamp()",
-                    "RETURN user;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
                 userId=userId,
@@ -73,27 +63,16 @@ class userResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def assign_role(
+    def assign_user_role(
         self,
         userId,
         role,
     ):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH",
-                    "(permission:Permission{role: $role}),",
-                    "(user:User{userId: $userId})",
-                    "MERGE (permission)<-[permission_grant:PRIVILEGED_OF]-(user)",
-                    "ON CREATE",
-                    "SET",
-                    "permission_grant.creationDate = timestamp()",
-                    "RETURN user, permission_grant, permission;",
-                ]
-            )
-            try:
-                result = tx.run(query, userId=userId, role=role)
-                return [
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, userId=userId, role=role)
+            return [
                     {
                         "user": dict(record["user"].items()),
                         "permission_grant": dict(record["permission_grant"].items()),
@@ -101,29 +80,20 @@ class userResources:
                     }
                     for record in result
                 ][0]
-            except Exception as exception:
-                raise exception
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def removeRole(
+    def remove_user_role(
         self,
         userId,
         role,
     ):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH",
-                    "(permission:Permission{role: $role})<-[permission_grant:PRIVILEGED_OF]-(user:User{userId: $userId})",
-                    "DELETE permission_grant",
-                    "RETURN user, permission_grant, permission;",
-                ]
-            )
-            try:
-                result = tx.run(query, userId=userId, role=role)
-                return [
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, userId=userId, role=role)
+            return [
                     {
                         "user": dict(record["user"].items()),
                         "permission_grant": dict(record["permission_grant"].items()),
@@ -131,57 +101,41 @@ class userResources:
                     }
                     for record in result
                 ][0]
-            except Exception as exception:
-                raise exception
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
     def authenticate_user(self, userId, password):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (user:User{userId: $userId})-[:AUTHENTICATED_BY]->(password:Credential)",
-                    "RETURN user, password.saltedHash as hash;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
-            try:
-                rows = [record for record in result]
-                if len(rows) > 0:
-                    saltedHash = rows[0]["hash"]
-                    ph = PasswordHasher()
-                    if ph.verify(saltedHash, password):
-                        return dict(rows[0]["user"].items())
-                    else:
-                        return None
-            except Exception as exception:
-                raise exception
+            rows = [record for record in result]
+            if len(rows) > 0:
+                saltedHash = rows[0]["hash"]
+                ph = PasswordHasher()
+                if ph.verify(saltedHash, password):
+                    return dict(rows[0]["user"].items())
+                else:
+                    return None
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
     def get_user_permission(self, userId):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH    (:User{userId: $userId})-[:PRIVILEGED_OF]->(permissions:Permission)",
-                    "RETURN permissions;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
-            try:
-                permission = dict()
-                for row in [record for record in result]:
-                    for key, value in row["permissions"].items():
-                        if key not in permission:
+            permission = dict()
+            for row in [record for record in result]:
+                for key, value in row["permissions"].items():
+                    if key not in permission:
+                        permission[key] = value
+                    else:
+                        if not permission[key]:
                             permission[key] = value
-                        else:
-                            if not permission[key]:
-                                permission[key] = value
-                return permission
-            except Exception as exception:
-                raise exception
+            return permission
 
         with self.driver.session() as session:
             return session.write_transaction(_query)

@@ -18,7 +18,7 @@ def entityList():
         return jsonify(
             {
                 "success": True,
-                "entities": get_api_driver().entity.getEntities(),
+                "entities": get_api_driver().entity.list_entity(),
             }
         )
     except Exception as e:

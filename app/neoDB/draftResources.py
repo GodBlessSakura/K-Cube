@@ -1,5 +1,7 @@
 from neo4j.exceptions import ConstraintError
 from .resourcesGuard import for_all_methods, reject_invalid
+import sys
+from .cypher import cypher
 
 
 @for_all_methods(reject_invalid)
@@ -7,17 +9,10 @@ class draftResources:
     def __init__(self, driver):
         self.driver = driver
 
-    def getDraft(self, draftId, userId):
+    def get_draft(self, draftId, userId):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (owner:User{userId: $userId})",
-                    "WITH DISTINCT owner",
-                    "MATCH (courseConcept:GraphConcept)<-[:COURSE_DESCRIBE]-(course:Course)<-[:DRAFT_DESCRIBE]-"
-                    "(draft:Draft{draftId: $draftId})<-[:USER_OWN]-(owner)",
-                    "RETURN draft, courseConcept.name as root, course",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, draftId=draftId, userId=userId)
             try:
                 row = [record for record in result][0]
@@ -31,17 +26,10 @@ class draftResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def setStatus(self, draftId, userId, status):
+    def set_draft_status(self, draftId, userId, status):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(owner:User{userId: $userId})"
-                    "-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOwnDraft: true})",
-                    "WITH DISTINCT draft",
-                    "SET draft.status = $status",
-                    "RETURN draft.status;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
                 draftId=draftId,
@@ -56,23 +44,12 @@ class draftResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def createDraft(self, draftName, userId, name):
+    def create_draft(self, draftName, userId, name):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (owner:User{userId: $userId})-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOwnDraft: true})"
-                    "WITH DISTINCT owner",
-                    # if user have multiple permission that canCreateDraft and canOwnDraft, two identical user would be returned
-                    "MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept:GraphConcept{name: $name})",
-                    "CREATE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)",
-                    'SET draft.draftId = owner.userId + "." + replace(courseConcept.name," ", "_") + "." + replace($draftName," ", "_"),',
-                    "draft.draftName = $draftName,",
-                    "draft.creationDate = timestamp(),",
-                    "draft.lastModified = timestamp(),",
-                    "draft.status = 'unpublished'",
-                    "RETURN draft;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
+            # if user have multiple permission that canCreateDraft and canOwnDraft, two identical user would be returned
+            
             result = tx.run(
                 query,
                 draftName=draftName,
@@ -87,15 +64,10 @@ class draftResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def draftOfUser(self, userId, name):
+    def list_a_user_draft(self, userId, name):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (:GraphConcept{name: $name})<-[:COURSE_DESCRIBE]-(:Course)"
-                    "<-[:DRAFT_DESCRIBE]-(draft:Draft)<-[:USER_OWN]-(:User{userId: $userId})",
-                    "RETURN draft",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, name=name, userId=userId)
             try:
                 return [dict(record["draft"].items()) for record in result]
@@ -105,54 +77,10 @@ class draftResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def cloneDraft(self, draftName, userId, name, draftId):
+    def clone_draft(self, draftName, userId, name, draftId):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (owner:User{userId: $userId})-[:PRIVILEGED_OF]-(:Permission{canCreateDraft: true, canOwnDraft: true})"
-                    "WITH DISTINCT owner",
-                    # if user have multiple permission that canCreateDraft and canOwnDraft, two identical user would be returned
-                    "MATCH (course:Course)-[:COURSE_DESCRIBE]->(root:GraphConcept{name: $name})",
-                    "CREATE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)",
-                    'SET draft.draftId = owner.userId + "." + replace(root.name," ", "_") + "." + replace($draftName," ", "_"),',
-                    "draft.draftName = $draftName,",
-                    "draft.creationDate = timestamp(),",
-                    "draft.lastModified = timestamp(),",
-                    "draft.status = 'unpublished'",
-                    "WITH draft,root",
-                    "MATCH (source:Draft{draftId: $draftId})-[:DRAFT_DESCRIBE]->()"
-                    "-[:COURSE_DESCRIBE]->(source_root:GraphConcept)",
-                    "WITH draft, source, source_root, root",
-                    "MATCH (h:GraphConcept)-[source_r:GRAPH_RELATIONSHIP{draftId: source.draftId}]->(t:GraphConcept)",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "CALL{",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "WHERE h <> source_root AND t <> source_root",
-                    "MERGE (h) -[r:GRAPH_RELATIONSHIP{name: source_r.name, draftId: draft.draftId}]-> (t)",
-                    "ON CREATE SET",
-                    "r.creationDate = timestamp()",
-                    "RETURN NULL",
-                    "UNION",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "WHERE h = source_root AND t <> root",
-                    "MERGE (root) -[r:GRAPH_RELATIONSHIP{name: source_r.name, draftId: draft.draftId}]-> (t)",
-                    "ON CREATE SET",
-                    "r.creationDate = timestamp()",
-                    "RETURN NULL",
-                    "UNION",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "WITH draft, source, source_root, root, h, source_r, t",
-                    "WHERE t = source_root AND h <> root",
-                    "MERGE (h) -[r:GRAPH_RELATIONSHIP{name: source_r.name, draftId: draft.draftId}]-> (root)",
-                    "ON CREATE SET",
-                    "r.creationDate = timestamp()",
-                    "RETURN NULL",
-                    "}",
-                    "RETURN draft;",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
                 draftName=draftName,

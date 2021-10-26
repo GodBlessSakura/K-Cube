@@ -18,7 +18,7 @@ def roleQuery():
 def roleList():
     try:
         return jsonify(
-            {"permissions": get_api_driver().admin.roleList(), "success": True}
+            {"permissions": get_api_driver().admin.list_role(), "success": True}
         )
     except Exception as e:
         raise e
@@ -28,7 +28,7 @@ def listUserRole():
     try:
         return jsonify(
             {
-                "users": get_api_driver().admin.listUserRole(),
+                "users": get_api_driver().admin.list_user_role(),
                 "success": True,
             }
         )
@@ -50,7 +50,7 @@ def assign_user_role(userId):
     if "role" in request.json and userId is not None:
         try:
             result = jsonify(
-                get_api_driver().user.assign_role(
+                get_api_driver().user.assign_user_role(
                     userId=userId, role=request.json["role"]
                 )
             )
@@ -63,7 +63,7 @@ def assign_user_role(userId):
 def remove_user_role(userId):
     if "role" in request.json and userId is not None:
         try:
-            result = get_api_driver().user.removeRole(
+            result = get_api_driver().user.remove_user_role(
                 userId=userId, role=request.json["role"]
             )
             return jsonify({"success": True, "message": "remove done"})

@@ -1,11 +1,13 @@
 from argon2 import PasswordHasher
-
+import sys
+from .cypher import cypher
 
 class adminResources:
     def __init__(self, driver):
         self.driver = driver
 
     def list_all_except_credential(self):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
             query = (
                 "MATCH p = (h)-[r]->(t)"
@@ -21,7 +23,7 @@ class adminResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def readOnly_query(self, query) -> bool:
+    def readonly_query(self, query) -> bool:
         CUD_keywords = ["CREATE", "MERGE", "SET", "DELETE", "REMOVE"]
         CUD_keywords = [keyword.strip() for keyword in CUD_keywords]
         CUD_keywords = [keyword.upper() for keyword in CUD_keywords]
@@ -29,6 +31,7 @@ class adminResources:
             if keyword in query.upper():
                 return None
 
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
             result = tx.run(query)
             try:
@@ -40,9 +43,10 @@ class adminResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def roleList(self):
+    def list_role(self):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(["MATCH (permission:Permission)", "RETURN permission"])
+            query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
                 return [dict(record["permission"].items()) for record in result]
@@ -52,14 +56,10 @@ class adminResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listUserRole(self):
+    def list_user_role(self):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (user:User)-[:PRIVILEGED_OF]->(permission:Permission)",
-                    "RETURN user, collect(permission.role) as roles",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
                 return [

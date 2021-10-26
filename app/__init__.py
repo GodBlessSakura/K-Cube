@@ -72,7 +72,7 @@ def create_app(config_object):
     def set_admin(userid):
         click.echo(userid)
         click.echo(
-            api_driver.get_api_driver().user.assign_role(userId=userid, role="admin")
+            api_driver.get_api_driver().user.assign_user_role(userId=userid, role="admin")
         )
 
     return app

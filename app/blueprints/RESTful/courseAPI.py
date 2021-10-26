@@ -22,7 +22,7 @@ def coursePost():
         name = request.json["name"]
         imageURL = request.json["imageURL"]
         try:
-            result = get_api_driver().course.courseCreate(
+            result = get_api_driver().course.create_course(
                 displayName=displayName, name=name, imageURL=imageURL
             )
             return jsonify({"success": True})
@@ -35,7 +35,7 @@ def coursePost():
 def courseList():
     try:
         return jsonify(
-            {"success": True, "courses": get_api_driver().course.courseList()}
+            {"success": True, "courses": get_api_driver().course.list_course()}
         )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})

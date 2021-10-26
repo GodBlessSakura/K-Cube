@@ -1,5 +1,7 @@
 from neo4j.exceptions import ConstraintError
 from .resourcesGuard import for_all_methods, reject_invalid
+import sys
+from .cypher import cypher
 
 
 @for_all_methods(reject_invalid)
@@ -7,15 +9,10 @@ class relationshipResources:
     def __init__(self, driver):
         self.driver = driver
 
-    def createProposal(self, userId, name):
+    def create_proposal(self, userId, name):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (proposer:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission {canProposeRelationship: true})",
-                    "MERGE (r:GraphRelationship{name:  $name})",
-                    "MERGE (r)<-[:USER_PROPOSE]-(proposer);",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
             try:
                 return [record for record in result]
@@ -25,14 +22,10 @@ class relationshipResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def removeProposal(self, userId, name):
+    def remove_proposal(self, userId, name):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (:GraphRelationship{name:  $name})<-[proposal:USER_PROPOSE]-(:User{userId: $userId})",
-                    "DELETE proposal",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
             try:
                 return [record for record in result]
@@ -42,15 +35,10 @@ class relationshipResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def createApproval(self, userId, name):
+    def create_approval(self, userId, name):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (approver:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission {canApproveRelationship: true})",
-                    "MATCH (r:GraphRelationship{name: $name})",
-                    "MERGE (r)<-[:USER_APPROVE]-(approver);",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
             try:
                 return [record for record in result]
@@ -60,14 +48,10 @@ class relationshipResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def removeApproval(self, userId, name):
+    def remove_approval(self, userId, name):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (:GraphRelationship{name:  $name})<-[approval:USER_APPROVE]-(:User{userId: $userId})",
-                    "DELETE approval",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
             try:
                 return [record for record in result]
@@ -77,18 +61,10 @@ class relationshipResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listRelationship(self, userId):
+    def list_relationship(self, userId):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (user:User{userId: $userId}) with user",
-                    "MATCH (r:GraphRelationship)",
-                    "OPTIONAL MATCH (proposers:User)-[:USER_PROPOSE]->(r)",
-                    "OPTIONAL MATCH (r)<-[:USER_APPROVE]-(approvers:User)",
-                    "RETURN r.name, count(distinct proposers) as nOfProposers, user IN collect(proposers) as amIProposing,",
-                    "count(distinct approvers) as nOfApprovers, user IN collect(approvers) as amIApproving",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
             try:
                 return [
@@ -107,14 +83,10 @@ class relationshipResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def listApprovedRelationships(self):
+    def list_approved_relationship(self):
+        fname = sys._getframe().f_code.co_name
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (r:GraphRelationship)<-[:USER_APPROVE]-(approvers:User)",
-                    "RETURN DISTINCT r.name",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
                 return [record["r.name"] for record in result]

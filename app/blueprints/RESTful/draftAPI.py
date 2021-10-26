@@ -24,7 +24,7 @@ def draftPost(courseCode):
             return jsonify(
                 {
                     "success": True,
-                    "drafts": get_api_driver().draft.createDraft(
+                    "drafts": get_api_driver().draft.create_draft(
                         name=courseCode,
                         userId=session["user"]["userId"],
                         draftName=request.json["draftName"],
@@ -51,7 +51,7 @@ def cloneDraft():
             return jsonify(
                 {
                     "success": True,
-                    "drafts": get_api_driver().draft.cloneDraft(
+                    "drafts": get_api_driver().draft.clone_draft(
                         name=request.json["name"],
                         userId=session["user"]["userId"],
                         draftName=request.json["draftName"],
@@ -74,7 +74,7 @@ def draftOfUser(courseCode):
         return jsonify(
             {
                 "success": True,
-                "drafts": get_api_driver().draft.draftOfUser(
+                "drafts": get_api_driver().draft.list_a_user_draft(
                     name=courseCode, userId=session["user"]["userId"]
                 ),
             }
@@ -90,10 +90,10 @@ def draftTriples(draftId):
         return jsonify(
             {
                 "success": True,
-                "draft": get_api_driver().draft.getDraft(
+                "draft": get_api_driver().draft.get_draft(
                     draftId=draftId, userId=session["user"]["userId"]
                 ),
-                "triples": get_api_driver().triple.getTriples(
+                "triples": get_api_driver().triple.get_draft_triple(
                     draftId=draftId, userId=session["user"]["userId"]
                 ),
             }
@@ -110,7 +110,7 @@ def draftStatusPut(draftId):
             return jsonify(
                 {
                     "success": True,
-                    "status": get_api_driver().draft.setStatus(
+                    "status": get_api_driver().draft.set_draft_status(
                         draftId=draftId,
                         userId=session["user"]["userId"],
                         status=request.json["status"],

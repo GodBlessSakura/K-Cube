@@ -22,7 +22,7 @@ def triplePut(draftId):
         and "t_name" in request.json
     ):
         try:
-            result = get_api_driver().triple.createtriple(
+            result = get_api_driver().triple.create_triple(
                 draftId=draftId,
                 userId=session["user"]["userId"],
                 h_name=request.json["h_name"],
@@ -43,7 +43,7 @@ def tripleDelete(draftId):
         and "t_name" in request.json
     ):
         try:
-            result = get_api_driver().triple.tripleDelete(
+            result = get_api_driver().triple.remove_triple(
                 draftId=draftId,
                 userId=session["user"]["userId"],
                 h_name=request.json["h_name"],
@@ -62,7 +62,7 @@ def tripleDelete(draftId):
 @authorize_with(["canOwnDraft"])
 def tripleUnreachableDelete(draftId):
     try:
-        result = get_api_driver().triple.deleteUnreachable(
+        result = get_api_driver().triple.remove_unreachable_triple(
             draftId=draftId,
             userId=session["user"]["userId"],
         )
@@ -73,12 +73,12 @@ def tripleUnreachableDelete(draftId):
 
 def aggregatedTriple():
     try:
-        result = get_api_driver().triple.aggregateTriple()
+        result = get_api_driver().triple.aggregate_triple()
         return jsonify(
             {
                 "success": True,
                 "triples": result,
-                "courses": get_api_driver().course.courseList(),
+                "courses": get_api_driver().course.list_course(),
             }
         )
     except Exception as e:

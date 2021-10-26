@@ -19,7 +19,7 @@ def listApprovedRelationships():
         return jsonify(
             {
                 "success": True,
-                "relationships": get_api_driver().relationship.listApprovedRelationships(),
+                "relationships": get_api_driver().relationship.list_approved_relationship(),
             }
         )
     except Exception as e:
@@ -34,7 +34,7 @@ def getRelationShipView():
         return jsonify(
             {
                 "success": True,
-                "relationships": get_api_driver().relationship.listRelationship(
+                "relationships": get_api_driver().relationship.list_relationship(
                     userId=session["user"]["userId"]
                 ),
             }
@@ -57,7 +57,7 @@ def createProposal():
     if "name" in request.json:
         try:
             result = jsonify(
-                get_api_driver().relationship.createProposal(
+                get_api_driver().relationship.create_proposal(
                     userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
@@ -72,7 +72,7 @@ def removeProposal():
     if "name" in request.json:
         try:
             result = jsonify(
-                get_api_driver().relationship.removeProposal(
+                get_api_driver().relationship.remove_proposal(
                     userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
@@ -96,7 +96,7 @@ def createApproval():
     if "name" in request.json:
         try:
             result = jsonify(
-                get_api_driver().relationship.createApproval(
+                get_api_driver().relationship.create_approval(
                     userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
@@ -111,7 +111,7 @@ def removeApproval():
     if "name" in request.json:
         try:
             result = jsonify(
-                get_api_driver().relationship.removeApproval(
+                get_api_driver().relationship.remove_approval(
                     userId=session["user"]["userId"], name=request.json["name"]
                 )
             )

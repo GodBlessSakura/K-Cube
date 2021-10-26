@@ -1,5 +1,7 @@
 from neo4j.exceptions import ConstraintError
 from .resourcesGuard import for_all_methods, reject_invalid
+import sys
+from .cypher import cypher
 
 
 @for_all_methods(reject_invalid)
@@ -7,16 +9,11 @@ class courseResources:
     def __init__(self, driver):
         self.driver = driver
 
-    def courseCreate(self, displayName, name, imageURL):
+    def create_course(self, displayName, name, imageURL):
+        fname = sys._getframe().f_code.co_name
+
         def _query(tx):
-            query = " ".join(
-                [
-                    "MERGE (courseConcept:GraphConcept{name: $name})",
-                    "MERGE (course:Course)-[:COURSE_DESCRIBE]->(courseConcept)",
-                    "SET course.imageURL = $imageURL, course.displayName = $displayName",
-                    "RETURN course, courseConcept",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
                 displayName=displayName,
@@ -31,14 +28,11 @@ class courseResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def courseList(self):
+    def list_course(self):
+        fname = sys._getframe().f_code.co_name
+
         def _query(tx):
-            query = " ".join(
-                [
-                    "MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept)",
-                    "RETURN course,courseConcept",
-                ]
-            )
+            query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
                 return [
