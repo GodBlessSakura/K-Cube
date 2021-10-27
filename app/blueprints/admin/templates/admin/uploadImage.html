@@ -25,7 +25,13 @@
                             body: formData
                         })
                         .then(response => {
-                            return response.json()
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
                         })
                         .then(body => {
                             this.$root.progress.show = false

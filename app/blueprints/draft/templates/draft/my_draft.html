@@ -127,7 +127,13 @@
                             },
                         })
                     .then(response => {
-                        return response.json()
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
                     })
                     .then(body => {
                         let colPerRow = 4
@@ -148,7 +154,13 @@
                         },
                     })
                     .then(response => {
-                        return response.json()
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
                     })
                     .then(body => {
                         let colPerRow = 4
@@ -181,7 +193,13 @@
                             })
                         })
                         .then(response => {
-                            return response.json()
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
                         })
                         .then(body => {
                             this.$root.progress.show = false
@@ -217,7 +235,13 @@
                             })
                         })
                         .then(response => {
-                            return response.json()
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
                         })
                         .then(body => {
                             this.$root.progress.show = false

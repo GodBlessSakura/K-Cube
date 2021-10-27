@@ -375,7 +375,13 @@
                                 })
                             })
                             .then(response => {
-                                return response.json()
+                                try {
+                                    return response.json()
+                                } catch {
+                                    this.$root.progress.show = false
+                                    this.$root.errorDisplay({},
+                                        'Unexpected error occured.')
+                                }
                             })
                             .then(body => {
                                 this.progress.show = false
@@ -401,7 +407,13 @@
 
                             })
                             .then(response => {
-                                return response.json()
+                                try {
+                                    return response.json()
+                                } catch {
+                                    this.$root.progress.show = false
+                                    this.$root.errorDisplay({},
+                                        'Unexpected error occured.')
+                                }
                             })
                             .then(body => {
                                 this.progress.show = false
@@ -419,12 +431,8 @@
                         }
                         this.completeSnackBar.show = true
                         onSuccess()
-                    } else if (body.message) {
-                        this.errorSnackBar.message = body.message
-                        this.errorSnackBar.show = true
                     } else {
-                        this.errorSnackBar.message = defaultMessage
-                        this.errorSnackBar.show = true
+                        this.errorDisplay(body, defaultMessage)
                     }
                 },
                 errorDisplay(body, defaultMessage) {
@@ -434,6 +442,9 @@
                     } else {
                         this.errorSnackBar.message = defaultMessage
                         this.errorSnackBar.show = true
+                    }
+                    if (body.error) {
+                        console.error(body.error)
                     }
 
                 }

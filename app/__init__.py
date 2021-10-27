@@ -59,6 +59,16 @@ def create_app(config_object):
     def handle_bad_request(e):
         return jsonify({"success": False, "message": e.message})
 
+    from neo4j.exceptions import DriverError, Neo4jError
+
+    @app.errorhandler(DriverError)
+    def handle_bad_request(e):
+        return jsonify({"message": "Neo4j server is not ready.", "error": str(e)})
+
+    @app.errorhandler(Neo4jError)
+    def handle_bad_request(e):
+        return jsonify({"message": "Unexpected error on cypher query.", "error": str(e)})
+
     @app.route("/")
     def index():
         return render_template("index.html")
@@ -72,7 +82,9 @@ def create_app(config_object):
     def set_admin(userid):
         click.echo(userid)
         click.echo(
-            api_driver.get_api_driver().user.assign_user_role(userId=userid, role="admin")
+            api_driver.get_api_driver().user.assign_user_role(
+                userId=userid, role="admin"
+            )
         )
 
     return app

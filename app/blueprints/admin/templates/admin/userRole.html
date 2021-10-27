@@ -38,7 +38,13 @@
                         },
                     })
                     .then(response => {
-                        return response.json()
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
                     })
                     .then(body => {
                         if (body.permissions) {
@@ -72,7 +78,13 @@
                                     },
                                 })
                                 .then(response => {
-                                    return response.json()
+                                    try {
+                                        return response.json()
+                                    } catch {
+                                        this.$root.progress.show = false
+                                        this.$root.errorDisplay({},
+                                            'Unexpected error occured.')
+                                    }
                                 })
                                 .then(body => {
                                     this.$root.progress.show = false
@@ -88,12 +100,13 @@
                                             return user_row
                                         })
                                     } else {
-                                        this.$root.errorDisplay(body,'Unexpected error on getting user information.')
+                                        this.$root.errorDisplay(body,
+                                            'Unexpected error on getting user information.')
                                     }
                                 })
 
                         } else {
-                            this.$root.errorDisplay(body,'Unexpected error on getting role information.')
+                            this.$root.errorDisplay(body, 'Unexpected error on getting role information.')
                         }
                     })
             },
@@ -114,7 +127,13 @@
                         })
                     })
                     .then(response => {
-                        return response.json()
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
                     })
                     .then(body => {
                         this.$root.progress.show = false
