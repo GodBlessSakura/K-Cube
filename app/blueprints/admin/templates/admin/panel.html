@@ -1,6 +1,17 @@
-{% macro component() %}
-
-{% endmacro %}
-{% macro script() %}
-
-{% endmacro %}
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+        }),
+        methods: {
+        },
+        template: '#content',
+    })
+</script>
+{% endblock %}

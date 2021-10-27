@@ -1,4 +1,6 @@
-{% macro component() %}
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
 <v-card flat>
     <v-form ref="control">
         <v-container>
@@ -27,10 +29,10 @@
         </v-container>
     </v-form>
 </v-card>
-{% endmacro %}
-{% macro script(imagesUrl) %}
+{% endblock %}
+{% block VueComponentScript %}
 <script>
-    Vue.component('admin-course-form', {
+    Vue.component('app-content', {
         data: () => ({
             imagesUrl: [
                 //{% for url in imagesUrl %}
@@ -95,7 +97,7 @@
             },
 
         },
-        template: '#admincourse'
+        template: '#content'
     })
 </script>
-{% endmacro %}
+{% endblock %}

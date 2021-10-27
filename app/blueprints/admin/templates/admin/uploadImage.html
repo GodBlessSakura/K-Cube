@@ -1,12 +1,14 @@
-{% macro component() %}
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
 <v-form ref="imageForm">
     <v-file-input accept="image/*" name="file" label="File input" multiple required></v-file-input>
     <v-btn @click="uploadImage" color="success">Upload</v-btn>
 </v-form>
-{% endmacro %}
-{% macro script() %}
+{% endblock %}
+{% block VueComponentScript %}
 <script>
-    Vue.component('admin-uploadImage-form', {
+    Vue.component('app-content', {
         data: () => ({
 
         }),
@@ -43,7 +45,7 @@
                 }
             }
         },
-        template: '#adminUploadImage'
+        template: '#content'
     })
 </script>
-{% endmacro %}
+{% endblock %}

@@ -2,7 +2,7 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-card>
-    <v-tabs v-model="tab" center-active>
+    <v-tabs v-model="tab" center-active @change="selectTab">
         <v-tab herf="?tab=relationship">Suggest KG relationship</v-tab>
     </v-tabs>
     <v-tabs-items v-model="tab">
@@ -14,11 +14,19 @@
 {% endblock %}
 {% block VueComponentScript %}
 <script>
+    let tabs = ['relationship']
     Vue.component('app-content', {
         data: () => ({
-            tab: ['relationship'].indexOf(new URLSearchParams(window.location.search).get('tab')),
+            tab: tabs.indexOf(new URLSearchParams(window.location.search).get('tab')),
         }),
         methods: {
+            selectTab(tab) {
+                let query = new URLSearchParams(window.location.search)
+                query.set("tab", tabs[tab])
+                window.history.pushState(
+                    window.history.state, "", window.location.pathname + '?' + query.toString())
+
+            }
         },
         template: '#content'
     })

@@ -1,27 +1,47 @@
-{% macro component() %}
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
 <v-card>
-    <v-card-title>
-        <v-treeview dense open-on-click :items="permissions"></v-treeview>
-    </v-card-title>
-    <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details></v-text-field>
-    <v-data-table :headers="roles" :items="users" :items-per-page="500" multi-sort :search="search">
-        <template v-slot:item="{ item }">
-            <tr>
-                <td v-for="(value, name) in item">
-                    <v-simple-checkbox readonly color="info" :value="value" v-if="typeof value  == 'boolean'"
-                        @click="flipRole(item.userId , name, value)">
-                    </v-simple-checkbox>
-                    <v-chip v-else>${item.userId}</v-chip>
-                </td>
-            </tr>
-        </template>
-    </v-data-table>
+    <v-tabs v-model="tab" center-active @change="selectTab">
+        <v-tab>Users' Role</v-tab>
+        <v-tab>permissions</v-tab>
+    </v-tabs>
+    <v-tabs-items v-model="tab">
+        <v-tab-item>
+            <v-card>
+                <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details>
+                </v-text-field>
+                <v-data-table :headers="roles" :items="users" :items-per-page="500" multi-sort :search="search">
+                    <template v-slot:item="{ item }">
+                        <tr>
+                            <td v-for="(value, name) in item">
+                                <v-simple-checkbox readonly color="info" :value="value"
+                                    v-if="typeof value  == 'boolean'" @click="flipRole(item.userId , name, value)">
+                                </v-simple-checkbox>
+                                <v-chip v-else>${item.userId}</v-chip>
+                            </td>
+                        </tr>
+                    </template>
+                </v-data-table>
+            </v-card>
+        </v-tab-item>
+        <v-tab-item>
+            <v-card>
+                <v-card-title>
+                    <v-treeview dense open-on-click :items="permissions"></v-treeview>
+                </v-card-title>
+            </v-card>
+        </v-tab-item>
+    </v-tabs-items>
 </v-card>
-{% endmacro %}
-{% macro script() %}
+{% endblock %}
+{% block VueComponentScript %}
 <script>
-    Vue.component('admin-userRole-form', {
+    let tabs = ['role', 'permission']
+    Vue.component('app-content', {
         data: () => ({
+            tab: tabs.indexOf(new URLSearchParams(window.location
+                .search).get('tab')),
             users: [],
             roles: [],
             permissions: [],
@@ -30,13 +50,14 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.roleQuery', listRolePermission=True) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                fetch(
+                        "{{ url_for('RESTful.roleQuery', listRolePermission=True) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -87,7 +108,6 @@
                                     }
                                 })
                                 .then(body => {
-                                    this.$root.progress.show = false
                                     if (body.users) {
                                         this.users = body.users.map(u => {
                                             user_row = {
@@ -99,16 +119,19 @@
                                             });
                                             return user_row
                                         })
+                                        this.$root.progress.show = false
                                     } else {
                                         this.$root.errorDisplay(body,
                                             'Unexpected error on getting user information.')
+                                        this.$root.progress.show = false
                                     }
                                 })
-
                         } else {
                             this.$root.errorDisplay(body, 'Unexpected error on getting role information.')
+                            this.$root.progress.show = false
                         }
                     })
+
             },
             flipRole(userId, role, value) {
                 if (this.$root.progress.show == true) {
@@ -140,13 +163,20 @@
                         this.$root.responseSnackBar(body, 'Unexpected error on setting role assignment.',
                             this.loadData)
                     })
+            },
+            selectTab(tab) {
+                let query = new URLSearchParams(window.location.search)
+                query.set("tab", tabs[tab])
+                window.history.pushState(
+                    window.history.state, "", window.location.pathname + '?' + query.toString())
+
             }
         },
-        template: '#adminUserRole',
-        created: function () {
+        template: '#content',
+        created() {
             this.loadData()
         },
         delimiters: ['${', '}'],
     })
 </script>
-{% endmacro %}
+{% endblock %}

@@ -12,15 +12,26 @@ import os
 admin = Blueprint("admin", __name__, template_folder="templates")
 
 
-@admin.route("/")
+@admin.route("/panel")
 def panel():
     if (
         "permission" in session
         and "canAccessAdminPanel" in session["permission"]
         and session["permission"]["canAccessAdminPanel"]
     ):
+        return render_template("admin/panel.html")
+    abort(404)
+
+
+@admin.route("/course")
+def courseForm():
+    if (
+        "permission" in session
+        and "canAccessAdminPanel" in session["permission"]
+        and session["permission"]["canAccessAdminPanel"]
+    ):
         return render_template(
-            "admin/index.html",
+            "admin/courseForm.html",
             imagesUrl=[
                 url_for(
                     "static",
@@ -47,4 +58,26 @@ def panel():
                 )
             ],
         )
+    abort(404)
+
+
+@admin.route("/upload")
+def uploadImage():
+    if (
+        "permission" in session
+        and "canAccessAdminPanel" in session["permission"]
+        and session["permission"]["canAccessAdminPanel"]
+    ):
+        return render_template("admin/uploadImage.html")
+    abort(404)
+
+
+@admin.route("/user")
+def user_n_role():
+    if (
+        "permission" in session
+        and "canAccessAdminPanel" in session["permission"]
+        and session["permission"]["canAccessAdminPanel"]
+    ):
+        return render_template("admin/user_n_role.html")
     abort(404)

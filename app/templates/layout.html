@@ -188,29 +188,62 @@
                         </v-list-item-icon>
                         <v-list-item-title>Jobs</v-list-item-title>
                     </v-list-item>
-                    {% if session['permission'] and session['permission'].canOwnDraft %}
-                    <v-list-item link href="{{ url_for('draft.my_space') }}">
-                        <v-list-item-icon>
-                            <v-icon>folder</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>My Space</v-list-item-title>
-                    </v-list-item>
-                    {% endif %}
-                    {% if session['permission'] and session['permission'].canProposeRelationship %}
-                    <v-list-item link href="{{ url_for('collaborate.index') }}">
-                        <v-list-item-icon>
-                            <v-icon>forum</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Collaborate</v-list-item-title>
-                    </v-list-item>
+                    {% if session['permission'] and (session['permission'].canOwnDraft or session['permission'].canProposeRelationship 
+                    or session['permission'].canApproveRelationship) %}
+                    <v-divider></v-divider>
+                    <v-list-group :value="teacherListGroup" prepend-icon="mdi-account-circle">
+                        <template v-slot:activator>
+                            <v-list-item-title>Teacher</v-list-item-title>
+                        </template>
+                        {% if session['permission'] and session['permission'].canOwnDraft %}
+                        <v-list-item link href="{{ url_for('draft.my_space') }}?group=teach">
+                            <v-list-item-icon>
+                                <v-icon>account_tree</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Repository</v-list-item-title>
+                        </v-list-item>
+                        {% endif %}
+                        {% if session['permission'] and (session['permission'].canProposeRelationship or session['permission'].canApproveRelationship) %}
+                        <v-list-item link href="{{ url_for('collaborate.index') }}?group=teach">
+                            <v-list-item-icon>
+                                <v-icon>forum</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Collaborate</v-list-item-title>
+                        </v-list-item>
+                        {% endif %}
+                    </v-list-group>
                     {% endif %}
                     {% if session['permission'] and session['permission'].canAccessAdminPanel %}
-                    <v-list-item link href="{{ url_for('admin.panel') }}">
-                        <v-list-item-icon>
-                            <v-icon>admin_panel_settings</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Admin Panel</v-list-item-title>
-                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-group :value="adminListGroup" prepend-icon="admin_panel_settings">
+                        <template v-slot:activator>
+                            <v-list-item-title>Admin</v-list-item-title>
+                        </template>
+                        <v-list-item link href="{{ url_for('admin.panel') }}?group=admin">
+                            <v-list-item-icon>
+                                <v-icon>dashboard</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Dashboard</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('admin.user_n_role') }}?group=admin">
+                            <v-list-item-icon>
+                                <v-icon>manage_accounts</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>User & Role</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('admin.courseForm') }}?group=admin">
+                            <v-list-item-icon>
+                                <v-icon>library_add</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Create New Course</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('admin.uploadImage') }}?group=admin">
+                            <v-list-item-icon>
+                                <v-icon>upload</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Upload Image</v-list-item-title>
+                        </v-list-item>
+                    </v-list-group>
                     {% endif %}
                 </v-list>
             </v-navigation-drawer>
@@ -260,6 +293,8 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
+                teacherListGroup: false,
+                adminListGroup: false,
                 miniSync: true,
                 errorSnackBar: {
                     show: false,
@@ -386,7 +421,7 @@
                             .then(body => {
                                 this.progress.show = false
                                 this.responseSnackBar(body, 'Registration failed for unkown reason.',
-                                    location.reload)
+                                    location.reload.bind(window.location))
                             })
 
                     }
@@ -418,7 +453,7 @@
                             .then(body => {
                                 this.progress.show = false
                                 this.responseSnackBar(body, 'incorrect username or password', location
-                                    .reload)
+                                .reload.bind(window.location))
                             })
                     }
                 },
@@ -451,6 +486,15 @@
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
+            created(){
+                let group = new URLSearchParams(window.location.search).get('group')
+                if(group == "teach"){
+                    this.teacherListGroup = true
+                }
+                if(group == "admin"){
+                    this.adminListGroup = true
+                }
+            }
         })
     </script>
     {% macro echartsCDN() %}
