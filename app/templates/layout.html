@@ -188,29 +188,84 @@
                         </v-list-item-icon>
                         <v-list-item-title>Jobs</v-list-item-title>
                     </v-list-item>
-                    {% if session['permission'] and (session['permission'].canOwnDraft or session['permission'].canProposeRelationship 
-                    or session['permission'].canApproveRelationship) %}
                     <v-divider></v-divider>
-                    <v-list-group :value="teacherListGroup" prepend-icon="mdi-account-circle">
+                    <v-list-group :value="teacherListGroup" prepend-icon="forum">
                         <template v-slot:activator>
-                            <v-list-item-title>Teacher</v-list-item-title>
+                            <v-list-item-title>Collaborate</v-list-item-title>
                         </template>
-                        {% if session['permission'] and session['permission'].canOwnDraft %}
-                        <v-list-item link href="{{ url_for('draft.my_space') }}?group=teach">
-                            <v-list-item-icon>
-                                <v-icon>account_tree</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Repository</v-list-item-title>
-                        </v-list-item>
-                        {% endif %}
                         {% if session['permission'] and (session['permission'].canProposeRelationship or session['permission'].canApproveRelationship) %}
                         <v-list-item link href="{{ url_for('collaborate.index') }}?group=teach">
                             <v-list-item-icon>
-                                <v-icon>forum</v-icon>
+                                <v-icon>linear_scale</v-icon>
                             </v-list-item-icon>
-                            <v-list-item-title>Collaborate</v-list-item-title>
+                            <v-list-item-title>Graph Editing</v-list-item-title>
                         </v-list-item>
                         {% endif %}
+                        {% if session['permission'] and session['permission'].canProposeCourseIssue}
+                        <v-list-item>
+                            <v-list-item-icon>
+                                <v-icon>feedback</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Course Feedback</v-list-item-title>
+                        </v-list-item>
+                        {% endif %}
+                        <v-list-item>
+                            <v-list-item-icon>
+                                <v-icon>travel_explore</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Others work</v-list-item-title>
+                        </v-list-item>
+                    </v-list-group>
+                    {% if session['permission'] and session['permission'].canAccessDLTCPanel %}
+                    <v-divider></v-divider>
+                    <v-list-group :value="teacherListGroup" prepend-icon="groups">
+                        <template v-slot:activator>
+                            <v-list-item-title>DLTC</v-list-item-title>
+                        </template>
+                        <v-list-item>
+                            <v-list-item-icon>
+                                <v-icon>schema</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Manage Course Versions</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('admin.courseForm') }}?group=admin">
+                            <v-list-item-icon>
+                                <v-icon>library_add</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Create New Course</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('admin.uploadImage') }}?group=admin">
+                            <v-list-item-icon>
+                                <v-icon>upload</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Upload Image</v-list-item-title>
+                        </v-list-item>
+                    </v-list-group>
+                    {% endif %}
+                    {% if session['permission'] and session['permission'].canAccessInstructorPanel %}
+                    <v-divider></v-divider>
+                    <v-list-group :value="teacherListGroup" prepend-icon="co_present">
+                        <template v-slot:activator>
+                            <v-list-item-title>Instructor's space</v-list-item-title>
+                        </template>
+                        <v-list-item link href="{{ url_for('draft.my_space') }}?group=teach">
+                            <v-list-item-icon>
+                                <v-icon>history_edu</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>My Drafts</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-list-item-icon>
+                                <v-icon>event_note</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>My Course Schedules</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item>
+                            <v-list-item-icon>
+                                <v-icon>add_link</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>My Course Resources</v-list-item-title>
+                        </v-list-item>
                     </v-list-group>
                     {% endif %}
                     {% if session['permission'] and session['permission'].canAccessAdminPanel %}
@@ -230,18 +285,6 @@
                                 <v-icon>manage_accounts</v-icon>
                             </v-list-item-icon>
                             <v-list-item-title>User & Role</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item link href="{{ url_for('admin.courseForm') }}?group=admin">
-                            <v-list-item-icon>
-                                <v-icon>library_add</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Create New Course</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item link href="{{ url_for('admin.uploadImage') }}?group=admin">
-                            <v-list-item-icon>
-                                <v-icon>upload</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Upload Image</v-list-item-title>
                         </v-list-item>
                     </v-list-group>
                     {% endif %}
@@ -453,7 +496,7 @@
                             .then(body => {
                                 this.progress.show = false
                                 this.responseSnackBar(body, 'incorrect username or password', location
-                                .reload.bind(window.location))
+                                    .reload.bind(window.location))
                             })
                     }
                 },
@@ -486,12 +529,12 @@
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
-            created(){
+            created() {
                 let group = new URLSearchParams(window.location.search).get('group')
-                if(group == "teach"){
+                if (group == "teach") {
                     this.teacherListGroup = true
                 }
-                if(group == "admin"){
+                if (group == "admin") {
                     this.adminListGroup = true
                 }
             }
