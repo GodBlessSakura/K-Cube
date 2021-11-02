@@ -29,3 +29,15 @@ RESTful.register_blueprint(triple)
 from .entityAPI import entity
 
 RESTful.register_blueprint(entity)
+
+from .trunkAPI import trunk
+
+RESTful.register_blueprint(trunk)
+
+from .branchAPI import branch
+
+RESTful.register_blueprint(branch)
+
+from .workspaceAPI import workspace
+
+RESTful.register_blueprint(workspace)

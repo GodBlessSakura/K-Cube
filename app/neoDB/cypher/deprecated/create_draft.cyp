@@ -4,7 +4,7 @@ MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept:GraphConcept{name: $nam
 CREATE (owner)-[:USER_OWN]->(draft:Draft)-[:DRAFT_DESCRIBE]->(course)
 SET draft.draftId = owner.userId +. + replace(courseConcept.name,_) +. + replace($draftName,_),
 draft.draftName = $draftName,
-draft.creationDate = timestamp(),
-draft.lastModified = timestamp(),
+draft.creationDate = datetime.transaction(),
+draft.lastModified = datetime.transaction(),
 draft.status = 'unpublished'
 RETURN draft;

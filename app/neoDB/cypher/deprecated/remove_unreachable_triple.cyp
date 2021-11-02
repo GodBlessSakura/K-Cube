@@ -1,4 +1,4 @@
-MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canOwnDraft: true})
+MATCH (draft:Draft{draftId: $draftId})<-[:USER_OWN]-(:User{userId: $userId})
 WITH DISTINCT draft
 MATCH (root:GraphConcept)<-[:COURSE_DESCRIBE]-(:Course)<-[:DRAFT_DESCRIBE]-(draft:Draft)
 WITH draft, root
@@ -9,6 +9,6 @@ MATCH (h)-[r:GRAPH_RELATIONSHIP{draftId : draft.draftId}]->(t)
 WHERE NOT id(r) IN reachable_id
 WITH collect(h.name) as h_name, collect(r.name) as r_name, collect(t.name) as t_name, r, draft
 DELETE r
-SET draft.lastModified = timestamp()
+SET draft.lastModified = datetime.transaction()
 RETURN h_name, r_name, t_name;
                 ]

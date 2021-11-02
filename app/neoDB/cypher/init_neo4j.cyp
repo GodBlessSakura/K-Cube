@@ -2,6 +2,7 @@ CREATE CONSTRAINT user_uid_constraint IF NOT EXISTS ON (n:User) ASSERT n.userId 
 CREATE CONSTRAINT user_email_constraint IF NOT EXISTS ON (n:User) ASSERT n.email IS UNIQUE;
 CREATE CONSTRAINT permission_uid_constraint IF NOT EXISTS ON (n:Permission) ASSERT n.role IS UNIQUE;
 CREATE CONSTRAINT deltaGraph_uid_constraint IF NOT EXISTS ON (n:DeltaGraph) ASSERT n.deltaGraphId IS UNIQUE;
+CREATE CONSTRAINT trunkCache_uid_constraint IF NOT EXISTS ON (n:Trunk) ASSERT n.cachedGraphId IS UNIQUE;
 CREATE CONSTRAINT course_uid_constraint IF NOT EXISTS ON (n:Course) ASSERT n.displayName IS UNIQUE;
 CREATE CONSTRAINT GraphConcept_uid_constraint IF NOT EXISTS ON (n:GraphConcept) ASSERT n.name IS UNIQUE;
 CREATE CONSTRAINT GraphRelationship_uid_constraint IF NOT EXISTS ON (n:GraphRelationship) ASSERT n.name IS UNIQUE;
@@ -30,7 +31,7 @@ SET
     p.canForkAssignedCourseBranch = false,
     p.canReadAssignedCourseBranch = false,
     p.canWriteAssignedCourseResources = false,
-    p.canProposeIssue = true,
+    p.canRaiseIssue = true,
     p.canReplyIssue = true;
 
 MERGE (p:Permission {role: "DLTC"})
@@ -56,7 +57,7 @@ SET
     p.canForkAssignedCourseBranch = false,
     p.canReadAssignedCourseBranch = false,
     p.canWriteAssignedCourseResources = false,
-    p.canProposeIssue = true,
+    p.canRaiseIssue = true,
     p.canReplyIssue = true;
 
 MERGE (p:Permission {role: "instrcutor"})
@@ -82,7 +83,7 @@ SET
     p.canForkAssignedCourseBranch = true,
     p.canReadAssignedCourseBranch = true,
     p.canWriteAssignedCourseResources = true,
-    p.canProposeIssue = true,
+    p.canRaiseIssue = true,
     p.canReplyIssue = true;
 
 MERGE (p:Permission {role: "restricted"})
@@ -108,5 +109,5 @@ SET
     p.canForkAssignedCourseBranch = false,
     p.canReadAssignedCourseBranch = false,
     p.canWriteAssignedCourseResources = false,
-    p.canProposeIssue = false,
+    p.canRaiseIssue = false,
     p.canReplyIssue = false

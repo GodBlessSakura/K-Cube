@@ -40,6 +40,18 @@ class APIDriver:
 
         self.entity = entityResources(driver=self.driver)
 
+        from .trunkResources import trunkResources
+
+        self.trunk = trunkResources(driver=self.driver)
+
+        from .branchResources import branchResources
+
+        self.branch = branchResources(driver=self.driver)
+
+        from .workspaceResources import workspaceResources
+
+        self.workspace = workspaceResources(driver=self.driver)
+
     def close(self):
         self.driver.close()
 

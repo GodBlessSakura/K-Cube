@@ -4,7 +4,6 @@ from flask_mail import Mail
 from app.config import config
 from app.blueprints.admin import admin
 from app.blueprints.collaborate import collaborate
-from app.blueprints.draft import draft
 from app.blueprints.job import job
 from app.blueprints.RESTful import RESTful
 from app.blueprints.user import user
@@ -40,7 +39,6 @@ def create_app(config_object):
     app.register_blueprint(collaborate, url_prefix="/collaborate")
     app.register_blueprint(instructor, url_prefix="/instructor")
     app.register_blueprint(DLTC, url_prefix="/DLTC")
-    app.register_blueprint(draft, url_prefix="/draft")  # deprecated
     app.register_blueprint(job, url_prefix="/job")
     app.register_blueprint(RESTful, url_prefix="/RESTful")
     app.register_blueprint(user, url_prefix="/user")

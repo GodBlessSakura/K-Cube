@@ -21,7 +21,7 @@ class courseResources:
                 imageURL=imageURL,
             )
             try:
-                return dict([record for record in result][0].items())
+                return True
             except Exception as exception:
                 raise exception
 

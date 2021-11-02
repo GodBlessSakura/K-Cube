@@ -21,9 +21,9 @@ def middleware():
     pass
 
 
-@DLTC.route("/trunk")
-def trunk():
-    return render_template("DLTC/trunk.html")
+@DLTC.route("/trunk/<courseCode>")
+def trunk(courseCode):
+    return render_template("DLTC/trunk.html", courseCode = courseCode)
 
 @DLTC.route("/courseList")
 def courseList():

@@ -1,4 +1,3 @@
-from argon2 import PasswordHasher
 import sys
 from .cypher import cypher
 
