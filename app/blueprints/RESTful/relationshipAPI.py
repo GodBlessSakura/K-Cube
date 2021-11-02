@@ -1,13 +1,13 @@
 from flask import jsonify, session, request
+from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_with
 
-api = "/relationship/"
-from . import RESTful
+relationship = Blueprint("relationship", __name__, url_prefix="relationship")
 
 
-@RESTful.route(api, methods=["GET"])
-def relationshipQuery():
+@relationship.get("/")
+def query():
     if request.args.get("approved"):
         return listApprovedRelationships()
     if request.args.get("userView"):
@@ -43,22 +43,16 @@ def getRelationShipView():
         raise e
 
 
-@RESTful.route(api + "proposal", methods=["PUT", "DELETE"])
+@relationship.put("proposal")
+@relationship.put("proposal/<name>")
 @authorize_with(["canProposeRelationship"], require_userId=True)
-def relationshipProposal():
-    if request.method == "PUT":
-        return createProposal()
-    if request.method == "DELETE":
-        return removeProposal()
+def createProposal(name):
 
-
-@RESTful.route(api + "proposal", methods=["PUT"])
-def createProposal():
-    if "name" in request.json:
+    if name is not None:
         try:
             result = jsonify(
                 get_api_driver().relationship.create_proposal(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=session["user"]["userId"], name=name
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -67,13 +61,15 @@ def createProposal():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "proposal", methods=["DELETE"])
-def removeProposal():
-    if "name" in request.json:
+@relationship.delete("proposal")
+@relationship.delete("proposal/<name>")
+@authorize_with(["canProposeRelationship"], require_userId=True)
+def removeProposal(name):
+    if name is not None:
         try:
             result = jsonify(
                 get_api_driver().relationship.remove_proposal(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=session["user"]["userId"], name=name
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -82,22 +78,15 @@ def removeProposal():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "approval", methods=["PUT", "DELETE"])
+@relationship.put("approval")
+@relationship.put("approval/<name>")
 @authorize_with(["canApproveRelationship"], require_userId=True)
-def relationshipApproval():
-    if request.method == "PUT":
-        return createApproval()
-    if request.method == "DELETE":
-        return removeApproval()
-
-
-@RESTful.route(api + "approval", methods=["PUT"])
-def createApproval():
-    if "name" in request.json:
+def createApproval(name):
+    if name is not None:
         try:
             result = jsonify(
                 get_api_driver().relationship.create_approval(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=session["user"]["userId"], name=name
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -106,13 +95,15 @@ def createApproval():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api + "approval", methods=["PUT"])
-def removeApproval():
-    if "name" in request.json:
+@relationship.put("approval")
+@relationship.put("approval/<name>")
+@authorize_with(["canApproveRelationship"], require_userId=True)
+def removeApproval(name):
+    if name is not None:
         try:
             result = jsonify(
                 get_api_driver().relationship.remove_approval(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=session["user"]["userId"], name=name
                 )
             )
             return jsonify({"success": True, "message": "assign done"})

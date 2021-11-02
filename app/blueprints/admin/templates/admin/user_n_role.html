@@ -51,7 +51,7 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.roleQuery', listRolePermission=True) }}", {
+                        "{{ url_for('RESTful.role.query', listRolePermission=True) }}", {
                             method: 'GET',
                             cache: 'no-store',
                             headers: {
@@ -72,7 +72,16 @@
                             this.roles = [{
                                     text: "UserId",
                                     value: 'userId'
-                                }, ...body.permissions
+                                }, ...body.permissions.sort((a, b) => {
+                                    a_permission = Object.values(a).reduce((count, value) => {
+                                        return count + (value ? 1 : 0)
+                                    }, 0)
+                                    b_permission = Object.values(b).reduce((count, value) => {
+                                        return count + (value ? 1 : 0)
+                                    }, 0)
+                                    return a_permission < b_permission ? -1 : a_permission >
+                                        b_permission ? 1 : 0
+                                })
                                 .map(p => {
                                     return {
                                         text: p.role,
@@ -91,7 +100,7 @@
                                         })
                                 }
                             })
-                            fetch("{{ url_for('RESTful.roleQuery', listUser=True ) }}", {
+                            fetch("{{ url_for('RESTful.role.query', listUser=True ) }}", {
                                     method: 'GET',
                                     cache: 'no-store',
                                     headers: {
@@ -139,7 +148,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.role') }}" + userId, {
+                fetch("{{ url_for('RESTful.role.put') }}" + userId, {
                         method: value ? "DELETE" : "PUT",
                         cache: 'no-store',
                         headers: {

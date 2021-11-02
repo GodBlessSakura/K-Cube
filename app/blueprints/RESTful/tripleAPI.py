@@ -1,21 +1,21 @@
 from flask import jsonify, session, request, abort
+from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_with
 from neo4j.exceptions import ConstraintError
 
-api = "/triple/"
-from . import RESTful
+triple = Blueprint("triple", __name__, url_prefix="triple")
 
 
-@RESTful.route(api,methods=["GET"])
-def tripleQuery():
+@triple.get("/")
+def query():
     if request.args.get("aggregated"):
         return aggregatedTriple()
 
 
-@RESTful.route(api + "<draftId>", methods=["PUT"])
+@triple.put("<draftId>")
 @authorize_with(["canOwnDraft"])
-def triplePut(draftId):
+def put(draftId):
     if (
         "h_name" in request.json
         and "r_name" in request.json
@@ -34,9 +34,10 @@ def triplePut(draftId):
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
 
-@RESTful.route(api + "<draftId>", methods=["DELETE"])
+
+@triple.delete("<draftId>")
 @authorize_with(["canOwnDraft"])
-def tripleDelete(draftId):
+def delete(draftId):
     if (
         "h_name" in request.json
         and "r_name" in request.json
@@ -56,11 +57,9 @@ def tripleDelete(draftId):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-
-
-@RESTful.route(api + "unreachable/<draftId>", methods=["DELETE"])
+@triple.delete("<draftId>/unreachable")
 @authorize_with(["canOwnDraft"])
-def tripleUnreachableDelete(draftId):
+def deleteUnreachableDelete(draftId):
     try:
         result = get_api_driver().triple.remove_unreachable_triple(
             draftId=draftId,

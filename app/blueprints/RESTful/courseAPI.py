@@ -1,18 +1,20 @@
 from flask import jsonify, session, request
+from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_with
 
-api = "/course/"
-from . import RESTful
+course = Blueprint("course", __name__, url_prefix="course")
 
-@RESTful.route(api, methods=["GET"])
-def courseQuery():
+
+@course.get("/")
+def query():
     if request.args.get("list"):
         return courseList()
 
-@RESTful.route(api, methods=["POST"])
+
+@course.post("/")
 @authorize_with(["canCreateCourse"])
-def coursePost():
+def post():
     if (
         "displayName" in request.json
         and "name" in request.json
@@ -31,7 +33,6 @@ def coursePost():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@RESTful.route(api, methods=["GET"])
 def courseList():
     try:
         return jsonify(

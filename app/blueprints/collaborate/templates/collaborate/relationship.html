@@ -87,7 +87,7 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.relationshipQuery', userView=True) }}", {
+                fetch("{{ url_for('RESTful.relationship.query', userView=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -113,7 +113,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.relationshipProposal') }}", {
+                fetch("{{ url_for('RESTful.relationship.createProposal') }}", {
                         method: value ? "DELETE" : "PUT",
                         cache: 'no-store',
                         headers: {
@@ -140,7 +140,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.relationshipApproval') }}", {
+                fetch("{{ url_for('RESTful.relationship.createApproval') }}", {
                         method: value ? "DELETE" : "PUT",
                         cache: 'no-store',
                         headers: {
@@ -168,7 +168,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.createProposal') }}", {
+                    fetch("{{ url_for('RESTful.relationship.createProposal') }}", {
                             method: 'PUT',
                             cache: 'no-store',
                             headers: {

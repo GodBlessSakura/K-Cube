@@ -1,13 +1,14 @@
 from flask import jsonify, session, request, abort
+from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
 
-api = "/entity/"
-from . import RESTful
+entity = Blueprint("entity", __name__, url_prefix="entity")
 
 
-@RESTful.route(api, methods=["GET"])
-def entityQuery():
+
+@entity.get("/")
+def query():
     if request.args.get("list"):
         return entityList()
 

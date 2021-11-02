@@ -1,14 +1,14 @@
 from flask import jsonify, session, request
+from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_with
 
-api = "/role/"
-from . import RESTful
+role = Blueprint("role", __name__, url_prefix="role")
 
 
-@RESTful.route(api, methods=["GET"])
+@role.get("/")
 @authorize_with(["canAssignRole"])
-def roleQuery():
+def query():
     if request.args.get("listRolePermission"):
         return roleList()
     if request.args.get("listUser"):
@@ -35,18 +35,10 @@ def listUserRole():
     except Exception as e:
         raise e
 
-
-@RESTful.route(api, defaults={"userId": None}, methods=["PUT", "DELETE"])
-@RESTful.route(api + "<userId>", methods=["PUT", "DELETE"])
+@role.put("/")
+@role.put("<userId>")
 @authorize_with(["canAssignRole"])
-def role(userId):
-    if request.method == "PUT":
-        return assign_user_role(userId)
-    if request.method == "DELETE":
-        return remove_user_role(userId)
-
-
-def assign_user_role(userId):
+def put(userId):
     if "role" in request.json and userId is not None:
         try:
             result = jsonify(
@@ -59,8 +51,10 @@ def assign_user_role(userId):
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
 
-
-def remove_user_role(userId):
+@role.delete("/")
+@role.delete("<userId>")
+@authorize_with(["canAssignRole"])
+def delete(userId):
     if "role" in request.json and userId is not None:
         try:
             result = get_api_driver().user.remove_user_role(

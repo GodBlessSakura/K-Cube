@@ -1,22 +1,22 @@
 from flask import jsonify, session, request, abort
+from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_with
 from neo4j.exceptions import ConstraintError
 
-api = "/draft/"
-from . import RESTful
+draft = Blueprint("draft", __name__, url_prefix="draft")
 
 
-@RESTful.route(api, methods=["GET"])
+@draft.get("/")
 @authorize_with(["canOwnDraft"])
-def draftQuery():
+def query():
     if request.args.get("ofUser"):
         return draftOfUser()
 
 
-@RESTful.route(api + "<courseCode>", methods=["POST"])
+@draft.post("<courseCode>")
 @authorize_with(["canOwnDraft"])
-def draftPost(courseCode):
+def post(courseCode):
     if "draftName" in request.json:
         if request.args.get("clone"):
             return cloneDraft()
@@ -83,9 +83,9 @@ def draftOfUser(courseCode):
         raise e
 
 
-@RESTful.route(api + "draftTriples/<draftId>", methods=["GET"])
+@draft.get("<draftId>")
 @authorize_with(["canOwnDraft"])
-def draftTriples(draftId):
+def get(draftId):
     try:
         return jsonify(
             {
@@ -102,9 +102,9 @@ def draftTriples(draftId):
         raise e
 
 
-@RESTful.route(api + "status/<draftId>", methods=["PUT"])
+@draft.put("<draftId>")
 @authorize_with(["canOwnDraft"])
-def draftStatusPut(draftId):
+def put(draftId):
     if "status" in request.json:
         try:
             return jsonify(
