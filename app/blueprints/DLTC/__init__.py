@@ -14,13 +14,23 @@ from .blueprints.uploads import uploads
 DLTC = Blueprint("DLTC", __name__, template_folder="templates")
 DLTC.register_blueprint(uploads, url_prefix="/uploads")
 
+
 @DLTC.before_request
 @authorize_with(["canAccessDLTCPanel"])
 def middleware():
     pass
 
 
-@DLTC.route("/course")
+@DLTC.route("/trunk")
+def trunk():
+    return render_template("DLTC/trunk.html")
+
+@DLTC.route("/courseList")
+def courseList():
+    return render_template("DLTC/courseList.html")
+
+
+@DLTC.route("/courseCreate")
 def courseForm():
     return render_template(
         "DLTC/courseForm.html",
