@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, abort, redirect, request, jsonify, session
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
-from app.authorizer import authorize_with
+from app.authorizer import authorize_RESTful_with
 
 user = Blueprint("user", __name__, template_folder="templates")
 
@@ -12,7 +12,7 @@ def back():
 
 
 @user.route("/refreshPermission")
-@authorize_with([],require_userId=True)
+@authorize_RESTful_with([],require_userId=True)
 def refreshPermission():
     try:
         session["permission"] = get_api_driver().user.get_user_permission(

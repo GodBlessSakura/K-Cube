@@ -21,7 +21,7 @@
                     }
                     let formData = new FormData(this.$refs.imageForm.$el)
                     this.$root.progress.show = true
-                    fetch("{{ url_for('uploads.image') }}", {
+                    fetch("{{ url_for('DLTC.uploads.image') }}", {
                             method: 'POST',
                             cache: 'no-store',
                             body: formData

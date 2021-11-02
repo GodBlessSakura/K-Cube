@@ -1,21 +1,21 @@
 from flask import jsonify, session, request, abort
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
-from app.authorizer import authorize_with
+from app.authorizer import authorize_RESTful_with
 from neo4j.exceptions import ConstraintError
 
 draft = Blueprint("draft", __name__, url_prefix="draft")
 
 
 @draft.get("/")
-@authorize_with(["canOwnDraft"])
+@authorize_RESTful_with(["canOwnDraft"])
 def query():
     if request.args.get("ofUser"):
         return draftOfUser()
 
 
 @draft.post("<courseCode>")
-@authorize_with(["canOwnDraft"])
+@authorize_RESTful_with(["canOwnDraft"])
 def post(courseCode):
     if "draftName" in request.json:
         if request.args.get("clone"):
@@ -84,7 +84,7 @@ def draftOfUser(courseCode):
 
 
 @draft.get("<draftId>")
-@authorize_with(["canOwnDraft"])
+@authorize_RESTful_with(["canOwnDraft"])
 def get(draftId):
     try:
         return jsonify(
@@ -103,7 +103,7 @@ def get(draftId):
 
 
 @draft.put("<draftId>")
-@authorize_with(["canOwnDraft"])
+@authorize_RESTful_with(["canOwnDraft"])
 def put(draftId):
     if "status" in request.json:
         try:

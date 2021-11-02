@@ -1,7 +1,7 @@
 from flask import jsonify, session, request
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
-from app.authorizer import authorize_with
+from app.authorizer import authorize_RESTful_with
 
 course = Blueprint("course", __name__, url_prefix="course")
 
@@ -13,7 +13,7 @@ def query():
 
 
 @course.post("/")
-@authorize_with(["canCreateCourse"])
+@authorize_RESTful_with(["canCreateCourse"])
 def post():
     if (
         "displayName" in request.json

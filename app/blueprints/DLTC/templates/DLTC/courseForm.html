@@ -66,7 +66,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.coursePost') }}", {
+                    fetch("{{ url_for('RESTful.course.post') }}", {
                             method: 'POST',
                             cache: 'no-store',
                             headers: {

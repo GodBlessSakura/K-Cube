@@ -1,13 +1,13 @@
 from flask import jsonify, session, request
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
-from app.authorizer import authorize_with
+from app.authorizer import authorize_RESTful_with
 
 role = Blueprint("role", __name__, url_prefix="role")
 
 
 @role.get("/")
-@authorize_with(["canAssignRole"])
+@authorize_RESTful_with(["canAssignRole"])
 def query():
     if request.args.get("listRolePermission"):
         return roleList()
@@ -37,7 +37,7 @@ def listUserRole():
 
 @role.put("/")
 @role.put("<userId>")
-@authorize_with(["canAssignRole"])
+@authorize_RESTful_with(["canAssignRole"])
 def put(userId):
     if "role" in request.json and userId is not None:
         try:
@@ -53,7 +53,7 @@ def put(userId):
 
 @role.delete("/")
 @role.delete("<userId>")
-@authorize_with(["canAssignRole"])
+@authorize_RESTful_with(["canAssignRole"])
 def delete(userId):
     if "role" in request.json and userId is not None:
         try:

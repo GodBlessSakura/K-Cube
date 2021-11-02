@@ -1,7 +1,7 @@
 from flask import jsonify, session, request
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
-from app.authorizer import authorize_with
+from app.authorizer import authorize_RESTful_with
 
 relationship = Blueprint("relationship", __name__, url_prefix="relationship")
 
@@ -26,7 +26,7 @@ def listApprovedRelationships():
         raise e
 
 
-@authorize_with(
+@authorize_RESTful_with(
     [["canProposeRelationship", "canApproveRelationship"]], require_userId=True
 )
 def getRelationShipView():
@@ -45,7 +45,7 @@ def getRelationShipView():
 
 @relationship.put("proposal")
 @relationship.put("proposal/<name>")
-@authorize_with(["canProposeRelationship"], require_userId=True)
+@authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
 def createProposal(name):
 
     if name is not None:
@@ -63,7 +63,7 @@ def createProposal(name):
 
 @relationship.delete("proposal")
 @relationship.delete("proposal/<name>")
-@authorize_with(["canProposeRelationship"], require_userId=True)
+@authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
 def removeProposal(name):
     if name is not None:
         try:
@@ -80,7 +80,7 @@ def removeProposal(name):
 
 @relationship.put("approval")
 @relationship.put("approval/<name>")
-@authorize_with(["canApproveRelationship"], require_userId=True)
+@authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
 def createApproval(name):
     if name is not None:
         try:
@@ -97,7 +97,7 @@ def createApproval(name):
 
 @relationship.put("approval")
 @relationship.put("approval/<name>")
-@authorize_with(["canApproveRelationship"], require_userId=True)
+@authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
 def removeApproval(name):
     if name is not None:
         try:

@@ -1,14 +1,12 @@
-from flask import Flask, render_template, jsonify, session, g
+from flask import Flask, render_template, jsonify, session, g, abort
 
 from flask_mail import Mail
 from app.config import config
 from app.blueprints.admin import admin
 from app.blueprints.collaborate import collaborate
-from app.blueprints.comprehensive import comprehensive
 from app.blueprints.draft import draft
 from app.blueprints.job import job
 from app.blueprints.RESTful import RESTful
-from app.blueprints.uploads import uploads
 from app.blueprints.user import user
 from app.blueprints.DLTC import DLTC
 from app.blueprints.instructor import instructor
@@ -42,18 +40,24 @@ def create_app(config_object):
     app.register_blueprint(collaborate, url_prefix="/collaborate")
     app.register_blueprint(instructor, url_prefix="/instructor")
     app.register_blueprint(DLTC, url_prefix="/DLTC")
-    app.register_blueprint(comprehensive, url_prefix="/comprehensive")
-    app.register_blueprint(draft, url_prefix="/draft")
+    app.register_blueprint(draft, url_prefix="/draft")  # deprecated
     app.register_blueprint(job, url_prefix="/job")
     app.register_blueprint(RESTful, url_prefix="/RESTful")
-    app.register_blueprint(uploads, url_prefix="/uploads")
     app.register_blueprint(user, url_prefix="/user")
-    from .authorizer import UnauthorizedRequest
+    from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
+
+    @app.errorhandler(404)
+    def not_found(e):
+        return "Not Found"
+
+    @app.errorhandler(UnauthorizedRESTfulRequest)
+    def handle_bad_retful_request(e):
+        return jsonify({"message": e.message}), 400
 
     @app.errorhandler(UnauthorizedRequest)
     def handle_bad_request(e):
-        return jsonify({"message": e.message}), 400
+        return not_found(e)
 
     @app.errorhandler(InvalidRequest)
     def handle_bad_request(e):
@@ -78,6 +82,10 @@ def create_app(config_object):
     @app.route("/")
     def index():
         return render_template("index.html")
+
+    @app.route("/comprehensive")
+    def comprehensive():
+        return render_template("comprehensive.html")
 
     from . import api_driver
 

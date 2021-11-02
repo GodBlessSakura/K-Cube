@@ -119,7 +119,7 @@
             loadData() {
                 this.$root.progress.show = true
                 let draftPromise = fetch(
-                        "{{ url_for('RESTful.draftQuery', ofUser=True, courseCode = courseCode) }}", {
+                        "{{ url_for('RESTful.draft.query', ofUser=True, courseCode = courseCode) }}", {
                             method: 'GET',
                             cache: 'no-store',
                             headers: {
@@ -146,7 +146,7 @@
                                 'Unexpected error on getting drafts information.')
                         }
                     })
-                let coursePromise = fetch("{{ url_for('RESTful.courseQuery', list=True) }}", {
+                let coursePromise = fetch("{{ url_for('RESTful.course.query', list=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -182,7 +182,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.draftPost', courseCode = courseCode) }}", {
+                    fetch("{{ url_for('RESTful.draft.post', courseCode = courseCode) }}", {
                             method: 'POST',
                             cache: 'no-store',
                             headers: {
@@ -222,7 +222,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.draftPost', clone=True) }}", {
+                    fetch("{{ url_for('RESTful.draft.post', clone=True) }}", {
                             method: 'POST',
                             cache: 'no-store',
                             headers: {

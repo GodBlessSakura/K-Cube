@@ -1,7 +1,7 @@
 from flask import jsonify, session, request, abort
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
-from app.authorizer import authorize_with
+from app.authorizer import authorize_RESTful_with
 from neo4j.exceptions import ConstraintError
 
 triple = Blueprint("triple", __name__, url_prefix="triple")
@@ -14,7 +14,7 @@ def query():
 
 
 @triple.put("<draftId>")
-@authorize_with(["canOwnDraft"])
+@authorize_RESTful_with(["canOwnDraft"])
 def put(draftId):
     if (
         "h_name" in request.json
@@ -36,7 +36,7 @@ def put(draftId):
 
 
 @triple.delete("<draftId>")
-@authorize_with(["canOwnDraft"])
+@authorize_RESTful_with(["canOwnDraft"])
 def delete(draftId):
     if (
         "h_name" in request.json
@@ -58,8 +58,8 @@ def delete(draftId):
 
 
 @triple.delete("<draftId>/unreachable")
-@authorize_with(["canOwnDraft"])
-def deleteUnreachableDelete(draftId):
+@authorize_RESTful_with(["canOwnDraft"])
+def deleteUnreachable(draftId):
     try:
         result = get_api_driver().triple.remove_unreachable_triple(
             draftId=draftId,

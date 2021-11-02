@@ -8,27 +8,22 @@ from flask import (
     abort,
 )
 import os
+from app.authorizer import authorize_with
 
 admin = Blueprint("admin", __name__, template_folder="templates")
 
 
+@admin.before_request
+@authorize_with(["canAccessAdminPanel"])
+def middleware():
+    pass
+
+
 @admin.route("/panel")
 def panel():
-    if (
-        "permission" in session
-        and "canAccessAdminPanel" in session["permission"]
-        and session["permission"]["canAccessAdminPanel"]
-    ):
-        return render_template("admin/panel.html")
-    abort(404)
+    return render_template("admin/panel.html")
 
 
 @admin.route("/user")
 def user_n_role():
-    if (
-        "permission" in session
-        and "canAccessAdminPanel" in session["permission"]
-        and session["permission"]["canAccessAdminPanel"]
-    ):
-        return render_template("admin/user_n_role.html")
-    abort(404)
+    return render_template("admin/user_n_role.html")
