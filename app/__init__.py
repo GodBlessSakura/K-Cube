@@ -10,6 +10,8 @@ from app.blueprints.job import job
 from app.blueprints.RESTful import RESTful
 from app.blueprints.uploads import uploads
 from app.blueprints.user import user
+from app.blueprints.DLTC import DLTC
+from app.blueprints.instructor import instructor
 import click
 
 mail = Mail()
@@ -27,6 +29,7 @@ class IncompleteRequest(Exception):
 
 def create_app(config_object):
     app = Flask(__name__)
+    mail.init_app(app)
     if config_object is None:
         config_object == config["default"]
     # https://stackoverflow.com/questions/26080872/secret-key-not-set-in-flask-session-using-the-flask-session-extension
@@ -37,13 +40,14 @@ def create_app(config_object):
     app.config.from_object(config_object)
     app.register_blueprint(admin, url_prefix="/admin")
     app.register_blueprint(collaborate, url_prefix="/collaborate")
+    app.register_blueprint(instructor, url_prefix="/instructor")
+    app.register_blueprint(DLTC, url_prefix="/DLTC")
     app.register_blueprint(comprehensive, url_prefix="/comprehensive")
     app.register_blueprint(draft, url_prefix="/draft")
     app.register_blueprint(job, url_prefix="/job")
     app.register_blueprint(RESTful, url_prefix="/RESTful")
     app.register_blueprint(uploads, url_prefix="/uploads")
     app.register_blueprint(user, url_prefix="/user")
-    mail.init_app(app)
     from .authorizer import UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
 
@@ -67,7 +71,9 @@ def create_app(config_object):
 
     @app.errorhandler(Neo4jError)
     def handle_bad_request(e):
-        return jsonify({"message": "Unexpected error on cypher query.", "error": str(e)})
+        return jsonify(
+            {"message": "Unexpected error on cypher query.", "error": str(e)}
+        )
 
     @app.route("/")
     def index():
@@ -86,5 +92,9 @@ def create_app(config_object):
                 userId=userid, role="admin"
             )
         )
+
+    @app.cli.command("init-neo4j")
+    def init_neo4j():
+        api_driver.get_api_driver().init_neo4j()
 
     return app
