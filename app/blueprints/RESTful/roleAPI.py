@@ -36,21 +36,21 @@ def listUserRole():
     except Exception as e:
         raise e
 
+
 @role.put("/")
 @role.put("<userId>")
 @authorize_RESTful_with(["canAssignRole"])
 def put(userId):
     if "role" in request.json and userId is not None:
         try:
-            result = jsonify(
-                get_api_driver().user.assign_user_role(
-                    userId=userId, role=request.json["role"]
-                )
+            get_api_driver().user.assign_user_role(
+                userId=userId, role=request.json["role"]
             )
             return jsonify({"success": True, "message": "assign done"})
         except Exception as e:
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
+
 
 @role.delete("/")
 @role.delete("<userId>")

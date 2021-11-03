@@ -10,9 +10,26 @@ course = Blueprint("course", __name__, url_prefix="course")
 def query():
     if request.args.get("list"):
         return courseList()
-    if request.args.get("instructor") and request.args.get("courseCode"):
+    if request.args.get("instructor") and request.args.get("courseCode") is not None:
         return courseInstructor(request.args.get("courseCode"))
+    if request.args.get("user"):
+        return userCourse()
     return jsonify({"success": False, "message": "incomplete request"})
+
+
+@authorize_RESTful_with([], require_userId=True)
+def userCourse():
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "courses": get_api_driver().course.list_instructor_course(
+                    userId=session["user"]["userId"]
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
 
 
 @course.post("/")
@@ -45,10 +62,34 @@ def courseList():
         return jsonify({"success": False, "message": str(e)})
 
 
-def courseInstructor():
+def courseInstructor(courseCode):
     try:
         return jsonify(
-            {"success": True, "courses": get_api_driver().course.list_course()}
+            {
+                "success": True,
+                "instructors": get_api_driver().course.list_course_instructor(
+                    courseCode=courseCode
+                ),
+            }
         )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
+
+
+@course.patch("/", defaults={"courseCode": None})
+@course.patch("<courseCode>")
+@authorize_RESTful_with(["canAssignCourse"])
+def patch(courseCode):
+    if courseCode is not None:
+        if "assignment" in request.json and "userId" in request.json:
+            if request.json["assignment"]:
+                get_api_driver().course.assign_course_instructor(
+                    courseCode=courseCode, userId=request.json["userId"]
+                )
+                return jsonify({"success": True})
+            else:
+                get_api_driver().course.unassign_course_instructor(
+                    courseCode=courseCode, userId=request.json["userId"]
+                )
+                return jsonify({"success": True})
+    return jsonify({"success": False, "message": "incomplete request"})

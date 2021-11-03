@@ -1,0 +1,118 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+
+<v-container>
+    <v-row v-for="row in rows">
+        <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
+            <v-speed-dial v-if="col.courseCode" direction="right" open-on-hover style="z-index: 500;">
+                <template v-slot:activator>
+                    <v-card>
+                        <v-card-title>
+                            ${col.courseCode}
+                        </v-card-title>
+                        <v-card-subtitle>
+                            <v-avatar size="96">
+                                <img :src="col.img">
+                            </v-avatar>
+                            ${col.courseName}
+                        </v-card-subtitle>
+                    </v-card>
+                </template>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn v-bind="attrs" v-on="on" href="" fab>
+                            <v-icon>account_tree</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Branchs</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn v-bind="attrs" v-on="on" href="" fab>
+                            <v-icon>event_note</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>My Course Schedules</span>
+                </v-tooltip>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn v-bind="attrs" v-on="on" href="" fab>
+                            <v-icon>add_link</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>My Course Resources</span>
+                </v-tooltip>
+            </v-speed-dial>
+            </v-card>
+        </v-col>
+    </v-row>
+</v-container>
+
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+            rows: [
+                []
+            ],
+            course: null,
+            instructors: null,
+            instructorDialogue: false,
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.course.query', user=True) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        let colPerRow = 4
+                        if (body.courses) {
+                            body.courses.forEach(c => {
+                                let lastRow = this.rows[this.rows.length - 1]
+                                if (lastRow.length == colPerRow) {
+                                    this.rows.push([])
+                                    lastRow = this.rows[this.rows.length - 1]
+                                }
+                                lastRow.push({
+                                    courseCode: c.concept.name,
+                                    img: c.course.imageURL,
+                                    courseName: c.course.displayName
+                                })
+
+                            })
+                            let lastRow = this.rows[this.rows.length - 1]
+                            while (lastRow.length < colPerRow) {
+                                lastRow.push({})
+                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+                        }
+                    })
+            },
+        },
+        created: function () {
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

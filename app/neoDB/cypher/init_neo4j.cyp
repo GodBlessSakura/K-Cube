@@ -60,7 +60,7 @@ SET
     p.canRaiseIssue = true,
     p.canReplyIssue = true;
 
-MERGE (p:Permission {role: "instrcutor"})
+MERGE (p:Permission {role: "instructor"})
 SET
     p.canAccessAdminPanel = false,
     p.canAssignRole = false,

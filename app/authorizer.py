@@ -16,23 +16,7 @@ def authorize_RESTful_with(permissions=[], require_userId=False):
     def authorizer(function):
         @wraps(function)
         def wrapper(*args, **kwargs):
-            if len(permissions) > 0 and "permission" not in session:
-                raise UnauthorizedRESTfulRequest("unauthenticated user")
-            for permission in permissions:
-                if isinstance(permission, str):
-                    if not session["permission"][permission]:
-                        raise UnauthorizedRESTfulRequest("unauthorized operation")
-                elif isinstance(permission, Iterable):
-                    at_least_one_fullfiled = False
-                    for or_permission in permission:
-                        if session["permission"][or_permission]:
-                            at_least_one_fullfiled = True
-                    if not at_least_one_fullfiled:
-                        raise UnauthorizedRESTfulRequest("unauthorized operation")
-
-            if require_userId:
-                if "user" not in session or "userId" not in session["user"]:
-                    raise UnauthorizedRESTfulRequest("unauthorized operation")
+            permission_check(permissions, require_userId)
             return function(*args, **kwargs)
 
         return wrapper
@@ -58,25 +42,29 @@ def authorize_with(permissions=[], require_userId=False):
     def authorizer(function):
         @wraps(function)
         def wrapper(*args, **kwargs):
-            if len(permissions) > 0 and "permission" not in session:
-                raise UnauthorizedRequest("unauthenticated user")
-            for permission in permissions:
-                if isinstance(permission, str):
-                    if not session["permission"][permission]:
-                        raise UnauthorizedRequest("unauthorized operation")
-                elif isinstance(permission, Iterable):
-                    at_least_one_fullfiled = False
-                    for or_permission in permission:
-                        if session["permission"][or_permission]:
-                            at_least_one_fullfiled = True
-                    if not at_least_one_fullfiled:
-                        raise UnauthorizedRequest("unauthorized operation")
-
-            if require_userId:
-                if "user" not in session or "userId" not in session["user"]:
-                    raise UnauthorizedRequest("unauthorized operation")
+            permission_check(permissions, require_userId)
             return function(*args, **kwargs)
 
         return wrapper
 
     return authorizer
+
+
+def permission_check(permissions=[], require_userId=False):
+    if len(permissions) > 0 and "permission" not in session:
+        raise UnauthorizedRequest("unauthenticated user")
+    for permission in permissions:
+        if isinstance(permission, str):
+            if not session["permission"][permission]:
+                raise UnauthorizedRequest("unauthorized operation")
+        elif isinstance(permission, Iterable):
+            at_least_one_fullfiled = False
+            for or_permission in permission:
+                if session["permission"][or_permission]:
+                    at_least_one_fullfiled = True
+            if not at_least_one_fullfiled:
+                raise UnauthorizedRequest("unauthorized operation")
+
+    if require_userId:
+        if "user" not in session or "userId" not in session["user"]:
+            raise UnauthorizedRequest("unauthorized operation")
