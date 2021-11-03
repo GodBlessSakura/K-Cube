@@ -12,6 +12,7 @@ draft = Blueprint("draft", __name__, url_prefix="draft")
 def query():
     if request.args.get("ofUser"):
         return draftOfUser()
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
 @draft.post("<courseCode>")

@@ -10,6 +10,9 @@ course = Blueprint("course", __name__, url_prefix="course")
 def query():
     if request.args.get("list"):
         return courseList()
+    if request.args.get("instructor") and request.args.get("courseCode"):
+        return courseInstructor(request.args.get("courseCode"))
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
 @course.post("/")
@@ -34,6 +37,15 @@ def post():
 
 
 def courseList():
+    try:
+        return jsonify(
+            {"success": True, "courses": get_api_driver().course.list_course()}
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+
+def courseInstructor():
     try:
         return jsonify(
             {"success": True, "courses": get_api_driver().course.list_course()}

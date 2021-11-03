@@ -224,9 +224,9 @@
                         </template>
                         <v-list-item link href="{{ url_for('DLTC.courseList') }}">
                             <v-list-item-icon>
-                                <v-icon>schema</v-icon>
+                                <v-icon>grid_view</v-icon>
                             </v-list-item-icon>
-                            <v-list-item-title>Manage Course Versions</v-list-item-title>
+                            <v-list-item-title>Manage Course</v-list-item-title>
                         </v-list-item>
                         <v-list-item link href="{{ url_for('DLTC.courseForm') }}">
                             <v-list-item-icon>
@@ -560,7 +560,8 @@
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     {% endmacro %}
     {% macro cytoscapeCDN() %}
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.umd.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/cytoscape/3.20.0/cytoscape.umd.js">
+    </script>
     {% endmacro %}
 
 

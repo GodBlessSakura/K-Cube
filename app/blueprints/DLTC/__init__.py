@@ -20,10 +20,12 @@ DLTC.register_blueprint(uploads, url_prefix="/uploads")
 def middleware():
     pass
 
-
+@DLTC.route("/trunk")
 @DLTC.route("/trunk/<courseCode>")
 def trunk(courseCode):
-    return render_template("DLTC/trunk.html", courseCode = courseCode)
+    if courseCode is not None:
+        return render_template("DLTC/trunk.html", courseCode = courseCode)
+    abort(404)
 
 @DLTC.route("/courseList")
 def courseList():

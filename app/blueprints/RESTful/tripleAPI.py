@@ -11,6 +11,7 @@ triple = Blueprint("triple", __name__, url_prefix="triple")
 def query():
     if request.args.get("aggregated"):
         return aggregatedTriple()
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
 @triple.put("<draftId>")

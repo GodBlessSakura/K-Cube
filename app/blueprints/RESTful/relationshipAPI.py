@@ -12,6 +12,7 @@ def query():
         return listApprovedRelationships()
     if request.args.get("userView"):
         return getRelationShipView()
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
 def listApprovedRelationships():

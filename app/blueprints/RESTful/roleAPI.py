@@ -13,6 +13,7 @@ def query():
         return roleList()
     if request.args.get("listUser"):
         return listUserRole()
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
 def roleList():

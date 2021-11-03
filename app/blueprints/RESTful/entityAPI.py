@@ -11,6 +11,7 @@ entity = Blueprint("entity", __name__, url_prefix="entity")
 def query():
     if request.args.get("list"):
         return entityList()
+    return jsonify({"success": False, "message": "incomplete request"})
 
 
 def entityList():
