@@ -12,6 +12,7 @@ class entityResources:
 
     def list_entity(self):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query)

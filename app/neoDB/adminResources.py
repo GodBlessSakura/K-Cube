@@ -1,12 +1,14 @@
 import sys
 from .cypher import cypher
 
+
 class adminResources:
     def __init__(self, driver):
         self.driver = driver
 
     def list_all_except_credential(self):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = (
                 "MATCH p = (h)-[r]->(t)"
@@ -31,6 +33,7 @@ class adminResources:
                 return None
 
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             result = tx.run(query)
             try:
@@ -44,6 +47,7 @@ class adminResources:
 
     def list_role(self):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query)
@@ -57,6 +61,7 @@ class adminResources:
 
     def list_user_role(self):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query)

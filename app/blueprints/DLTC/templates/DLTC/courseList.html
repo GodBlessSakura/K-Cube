@@ -6,7 +6,7 @@
         <v-card v-if="course">
             <v-card-title>Instructors for ${course.courseName}</v-card-title>
             <v-card-text>
-                Assigned
+                <v-subheader>Assigned</v-subheader>
                 <v-chip @click="unassign(user.userId)" v-for="user in instructors" v-if="user.isAssigned"
                     close-icon="file_download">
                     ${user.userId}
@@ -14,7 +14,7 @@
                 </v-chip>
             </v-card-text>
             <v-card-text>
-                Not assigned
+                <v-subheader>Not assigned</v-subheader>
                 <v-chip @click="assign(user.userId)" v-for="user in instructors" v-if="!user.isAssigned"
                     close-icon="upload">
                     ${user.userId}
@@ -26,7 +26,7 @@
     <v-container>
         <v-row v-for="row in rows">
             <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
-                <v-menu bottom right v-if="col.courseCode" direction="right" open-on-hover style="z-index: 500;">
+                <v-menu bottom right offset-x v-if="col.courseCode" direction="right" open-on-hover max-width="36">
                     <template v-slot:activator="{ on, attrs }">
                         <v-card v-bind="attrs" v-on="on">
                             <v-card-title>
@@ -42,7 +42,7 @@
                     </template>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" v-on="on" @click="courseTrunk(col.courseCode)" fab>
+                            <v-btn v-bind="attrs" v-on="on" @click="courseTrunk(col.courseCode)" icon>
                                 <v-icon>account_tree</v-icon>
                             </v-btn>
                         </template>
@@ -50,7 +50,7 @@
                     </v-tooltip>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" fab>
+                            <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
                                 <v-icon>assignment_ind</v-icon>
                             </v-btn>
                         </template>
@@ -234,7 +234,7 @@
                     })
             }
         },
-        created: function () {
+        mounted: function () {
             this.loadData()
         },
         template: '#content',

@@ -11,6 +11,7 @@ class relationshipResources:
 
     def create_proposal(self, userId, name):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
@@ -24,6 +25,7 @@ class relationshipResources:
 
     def remove_proposal(self, userId, name):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
@@ -37,6 +39,7 @@ class relationshipResources:
 
     def create_approval(self, userId, name):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
@@ -50,6 +53,7 @@ class relationshipResources:
 
     def remove_approval(self, userId, name):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, name=name)
@@ -63,6 +67,7 @@ class relationshipResources:
 
     def list_relationship(self, userId):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
@@ -85,6 +90,7 @@ class relationshipResources:
 
     def list_approved_relationship(self):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query)

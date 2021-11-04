@@ -201,7 +201,7 @@
                             <v-list-item-title>Graph Editing</v-list-item-title>
                         </v-list-item>
                         {% endif %}
-                        {% if session['permission'] and (session['permission'].canProposeIssue or session['permission'].canReplyIssue) %}
+                        {% if session['permission'] and (session['permission'].canProposeFeedback or session['permission'].canReplyFeedback) %}
                         <v-list-item>
                             <v-list-item-icon>
                                 <v-icon>feedback</v-icon>
@@ -254,6 +254,12 @@
                             </v-list-item-icon>
                             <v-list-item-title>My Courses</v-list-item-title>
                         </v-list-item>
+                        <v-list-item link href="{{ url_for('instructor.schedule') }}">
+                            <v-list-item-icon>
+                                <v-icon>event_note</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Schedules</v-list-item-title>
+                        </v-list-item>
                     </v-list-group>
                     {% endif %}
                     {% if session['permission'] and session['permission'].canAccessAdminPanel %}
@@ -304,9 +310,7 @@
             </v-snackbar>
             </v-app-bar>
             <v-main>
-                <v-container fluid>
-                    <app-content></app-content>
-                </v-container>
+                <app-content></app-content>
             </v-main>
         </v-app>
 
@@ -519,7 +523,7 @@
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
-            created() {
+            mounted() {
                 let group = window.location.href.split(window.location.origin + '/')[1].split('/')[0]
                 if (group == "admin") {
                     this.adminListGroup = true

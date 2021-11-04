@@ -11,6 +11,7 @@ class draftResources:
 
     def get_draft(self, draftId, userId):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, draftId=draftId, userId=userId)
@@ -28,6 +29,7 @@ class draftResources:
 
     def set_draft_status(self, draftId, userId, status):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(
@@ -46,10 +48,11 @@ class draftResources:
 
     def create_draft(self, draftName, userId, name):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             # if user have multiple permission that canCreateDraft and canOwnDraft, two identical user would be returned
-            
+
             result = tx.run(
                 query,
                 draftName=draftName,
@@ -66,6 +69,7 @@ class draftResources:
 
     def list_a_user_draft(self, userId, name):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, name=name, userId=userId)
@@ -79,6 +83,7 @@ class draftResources:
 
     def clone_draft(self, draftName, userId, name, draftId):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(

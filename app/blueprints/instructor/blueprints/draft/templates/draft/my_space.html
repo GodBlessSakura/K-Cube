@@ -82,7 +82,7 @@
                 window.location.replace("{{ url_for('draft.my_space') }}/" + courseCode)
             }
         },
-        created: function () {
+        mounted: function () {
             this.loadData()
         },
         template: '#content',

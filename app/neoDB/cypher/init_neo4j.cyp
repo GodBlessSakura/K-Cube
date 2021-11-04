@@ -31,8 +31,8 @@ SET
     p.canForkAssignedCourseBranch = false,
     p.canReadAssignedCourseBranch = false,
     p.canWriteAssignedCourseResources = false,
-    p.canRaiseIssue = true,
-    p.canReplyIssue = true;
+    p.canRaiseFeedback = true,
+    p.canReplyFeedback = true;
 
 MERGE (p:Permission {role: "DLTC"})
 SET
@@ -57,8 +57,8 @@ SET
     p.canForkAssignedCourseBranch = false,
     p.canReadAssignedCourseBranch = false,
     p.canWriteAssignedCourseResources = false,
-    p.canRaiseIssue = true,
-    p.canReplyIssue = true;
+    p.canRaiseFeedback = true,
+    p.canReplyFeedback = true;
 
 MERGE (p:Permission {role: "instructor"})
 SET
@@ -83,8 +83,34 @@ SET
     p.canForkAssignedCourseBranch = true,
     p.canReadAssignedCourseBranch = true,
     p.canWriteAssignedCourseResources = true,
-    p.canRaiseIssue = true,
-    p.canReplyIssue = true;
+    p.canRaiseFeedback = true,
+    p.canReplyFeedback = true;
+
+MERGE (p:Permission {role: "instructor"})
+SET
+    p.canAccessAdminPanel = false,
+    p.canAssignRole = false,
+    p.canAssignCourse = false,
+    p.canCreateJob = false,
+    p.canApproveRelationship = false,
+    p.canForkAllCourseBranch = false,
+    p.canReadAllCourseBranch = false,
+    p.canWriteAllCourseResources = false,
+    p.canAccessDLTCPanel = false,
+    p.canCreateCourse = false,
+    p.canUploadPhoto = false,
+    p.canForkTrunk = false,
+    p.canReadTrunk = false,
+    p.canUpdateTrunk = false,
+    p.canAccessInstructorPanel = true,
+    p.canProposeRelationship = true,
+    p.canCreateGraphConcept = true,
+    p.canBeAssignedCourse = true,
+    p.canForkAssignedCourseBranch = true,
+    p.canReadAssignedCourseBranch = true,
+    p.canWriteAssignedCourseResources = true,
+    p.canRaiseFeedback = true,
+    p.canReplyFeedback = true;
 
 MERGE (p:Permission {role: "restricted"})
 SET
@@ -109,5 +135,5 @@ SET
     p.canForkAssignedCourseBranch = false,
     p.canReadAssignedCourseBranch = false,
     p.canWriteAssignedCourseResources = false,
-    p.canRaiseIssue = false,
-    p.canReplyIssue = false
+    p.canRaiseFeedback = false,
+    p.canReplyFeedback = false

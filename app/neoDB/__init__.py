@@ -61,11 +61,13 @@ class APIDriver:
         query = cypher[fname + ".cyp"]
         queries = query.split(";")
         for query in queries:
+
             def _query(tx):
                 result = tx.run(query)
                 try:
                     return [record for record in result]
                 except ServiceUnavailable as exception:
                     raise exception
+
             with self.driver.session() as session:
                 session.write_transaction(_query)

@@ -5,9 +5,9 @@
 <v-container>
     <v-row v-for="row in rows">
         <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
-            <v-speed-dial v-if="col.courseCode" direction="right" open-on-hover style="z-index: 500;">
-                <template v-slot:activator>
-                    <v-card>
+            <v-menu bottom right offset-x v-if="col.courseCode" direction="right" open-on-hover max-width="36">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-card v-bind="attrs" v-on="on">
                         <v-card-title>
                             ${col.courseCode}
                         </v-card-title>
@@ -21,7 +21,7 @@
                 </template>
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" href="" fab>
+                        <v-btn v-bind="attrs" v-on="on" @click="courseBranch(col.courseCode)" icon>
                             <v-icon>account_tree</v-icon>
                         </v-btn>
                     </template>
@@ -29,21 +29,21 @@
                 </v-tooltip>
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" href="" fab>
-                            <v-icon>event_note</v-icon>
+                        <v-btn v-bind="attrs" v-on="on" @click="courseSchedule(col.courseCode)" icon>
+                            <v-icon>edit_calendar</v-icon>
                         </v-btn>
                     </template>
-                    <span>My Course Schedules</span>
+                    <span>Course Schedules</span>
                 </v-tooltip>
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" href="" fab>
+                        <v-btn v-bind="attrs" v-on="on" @click="courseLink(col.courseCode)" icon>
                             <v-icon>add_link</v-icon>
                         </v-btn>
                     </template>
-                    <span>My Course Resources</span>
+                    <span>Course Resources</span>
                 </v-tooltip>
-            </v-speed-dial>
+            </v-menu>
             </v-card>
         </v-col>
     </v-row>
@@ -107,8 +107,18 @@
                         }
                     })
             },
+            courseBranch(courseCode) {
+                window.location.replace("{{ url_for('instructor.branch') }}/" + courseCode)
+            },
+            courseSchedule(courseCode) {
+                window.location.replace("{{ url_for('instructor.courseSchedule') }}/" + courseCode)
+            },
+            courseLink(courseCode) {
+                window.location.replace("{{ url_for('instructor.resources') }}/" + courseCode)
+            }
+
         },
-        created: function () {
+        mounted: function () {
             this.loadData()
         },
         template: '#content',

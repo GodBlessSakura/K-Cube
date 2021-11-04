@@ -12,6 +12,7 @@ class userResources:
 
     def list_userId(self):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query)
@@ -26,6 +27,7 @@ class userResources:
 
     def is_userId_used(self, userId) -> bool:
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
@@ -43,6 +45,7 @@ class userResources:
         saltedHash = ph.hash(password)
 
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(
@@ -69,17 +72,18 @@ class userResources:
         role,
     ):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, role=role)
             return [
-                    {
-                        "user": dict(record["user"].items()),
-                        "permission_grant": dict(record["permission_grant"].items()),
-                        "permission": dict(record["permission"].items()),
-                    }
-                    for record in result
-                ][0]
+                {
+                    "user": dict(record["user"].items()),
+                    "permission_grant": dict(record["permission_grant"].items()),
+                    "permission": dict(record["permission"].items()),
+                }
+                for record in result
+            ][0]
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
@@ -90,23 +94,25 @@ class userResources:
         role,
     ):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId, role=role)
             return [
-                    {
-                        "user": dict(record["user"].items()),
-                        "permission_grant": dict(record["permission_grant"].items()),
-                        "permission": dict(record["permission"].items()),
-                    }
-                    for record in result
-                ][0]
+                {
+                    "user": dict(record["user"].items()),
+                    "permission_grant": dict(record["permission_grant"].items()),
+                    "permission": dict(record["permission"].items()),
+                }
+                for record in result
+            ][0]
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
     def authenticate_user(self, userId, password):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
@@ -124,6 +130,7 @@ class userResources:
 
     def get_user_permission(self, userId):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)

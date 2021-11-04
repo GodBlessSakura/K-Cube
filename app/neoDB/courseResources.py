@@ -48,12 +48,12 @@ class courseResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def list_course_instructor(self,courseCode):
+    def list_course_instructor(self, courseCode):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query,courseCode=courseCode)
+            result = tx.run(query, courseCode=courseCode)
             try:
                 return [
                     {
@@ -68,38 +68,40 @@ class courseResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def assign_course_instructor(self,courseCode,userId):
+    def assign_course_instructor(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query,courseCode=courseCode, userId= userId)
+            result = tx.run(query, courseCode=courseCode, userId=userId)
             try:
-                return 
-            except Exception as exception:
-                raise exception
-
-        with self.driver.session() as session:
-            return session.write_transaction(_query)
-    def unassign_course_instructor(self,courseCode,userId):
-        fname = sys._getframe().f_code.co_name
-
-        def _query(tx):
-            query = cypher[fname + ".cyp"]
-            result = tx.run(query,courseCode=courseCode,userId=userId)
-            try:
-                return 
+                return
             except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def list_instructor_course(self,userId):
+    def unassign_course_instructor(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
+
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query,userId=userId)
+            result = tx.run(query, courseCode=courseCode, userId=userId)
+            try:
+                return
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def list_instructor_course(self, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, userId=userId)
             try:
                 return [
                     {
@@ -113,4 +115,3 @@ class courseResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
-
