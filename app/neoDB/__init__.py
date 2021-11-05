@@ -24,10 +24,6 @@ class APIDriver:
 
         self.relationship = relationshipResources(driver=self.driver)
 
-        from .draftResources import draftResources
-
-        self.draft = draftResources(driver=self.driver)
-
         from .tripleResources import tripleResources
 
         self.triple = tripleResources(driver=self.driver)

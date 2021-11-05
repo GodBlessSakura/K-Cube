@@ -24,11 +24,16 @@ def courseList():
     return render_template("instructor/courseList.html")
 
 
-@instructor.route("/branch/", defaults={"courseCode": None})
-@instructor.route("/branch/<courseCode>")
+@instructor.route("/versionTree/", defaults={"courseCode": None})
+@instructor.route("/versionTree/<courseCode>")
 def branch(courseCode):
     if courseCode is not None:
-        return render_template("instructor/branch.html", courseCode=courseCode)
+        return render_template(
+            "instructor/versionTree.html",
+            courseCode=courseCode,
+            isInstructor=True,
+            isDLTC=False,
+        )
     abort(404)
 
 

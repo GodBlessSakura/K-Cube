@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card style="height: 100%; width: 100%;">
+    <div id="cy" style="height: 100%; width: 100%;"></div>
+    <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
+        <v-list>
+            {% if isInstructor %}
+            <v-list-item>
+                <v-list-item-title>Instructor</v-list-item-title>
+            </v-list-item>
+            {% endif %}
+            {% if isDLTC %}
+            <v-list-item>
+                <v-list-item-title>DLTC</v-list-item-title>
+            </v-list-item>
+            {% endif %}
+        </v-list>
+    </v-menu>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+{{ layout.cytoscapeCDN() }}
+<script>
+    cy = cytoscape({
+        style: [{
+            selector: 'node',
+            style: {
+                'label': 'data(tag)'
+            }
+        }, {
+            selector: '*.isActive',
+            style: {
+                'border-width': '5',
+                'border-color': 'red'
+            }
+        }],
+        userZoomingEnabled: false,
+        userPanningEnabled: false,
+        autolock: true,
+    })
+
+    function nodeFactory(node, classes) {
+        let graphId = node.property.deltaGraphId
+        if (node.isActive) {
+            classes.push('isActive')
+        }
+        let output = {
+            group: 'nodes',
+            data: {
+                id: graphId.split('.')[1],
+                tag: node.property.tag
+            },
+            classes: classes
+        }
+        return output
+    }
+
+    function edgeFactory(edge) {
+        let output = {
+            group: 'edges',
+            data: {
+                id: 'e0',
+                source: 'n0',
+                target: 'n1'
+            }
+        }
+        return output
+
+    }
+    Vue.component('app-content', {
+        data: () => ({
+            showMenu: false,
+            cursor_x: undefined,
+            cursor_y: undefined,
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                fetch(
+                        "{{ url_for('RESTful.tree.get', courseCode = courseCode) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.edges && body.trunk_nodes && body.branch_nodes) {
+                            body.trunk_nodes.forEach(node => {
+                                cy.add(nodeFactory(node, ["trunk"]))
+                            })
+                            body.branch_nodes.forEach(node => {
+                                cy.add(nodeFactory(node, ["branch"]))
+                            })
+                            body.edges.forEach(edge => {
+                                cy.add(edgeFactory(edge))
+                            })
+                            cy.center()
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting drafts information.')
+                        }
+                    })
+            },
+        },
+        mounted: function () {
+            cy.mount(document.getElementById("cy"))
+            self = this
+            cy.on('cxttapend', (event) => {
+                console.log(event)
+                if (event.target == event.cy) return
+                self.showMenu = true
+                self.cursor_x = event.originalEvent.clientX
+                self.cursor_y = event.originalEvent.clientY
+            })
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

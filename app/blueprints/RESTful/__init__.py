@@ -30,13 +30,9 @@ from .entityAPI import entity
 
 RESTful.register_blueprint(entity)
 
-from .trunkAPI import trunk
+from .treeAPI import tree
 
-RESTful.register_blueprint(trunk)
-
-from .branchAPI import branch
-
-RESTful.register_blueprint(branch)
+RESTful.register_blueprint(tree)
 
 from .workspaceAPI import workspace
 
