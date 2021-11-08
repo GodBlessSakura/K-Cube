@@ -6,13 +6,27 @@
     <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
         <v-list>
             {% if isInstructor %}
-            <v-list-item>
-                <v-list-item-title>Instructor</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.has('branch')" @click="readyToPatch()">
+                <v-list-item-title>Ready to patch</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.has('branch')" @click="mergeWithAnother()">
+                <v-list-item-title>Merge with another</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.has('branch') || selectedNodeClasses.has('trunk')"
+                @click="createWorkspace()">
+                <v-list-item-title>Create workspace</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.has('workspace')" @click="commit()">
+                <v-list-item-title>Commit workspace</v-list-item-title>
             </v-list-item>
             {% endif %}
             {% if isDLTC %}
-            <v-list-item>
-                <v-list-item-title>DLTC</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.has('trunk') && !selectedNodeClasses.has('isActive')"
+                @click="setActive()">
+                <v-list-item-title>Set as active</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.has('trunk')" @click="patch()">
+                <v-list-item-title>Create new patch</v-list-item-title>
             </v-list-item>
             {% endif %}
         </v-list>
@@ -38,6 +52,7 @@
         userZoomingEnabled: false,
         userPanningEnabled: false,
         autolock: true,
+        boxSelectionEnabled: false,
     })
 
     function nodeFactory(node, classes) {
@@ -73,6 +88,7 @@
             showMenu: false,
             cursor_x: undefined,
             cursor_y: undefined,
+            selectedNodeClasses: new Set(),
         }),
         methods: {
             loadData() {
@@ -113,6 +129,28 @@
                         }
                     })
             },
+            // {% if isInstructor %}
+            readyToPatch(){
+
+            },
+            mergeWithAnother(){
+                
+            },
+            createWorkspace(){
+                
+            },
+            commit(){
+
+            },
+            // {% endif %}
+            // {% if isDLTC %}
+            setActive(){
+
+            },
+            patch(){
+
+            },
+            // {% endif %}
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
@@ -123,6 +161,7 @@
                 self.showMenu = true
                 self.cursor_x = event.originalEvent.clientX
                 self.cursor_y = event.originalEvent.clientY
+                this.selectedNodeClasses = event.target._private.classes
             })
             this.loadData()
         },

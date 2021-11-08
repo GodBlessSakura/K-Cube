@@ -1,20 +1,28 @@
 
 from neo4j.time import DateTime
-from .resourcesGuard import for_all_methods, reject_invalid
+from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
-from .cypher import cypher
+from importlib import resources
+
+cypher = {
+    f: resources.read_text(__package__, f)
+    for f in resources.contents(__package__)
+    if resources.is_resource(__package__, f) and f.split(".")[-1] == "cyp"
+}
+
 
 
 @for_all_methods(reject_invalid)
-class workspaceResources:
+class trunkResources:
     def __init__(self, driver):
         self.driver = driver
-    def list_course_workspace_edge(self, courseCode, userId):
+
+    def list_course_trunk_edge(self, courseCode):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, courseCode=courseCode, userId=userId)
+            result = tx.run(query, courseCode=courseCode)
             try:
                 return [
                     {
@@ -31,19 +39,20 @@ class workspaceResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def list_course_workspace_node(self, courseCode, userId):
+    def list_course_trunk_node(self, courseCode):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, courseCode=courseCode, userId=userId)
+            result = tx.run(query, courseCode=courseCode)
             try:
                 return [
                     {
                         "property": {
                             key:value if not isinstance(value,DateTime) else str(value.iso_format())
                             for key, value in record["nodes"].items()
-                        }
+                        },
+                        "isActive": record["isActive"]
                     }
                     for record in result
                 ]

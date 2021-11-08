@@ -1,8 +1,15 @@
 
 from argon2 import PasswordHasher
-from .resourcesGuard import for_all_methods, reject_invalid
+from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
-from .cypher import cypher
+from importlib import resources
+
+cypher = {
+    f: resources.read_text(__package__, f)
+    for f in resources.contents(__package__)
+    if resources.is_resource(__package__, f) and f.split(".")[-1] == "cyp"
+}
+
 
 
 @for_all_methods(reject_invalid)
@@ -58,8 +65,6 @@ class userResources:
             try:
                 rows = [record for record in result]
                 return dict(rows[0]["user"].items())
-            except ConstraintError as e:
-                raise e
             except Exception as exception:
                 raise exception
 
