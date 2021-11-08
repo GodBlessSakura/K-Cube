@@ -26,6 +26,10 @@ class trunkResources:
             try:
                 return [
                     {
+                        "id": record["edges"].id,
+                        "type":  record["edges"].type,
+                        "start": record["edges"].start_node.id,
+                        "end": record["edges"].end_node.id,
                         "property": {
                             key:value if not isinstance(value,DateTime) else str(value.iso_format())
                             for key, value in record["edges"].items()
@@ -48,6 +52,7 @@ class trunkResources:
             try:
                 return [
                     {
+                        "id": record["nodes"].id,
                         "property": {
                             key:value if not isinstance(value,DateTime) else str(value.iso_format())
                             for key, value in record["nodes"].items()

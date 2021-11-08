@@ -4,5 +4,5 @@ WHERE
     workspace.deltaGraphId CONTAINS replace($courseCode,' ' ,'_')
 WITH DISTINCT workspace
 MATCH
-    (workspace)-[edges:WORK_ON]->(),
+    (workspace)-[edges:WORK_ON]->()
 RETURN DISTINCT edges

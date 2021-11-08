@@ -56,3 +56,10 @@ def resources(courseCode):
 @instructor.route("/schedule")
 def schedule():
     return render_template("instructor/courseList.html")
+
+@instructor.route("/workspace/", defaults={"deltaGraphId": None})
+@instructor.route("/workspace/<deltaGraphId>")
+def workspace(deltaGraphId):
+    if deltaGraphId is not None:
+        return render_template("instructor/graphEditor.html", deltaGraphId=deltaGraphId)
+    abort(404)

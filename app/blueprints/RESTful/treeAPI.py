@@ -7,7 +7,9 @@ tree = Blueprint("tree", __name__, url_prefix="tree")
 
 
 @tree.get("/<courseCode>")
-@authorize_RESTful_with([], require_userId=True)
+@authorize_RESTful_with(
+    [["canReadAssignedCourseBranch", "canReadTrunk"]], require_userId=True
+)
 def get(courseCode):
     branch_edges = get_api_driver().branch.list_course_branch_edge(
         courseCode=courseCode, userId=session["user"]["userId"]
@@ -17,12 +19,28 @@ def get(courseCode):
     )
     trunk_edges = get_api_driver().trunk.list_course_trunk_edge(courseCode=courseCode)
     trunk_nodes = get_api_driver().trunk.list_course_trunk_node(courseCode=courseCode)
+    if request.args.get("isInstructor"):
+        workspace_edges = get_api_driver().workspace.list_course_workspace_edge(
+            courseCode=courseCode, userId=session["user"]["userId"]
+        )
+        workspace_nodes = get_api_driver().workspace.list_course_workspace_node(
+            courseCode=courseCode, userId=session["user"]["userId"]
+        )
+        return jsonify(
+            {
+                "success": True,
+                "edges": branch_edges + trunk_edges + workspace_edges,
+                "branch_nodes": branch_nodes,
+                "trunk_nodes": trunk_nodes,
+                "workspace_nodes": workspace_nodes,
+            }
+        )
 
     return jsonify(
         {
             "success": True,
             "edges": branch_edges + trunk_edges,
             "branch_nodes": branch_nodes,
-            "trunk_nodes": trunk_nodes
+            "trunk_nodes": trunk_nodes,
         }
     )

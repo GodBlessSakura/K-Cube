@@ -108,7 +108,7 @@ def reject_invalid(function):
                 "Invalid week value."
             )
         if ("tag" in kwargs
-            and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["t_name"]) == None
+            and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["tag"]) == None
         ):
             raise InvalidRequest("Invalid tag pattern.")
         return function(self, **kwargs)

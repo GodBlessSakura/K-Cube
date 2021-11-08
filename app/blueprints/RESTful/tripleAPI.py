@@ -14,9 +14,9 @@ def query():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@triple.put("<draftId>")
+@triple.put("<deltaGraphId>")
 @authorize_RESTful_with(["canOwnDraft"])
-def put(draftId):
+def put(deltaGraphId):
     if (
         "h_name" in request.json
         and "r_name" in request.json
@@ -24,7 +24,7 @@ def put(draftId):
     ):
         try:
             result = get_api_driver().triple.create_triple(
-                draftId=draftId,
+                deltaGraphId=deltaGraphId,
                 userId=session["user"]["userId"],
                 h_name=request.json["h_name"],
                 r_name=request.json["r_name"],
@@ -36,9 +36,9 @@ def put(draftId):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@triple.delete("<draftId>")
+@triple.delete("<deltaGraphId>")
 @authorize_RESTful_with(["canOwnDraft"])
-def delete(draftId):
+def delete(deltaGraphId):
     if (
         "h_name" in request.json
         and "r_name" in request.json
@@ -46,7 +46,7 @@ def delete(draftId):
     ):
         try:
             result = get_api_driver().triple.remove_triple(
-                draftId=draftId,
+                deltaGraphId=deltaGraphId,
                 userId=session["user"]["userId"],
                 h_name=request.json["h_name"],
                 r_name=request.json["r_name"],
@@ -58,12 +58,12 @@ def delete(draftId):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@triple.delete("<draftId>/unreachable")
+@triple.delete("<deltaGraphId>/unreachable")
 @authorize_RESTful_with(["canOwnDraft"])
-def deleteUnreachable(draftId):
+def deleteUnreachable(deltaGraphId):
     try:
         result = get_api_driver().triple.remove_unreachable_triple(
-            draftId=draftId,
+            deltaGraphId=deltaGraphId,
             userId=session["user"]["userId"],
         )
         return jsonify({"success": True, "triples": result})

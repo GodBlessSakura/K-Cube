@@ -25,6 +25,10 @@ class workspaceResources:
             try:
                 return [
                     {
+                        "id": record["edges"].id,
+                        "type":  record["edges"].type,
+                        "start": record["edges"].start_node.id,
+                        "end": record["edges"].end_node.id,
                         "property": {
                             key:value if not isinstance(value,DateTime) else str(value.iso_format())
                             for key, value in record["edges"].items()
@@ -47,6 +51,7 @@ class workspaceResources:
             try:
                 return [
                     {
+                        "id": record["nodes"].id,
                         "property": {
                             key:value if not isinstance(value,DateTime) else str(value.iso_format())
                             for key, value in record["nodes"].items()
@@ -60,20 +65,29 @@ class workspaceResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def create_workspace(self, deltaGraphId, tag, userId):
+    def create_workspace(self, nodeId, tag, userId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, deltaGraphId=deltaGraphId, tag=tag, userId=userId)
+            result = tx.run(query, nodeId=nodeId, tag=tag, userId=userId)
+            try:
+                return [record for record in result ][0]["deltaGraphId"]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def get_workspace(self, deltaGraphId, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             try:
                 return [
-                    {
-                        "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
-                            for key, value in record["nodes"].items()
-                        }
-                    }
+                    record["workspace"].items()
                     for record in result
                 ][0]
             except Exception as exception:

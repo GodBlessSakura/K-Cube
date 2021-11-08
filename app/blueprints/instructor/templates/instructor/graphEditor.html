@@ -1,0 +1,542 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card style="height: 100%; width: 100%;">
+    <div style="height: 75vh; width: 90vw;">
+        <div id="editor" style="height: 100%; width: 100%;"></div>
+        <v-fab-transition>
+            <v-btn color="primary" absolute bottom right fab @click="networkFit()">
+                <v-icon>fit_screen</v-icon>
+            </v-btn>
+        </v-fab-transition>
+        <v-fab-transition>
+            <v-btn color="primary" absolute top right fab @click="removeUnreachable">
+                <v-icon>cleaning_services</v-icon>
+            </v-btn>
+        </v-fab-transition>
+    </div>
+    <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
+        <v-sheet>
+            <v-form ref="tripleForm">
+                <v-container>
+                    <v-row>
+                        <v-btn :ripple="false" color="error" plain block small @click="unselectAll" elevation="2">
+                            dismiss
+                            <v-icon right>
+                                clear_all
+                            </v-icon>
+                        </v-btn>
+                    </v-row>
+                    <v-row>
+                        <v-col>
+                            <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
+                                @focus="nodeFieldFocus('head')" @input="nodeFieldChange"></v-combobox>
+                        </v-col>
+                        <v-col>
+                            <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship"
+                                @input="edgeFieldChange">
+                            </v-select>
+                        </v-col>
+                        <v-col>
+                            <v-combobox v-model="t_name" :items="concepts" :rules="nameRules" label="tail entity"
+                                @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"></v-combobox>
+                        </v-col>
+                    </v-row>
+                    <v-row>
+                        <v-btn @click="createTriple" v-if="!isSelectingEdge">
+                            Create link
+                        </v-btn>
+                        <v-btn color="error" @click="tripleDelete" v-else>
+                            delete link
+                        </v-btn>
+                    </v-row>
+                </v-container>
+            </v-form>
+        </v-sheet>
+    </v-bottom-sheet>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+{{ layout.cytoscapeCDN() }}
+<script>
+    cy = cytoscape({
+        style: [{
+                selector: 'node',
+                style: {
+                    'label': 'data(name)'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'label': 'data(name)',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier'
+                }
+            }
+        ],
+        userZoomingEnabled: false,
+        userPanningEnabled: false,
+        boxSelectionEnabled: false
+    })
+
+    function nodeFactory(name) {
+        let output = {
+            group: 'nodes',
+            data: {
+                id: name,
+                tag: node.property.tag
+            },
+            position: {
+                x: 0,
+                y: 0
+            },
+        }
+        return output
+    }
+
+    function edgeFactory(edge) {
+        let output = {
+            group: 'edges',
+            data: {
+                source: edge.h_name,
+                target: edge.t_name,
+                name: edge.r_name
+            }
+        }
+        return output
+
+    }
+    Vue.component('app-content', {
+        data: () => ({
+            relationships: [],
+            nameRules: [v => !!v || 'Name is required',
+                v => v.length > 3 && v.length < 101 ||
+                'Name should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Name can only contains alphanumeric characters and space.'
+            ],
+            h_name: '',
+            t_name: '',
+            r_name: '',
+            tripleBottomSheet: false,
+            isSelectingEdge: false,
+            focusing: '',
+            wasNewNode: [],
+            wasNewEdge: [],
+            concepts: []
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                let draftPromise = fetch("{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.workspace && body.triples) {
+                            cy.add(nodeFactory(body.workspace.deltaGraphid.split('.')[0]))
+                            body.triples.forEach(triple => {
+                                [triple.h_name, triple.t_name].forEach(name => {
+                                    if (cy.getElementById(name) == null) {
+                                        cy.add(nodeFactory(name))
+                                    }
+                                })
+                                cy.add(edgeFactory(triple))
+                            })
+
+                            cy.layout({
+                                name: 'breadthfirst',
+                                fit: true,
+                                grid: true,
+                                roots: 'node[id = "' + body.workspace.deltaGraphid.split('.')[0] +
+                                    '"]',
+                                circle: true
+                            }).run()
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting draft information.')
+                        }
+                    })
+                let relationshipPromise = fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.relationships) {
+                            this.relationships = body.relationships
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+                        }
+                    })
+                let entityPromise = fetch("{{ url_for('RESTful.entity.query', list=True) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.entities) {
+                            this.concepts = body.entities.map(e => e.concept.name)
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+
+                        }
+                    })
+                Promise.all([draftPromise, relationshipPromise, entityPromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
+            },
+            createTriple() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                if (this.$refs.tripleForm.validate()) {
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.triple.put', deltaGraphId=deltaGraphId) }}", {
+                            method: 'PUT',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: this.h_name,
+                                r_name: this.r_name,
+                                t_name: this.t_name,
+                            })
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.triple) {
+                                this.wasNewNode.forEach(nodeId => {
+                                    nodes.update({
+                                        id: nodeId,
+                                        color: nodeColorFactory({})
+                                    })
+                                })
+                                this.wasNewEdge.forEach(edgeId => {
+                                    edges.update({
+                                        id: edgeId,
+                                        color: edgeColorFactory({})
+                                    })
+                                })
+                                this.unselectAll()
+                                let triple = body.triple;
+                                [triple.h_name, triple.t_name].forEach(name => {
+                                    if (nodes.get({
+                                            filter: (element =>
+                                                element.id == name
+                                            )
+                                        }).length < 1) {
+                                        nodes.add(nodeFactory({
+                                            name: name,
+                                            isNew: true
+                                        }))
+                                        this.wasNewNode.push(name)
+                                    } else {
+                                        nodes.update({
+                                            id: name,
+                                            color: nodeColorFactory({})
+                                        })
+                                    }
+                                    if (!this.concepts.includes(name)) this.concepts.push(name)
+                                })
+                                let newEdge = edgeFactory({
+                                    from: triple.h_name,
+                                    to: triple.t_name,
+                                    label: triple.r_name,
+                                    isNew: true
+                                })
+                                edges.add(newEdge)
+                                this.wasNewEdge.push(newEdge.id)
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error when creating triple.')
+                            }
+                        })
+                }
+            },
+            tripledelete() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                if (this.$refs.tripleForm.validate()) {
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
+                            method: 'DELETE',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: this.h_name,
+                                r_name: this.r_name,
+                                t_name: this.t_name,
+                            })
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.triple) {
+                                this.unselectAll()
+                                let triple = body.triple
+                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
+                                edges.remove(id)
+                                let nodeSet = new Set()
+                                nodes.forEach(n => {
+                                    if (edges.get({
+                                            filter: (edge) => {
+                                                return edge.from == n.id ||
+                                                    edge.to == n.id
+                                            }
+                                        }).length < 1) {
+                                        console.log(n.id)
+                                        nodes.update({
+                                            id: n.id,
+                                            color: nodeColorFactory({
+                                                isTempory: true
+                                            })
+                                        })
+                                    }
+                                })
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error when deleted triple.')
+                            }
+                        })
+                }
+            },
+            removeUnreachable() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.triple.deleteUnreachable', deltaGraphId=deltaGraphId) }}", {
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.triples) {
+                            this.unselectAll()
+                            body.triples.forEach(triple => {
+                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple
+                                    .t_name)
+                                edges.remove(id);
+                                [triple.h_name, triple.t_name].forEach(n => {
+                                    if (edges.get({
+                                            filter: (edge) => {
+                                                return edge.from == n.id ||
+                                                    edge.to == n.id
+                                            }
+                                        }).length < 1) {
+                                        console.log(n.id)
+                                        nodes.remove(n.id)
+                                    }
+                                })
+
+                            })
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error when deleted unreachable triple.')
+                        }
+                    })
+
+            },
+            unselectAll() {
+                this.tripleBottomSheet = false
+                this.clearForm()
+                network.unselectAll()
+            },
+            clearForm() {
+                this.h_name = ''
+                this.r_name = ''
+                this.t_name = ''
+                this.$refs.tripleForm.resetValidation()
+            },
+            nodeFieldFocus(event) {
+                this.focusing = event
+                if (event == "head") {
+                    try {
+                        network.selectNodes([this.h_name], false)
+                    } catch {
+
+                    }
+                } else {
+                    try {
+                        network.selectNodes([this.t_name], false)
+                    } catch {
+
+                    }
+                }
+            },
+            nodeFieldChange(event) {
+                try {
+                    network.selectNodes([event], false)
+                } catch {
+
+                }
+                this.isTripleExist()
+            },
+            edgeFieldChange(event) {
+                this.isTripleExist()
+            },
+            isTripleExist() {
+                network.unselectAll()
+                if (this.h_name, this.r_name, this.t_name) {
+                    let id = edgeIdFromNames(this.h_name, this.r_name, this.t_name)
+                    try {
+                        if (edges.get(id).length > 0) {
+                            network.selectEdges([id])
+                            this.isSelectingEdge = true
+                        } else {
+                            this.isSelectingEdge = false
+                        }
+
+                    } catch {
+                        this.isSelectingEdge = false
+                    }
+                } else {
+                    this.isSelectingEdge = false
+                }
+            },
+            toggleStatus() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                this.publishLoading = true
+                fetch("{{ url_for('RESTful.workspace.put', deltaGraphId=deltaGraphId) }}/", {
+                        method: 'PUT',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            status: this.publishSwitch ? "unpublished" : "published"
+                        })
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.status) {
+                            this.publishSwitch = body.status == "published"
+                            this.publishLoading = false
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error when publishing triple.')
+                        }
+                    })
+            },
+            networkFit() {
+                network.fit()
+            }
+        },
+        mounted: function () {
+            this.loadData()
+            self = this
+            cy.on('tap', 'node', (event) => {
+                if (self.isSelectingEdge) {
+                    self.clearForm()
+                }
+                if (!self.h_name || this.focusing == "head") {
+                    self.h_name = event.target._private._private.data.id
+                } else {
+                    self.t_name = event.target._private._private.data.id
+                }
+                self.isSelectingEdge = false
+                self.tripleBottomSheet = true;
+            })
+            cy.on('tap', 'edge', (event) => {
+                self.tripleBottomSheet = true;
+                edgeData = edges.get(event.edges[0])
+                self.h_name = event.target._private._private.source
+                self.r_name = event.target._private._private.data.name
+                self.t_name = event.target._private._private.target
+                self.isSelectingEdge = true
+            })
+
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

@@ -7,17 +7,44 @@ workspace = Blueprint("workspace", __name__, url_prefix="workspace")
 
 
 @workspace.put("/")
-@workspace.put("/<deltaGraphId>")
+@workspace.put("/<nodeId>")
 @authorize_RESTful_with(["canForkAssignedCourseBranch"])
-def put(deltaGraphId):
-    if "tag" in request.json and deltaGraphId is not None:
+def put(nodeId):
+    if "tag" in request.json and nodeId is not None:
         try:
-            id = get_api_driver().workspace.create_workspace(
-                deltaGraphId=deltaGraphId,
+            newId = get_api_driver().workspace.create_workspace(
+                nodeId=nodeId,
                 tag=request.json["tag"],
                 userId=session["user"]["userId"],
             )
-            return jsonify({"success": True, "deltaGraphId": id})
+            return jsonify({"success": True, "deltaGraphId": newId})
         except Exception as e:
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
+
+
+@workspace.get("/")
+@authorize_RESTful_with(["canOwnDraft"])
+def query():
+    # if request.args.get("ofUser"):
+    #     return draftOfUser()
+    return jsonify({"success": False, "message": "incomplete request"})
+
+
+@workspace.get("<deltaGraphId>")
+@authorize_RESTful_with(["canOwnDraft"])
+def get(deltaGraphId):
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "workspace": get_api_driver().workspace.get_workspace(
+                    deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                ),
+                "triples": get_api_driver().triple.get_workspace_triple(
+                    deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                ),
+            }
+        )
+    except Exception as e:
+        raise e
