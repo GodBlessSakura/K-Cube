@@ -1,19 +1,22 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
-<v-card style="height: 100%; width: 100%;">
-    <div style="height: 75vh; width: 90vw;">
+<v-card>
+    <v-speed-dial absolute bottom right>
+        <template v-slot:activator>
+            <v-btn color="blue darken-2" dark fab>
+                <v-icon>handyman</v-icon>
+            </v-btn>
+        </template>
+        <v-btn color="primary" fab @click="editorFit()">
+            <v-icon>fit_screen</v-icon>
+        </v-btn>
+        <v-btn color="primary" fab @click="removeUnreachable">
+            <v-icon>cleaning_services</v-icon>
+        </v-btn>
+    </v-speed-dial>
+    <div style="height: calc(100vh - 64px); width: calc(100vw - 50px);">
         <div id="editor" style="height: 100%; width: 100%;"></div>
-        <v-fab-transition>
-            <v-btn color="primary" absolute bottom right fab @click="editorFit()">
-                <v-icon>fit_screen</v-icon>
-            </v-btn>
-        </v-fab-transition>
-        <v-fab-transition>
-            <v-btn color="primary" absolute top right fab @click="removeUnreachable">
-                <v-icon>cleaning_services</v-icon>
-            </v-btn>
-        </v-fab-transition>
     </div>
     <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
         <v-sheet>
@@ -75,8 +78,7 @@
                 }
             }
         ],
-        userZoomingEnabled: false,
-        userPanningEnabled: false,
+        wheelSensitivity: 0.15,
         boxSelectionEnabled: false
     })
 
@@ -85,7 +87,7 @@
             group: 'nodes',
             data: {
                 id: name,
-                tag: name
+                name: name
             },
             position: {
                 x: 0,
@@ -101,7 +103,8 @@
             data: {
                 source: edge.h_name,
                 target: edge.t_name,
-                name: edge.r_name
+                name: edge.r_name,
+                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name)
             }
         }
         return output
@@ -109,7 +112,8 @@
     }
 
     function edgeIdFromNames(h_name, r_name, t_name) {
-        return '#' + h_name + '.' + r_name + '.' + t_name
+
+        return '#' + edge.h_name + '.' + edge.r_name + '.' + edge.t_name
     }
 
     Vue.component('app-content', {
@@ -168,7 +172,8 @@
                                 grid: true,
                                 roots: 'node[id = "' + body.workspace.deltaGraphId.split('.')[0] +
                                     '"]',
-                                circle: true
+                                circle: true,
+                                padding: document.documentElement.clientHeight * 0.25
                             }).run()
 
                         } else {
@@ -513,7 +518,7 @@
                     })
             },
             editorFit() {
-                cy.fit()
+                cy.fit(cy, document.documentElement.clientHeight * 0.25)
             }
         },
         mounted: function () {

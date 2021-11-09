@@ -53,6 +53,7 @@ class workspaceResources:
                 return [
                     {
                         "id": record["nodes"].id,
+                        "canPatch": record["canPatch"],
                         "property": {
                             key: value
                             if not isinstance(value, DateTime)
@@ -88,16 +89,21 @@ class workspaceResources:
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
-            try:
-                return [
+            workspace = [
+                dict(
                     {
                         key: value
                         if not isinstance(value, DateTime)
                         else str(value.iso_format())
                         for key, value in record["workspace"].items()
-                    }
-                    for record in result
-                ][0]
+                    }.items()
+                    | record["course"].items()
+                )
+                for record in result
+            ][0]
+
+            try:
+                return workspace
             except Exception as exception:
                 raise exception
 

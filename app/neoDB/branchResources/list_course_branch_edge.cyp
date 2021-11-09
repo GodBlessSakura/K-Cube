@@ -17,8 +17,8 @@ WHERE
     )
 WITH DISTINCT branch
 MATCH
-    (branch)-[edges_a:OVERWRITE|TRUNK_PATCH|BRANCH_REPLICATE]->(),
-    ()-[edges_b:OVERWRITE|TRUNK_PATCH|BRANCH_REPLICATE]->(branch)
+    (branch)-[edges_a:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->(),
+    ()-[edges_b:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->(branch)
 WITH collect(edges_a)+collect(edges_b) as edges_list
 UNWIND edges_list as edges
 WITH DISTINCT edges

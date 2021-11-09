@@ -16,8 +16,11 @@
                 @click="createWorkspaceDialogue()">
                 <v-list-item-title>Create workspace</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="commit()">
-                <v-list-item-title>Commit workspace</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="fork()">
+                <v-list-item-title>Commit as fork</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('workspace') && selectedNodeClasses.includes('canPatch')" @click="fork()">
+                <v-list-item-title>Commit as patch</v-list-item-title>
             </v-list-item>
             {% endif %}
             {% if isDLTC %}
@@ -95,6 +98,9 @@
     function nodeFactory(node, classes) {
         if (node.isActive) {
             classes.push('isActive')
+        }
+        if (node.canPatch) {
+            classes.push('canPatch')
         }
         let output = {
             group: 'nodes',
@@ -183,7 +189,8 @@
                                 name: 'breadthfirst',
                                 fit: true,
                                 grid: true,
-                                roots: 'node[tag = "init"]'
+                                roots: 'node[tag = "init"]',
+                                padding: document.documentElement.clientHeight * 0.15
                             }).run()
                         } else {
                             this.$root.errorDisplay(body,
@@ -233,7 +240,7 @@
                         })
                 }
             },
-            commit() {
+            fork() {
 
             },
             // {% endif %}
