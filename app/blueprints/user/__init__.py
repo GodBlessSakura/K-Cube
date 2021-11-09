@@ -12,7 +12,7 @@ def back():
 
 
 @user.route("/refreshPermission")
-@authorize_RESTful_with([],require_userId=True)
+@authorize_RESTful_with([], require_userId=True)
 def refreshPermission():
     try:
         session["permission"] = get_api_driver().user.get_user_permission(
@@ -93,5 +93,3 @@ def isUserIdAvaliable():
     return jsonify(
         {"avaliable": not get_api_driver().user.is_userId_used(userId=userId)}
     )
-
-

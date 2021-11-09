@@ -24,7 +24,7 @@ def put(nodeId):
 
 
 @workspace.get("/")
-@authorize_RESTful_with(["canOwnDraft"])
+@authorize_RESTful_with(["canForkAssignedCourseBranch"])
 def query():
     # if request.args.get("ofUser"):
     #     return draftOfUser()
@@ -32,7 +32,7 @@ def query():
 
 
 @workspace.get("<deltaGraphId>")
-@authorize_RESTful_with(["canOwnDraft"])
+@authorize_RESTful_with(["canForkAssignedCourseBranch"])
 def get(deltaGraphId):
     try:
         return jsonify(

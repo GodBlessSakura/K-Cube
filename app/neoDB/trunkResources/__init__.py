@@ -1,4 +1,3 @@
-
 from neo4j.time import DateTime
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
@@ -9,7 +8,6 @@ cypher = {
     for f in resources.contents(__package__)
     if resources.is_resource(__package__, f) and f.split(".")[-1] == "cyp"
 }
-
 
 
 @for_all_methods(reject_invalid)
@@ -27,11 +25,13 @@ class trunkResources:
                 return [
                     {
                         "id": record["edges"].id,
-                        "type":  record["edges"].type,
+                        "type": record["edges"].type,
                         "start": record["edges"].start_node.id,
                         "end": record["edges"].end_node.id,
                         "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
                             for key, value in record["edges"].items()
                         },
                     }
@@ -54,10 +54,12 @@ class trunkResources:
                     {
                         "id": record["nodes"].id,
                         "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
                             for key, value in record["nodes"].items()
                         },
-                        "isActive": record["isActive"]
+                        "isActive": record["isActive"],
                     }
                     for record in result
                 ]

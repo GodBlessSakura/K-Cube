@@ -57,6 +57,7 @@ def resources(courseCode):
 def schedule():
     return render_template("instructor/courseList.html")
 
+
 @instructor.route("/workspace/", defaults={"deltaGraphId": None})
 @instructor.route("/workspace/<deltaGraphId>")
 def workspace(deltaGraphId):

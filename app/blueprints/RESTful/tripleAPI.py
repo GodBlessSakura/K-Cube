@@ -15,7 +15,7 @@ def query():
 
 
 @triple.put("<deltaGraphId>")
-@authorize_RESTful_with(["canOwnDraft"])
+@authorize_RESTful_with(["canForkAssignedCourseBranch"])
 def put(deltaGraphId):
     if (
         "h_name" in request.json
@@ -37,7 +37,7 @@ def put(deltaGraphId):
 
 
 @triple.delete("<deltaGraphId>")
-@authorize_RESTful_with(["canOwnDraft"])
+@authorize_RESTful_with(["canForkAssignedCourseBranch"])
 def delete(deltaGraphId):
     if (
         "h_name" in request.json
@@ -59,7 +59,7 @@ def delete(deltaGraphId):
 
 
 @triple.delete("<deltaGraphId>/unreachable")
-@authorize_RESTful_with(["canOwnDraft"])
+@authorize_RESTful_with(["canForkAssignedCourseBranch"])
 def deleteUnreachable(deltaGraphId):
     try:
         result = get_api_driver().triple.remove_unreachable_triple(

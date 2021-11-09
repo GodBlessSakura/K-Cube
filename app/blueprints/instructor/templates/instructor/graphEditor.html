@@ -5,7 +5,7 @@
     <div style="height: 75vh; width: 90vw;">
         <div id="editor" style="height: 100%; width: 100%;"></div>
         <v-fab-transition>
-            <v-btn color="primary" absolute bottom right fab @click="networkFit()">
+            <v-btn color="primary" absolute bottom right fab @click="editorFit()">
                 <v-icon>fit_screen</v-icon>
             </v-btn>
         </v-fab-transition>
@@ -85,7 +85,7 @@
             group: 'nodes',
             data: {
                 id: name,
-                tag: node.property.tag
+                tag: name
             },
             position: {
                 x: 0,
@@ -107,6 +107,11 @@
         return output
 
     }
+
+    function edgeIdFromNames(h_name, r_name, t_name) {
+        return '#' + h_name + '.' + r_name + '.' + t_name
+    }
+
     Vue.component('app-content', {
         data: () => ({
             relationships: [],
@@ -147,7 +152,7 @@
                     })
                     .then(body => {
                         if (body.workspace && body.triples) {
-                            cy.add(nodeFactory(body.workspace.deltaGraphid.split('.')[0]))
+                            cy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0]))
                             body.triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (cy.getElementById(name) == null) {
@@ -161,7 +166,7 @@
                                 name: 'breadthfirst',
                                 fit: true,
                                 grid: true,
-                                roots: 'node[id = "' + body.workspace.deltaGraphid.split('.')[0] +
+                                roots: 'node[id = "' + body.workspace.deltaGraphId.split('.')[0] +
                                     '"]',
                                 circle: true
                             }).run()
@@ -346,7 +351,6 @@
                                                     edge.to == n.id
                                             }
                                         }).length < 1) {
-                                        console.log(n.id)
                                         nodes.update({
                                             id: n.id,
                                             color: nodeColorFactory({
@@ -415,7 +419,8 @@
             unselectAll() {
                 this.tripleBottomSheet = false
                 this.clearForm()
-                network.unselectAll()
+                cy.nodes().unselect()
+                cy.edges().unselect()
             },
             clearForm() {
                 this.h_name = ''
@@ -427,13 +432,13 @@
                 this.focusing = event
                 if (event == "head") {
                     try {
-                        network.selectNodes([this.h_name], false)
+                        cy.nodes().select('#' + this.h_name)
                     } catch {
 
                     }
                 } else {
                     try {
-                        network.selectNodes([this.t_name], false)
+                        cy.nodes().select('#' + this.t_name)
                     } catch {
 
                     }
@@ -441,7 +446,7 @@
             },
             nodeFieldChange(event) {
                 try {
-                    network.selectNodes([event], false)
+                    cy.nodes().select('#' + event)
                 } catch {
 
                 }
@@ -451,12 +456,13 @@
                 this.isTripleExist()
             },
             isTripleExist() {
-                network.unselectAll()
+                cy.nodes().unselect()
+                cy.edges().unselect()
                 if (this.h_name, this.r_name, this.t_name) {
                     let id = edgeIdFromNames(this.h_name, this.r_name, this.t_name)
                     try {
                         if (edges.get(id).length > 0) {
-                            network.selectEdges([id])
+                            cy.nodes().select(id)
                             this.isSelectingEdge = true
                         } else {
                             this.isSelectingEdge = false
@@ -506,21 +512,21 @@
                         }
                     })
             },
-            networkFit() {
-                network.fit()
+            editorFit() {
+                cy.fit()
             }
         },
         mounted: function () {
-            this.loadData()
+            cy.mount(document.getElementById("editor"))
             self = this
             cy.on('tap', 'node', (event) => {
                 if (self.isSelectingEdge) {
                     self.clearForm()
                 }
                 if (!self.h_name || this.focusing == "head") {
-                    self.h_name = event.target._private._private.data.id
+                    self.h_name = event.target.data("id")
                 } else {
-                    self.t_name = event.target._private._private.data.id
+                    self.t_name = event.target.data("id")
                 }
                 self.isSelectingEdge = false
                 self.tripleBottomSheet = true;
@@ -528,12 +534,12 @@
             cy.on('tap', 'edge', (event) => {
                 self.tripleBottomSheet = true;
                 edgeData = edges.get(event.edges[0])
-                self.h_name = event.target._private._private.source
-                self.r_name = event.target._private._private.data.name
-                self.t_name = event.target._private._private.target
+                self.h_name = event.target.source().data("id")
+                self.r_name = event.target.data("name")
+                self.t_name = event.target.target().data("id")
                 self.isSelectingEdge = true
             })
-
+            this.loadData()
         },
         template: '#content',
         delimiters: ['${', '}'],

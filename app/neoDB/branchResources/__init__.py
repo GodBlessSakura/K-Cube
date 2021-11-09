@@ -1,4 +1,3 @@
-
 from neo4j.time import DateTime
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
@@ -11,11 +10,11 @@ cypher = {
 }
 
 
-
 @for_all_methods(reject_invalid)
 class branchResources:
     def __init__(self, driver):
         self.driver = driver
+
     def list_course_branch_edge(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 
@@ -26,11 +25,13 @@ class branchResources:
                 return [
                     {
                         "id": record["edges"].id,
-                        "type":  record["edges"].type,
+                        "type": record["edges"].type,
                         "start": record["edges"].start_node.id,
                         "end": record["edges"].end_node.id,
                         "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
                             for key, value in record["edges"].items()
                         },
                     }
@@ -53,9 +54,11 @@ class branchResources:
                     {
                         "id": record["nodes"].id,
                         "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
                             for key, value in record["nodes"].items()
-                        }
+                        },
                     }
                     for record in result
                 ]

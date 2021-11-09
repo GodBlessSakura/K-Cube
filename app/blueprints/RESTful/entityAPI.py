@@ -6,7 +6,6 @@ from neo4j.exceptions import ConstraintError
 entity = Blueprint("entity", __name__, url_prefix="entity")
 
 
-
 @entity.get("/")
 def query():
     if request.args.get("list"):

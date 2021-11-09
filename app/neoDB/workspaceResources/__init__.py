@@ -1,4 +1,3 @@
-
 from neo4j.time import DateTime
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
@@ -11,11 +10,11 @@ cypher = {
 }
 
 
-
 @for_all_methods(reject_invalid)
 class workspaceResources:
     def __init__(self, driver):
         self.driver = driver
+
     def list_course_workspace_edge(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 
@@ -26,11 +25,13 @@ class workspaceResources:
                 return [
                     {
                         "id": record["edges"].id,
-                        "type":  record["edges"].type,
+                        "type": record["edges"].type,
                         "start": record["edges"].start_node.id,
                         "end": record["edges"].end_node.id,
                         "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
                             for key, value in record["edges"].items()
                         },
                     }
@@ -53,9 +54,11 @@ class workspaceResources:
                     {
                         "id": record["nodes"].id,
                         "property": {
-                            key:value if not isinstance(value,DateTime) else str(value.iso_format())
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
                             for key, value in record["nodes"].items()
-                        }
+                        },
                     }
                     for record in result
                 ]
@@ -72,7 +75,7 @@ class workspaceResources:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, nodeId=nodeId, tag=tag, userId=userId)
             try:
-                return [record for record in result ][0]["deltaGraphId"]
+                return [record for record in result][0]["deltaGraphId"]
             except Exception as exception:
                 raise exception
 
@@ -87,7 +90,12 @@ class workspaceResources:
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             try:
                 return [
-                    record["workspace"].items()
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["workspace"].items()
+                    }
                     for record in result
                 ][0]
             except Exception as exception:

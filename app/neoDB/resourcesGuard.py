@@ -36,7 +36,8 @@ class InvalidRequest(Exception):
 
     def __str__(self):
         return self.message
-        
+
+
 import re
 
 # this would force the function to ignore all positional argument
@@ -99,15 +100,15 @@ def reject_invalid(function):
             raise InvalidRequest(
                 "Invalid triple pattern, self-referencing is not allowed."
             )
-        if "text" in kwargs and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["text"]) == None:
-            raise InvalidRequest(
-                "Invalid text pattern."
-            )
-        if "week" in kwargs and (kwargs["text"]<1 or kwargs["text"]>13):
-            raise InvalidRequest(
-                "Invalid week value."
-            )
-        if ("tag" in kwargs
+        if (
+            "text" in kwargs
+            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["text"]) == None
+        ):
+            raise InvalidRequest("Invalid text pattern.")
+        if "week" in kwargs and (kwargs["text"] < 1 or kwargs["text"] > 13):
+            raise InvalidRequest("Invalid week value.")
+        if (
+            "tag" in kwargs
             and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["tag"]) == None
         ):
             raise InvalidRequest("Invalid tag pattern.")

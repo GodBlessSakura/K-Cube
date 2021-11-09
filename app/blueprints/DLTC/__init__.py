@@ -20,6 +20,7 @@ DLTC.register_blueprint(uploads, url_prefix="/uploads")
 def middleware():
     pass
 
+
 @DLTC.route("/versionTree")
 @DLTC.route("/versionTree/<courseCode>")
 def trunk(courseCode):
@@ -31,6 +32,7 @@ def trunk(courseCode):
             isDLTC=True,
         )
     abort(404)
+
 
 @DLTC.route("/courseList")
 def courseList():

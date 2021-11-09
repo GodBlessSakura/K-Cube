@@ -1,7 +1,5 @@
-
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
-
 
 
 @for_all_methods(reject_invalid)
