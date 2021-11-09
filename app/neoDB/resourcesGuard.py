@@ -112,6 +112,11 @@ def reject_invalid(function):
             and re.search("^[a-zA-Z0-9\s]{4,100}$", kwargs["tag"]) == None
         ):
             raise InvalidRequest("Invalid tag pattern.")
+        if (
+            "r_value" in kwargs
+            and not isinstance(kwargs["r_value"],bool)
+        ):
+            raise InvalidRequest("Invalid r_value.")
         return function(self, **kwargs)
 
     return wrapper

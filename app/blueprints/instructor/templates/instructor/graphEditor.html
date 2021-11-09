@@ -97,14 +97,32 @@
         return output
     }
 
-    function edgeFactory(edge) {
+    function workspaceEdgeFactory(edge) {
         let output = {
             group: 'edges',
             data: {
                 source: edge.h_name,
                 target: edge.t_name,
                 name: edge.r_name,
-                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name)
+                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
+                workspace_value: edge.r_value,
+                subject_value: null,
+            }
+        }
+        return output
+
+    }
+
+    function subjectEdgeFactory(edge) {
+        let output = {
+            group: 'edges',
+            data: {
+                source: edge.h_name,
+                target: edge.t_name,
+                name: edge.r_name,
+                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
+                workspace_value: null,
+                subject_value: edge.r_value,
             }
         }
         return output
@@ -138,13 +156,14 @@
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                let draftPromise = fetch("{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                let workspacePromise = fetch(
+                        "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -155,7 +174,7 @@
                         }
                     })
                     .then(body => {
-                        if (body.workspace && body.triples) {
+                        if (body.workspace && body.triples && body.subject && body.subject_triples) {
                             cy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0]))
                             body.triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
@@ -163,7 +182,24 @@
                                         cy.add(nodeFactory(name))
                                     }
                                 })
-                                cy.add(edgeFactory(triple))
+                                cy.add(workspaceEdgeFactory(triple))
+                            })
+                            body.subject_triples.forEach(triple => {
+                                [triple.h_name, triple.t_name].forEach(name => {
+                                    if (cy.getElementById(name) == null) {
+                                        cy.add(nodeFactory(name))
+                                    }
+                                })
+                                edge = cy.getElementById(edgeIdFromNames(edge.h_name, edge.r_name,
+                                    edge
+                                    .t_name))
+                                if (edge) {
+                                    edge.data({
+                                        subject_value: triple.r_value
+                                    })
+                                } else {
+                                    cy.add(subjectEdgeFactory(triple))
+                                }
                             })
 
                             cy.layout({
@@ -230,7 +266,7 @@
 
                         }
                     })
-                Promise.all([draftPromise, relationshipPromise, entityPromise]).then(_ => {
+                Promise.all([workspacePromise, relationshipPromise, entityPromise]).then(_ => {
                     this.$root.progress.show = false
                 })
             },
@@ -298,7 +334,7 @@
                                     }
                                     if (!this.concepts.includes(name)) this.concepts.push(name)
                                 })
-                                let newEdge = edgeFactory({
+                                let newEdge = workspaceEdgeFactory({
                                     from: triple.h_name,
                                     to: triple.t_name,
                                     label: triple.r_name,
