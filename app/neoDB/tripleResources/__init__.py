@@ -36,7 +36,9 @@ class tripleResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def set_workspace_triple(self, deltaGraphId, userId, h_name, r_name, t_name,r_value):
+    def set_workspace_triple(
+        self, deltaGraphId, userId, h_name, r_name, t_name, r_value
+    ):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):

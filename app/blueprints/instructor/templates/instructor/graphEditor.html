@@ -46,11 +46,11 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-btn @click="createTriple" v-if="!isSelectingEdge">
-                            Create link
+                        <v-btn @click="createTriple(true)" v-if="canLinkEdge" :disabled="!tripleNotNull">
+                            link
                         </v-btn>
-                        <v-btn color="error" @click="tripleDelete" v-else>
-                            delete link
+                        <v-btn color="error" @click="createTriple(false)" v-else :disabled="!tripleNotNull">
+                            unlink
                         </v-btn>
                     </v-row>
                 </v-container>
@@ -131,7 +131,7 @@
 
     function edgeIdFromNames(h_name, r_name, t_name) {
 
-        return '#' + edge.h_name + '.' + edge.r_name + '.' + edge.t_name
+        return '#' + h_name + '.' + r_name + '.' + t_name
     }
 
     Vue.component('app-content', {
@@ -147,7 +147,8 @@
             t_name: '',
             r_name: '',
             tripleBottomSheet: false,
-            isSelectingEdge: false,
+            canLinkEdge: false,
+            tripleNotNull: false,
             focusing: '',
             wasNewNode: [],
             wasNewEdge: [],
@@ -175,10 +176,14 @@
                     })
                     .then(body => {
                         if (body.workspace && body.triples && body.subject && body.subject_triples) {
-                            cy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0]))
+                            cy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0])).style({
+                                'background-image': body.workspace.imageURL,
+                                'background-fit': 'cover'
+                            })
+                            cy
                             body.triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
-                                    if (cy.getElementById(name) == null) {
+                                    if (cy.getElementById(name).length == 0) {
                                         cy.add(nodeFactory(name))
                                     }
                                 })
@@ -186,13 +191,12 @@
                             })
                             body.subject_triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
-                                    if (cy.getElementById(name) == null) {
+                                    if (cy.getElementById(name).length == 0) {
                                         cy.add(nodeFactory(name))
                                     }
                                 })
-                                edge = cy.getElementById(edgeIdFromNames(edge.h_name, edge.r_name,
-                                    edge
-                                    .t_name))
+                                let edge = cy.getElementById(edgeIdFromNames(edge.h_name, edge
+                                    .r_name, edge.t_name))
                                 if (edge) {
                                     edge.data({
                                         subject_value: triple.r_value
@@ -270,7 +274,7 @@
                     this.$root.progress.show = false
                 })
             },
-            createTriple() {
+            createTriple(r_value) {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
@@ -287,6 +291,7 @@
                                 h_name: this.h_name,
                                 r_name: this.r_name,
                                 t_name: this.t_name,
+                                r_value: r_value,
                             })
                         })
                         .then(response => {
@@ -301,47 +306,23 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
-                                this.wasNewNode.forEach(nodeId => {
-                                    nodes.update({
-                                        id: nodeId,
-                                        color: nodeColorFactory({})
-                                    })
-                                })
-                                this.wasNewEdge.forEach(edgeId => {
-                                    edges.update({
-                                        id: edgeId,
-                                        color: edgeColorFactory({})
-                                    })
-                                })
-                                this.unselectAll()
                                 let triple = body.triple;
                                 [triple.h_name, triple.t_name].forEach(name => {
-                                    if (nodes.get({
-                                            filter: (element =>
-                                                element.id == name
-                                            )
-                                        }).length < 1) {
-                                        nodes.add(nodeFactory({
-                                            name: name,
-                                            isNew: true
-                                        }))
-                                        this.wasNewNode.push(name)
-                                    } else {
-                                        nodes.update({
-                                            id: name,
-                                            color: nodeColorFactory({})
-                                        })
+                                    if (cy.getElementById(name).length == 0) {
+                                        cy.add(nodeFactory(name))
                                     }
                                     if (!this.concepts.includes(name)) this.concepts.push(name)
                                 })
-                                let newEdge = workspaceEdgeFactory({
-                                    from: triple.h_name,
-                                    to: triple.t_name,
-                                    label: triple.r_name,
-                                    isNew: true
-                                })
-                                edges.add(newEdge)
-                                this.wasNewEdge.push(newEdge.id)
+                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                                    triple
+                                    .t_name))
+                                if (edge) {
+                                    edge.data({
+                                        workspace_value: triple.r_value
+                                    })
+                                } else {
+                                    cy.add(workspaceEdgeFactory(triple))
+                                }
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when creating triple.')
@@ -472,25 +453,13 @@
             nodeFieldFocus(event) {
                 this.focusing = event
                 if (event == "head") {
-                    try {
-                        cy.nodes().select('#' + this.h_name)
-                    } catch {
-
-                    }
+                    cy.nodes().select('#' + this.h_name).select()
                 } else {
-                    try {
-                        cy.nodes().select('#' + this.t_name)
-                    } catch {
-
-                    }
+                    cy.nodes().select('#' + this.t_name).select()
                 }
             },
             nodeFieldChange(event) {
-                try {
-                    cy.nodes().select('#' + event)
-                } catch {
-
-                }
+                cy.nodes().select('#' + event).select()
                 this.isTripleExist()
             },
             edgeFieldChange(event) {
@@ -499,59 +468,21 @@
             isTripleExist() {
                 cy.nodes().unselect()
                 cy.edges().unselect()
-                if (this.h_name, this.r_name, this.t_name) {
-                    let id = edgeIdFromNames(this.h_name, this.r_name, this.t_name)
-                    try {
-                        if (edges.get(id).length > 0) {
-                            cy.nodes().select(id)
-                            this.isSelectingEdge = true
-                        } else {
-                            this.isSelectingEdge = false
-                        }
-
-                    } catch {
-                        this.isSelectingEdge = false
+                if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
+                    this.t_name && this.t_name != '') {
+                    this.tripleNotNull = true
+                    let edge = cy.getElementById(edgeIdFromNames(this.h_name, this.r_name, this.t_name))
+                    if (edge) {
+                        edge.select()
+                        this.canLinkEdge = edge.data("workspace_value") != true &&
+                            edge.data("subject_value") != true
+                    } else {
+                        this.canLinkEdge = true
                     }
+
                 } else {
-                    this.isSelectingEdge = false
+                    this.tripleNotNull = false
                 }
-            },
-            toggleStatus() {
-                if (this.$root.progress.show == true) {
-                    this.$root.bePatientSnackBar.show = true
-                    return
-                }
-                this.$root.progress.show = true
-                this.publishLoading = true
-                fetch("{{ url_for('RESTful.workspace.put', deltaGraphId=deltaGraphId) }}/", {
-                        method: 'PUT',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            status: this.publishSwitch ? "unpublished" : "published"
-                        })
-                    })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
-                            this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        if (body.status) {
-                            this.publishSwitch = body.status == "published"
-                            this.publishLoading = false
-                        } else {
-                            this.$root.errorDisplay(body,
-                                'Unexpected error when publishing triple.')
-                        }
-                    })
             },
             editorFit() {
                 cy.fit(cy, document.documentElement.clientHeight * 0.25)
@@ -561,7 +492,7 @@
             cy.mount(document.getElementById("editor"))
             self = this
             cy.on('tap', 'node', (event) => {
-                if (self.isSelectingEdge) {
+                if (self.tripleNotNull) {
                     self.clearForm()
                 }
                 if (!self.h_name || this.focusing == "head") {
@@ -569,7 +500,7 @@
                 } else {
                     self.t_name = event.target.data("id")
                 }
-                self.isSelectingEdge = false
+                self.tripleNotNull = false
                 self.tripleBottomSheet = true;
             })
             cy.on('tap', 'edge', (event) => {
@@ -578,7 +509,7 @@
                 self.h_name = event.target.source().data("id")
                 self.r_name = event.target.data("name")
                 self.t_name = event.target.target().data("id")
-                self.isSelectingEdge = true
+                self.canLinkEdge = true
             })
             this.loadData()
         },

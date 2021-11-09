@@ -21,7 +21,7 @@ def put(deltaGraphId):
         "h_name" in request.json
         and "r_name" in request.json
         and "t_name" in request.json
-        and "v_name" in request.json
+        and "r_value" in request.json
     ):
         try:
             result = get_api_driver().triple.set_workspace_triple(
@@ -30,7 +30,7 @@ def put(deltaGraphId):
                 h_name=request.json["h_name"],
                 r_name=request.json["r_name"],
                 t_name=request.json["t_name"],
-                v_name=request.json["v_name"],
+                r_value=request.json["r_value"],
             )
             return jsonify({"success": True, "triple": result})
         except Exception as e:
