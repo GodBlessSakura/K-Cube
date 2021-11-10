@@ -6,4 +6,4 @@ MATCH (h) -[r:DELTA_GRAPH_RELATIONSHIP{name: $r_name, deltaGraphId : workspace.d
 WITH h.name as h_name, r.name as r_name, t.name as t_name, r, workspace
 DELETE r
 SET workspace.lastModified = datetime.transaction()
-RETURN h_name, r_name, t_name, r.value;
+RETURN h_name, r_name, t_name;

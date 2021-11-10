@@ -85,7 +85,6 @@ class tripleResources:
                     "h_name": row["h_name"],
                     "r_name": row["r_name"],
                     "t_name": row["t_name"],
-                    "r_value": row["r.value"],
                 }
             except Exception as exception:
                 raise exception

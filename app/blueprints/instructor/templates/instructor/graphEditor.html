@@ -33,7 +33,20 @@
                     <v-row>
                         <v-col>
                             <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
-                                @focus="nodeFieldFocus('head')" @input="nodeFieldChange"></v-combobox>
+                                persistent-hint @focus="nodeFieldFocus('head')" @input="nodeFieldChange"
+                                @keydown="disableButtons()">
+                                <template v-slot:no-data>
+                                    <v-list-item>
+                                        <v-list-item-content>
+                                            <v-list-item-title>
+                                                No existing graph concept matching "<strong>${ h_name }</strong>". New
+                                                graph concept would be created. Press
+                                                <kbd>enter</kbd> or click elsewhere to proceed.
+                                            </v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </template>
+                            </v-combobox>
                         </v-col>
                         <v-col>
                             <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship"
@@ -42,16 +55,40 @@
                         </v-col>
                         <v-col>
                             <v-combobox v-model="t_name" :items="concepts" :rules="nameRules" label="tail entity"
-                                @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"></v-combobox>
+                                persistent-hint @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"
+                                @keydown="disableButtons()">
+                                <template v-slot:no-data>
+                                    <v-list-item>
+                                        <v-list-item-content>
+                                            <v-list-item-title>
+                                                No existing graph concept matching "<strong>${ t_name }</strong>". New
+                                                graph concept would be created. Press
+                                                <kbd>enter</kbd> or click elsewhere to proceed.
+                                            </v-list-item-title>
+                                        </v-list-item-content>
+                                    </v-list-item>
+                                </template></v-combobox>
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-btn @click="createTriple(true)" v-if="canLinkEdge" :disabled="!tripleNotNull">
-                            link
+                        <v-btn color="success" @click="createTriple(true)" v-if="canLinkEdge"
+                            :disabled="!canUpdateEdge">
+                            associate
                         </v-btn>
-                        <v-btn color="error" @click="createTriple(false)" v-else :disabled="!tripleNotNull">
-                            unlink
+                        <v-btn @click="createTriple(false)" v-else :disabled="!canUpdateEdge">
+                            dissociate
                         </v-btn>
+                        <v-tooltip top v-if="canDeleteEdge">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on" color="error"
+                                    @click="tripledelete()">
+                                    defer to others
+                                </v-btn>
+                            </template>
+                            <span>
+                                Let others decide whether these concept should be linked or not
+                            </span>
+                        </v-tooltip>
                     </v-row>
                 </v-container>
             </v-form>
@@ -66,7 +103,13 @@
         style: [{
                 selector: 'node',
                 style: {
-                    'label': 'data(name)'
+                    'label': 'data(name)',
+                    'font-size': 8
+                }
+            }, {
+                selector: 'node.tempory',
+                style: {
+                    'opacity': 0.25,
                 }
             },
             {
@@ -74,13 +117,45 @@
                 style: {
                     'label': 'data(name)',
                     'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier'
+                    'curve-style': 'bezier',
+                    'font-size': 8,
+                    'text-rotation': 'autorotate',
+                    'line-style': 'solid',
+                    'width': 5,
+                }
+            }, {
+                selector: 'edge[!workspace_value]',
+                style: {
+                    'line-gradient-stop-colors': 'grey white white grey',
+                    'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                    'line-fill': 'linear-gradient ',
+                    'width': 5,
+                }
+            }, {
+                selector: 'edge[^workspace_value][?subject_value]',
+                style: {
+                    'line-style': 'solid',
+                    'width': 1,
+                }
+            }, {
+                selector: 'edge[^workspace_value][!subject_value]',
+                style: {
+                    'line-style': 'dashed',
+                    'line-dash-pattern': '10%, 80%',
+                    'width': 1,
                 }
             }
         ],
         wheelSensitivity: 0.15,
-        boxSelectionEnabled: false
+        boxSelectionEnabled: false,
     })
+    layoutOptions = {
+        name: 'breadthfirst',
+        fit: true,
+        grid: true,
+        circle: true,
+        padding: document.documentElement.clientHeight * 0.25
+    }
 
     function nodeFactory(name) {
         let output = {
@@ -106,7 +181,7 @@
                 name: edge.r_name,
                 id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
                 workspace_value: edge.r_value,
-                subject_value: null,
+                subject_value: undefined,
             }
         }
         return output
@@ -121,7 +196,7 @@
                 target: edge.t_name,
                 name: edge.r_name,
                 id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
-                workspace_value: null,
+                workspace_value: undefined,
                 subject_value: edge.r_value,
             }
         }
@@ -131,7 +206,7 @@
 
     function edgeIdFromNames(h_name, r_name, t_name) {
 
-        return '#' + h_name + '.' + r_name + '.' + t_name
+        return h_name + '.' + r_name + '.' + t_name
     }
 
     Vue.component('app-content', {
@@ -148,7 +223,8 @@
             r_name: '',
             tripleBottomSheet: false,
             canLinkEdge: false,
-            tripleNotNull: false,
+            canDeleteEdge: false,
+            canUpdateEdge: false,
             focusing: '',
             wasNewNode: [],
             wasNewEdge: [],
@@ -205,16 +281,9 @@
                                     cy.add(subjectEdgeFactory(triple))
                                 }
                             })
-
-                            cy.layout({
-                                name: 'breadthfirst',
-                                fit: true,
-                                grid: true,
-                                roots: 'node[id = "' + body.workspace.deltaGraphId.split('.')[0] +
-                                    '"]',
-                                circle: true,
-                                padding: document.documentElement.clientHeight * 0.25
-                            }).run()
+                            this.rootName = body.workspace.deltaGraphId.split('.')[0]
+                            layoutOptions.roots = 'node[id = "' + this.rootName + '"]'
+                            cy.layout(layoutOptions).run()
 
                         } else {
                             this.$root.errorDisplay(body,
@@ -314,8 +383,8 @@
                                     if (!this.concepts.includes(name)) this.concepts.push(name)
                                 })
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
-                                    triple
-                                    .t_name))
+                                    triple.t_name))[0]
+
                                 if (edge) {
                                     edge.data({
                                         workspace_value: triple.r_value
@@ -323,6 +392,9 @@
                                 } else {
                                     cy.add(workspaceEdgeFactory(triple))
                                 }
+                                cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
+                                cy.layout(layoutOptions).run()
+                                this.determineTripleOptions()
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when creating triple.')
@@ -364,29 +436,24 @@
                                 this.unselectAll()
                                 let triple = body.triple
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
-                                edges.remove(id)
-                                let nodeSet = new Set()
-                                nodes.forEach(n => {
-                                    if (edges.get({
-                                            filter: (edge) => {
-                                                return edge.from == n.id ||
-                                                    edge.to == n.id
-                                            }
-                                        }).length < 1) {
-                                        nodes.update({
-                                            id: n.id,
-                                            color: nodeColorFactory({
-                                                isTempory: true
-                                            })
-                                        })
-                                    }
+                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                                    triple.t_name))[0]
+                                edge.data({
+                                    workspace_value: undefined
                                 })
+                                cy.edges('[^workspace_value][^subject_value]').remove()
+                                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
+                                    "tempory")
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when deleted triple.')
                             }
                         })
                 }
+            },
+            disableButtons() {
+                this.canUpdateEdge = false
+                this.canDeleteEdge = false
             },
             removeUnreachable() {
                 if (this.$root.progress.show == true) {
@@ -417,19 +484,14 @@
                             body.triples.forEach(triple => {
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple
                                     .t_name)
-                                edges.remove(id);
-                                [triple.h_name, triple.t_name].forEach(n => {
-                                    if (edges.get({
-                                            filter: (edge) => {
-                                                return edge.from == n.id ||
-                                                    edge.to == n.id
-                                            }
-                                        }).length < 1) {
-                                        console.log(n.id)
-                                        nodes.remove(n.id)
-                                    }
+                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
+                                    .r_name,
+                                    triple.t_name))[0]
+                                edge.data({
+                                    workspace_value: undefined
                                 })
-
+                                cy.edges('[^workspace_value][^subject_value]').remove()
+                                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').remove()
                             })
                         } else {
                             this.$root.errorDisplay(body,
@@ -453,35 +515,45 @@
             nodeFieldFocus(event) {
                 this.focusing = event
                 if (event == "head") {
-                    cy.nodes().select('#' + this.h_name).select()
+                    cy.nodes().unselect()
+                    cy.edges().unselect()
+                    cy.nodes('[id = "' + this.h_name + '"]').select()
                 } else {
-                    cy.nodes().select('#' + this.t_name).select()
+                    cy.nodes().unselect()
+                    cy.edges().unselect()
+                    cy.nodes('[id = "' + this.t_name + '"]').select()
                 }
             },
             nodeFieldChange(event) {
-                cy.nodes().select('#' + event).select()
-                this.isTripleExist()
-            },
-            edgeFieldChange(event) {
-                this.isTripleExist()
-            },
-            isTripleExist() {
+                this.canDeleteEdge = false
                 cy.nodes().unselect()
                 cy.edges().unselect()
+                cy.nodes('[id = "' + event + '"]').select()
+                this.determineTripleOptions()
+            },
+            edgeFieldChange(event) {
+                this.canDeleteEdge = false
+                this.determineTripleOptions()
+            },
+            determineTripleOptions() {
                 if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
                     this.t_name && this.t_name != '') {
-                    this.tripleNotNull = true
+                    this.canUpdateEdge = true
                     let edge = cy.getElementById(edgeIdFromNames(this.h_name, this.r_name, this.t_name))
                     if (edge) {
+                        cy.nodes().unselect()
+                        cy.edges().unselect()
                         edge.select()
                         this.canLinkEdge = edge.data("workspace_value") != true &&
                             edge.data("subject_value") != true
+                        this.canDeleteEdge = edge.data("workspace_value") != undefined
                     } else {
                         this.canLinkEdge = true
+                        this.canDeleteEdge = false
                     }
 
                 } else {
-                    this.tripleNotNull = false
+                    this.canUpdateEdge = false
                 }
             },
             editorFit() {
@@ -492,7 +564,7 @@
             cy.mount(document.getElementById("editor"))
             self = this
             cy.on('tap', 'node', (event) => {
-                if (self.tripleNotNull) {
+                if (self.canUpdateEdge) {
                     self.clearForm()
                 }
                 if (!self.h_name || this.focusing == "head") {
@@ -500,7 +572,8 @@
                 } else {
                     self.t_name = event.target.data("id")
                 }
-                self.tripleNotNull = false
+                self.disableButtons()
+                self.determineTripleOptions()
                 self.tripleBottomSheet = true;
             })
             cy.on('tap', 'edge', (event) => {
@@ -508,6 +581,7 @@
                 self.h_name = event.target.source().data("id")
                 self.r_name = event.target.data("name")
                 self.t_name = event.target.target().data("id")
+                self.determineTripleOptions()
             })
             this.loadData()
         },

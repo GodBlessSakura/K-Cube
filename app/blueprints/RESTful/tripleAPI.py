@@ -47,7 +47,7 @@ def delete(deltaGraphId):
         and "t_name" in request.json
     ):
         try:
-            result = get_api_driver().triple.remove_triple(
+            result = get_api_driver().triple.remove_workspace_triple(
                 deltaGraphId=deltaGraphId,
                 userId=session["user"]["userId"],
                 h_name=request.json["h_name"],
