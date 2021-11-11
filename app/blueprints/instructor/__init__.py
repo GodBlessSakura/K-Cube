@@ -65,16 +65,34 @@ def workspace(deltaGraphId):
         return render_template("instructor/graphEditor.html", deltaGraphId=deltaGraphId)
     abort(404)
 
-@instructor.route("/workspace/fork/", defaults={"deltaGraphId": None})
-@instructor.route("/workspace/fork/<deltaGraphId>")
-def workspaceFork(deltaGraphId):
-    if deltaGraphId is not None:
-        return render_template("instructor/graphCompare.html", deltaGraphId=deltaGraphId, fork = True)
+
+@instructor.route(
+    "/workspace/fork/", defaults={"overwriterId": None, "overwriteeId": None}
+)
+@instructor.route("/workspace/fork/<overwriterId>/", defaults={"overwriteeId": None})
+@instructor.route("/workspace/fork/<overwriterId>/<overwriteeId>")
+def workspaceFork(overwriterId, overwriteeId):
+    if overwriterId is not None:
+        return render_template(
+            "instructor/graphCompare.html",
+            overwriterId=overwriterId,
+            overwriteeId=overwriteeId,
+            fork=True,
+        )
     abort(404)
 
-@instructor.route("/workspace/patch/", defaults={"deltaGraphId": None})
-@instructor.route("/workspace/patch/<deltaGraphId>")
-def workspacePatch(deltaGraphId):
-    if deltaGraphId is not None:
-        return render_template("instructor/graphCompare.html", deltaGraphId=deltaGraphId, patch = True)
+
+@instructor.route(
+    "/workspace/patch/", defaults={"overwriterId": None, "overwriteeId": None}
+)
+@instructor.route("/workspace/patch/<overwriterId>/", defaults={"overwriteeId": None})
+@instructor.route("/workspace/patch/<overwriterId>/<overwriteeId>")
+def workspacePatch(overwriterId, overwriteeId):
+    if overwriterId is not None:
+        return render_template(
+            "instructor/graphCompare.html",
+            overwriterId=overwriterId,
+            overwriteeId=overwriteeId,
+            patch=True,
+        )
     abort(404)

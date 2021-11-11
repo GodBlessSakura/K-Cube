@@ -144,7 +144,15 @@ class workspaceResources:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId, tag=tag)
             try:
-                return workspace
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["branch"].items()
+                    }
+                for record in result
+            ][0]
             except Exception as exception:
                 raise exception
 

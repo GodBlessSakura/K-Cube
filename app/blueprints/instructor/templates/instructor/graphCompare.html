@@ -2,17 +2,23 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
-    <v-row dense style="height: 10%; width: 100%;">
+    <v-row dense style="width: 100%;">
+        <v-col>
+            <v-form dense ref="control">
+                <v-text-field v-model="tag" :rules="tagRules" label="tag for new version" required>
+                </v-text-field>
+            </v-form>
+        </v-col>
         {% if fork %}
         <v-col dense style="text-align: center;">
-            <v-btn block>
+            <v-btn block @click="submit()">
                 fork
             </v-btn>
         </v-col>
         {% endif %}
         {% if patch %}
         <v-col dense style="text-align: center;">
-            <v-btn block>
+            <v-btn block @click="submit()">
                 patch
             </v-btn>
         </v-col>
@@ -229,12 +235,21 @@
     }
 
     Vue.component('app-content', {
-        data: () => ({}),
+        data: () => ({
+            overwriterLabels: [],
+            tag: '',
+            tagRules: [v => !!v || 'Tag is required',
+                v => v.length > 3 && v.length < 101 ||
+                'Tag should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Tag can only contains alphanumeric characters and space.'
+            ],
+        }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 let graphPromise = fetch(
-                        "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                        "{{ url_for('RESTful.graph.get_compare', overwriterId=overwriterId, overwriteeId=overwriteeId) }}", {
                             method: 'GET',
                             cache: 'no-store',
                             headers: {
@@ -251,12 +266,14 @@
                         }
                     })
                     .then(body => {
-                        if (body.workspace && body.triples && body.subject && body.subject_triples) {
-                            previewCy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0])).data(
+                        if (body.overwriter && body.overwriter_triples && body.overwritee && body
+                            .overwritee_triples) {
+                            this.overwriterLabels = body.overwriter.labels
+                            previewCy.add(nodeFactory(body.overwriter.deltaGraphId.split('.')[0])).data(
                                 'imageURL',
-                                body.workspace.imageURL,
+                                body.overwriter.imageURL,
                             )
-                            body.triples.forEach(triple => {
+                            body.overwriter_triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (previewCy.getElementById(name).length == 0) {
                                         previewCy.add(nodeFactory(name))
@@ -264,7 +281,7 @@
                                 })
                                 previewCy.add(previewEdgeFactory(triple))
                             })
-                            body.subject_triples.forEach(triple => {
+                            body.overwritee_triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (previewCy.getElementById(name).length == 0) {
                                         previewCy.add(nodeFactory(name))
@@ -281,7 +298,7 @@
                                     previewCy.add(originalEdgeFactory(triple))
                                 }
                             })
-                            this.rootName = body.workspace.deltaGraphId.split('.')[0]
+                            this.rootName = body.overwriter.deltaGraphId.split('.')[0]
                             let previewCyDijkstra = previewCy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
@@ -313,6 +330,43 @@
                     this.$root.progress.show = false
                 })
             },
+            submit() {
+                let url = ''
+                if (this.overwriterLabels.includes('Workspace')) {
+
+                    //{% if fork %}
+                    url =
+                        '{{ url_for("RESTful.branch.post_with_workspace", workspaceId = overwriterId)}}?&fork=true&tag=' +
+                        this.tag
+                    //{% endif %}
+                    //{% if patch %}
+                    url =
+                        '{{ url_for("RESTful.branch.post_with_workspace", workspaceId = overwriterId, patch = patch)}}?&patch=true&tag=' +
+                        this.tag
+                    //{% endif %}
+                }
+                fetch(
+                        url, {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body, 'Unexpected error on creating new version.', )
+                    })
+            }
         },
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))

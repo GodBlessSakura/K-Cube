@@ -37,3 +37,11 @@ RESTful.register_blueprint(tree)
 from .workspaceAPI import workspace
 
 RESTful.register_blueprint(workspace)
+
+from .branchAPI import branch
+
+RESTful.register_blueprint(branch)
+
+from .trunkAPI import trunk
+
+RESTful.register_blueprint(trunk)

@@ -1,22 +1,22 @@
-MATCH (workspace:Workspace)<-[:USER_OWN]-(user:User{userId: $userId})
-WHERE workspace.deltaGraphId CONTAINS replace($courseCode,' ' ,'_')
+MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(user:User{userId: $userId})
 WITH DISTINCT workspace
 MATCH (subject)<-[:WORK_ON]-(workspace)
 WITH subject, workspace
 MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: $deltaGraphId}]->(wt:GraphConcept)
-WITH DISTINCT wr, DISTINCT wh, DISTINCT wt, workspace, DISTINCT subject
+WITH wr, wh, wt, workspace, subject
 OPTIONAL MATCH (wh)-[sr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: subject.deltaGraphId}]->(wt)
 WITH
     wr,
-    CASE sr <> null
-    THEN sr
-    ELSE {value: null}
-    END as sr
+    CASE sr
+        WHEN null
+        THEN {value: null}
+        ELSE sr
+        END as sr
 WHERE
     wr.value <> sr.value AND
     NOT (
-        wr.value == false AND 
-        sr.value == null
+        wr.value = false AND 
+        sr.value = null
         )
 MERGE (subject)<-[:FORK]-(branch:Branch:DeltaGraph)
 SET branch.creationDate = datetime.transaction(),
@@ -26,3 +26,4 @@ MERGE (wh)-[fr:DELTA_GRAPH_RELATIONSHIP{name: wr.name, deltaGraphId: branch.delt
 SET
     fr.creationDate = datetime.transaction(),
     fr.value = wr.value
+RETURN branch
