@@ -124,11 +124,25 @@ class workspaceResources:
                         else str(value.iso_format())
                         for key, value in record["subject"].items()
                     }.items()
-                    | {"isUpToDate":record["isUpToDate"]}.items()
+                    | {"isUpToDate":record["isUpToDate"]}.items(), labels = list(record["subject"].labels)
                 )
                 for record in result
             ][0]
 
+            try:
+                return workspace
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def commit_workspace_as_fork(self, deltaGraphId, userId, tag):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId, tag=tag)
             try:
                 return workspace
             except Exception as exception:

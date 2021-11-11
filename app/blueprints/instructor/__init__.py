@@ -64,3 +64,17 @@ def workspace(deltaGraphId):
     if deltaGraphId is not None:
         return render_template("instructor/graphEditor.html", deltaGraphId=deltaGraphId)
     abort(404)
+
+@instructor.route("/workspace/fork/", defaults={"deltaGraphId": None})
+@instructor.route("/workspace/fork/<deltaGraphId>")
+def workspaceFork(deltaGraphId):
+    if deltaGraphId is not None:
+        return render_template("instructor/graphCompare.html", deltaGraphId=deltaGraphId, fork = True)
+    abort(404)
+
+@instructor.route("/workspace/patch/", defaults={"deltaGraphId": None})
+@instructor.route("/workspace/patch/<deltaGraphId>")
+def workspacePatch(deltaGraphId):
+    if deltaGraphId is not None:
+        return render_template("instructor/graphCompare.html", deltaGraphId=deltaGraphId, patch = True)
+    abort(404)

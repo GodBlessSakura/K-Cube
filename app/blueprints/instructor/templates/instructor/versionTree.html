@@ -16,11 +16,12 @@
                 @click="createWorkspaceDialogue()">
                 <v-list-item-title>Create workspace</v-list-item-title>
             </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('workspace') && selectedNodeClasses.includes('canPatch')"
+                @click="fork()">
+                <v-list-item-title>Commit as patch</v-list-item-title>
+            </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="fork()">
                 <v-list-item-title>Commit as fork</v-list-item-title>
-            </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('workspace') && selectedNodeClasses.includes('canPatch')" @click="fork()">
-                <v-list-item-title>Commit as patch</v-list-item-title>
             </v-list-item>
             {% endif %}
             {% if isDLTC %}
@@ -30,6 +31,9 @@
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="patch()">
                 <v-list-item-title>Create new patch</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="patch()">
+                <v-list-item-title>Create new fork</v-list-item-title>
             </v-list-item>
             {% endif %}
         </v-list>
@@ -215,7 +219,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.workspace.put') }}" + this.selectedId, {
+                    fetch("{{ url_for('RESTful.workspace.put') }}" + this.selectedDeltaGraphId, {
                             method: 'PUT',
                             cache: 'no-store',
                             headers: {
@@ -241,7 +245,7 @@
                 }
             },
             fork() {
-
+                window.open("{{ url_for('instructor.workspaceFork')}}" + this.selectedDeltaGraphId, '_blank').focus()
             },
             // {% endif %}
             // {% if isDLTC %}
@@ -249,7 +253,7 @@
 
             },
             patch() {
-
+                window.open("{{ url_for('instructor.workspacePatch')}}" + this.selectedDeltaGraphId, '_blank').focus()
             },
             // {% endif %}
         },
@@ -263,7 +267,7 @@
                 self.cursor_x = event.originalEvent.clientX
                 self.cursor_y = event.originalEvent.clientY
                 this.selectedNodeClasses = event.target.classes()
-                this.selectedId = event.target.data("id")
+                this.selectedDeltaGraphId = event.target.data("deltaGraphId")
             })
             cy.on('tap', 'node', (event) => {
                 console.log(event)

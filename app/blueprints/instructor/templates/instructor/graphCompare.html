@@ -1,0 +1,326 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
+    <v-row dense style="height: 10%; width: 100%;">
+        {% if fork %}
+        <v-col dense style="text-align: center;">
+            <v-btn block>
+                fork
+            </v-btn>
+        </v-col>
+        {% endif %}
+        {% if patch %}
+        <v-col dense style="text-align: center;">
+            <v-btn block>
+                patch
+            </v-btn>
+        </v-col>
+        {% endif %}
+    </v-row>
+    <v-row dense style="height: 10%; width: 100%;">
+        <v-col dense style="text-align: center;">
+            Original graph
+        </v-col>
+        <v-col dense style="text-align: center;">
+            Update preview
+        </v-col>
+    </v-row>
+    <v-row dense style="height: 80%; width: 100%;">
+        <v-col dense>
+            <div id="preview" style="height: 100%; width: 100%;"></div>
+        </v-col>
+        <v-col dense>
+            <div id="subject" style="height: 100%; width: 100%;"></div>
+        </v-col>
+    </v-row>
+</v-container>
+{% endblock %}
+{% block VueComponentScript %}
+{{ layout.cytoscapeCDN() }}
+<script>
+    previewCyOption = {
+        style: [{
+                selector: 'node',
+                style: {
+                    'label': 'data(name)',
+                    'font-size': 8,
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'label': 'data(name)',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                    'font-size': 8,
+                    'text-rotation': 'autorotate',
+                    'line-style': 'solid',
+                    'opacity': 0
+                }
+            }, {
+                selector: 'edge[original_value = "ture"]',
+                style: {
+                    'line-style': 'solid',
+                    'width': 1,
+                    'opacity': 1
+                }
+            }, {
+                selector: 'edge[original_value = "false"]',
+                style: {
+                    'line-gradient-stop-colors': 'grey white white grey',
+                    'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                    'line-fill': 'linear-gradient ',
+                    'width': 1,
+                    'opacity': 1
+                }
+            },
+            {
+                selector: 'edge[preview_value = "false"][original_value = "true"]',
+                style: {
+                    'line-gradient-stop-colors': 'grey white white grey',
+                    'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                    'line-fill': 'linear-gradient ',
+                    'width': 5,
+                    'opacity': 1
+                }
+            },
+            {
+                selector: 'edge[preview_value = "true"][original_value = "false"]',
+                style: {
+                    'width': 5,
+                    'opacity': 1
+                }
+            },
+            {
+                selector: 'edge[preview_value = "true"][original_value = "undefined"]',
+                style: {
+                    'width': 5,
+                    'opacity': 1
+                }
+            }
+        ],
+        wheelSensitivity: 0.15,
+        boxSelectionEnabled: false,
+        userZoomingEnabled: false,
+        userPanningEnabled: false,
+        boxSelectionEnabled: false,
+        autounselectify: true
+    }
+    subjectCyOption = {
+        style: [{
+                selector: 'node',
+                style: {
+                    'label': 'data(name)',
+                    'font-size': 8,
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
+                }
+            },
+            {
+                selector: 'edge',
+                style: {
+                    'label': 'data(name)',
+                    'target-arrow-shape': 'triangle',
+                    'curve-style': 'bezier',
+                    'font-size': 8,
+                    'text-rotation': 'autorotate',
+                    'line-style': 'solid',
+                    'opacity': 0
+                }
+            }, {
+                selector: 'edge[original_value = "true"]',
+                style: {
+                    'line-style': 'solid',
+                    'width': 1,
+                    'opacity': 1
+                }
+            }, {
+                selector: 'edge[original_value = "false"]',
+                style: {
+                    'line-gradient-stop-colors': 'grey white white grey',
+                    'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                    'line-fill': 'linear-gradient ',
+                    'width': 1,
+                    'opacity': 1
+                }
+            }
+        ],
+        wheelSensitivity: 0.15,
+        boxSelectionEnabled: false,
+        userZoomingEnabled: false,
+        userPanningEnabled: false,
+        boxSelectionEnabled: false,
+        autounselectify: true
+
+    }
+    previewCy = cytoscape(previewCyOption)
+    subjectCy = cytoscape(subjectCyOption)
+    concentricLayoutOptions = {
+        name: 'concentric',
+    }
+    coseLayoutOptions = {
+        name: 'cose',
+        padding: document.documentElement.clientHeight * 0.15,
+        fit: true,
+        idealEdgeLength: function (edge) {
+            return 64;
+        },
+        edgeElasticity: function (edge) {
+            return 128;
+        },
+
+    }
+
+    function nodeFactory(name) {
+        let output = {
+            group: 'nodes',
+            data: {
+                id: name,
+                name: name
+            },
+            position: {
+                x: 0,
+                y: 0
+            },
+            grabbable: false,
+            pannable: false,
+        }
+        return output
+    }
+
+    function previewEdgeFactory(edge) {
+        let output = {
+            group: 'edges',
+            data: {
+                source: edge.h_name,
+                target: edge.t_name,
+                name: edge.r_name,
+                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
+                preview_value: edge.r_value ? 'true' : 'false',
+                original_value: 'undefined',
+            }
+        }
+        return output
+
+    }
+
+    function originalEdgeFactory(edge) {
+        let output = {
+            group: 'edges',
+            data: {
+                source: edge.h_name,
+                target: edge.t_name,
+                name: edge.r_name,
+                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
+                preview_value: 'undefined',
+                original_value: edge.r_value ? 'true' : 'false',
+            }
+        }
+        return output
+
+    }
+
+    function edgeIdFromNames(h_name, r_name, t_name) {
+
+        return h_name + '.' + r_name + '.' + t_name
+    }
+
+    Vue.component('app-content', {
+        data: () => ({}),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                let graphPromise = fetch(
+                        "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.workspace && body.triples && body.subject && body.subject_triples) {
+                            previewCy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0])).data(
+                                'imageURL',
+                                body.workspace.imageURL,
+                            )
+                            body.triples.forEach(triple => {
+                                [triple.h_name, triple.t_name].forEach(name => {
+                                    if (previewCy.getElementById(name).length == 0) {
+                                        previewCy.add(nodeFactory(name))
+                                    }
+                                })
+                                previewCy.add(previewEdgeFactory(triple))
+                            })
+                            body.subject_triples.forEach(triple => {
+                                [triple.h_name, triple.t_name].forEach(name => {
+                                    if (previewCy.getElementById(name).length == 0) {
+                                        previewCy.add(nodeFactory(name))
+                                    }
+                                })
+                                let edge = previewCy.getElementById(edgeIdFromNames(edge.h_name,
+                                    edge
+                                    .r_name, edge.t_name))
+                                if (edge) {
+                                    edge.data({
+                                        original_value: triple.r_value ? 'true' : 'false'
+                                    })
+                                } else {
+                                    previewCy.add(originalEdgeFactory(triple))
+                                }
+                            })
+                            this.rootName = body.workspace.deltaGraphId.split('.')[0]
+                            let previewCyDijkstra = previewCy.elements().dijkstra('node[id = "' + this
+                                .rootName +
+                                '"]')
+                            previewCy.elements().style('visibility', 'hidden')
+                            let previewLayout = previewCy.layout({
+                                ...concentricLayoutOptions,
+                                concentric: function (node) {
+                                    return previewCyDijkstra.distanceTo(node) * -1
+                                }
+                            })
+                            previewLayout.one('layoutstop', function () {
+                                let previewLayout = previewCy.layout(coseLayoutOptions)
+                                previewLayout.one('layoutstop', function () {
+                                    subjectCy.add(previewCy.elements().clone())
+                                    subjectCy.fit(coseLayoutOptions.padding)
+                                    previewCy.elements().style('visibility', 'visible')
+                                })
+                                previewLayout.run()
+                            })
+                            previewLayout.run()
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting draft information.')
+                        }
+                    })
+
+                Promise.all([graphPromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
+            },
+        },
+        mounted: function () {
+            previewCy.mount(document.getElementById("subject"))
+            subjectCy.mount(document.getElementById("preview"))
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

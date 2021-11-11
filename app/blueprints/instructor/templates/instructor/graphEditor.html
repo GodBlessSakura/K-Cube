@@ -124,7 +124,7 @@
                     'width': 5,
                 }
             }, {
-                selector: 'edge[!workspace_value]',
+                selector: 'edge[workspace_value = "false"]',
                 style: {
                     'line-gradient-stop-colors': 'grey white white grey',
                     'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
@@ -132,13 +132,13 @@
                     'width': 5,
                 }
             }, {
-                selector: 'edge[^workspace_value][?subject_value]',
+                selector: 'edge[workspace_value = "undefined"][subject_value = "true"]',
                 style: {
                     'line-style': 'solid',
                     'width': 1,
                 }
             }, {
-                selector: 'edge[^workspace_value][!subject_value]',
+                selector: 'edge[workspace_value = "undefined"][subject_value = "false"]',
                 style: {
                     'line-style': 'dashed',
                     'line-dash-pattern': '10%, 80%',
@@ -149,12 +149,22 @@
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     })
-    layoutOptions = {
-        name: 'breadthfirst',
+    concentricLayoutOptions = {
+        name: 'concentric',
+
+    }
+    coseLayoutOptions = {
+        name: 'cose',
+        padding: document.documentElement.clientHeight * 0.15,
         fit: true,
-        grid: true,
-        circle: true,
-        padding: document.documentElement.clientHeight * 0.25
+        idealEdgeLength: function (edge) {
+            return 64;
+        },
+        edgeElasticity: function (edge) {
+            return 128;
+        },
+        nestingFactor: 0.5,
+        nodeOverlap: 0.25,
     }
 
     function nodeFactory(name) {
@@ -180,8 +190,8 @@
                 target: edge.t_name,
                 name: edge.r_name,
                 id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
-                workspace_value: edge.r_value,
-                subject_value: undefined,
+                workspace_value: edge.r_value ? 'true' : 'false',
+                subject_value: 'undefined',
             }
         }
         return output
@@ -196,8 +206,8 @@
                 target: edge.t_name,
                 name: edge.r_name,
                 id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
-                workspace_value: undefined,
-                subject_value: edge.r_value,
+                workspace_value: 'undefined',
+                subject_value: edge.r_value ? 'true' : 'false',
             }
         }
         return output
@@ -256,7 +266,6 @@
                                 'background-image': body.workspace.imageURL,
                                 'background-fit': 'cover'
                             })
-                            cy
                             body.triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (cy.getElementById(name).length == 0) {
@@ -275,15 +284,31 @@
                                     .r_name, edge.t_name))
                                 if (edge) {
                                     edge.data({
-                                        subject_value: triple.r_value
+                                        subject_value: triple.r_value ? 'true' : 'false'
                                     })
                                 } else {
                                     cy.add(subjectEdgeFactory(triple))
                                 }
                             })
                             this.rootName = body.workspace.deltaGraphId.split('.')[0]
-                            layoutOptions.roots = 'node[id = "' + this.rootName + '"]'
-                            cy.layout(layoutOptions).run()
+                            let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
+                                .rootName +
+                                '"]')
+                            cy.elements().style('visibility', 'hidden')
+                            let cyLayout = cy.layout({
+                                ...concentricLayoutOptions,
+                                concentric: function (node) {
+                                    return cyDijkstra.distanceTo(node) * -1
+                                }
+                            })
+                            cyLayout.one('layoutstop', function () {
+                                let cyLayout = cy.layout(coseLayoutOptions)
+                                cyLayout.one('layoutstop', function () {
+                                    cy.elements().style('visibility', 'visible')
+                                })
+                                cyLayout.run()
+                            })
+                            cyLayout.run()
 
                         } else {
                             this.$root.errorDisplay(body,
@@ -387,13 +412,30 @@
 
                                 if (edge) {
                                     edge.data({
-                                        workspace_value: triple.r_value
+                                        workspace_value: triple.r_value ? 'true' : 'false'
                                     })
                                 } else {
                                     cy.add(workspaceEdgeFactory(triple))
                                 }
                                 cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
-                                cy.layout(layoutOptions).run()
+                                let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
+                                    .rootName +
+                                    '"]')
+                                cy.elements().style('visibility', 'hidden')
+                                let cyLayout = cy.layout({
+                                    ...concentricLayoutOptions,
+                                    concentric: function (node) {
+                                        return cyDijkstra.distanceTo(node) * -1
+                                    }
+                                })
+                                cyLayout.one('layoutstop', function () {
+                                    let cyLayout = cy.layout(coseLayoutOptions)
+                                    cyLayout.one('layoutstop', function () {
+                                        cy.elements().style('visibility', 'visible')
+                                    })
+                                    cyLayout.run()
+                                })
+                                cyLayout.run()
                                 this.determineTripleOptions()
                             } else {
                                 this.$root.errorDisplay(body,
@@ -439,9 +481,10 @@
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple.t_name))[0]
                                 edge.data({
-                                    workspace_value: undefined
+                                    workspace_value: "undefined"
                                 })
-                                cy.edges('[^workspace_value][^subject_value]').remove()
+                                cy.edges('[workspace_value = "undefined"][^subject_value = "undefined"]')
+                                    .remove()
                                 cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
                                     "tempory")
                             } else {
@@ -488,9 +531,11 @@
                                     .r_name,
                                     triple.t_name))[0]
                                 edge.data({
-                                    workspace_value: undefined
+                                    workspace_value: "undefined"
                                 })
-                                cy.edges('[^workspace_value][^subject_value]').remove()
+                                cy.edges(
+                                    '[workspace_value = "undefined"][subject_value = "undefined"]'
+                                ).remove()
                                 cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').remove()
                             })
                         } else {
@@ -544,9 +589,9 @@
                         cy.nodes().unselect()
                         cy.edges().unselect()
                         edge.select()
-                        this.canLinkEdge = edge.data("workspace_value") != true &&
-                            edge.data("subject_value") != true
-                        this.canDeleteEdge = edge.data("workspace_value") != undefined
+                        this.canLinkEdge = edge.data("workspace_value") != "true" &&
+                            edge.data("subject_value") != "true"
+                        this.canDeleteEdge = edge.data("workspace_value") != "undefined"
                     } else {
                         this.canLinkEdge = true
                         this.canDeleteEdge = false
