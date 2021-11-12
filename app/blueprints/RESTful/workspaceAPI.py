@@ -7,13 +7,13 @@ workspace = Blueprint("workspace", __name__, url_prefix="workspace")
 
 
 @workspace.put("/")
-@workspace.put("/<nodeId>")
+@workspace.put("/<deltaGraphId>")
 @authorize_RESTful_with(["canForkAssignedCourseBranch"])
-def put(nodeId):
-    if "tag" in request.json and nodeId is not None:
+def put(deltaGraphId):
+    if "tag" in request.json and deltaGraphId is not None:
         try:
             newId = get_api_driver().workspace.create_workspace(
-                nodeId=nodeId,
+                deltaGraphId=deltaGraphId,
                 tag=request.json["tag"],
                 userId=session["user"]["userId"],
             )

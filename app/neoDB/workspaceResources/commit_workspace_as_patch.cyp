@@ -3,7 +3,7 @@ WITH DISTINCT workspace, user
 MATCH (subject)<-[oldWork:WORK_ON]-(workspace)
 DELETE oldWork
 CREATE
-    (subject)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
+    (subject)<-[:PATCH]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
     (branch)<-[:WORK_ON]-(workspace)
 SET 
     branch.visibility = 

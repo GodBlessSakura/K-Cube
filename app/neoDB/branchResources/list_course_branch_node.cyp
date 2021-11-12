@@ -8,7 +8,7 @@ WITH
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})) as isAssigned
 WHERE
-    branch.deltaGraphId CONTAINS replace($courseCode,' ' ,'_') AND (
+    split(branch.deltaGraphId,'.')[0] = replace($courseCode,' ' ,'_') AND (
         (branch.visibility = 'public') OR
         (branch.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
         (branch.visibility = 'instructor' AND isInstructor) OR

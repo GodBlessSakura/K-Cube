@@ -287,9 +287,10 @@
                                         previewCy.add(nodeFactory(name))
                                     }
                                 })
-                                let edge = previewCy.getElementById(edgeIdFromNames(edge.h_name,
-                                    edge
-                                    .r_name, edge.t_name))
+                                let edge = previewCy.getElementById(edgeIdFromNames(triple.h_name,
+                                    triple
+                                    .r_name,
+                                    triple.t_name))[0]
                                 if (edge) {
                                     edge.data({
                                         original_value: triple.r_value ? 'true' : 'false'
@@ -331,19 +332,36 @@
                 })
             },
             submit() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
                 let url = ''
                 if (this.overwriterLabels.includes('Workspace')) {
-
                     //{% if fork %}
                     url =
-                        '{{ url_for("RESTful.branch.post_with_workspace", workspaceId = overwriterId)}}?&fork=true&tag=' +
+                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
                         this.tag
                     //{% endif %}
                     //{% if patch %}
                     url =
-                        '{{ url_for("RESTful.branch.post_with_workspace", workspaceId = overwriterId, patch = patch)}}?&patch=true&tag=' +
+                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
                         this.tag
                     //{% endif %}
+                }
+                if (this.overwriterLabels.includes('Branch')) {
+                    //{% if fork %}
+                    url =
+                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
+                        this.tag
+                    //{% endif %}
+                    //{% if patch %}
+                    url =
+                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
+                        this.tag
+                    //{% endif %}
+
                 }
                 fetch(
                         url, {
@@ -364,7 +382,8 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        this.$root.responseSnackBar(body, 'Unexpected error on creating new version.', )
+                        this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
+                            location.reload.bind(window.location))
                     })
             }
         },

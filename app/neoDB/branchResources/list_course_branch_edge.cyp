@@ -8,7 +8,7 @@ WITH
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})) as isAssigned
 WHERE
-    branch.deltaGraphId CONTAINS replace($courseCode,' ' ,'_') AND (
+    split(branch.deltaGraphId,'.')[0] = replace($courseCode,' ' ,'_') AND (
         (branch.visibility = 'public') OR
         (branch.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
         (branch.visibility = 'instructor' AND isInstructor) OR
@@ -16,10 +16,13 @@ WHERE
         EXISTS((branch)<-[:USER_OWN]-(user))
     )
 WITH DISTINCT branch
-MATCH
-    (branch)-[edges_a:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->(),
-    ()-[edges_b:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->(branch)
-WITH collect(edges_a)+collect(edges_b) as edges_list
-UNWIND edges_list as edges
-WITH DISTINCT edges
-RETURN edges
+CALL{
+    WITH branch
+    MATCH (branch)-[edges:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->()
+    RETURN edges
+UNION
+    WITH branch
+    MATCH ()-[edges:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->(branch)
+    RETURN edges
+}
+RETURN DISTINCT edges

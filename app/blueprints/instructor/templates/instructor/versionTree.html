@@ -3,21 +3,33 @@
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
     <div id="cy" style="height: 100%; width: 100%;"></div>
+    <v-snackbar v-model="showSelectBar" timeout='-1'>
+        Select a ${ snackbarMethod.includes('branch')?'a branch or a trunk':'ready branch'} for ${
+        snackbarMethod.includes('branch')?'merging':'creation'}
+        <template v-slot:action="{ attrs }">
+            <v-btn color="blue" text v-bind="attrs" @click="showSelectBar = false">
+                Cancel
+            </v-btn>
+        </template>
+    </v-snackbar>
     <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
         <v-list>
             {% if isInstructor %}
-            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="readyToPatch()">
-                <v-list-item-title>Ready to patch</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="readyToPush()">
+                <v-list-item-title>Ready to push</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother()">
-                <v-list-item-title>Merge with another</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother('patch')">
+                <v-list-item-title>Merge with another as patch</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother('fork')">
+                <v-list-item-title>Merge with another as fork</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
                 @click="createWorkspaceDialogue()">
                 <v-list-item-title>Create workspace</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('workspace') && selectedNodeClasses.includes('canPatch')"
-                @click="fork()">
+                @click="patch()">
                 <v-list-item-title>Commit as patch</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="fork()">
@@ -32,7 +44,7 @@
             <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="patch()">
                 <v-list-item-title>Create new patch</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="patch()">
+            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="fork()">
                 <v-list-item-title>Create new fork</v-list-item-title>
             </v-list-item>
             {% endif %}
@@ -106,6 +118,9 @@
         if (node.canPatch) {
             classes.push('canPatch')
         }
+        if (node.property.canPush) {
+            classes.push('canPush')
+        }
         let output = {
             group: 'nodes',
             data: {
@@ -143,6 +158,8 @@
             cursor_x: undefined,
             cursor_y: undefined,
             selectedNodeClasses: [],
+            showSelectBar: false,
+            snackbarMethod: '',
             //{% if isInstructor %}
             workspaceCreateDialog: false,
             tag: '',
@@ -203,10 +220,16 @@
                     })
             },
             // {% if isInstructor %}
-            readyToPatch() {
+            readyToPush() {
 
             },
-            mergeWithAnother() {
+            mergeWithAnother(method) {
+                if (method == 'fork') {
+                    this.snackbarMethod = 'branchFork'
+                } else {
+                    this.snackbarMethod = 'branchFork'
+                }
+                this.showSelectBar = true
 
             },
             createWorkspaceDialogue() {
@@ -245,15 +268,25 @@
                 }
             },
             fork() {
-                window.open("{{ url_for('instructor.workspaceFork')}}" + this.selectedDeltaGraphId, '_blank').focus()
+                window.open("{{ url_for('instructor.workspaceFork')}}" + this.selectedDeltaGraphId, '_blank')
+                    .focus()
+            },
+            patch() {
+                window.open("{{ url_for('instructor.workspacePatch')}}" + this.selectedDeltaGraphId, '_blank')
+                    .focus()
             },
             // {% endif %}
             // {% if isDLTC %}
             setActive() {
 
             },
+            fork() {
+                this.snackbarMethod = 'trunkFork'
+                this.showSelectBar = true
+            },
             patch() {
-                window.open("{{ url_for('instructor.workspacePatch')}}" + this.selectedDeltaGraphId, '_blank').focus()
+                this.snackbarMethod = 'trunkFork'
+                this.showSelectBar = true
             },
             // {% endif %}
         },
@@ -271,6 +304,26 @@
             })
             cy.on('tap', 'node', (event) => {
                 console.log(event)
+                if (this.showSelectBar) {
+                    if (this.snackbarMethod.includes('branch')) {
+                        if (event.target.classes().includes("workspace")) {
+                            event.target.unselect()
+                            return
+                        } else {
+
+                        }
+                    } else if (this.snackbarMethod.includes('trunk')) {
+                        if (event.target.classes().includes("branch") && event.target.classes()
+                            .includes("canPush")) {
+
+                        } else {
+                            event.target.unselect()
+                            return
+                        }
+                    }
+                    this.showSelectBar = false
+                    return
+                }
                 if (event.target == event.cy) return
 
                 if (event.target.classes().includes("trunk"))

@@ -1,5 +1,4 @@
 MATCH (parent{deltaGraphId: $deltaGraphId}),(owner:User{userId: $userId})
-WHERE id(parent) = toInteger($id)
 CREATE (parent)<-[:WORK_ON]-(workspace:Workspace)<-[:USER_OWN]-(owner)
 SET
     workspace.creationDate = datetime.transaction(),

@@ -280,8 +280,8 @@
                                         cy.add(nodeFactory(name))
                                     }
                                 })
-                                let edge = cy.getElementById(edgeIdFromNames(edge.h_name, edge
-                                    .r_name, edge.t_name))
+                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
+                                    .r_name, triple.t_name))
                                 if (edge) {
                                     edge.data({
                                         subject_value: triple.r_value ? 'true' : 'false'
