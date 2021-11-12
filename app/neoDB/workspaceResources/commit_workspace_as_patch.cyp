@@ -39,5 +39,13 @@ CALL{
         fr.creationDate = datetime.transaction(),
         fr.value = wr.value
     RETURN null
+UNION
+    WITH branch, subject
+    MATCH (sh:GraphConcept)-[sr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: subject.deltaGraphId}]->(st:GraphConcept)
+    MERGE (sh) -[fr:DELTA_GRAPH_RELATIONSHIP{name: sr.name, deltaGraphId: branch.deltaGraphId}]-> (st)
+    ON CREATE SET
+        fr.creationDate = datetime.transaction(),
+        fr.value = sr.value
+    RETURN null
 }
 RETURN DISTINCT branch

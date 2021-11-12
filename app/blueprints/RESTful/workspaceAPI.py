@@ -49,7 +49,7 @@ def get(deltaGraphId):
                 ),
                 "subject_triples": get_api_driver().triple.get_workspace_subject_triple(
                     deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
-                )
+                ),
             }
         )
     except Exception as e:

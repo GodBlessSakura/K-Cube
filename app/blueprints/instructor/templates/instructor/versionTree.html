@@ -124,7 +124,7 @@
         let output = {
             group: 'nodes',
             data: {
-                id: node.id,
+                id: 'node' + node.id,
                 tag: node.property.tag,
                 deltaGraphId: node.property.deltaGraphId
             },
@@ -143,9 +143,9 @@
         let output = {
             group: 'edges',
             data: {
-                id: edge.id,
-                source: edge.start,
-                target: edge.end,
+                id: 'edge' + edge.id,
+                source: 'node' + edge.start,
+                target: 'node' + edge.end,
                 tag: edge.type
             }
         }
@@ -205,6 +205,10 @@
                             })
                             body.edges.forEach(edge => {
                                 cy.add(edgeFactory(edge))
+                            })
+                            console.log(body.edges)
+                            cy.edges().forEach(e => {
+                                console.log(e.data())
                             })
                             cy.layout({
                                 name: 'breadthfirst',
@@ -268,12 +272,21 @@
                 }
             },
             fork() {
-                window.open("{{ url_for('instructor.workspaceFork')}}" + this.selectedDeltaGraphId, '_blank')
-                    .focus()
+                let w = window.open("{{ url_for('instructor.workspaceFork')}}" + this.selectedDeltaGraphId,
+                    '_blank')
+                w.onbeforeunload = function () {
+                    location.reload()
+                }
+                w.focus()
+
             },
             patch() {
-                window.open("{{ url_for('instructor.workspacePatch')}}" + this.selectedDeltaGraphId, '_blank')
-                    .focus()
+                let w = window.open("{{ url_for('instructor.workspacePatch')}}" + this.selectedDeltaGraphId,
+                    '_blank')
+                w.onbeforeunload = function () {
+                    location.reload()
+                }
+                w.focus()
             },
             // {% endif %}
             // {% if isDLTC %}
@@ -326,14 +339,29 @@
                 }
                 if (event.target == event.cy) return
 
-                if (event.target.classes().includes("trunk"))
-                    window.open("127.0.0.1:5000", '_blank').focus()
-                if (event.target.classes().includes("branch"))
-                    window.open("127.0.0.1:5000", '_blank').focus()
+                if (event.target.classes().includes("trunk")) {
+                    let w = window.open("127.0.0.1:5000", '_blank')
+                    w.onbeforeunload = function () {
+                        location.reload()
+                    }
+                    w.focus()
+                }
+                if (event.target.classes().includes("branch")) {
+                    let w = window.open("127.0.0.1:5000", '_blank')
+                    w.onbeforeunload = function () {
+                        location.reload()
+                    }
+                    w.focus()
+                }
                 // {% if isInstructor %}
-                if (event.target.classes().includes("workspace"))
-                    window.open("{{ url_for('instructor.workspace')}}" + event.target.data(
-                        "deltaGraphId"), '_blank').focus()
+                if (event.target.classes().includes("workspace")) {
+                    let w = window.open("{{ url_for('instructor.workspace')}}" + event.target.data(
+                        "deltaGraphId"), '_blank')
+                    w.onbeforeunload = function () {
+                        location.reload()
+                    }
+                    w.focus()
+                }
                 // {% endif %}
                 // {% if isDLTC %}
                 // {% endif %}
