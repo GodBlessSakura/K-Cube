@@ -177,6 +177,7 @@
         edgeElasticity: function (edge) {
             return 128;
         },
+        gravity: 0.15
 
     }
 
@@ -306,9 +307,9 @@
                             previewCy.elements().style('visibility', 'hidden')
                             let previewLayout = previewCy.layout({
                                 ...concentricLayoutOptions,
-                                concentric: function (node) {
-                                    return previewCyDijkstra.distanceTo(node) * -1
-                                }
+                                // concentric: function (node) {
+                                //     return previewCyDijkstra.distanceTo(node) * -1
+                                // }
                             })
                             previewLayout.one('layoutstop', function () {
                                 let previewLayout = previewCy.layout(coseLayoutOptions)

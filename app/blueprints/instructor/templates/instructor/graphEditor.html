@@ -163,8 +163,7 @@
         edgeElasticity: function (edge) {
             return 128;
         },
-        nestingFactor: 0.5,
-        nodeOverlap: 0.25,
+        gravity: 0.15
     }
 
     function nodeFactory(name) {
@@ -297,9 +296,9 @@
                             cy.elements().style('visibility', 'hidden')
                             let cyLayout = cy.layout({
                                 ...concentricLayoutOptions,
-                                concentric: function (node) {
-                                    return cyDijkstra.distanceTo(node) * -1
-                                }
+                                // concentric: function (node) {
+                                //     return cyDijkstra.distanceTo(node) * -1
+                                // }
                             })
                             cyLayout.one('layoutstop', function () {
                                 let cyLayout = cy.layout(coseLayoutOptions)
@@ -424,9 +423,9 @@
                                 cy.elements().style('visibility', 'hidden')
                                 let cyLayout = cy.layout({
                                     ...concentricLayoutOptions,
-                                    concentric: function (node) {
-                                        return cyDijkstra.distanceTo(node) * -1
-                                    }
+                                    // concentric: function (node) {
+                                    //     return cyDijkstra.distanceTo(node) * -1
+                                    // }
                                 })
                                 cyLayout.one('layoutstop', function () {
                                     let cyLayout = cy.layout(coseLayoutOptions)
