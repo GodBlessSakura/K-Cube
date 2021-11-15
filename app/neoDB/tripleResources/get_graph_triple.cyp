@@ -8,7 +8,7 @@ CALL{
         user,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(branch.deltaGraphId,'.')[0]})) as isAssigned
+        EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned
     WHERE
         (graph.visibility = 'public') OR
         (graph.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR

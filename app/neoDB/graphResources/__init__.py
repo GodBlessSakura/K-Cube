@@ -27,9 +27,12 @@ class graphResources:
                         key: value
                         if not isinstance(value, DateTime)
                         else str(value.iso_format())
-                        for key, value in record["workspace"].items()
+                        for key, value in record["graph"].items()
                     }.items()
-                    | record["course"].items()
+                    | {
+                        "isOwner": record["isOwner"],
+                    }.items()| record["course"].items(),
+                    labels=list(record["graph"].labels),
                 )
                 for record in result
             ][0]

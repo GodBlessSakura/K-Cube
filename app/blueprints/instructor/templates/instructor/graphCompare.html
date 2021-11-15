@@ -23,10 +23,10 @@
     </v-row>
     <v-row dense style="height: 10%; width: 100%;">
         <v-col dense style="text-align: center;">
-            Original graph
+            Original graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
         </v-col>
         <v-col dense style="text-align: center;">
-            Update preview
+            Update preview - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
         </v-col>
     </v-row>
     <v-row dense style="height: 80%; width: 100%;">
@@ -107,9 +107,6 @@
         ],
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
-        userZoomingEnabled: false,
-        userPanningEnabled: false,
-        boxSelectionEnabled: false,
         autounselectify: true
     }
     subjectCyOption = {
@@ -153,9 +150,6 @@
         ],
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
-        userZoomingEnabled: false,
-        userPanningEnabled: false,
-        boxSelectionEnabled: false,
         autounselectify: true
 
     }
@@ -189,8 +183,7 @@
                 x: 0,
                 y: 0
             },
-            grabbable: false,
-            pannable: false,
+            pannable: true,
         }
         return output
     }
@@ -239,12 +232,15 @@
             tagRules: [v => !!v || 'Tag is required',
                 v => v.length > 3 && v.length < 101 ||
                 'Tag should be anything between 4 and 100 charactors',
-                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
-                'Tag can only contains alphanumeric characters and space.'
+                v => /^[a-zA-Z0-9\s.]+$/.test(v) ||
+                'Tag can only contains alphanumeric characters, dot(.) and space.'
             ],
             options: [],
             action: [],
-            isTrival: false
+            isTrival: false,
+            overwriter: undefined,
+            overwritee: undefined
+
         }),
         methods: {
             loadData() {
@@ -269,6 +265,8 @@
                     .then(body => {
                         if (body.overwriter && body.overwriter_triples && body.overwritee && body
                             .overwritee_triples) {
+                            this.overwriter = body.overwriter
+                            this.overwritee = body.overwritee
                             //{% if isInstructor %}
                             if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner) {
                                 this.options = ['patch', 'fork']
@@ -360,29 +358,17 @@
                     return
                 }
                 this.$root.progress.show = true
-                let url = ''
-                if (this.overwriterLabels.includes('Workspace')) {
-                    if (this.action == 'fork') {
-                        url =
-                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
-                            this.tag
-                    } else if (this.action == 'patch') {
-                        url =
-                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
-                            this.tag
-                    }
-                }
-                if (this.overwriterLabels.includes('Branch')) {
-                    if (this.action == 'fork') {
-                        url =
-                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
-                            this.tag
-
-                    } else if (this.action == 'patch') {
-                        url =
-                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
-                            this.tag
-                    }
+                //{% if isInstructor %}
+                let url =
+                    '{{ url_for("RESTful.branch.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
+                //{% endif %}
+                //{% if isDLTC %}
+                let url =
+                    '{{ url_for("RESTful.trunk.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
+                //{% endif %}
+                let body = {
+                    tag: this.tag,
+                    action: this.action
                 }
                 fetch(
                         url, {
@@ -391,6 +377,7 @@
                             headers: {
                                 'Content-Type': 'application/json'
                             },
+                            body: JSON.stringify(body)
                         })
                     .then(response => {
                         try {
@@ -404,13 +391,41 @@
                     .then(body => {
                         this.$root.progress.show = false
                         this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
-                            location.reload.bind(window.location))
+                            () => {
+                                if (this.overwriterLabels.includes('Workspace')) {
+                                    location.reload.bind(window.location)
+                                } else {
+                                    window.close()
+                                }
+                            })
                     })
             }
         },
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))
             subjectCy.mount(document.getElementById("preview"))
+            previewCy.on('dragpan',(event)=>{
+                subjectCy.pan(previewCy.pan())
+            })
+            previewCy.on('pinchzoom',(event)=>{
+                subjectCy.zoom(previewCy.zoom())
+                subjectCy.pan(previewCy.pan())
+            })
+            previewCy.on('scrollzoom ',(event)=>{
+                subjectCy.zoom(previewCy.zoom())
+                subjectCy.pan(previewCy.pan())
+            })
+            subjectCy.on('dragpan',(event)=>{
+                previewCy.pan(subjectCy.pan())
+            })
+            subjectCy.on('pinchzoom',(event)=>{
+                previewCy.zoom(subjectCy.zoom())
+                previewCy.pan(subjectCy.pan())
+            })
+            subjectCy.on('scrollzoom ',(event)=>{
+                previewCy.zoom(subjectCy.zoom())
+                previewCy.pan(subjectCy.pan())
+            })
             this.loadData()
         },
         template: '#content',

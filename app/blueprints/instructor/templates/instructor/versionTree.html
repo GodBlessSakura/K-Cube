@@ -100,7 +100,17 @@
                 style: {
                     'opacity': 0.25
                 }
-            }
+            }, {
+                selector: 'node.branch',
+                style: {
+                    'shape': 'rectangle'
+                }
+            }, {
+                selector: 'node.canPush[]',
+                style: {
+                    'shape': 'diamond'
+                }
+            },
         ],
         userZoomingEnabled: false,
         userPanningEnabled: false,
@@ -153,17 +163,17 @@
             showMenu: false,
             cursor_x: undefined,
             cursor_y: undefined,
-            selectedNodeClasses: [],
             showSelectBar: false,
             snackbarMethod: '',
+            selectedNodeClasses: [],
             //{% if isInstructor %}
             workspaceCreateDialog: false,
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
                 v => v.length > 3 && v.length < 101 ||
                 'Tag name should be anything between 4 and 100 charactors',
-                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
-                'Tag name can only contains alphanumeric characters and space.'
+                v => /^[a-zA-Z0-9\s.]+$/.test(v) ||
+                'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
             //{% endif %}
         }),
@@ -190,6 +200,7 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
+                            cy.remove(cy.elements())
                             body.trunk_nodes.forEach(node => {
                                 cy.add(nodeFactory(node, ["trunk"]))
                             })
@@ -201,10 +212,6 @@
                             })
                             body.edges.forEach(edge => {
                                 cy.add(edgeFactory(edge))
-                            })
-                            console.log(body.edges)
-                            cy.edges().forEach(e => {
-                                console.log(e.data())
                             })
                             cy.layout({
                                 name: 'breadthfirst',
@@ -221,12 +228,37 @@
             },
             // {% if isInstructor %}
             readyToPush() {
-
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.branch.patch') }}" + this.selectedNode.data("deltaGraphId"), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            canPush: true,
+                        })
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Creation failed for unkown reason.',
+                            () => {
+                                this.loadData()
+                            })
+                    })
             },
             mergeWithAnother() {
                 this.snackbarMethod = 'branch'
                 this.selectableNodes = cy.nodes(
-                    '.branch[deltaGraphId  != "' + this.selectedDeltaGraphId + '"],' +
+                    '.branch[deltaGraphId  != "' + this.selectedNode.data("deltaGraphId") + '"],' +
                     '.trunk')
                 this.selectAnotherMode()
             },
@@ -240,7 +272,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.workspace.put') }}" + this.selectedDeltaGraphId, {
+                    fetch("{{ url_for('RESTful.workspace.put') }}" + this.selectedNode.data("deltaGraphId"), {
                             method: 'PUT',
                             cache: 'no-store',
                             headers: {
@@ -266,12 +298,37 @@
                 }
             },
             commit() {
-                this.newTab("{{ url_for('instructor.commit')}}" + this.selectedDeltaGraphId)
+                this.newTab("{{ url_for('instructor.commit')}}" + this.selectedNode.data("deltaGraphId"))
             },
             // {% endif %}
             // {% if isDLTC %}
             setActive() {
-
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.trunk.patch') }}" + this.selectedNode.data("deltaGraphId"), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            active: true,
+                        })
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Creation failed for unkown reason.',
+                            () => {
+                                this.loadData()
+                            })
+                    })
             },
             release() {
                 this.snackbarMethod = 'trunk'
@@ -292,10 +349,11 @@
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
-                w.onbeforeunload = function () {
+                w.onbeforeunload = () => {
                     this.loadData()
                 }
                 w.focus()
+                this.resume()
             }
         },
         mounted: function () {
@@ -307,8 +365,8 @@
                 self.showMenu = true
                 self.cursor_x = event.originalEvent.clientX
                 self.cursor_y = event.originalEvent.clientY
-                this.selectedNodeClasses = event.target.classes()
-                this.selectedDeltaGraphId = event.target.data("deltaGraphId")
+                this.selectedNode = event.target[0]
+                this.selectedNodeClasses = event.target[0].classes()
                 event.target[0].select()
             })
             cy.on('tap', 'node', (event) => {
@@ -318,18 +376,18 @@
                     // {% if isInstructor %}
                     if (this.snackbarMethod == 'branch') {
                         if (this.selectableNodes.contains(event.target[0])) {
-                            this.newTab("{{ url_for('instructor.branch')}}" + this
-                                .selectedDeltaGraphId + '/' + event.target[0].data(
-                                    'deltaGraphId'))
+                            this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
+                                    'deltaGraphId') + '/' + this
+                                .selectedNode.data("deltaGraphId"))
                         }
                     }
                     // {% endif %}
                     // {% if isDLTC %}
                     if (this.snackbarMethod == 'trunk') {
                         if (this.selectableNodes.contains(event.target[0])) {
-                            this.newTab("{{ url_for('DLTC.trunk')}}" + this
-                                .selectedDeltaGraphId + '/' + event.target[0].data(
-                                    'deltaGraphId'))
+                            this.newTab("{{ url_for('DLTC.trunk')}}" + event.target[0].data(
+                                    'deltaGraphId') + '/' + this
+                                .selectedNode.data("deltaGraphId"))
                         }
                     }
                     // {% endif %}

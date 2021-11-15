@@ -1,6 +1,6 @@
 MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(user:User{userId: $userId})
 WITH DISTINCT workspace, user
-MATCH (subject)<-[oldWork:WORK_ON]-(workspace)
+MATCH (user)-[:USER_OWN]->(subject)<-[oldWork:WORK_ON]-(workspace)
 DELETE oldWork
 CREATE
     (subject)<-[:PATCH]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),

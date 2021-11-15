@@ -8,7 +8,7 @@ workspace = Blueprint("workspace", __name__, url_prefix="workspace")
 
 @workspace.put("/")
 @workspace.put("/<deltaGraphId>")
-@authorize_RESTful_with(["canForkAssignedCourseBranch"])
+@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
 def put(deltaGraphId):
     if "tag" in request.json and deltaGraphId is not None:
         try:
@@ -24,7 +24,7 @@ def put(deltaGraphId):
 
 
 @workspace.get("/")
-@authorize_RESTful_with(["canForkAssignedCourseBranch"])
+@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
 def query():
     # if request.args.get("ofUser"):
     #     return draftOfUser()
@@ -32,7 +32,7 @@ def query():
 
 
 @workspace.get("<deltaGraphId>")
-@authorize_RESTful_with(["canForkAssignedCourseBranch"])
+@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
 def get(deltaGraphId):
     try:
         return jsonify(

@@ -82,9 +82,8 @@ def commit(overwriterId, overwriteeId):
         )
     abort(404)
 
-@instructor.route(
-    "/branch/", defaults={"overwriterId": None, "overwriteeId": None}
-)
+
+@instructor.route("/branch/", defaults={"overwriterId": None, "overwriteeId": None})
 @instructor.route("/branch/<overwriterId>/", defaults={"overwriteeId": None})
 @instructor.route("/branch/<overwriterId>/<overwriteeId>")
 def branch(overwriterId, overwriteeId):

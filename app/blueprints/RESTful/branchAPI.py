@@ -6,44 +6,75 @@ from app.authorizer import authorize_RESTful_with
 branch = Blueprint("branch", __name__, url_prefix="branch")
 
 
-@branch.post("/")
-def post():
-    if request.args.get("tag") is not None:
-        if request.args.get("workspaceId") is not None:
-            if request.args.get("fork") is not None:
+@branch.post("/<overwriterId>/", defaults={"overwriteeId": None})
+@branch.post("/<overwriterId>/<overwriteeId>")
+def post(overwriterId, overwriteeId):
+    if "tag" in request.json and "action" in request.json:
+        if overwriterId is not None and overwriteeId is None:
+            if request.json["action"] == "fork":
                 return jsonify(
                     {
                         "success": True,
                         "branch": get_api_driver().workspace.commit_workspace_as_fork(
-                            deltaGraphId=request.args.get("workspaceId"),
-                            tag=request.args.get("tag"),
+                            deltaGraphId=overwriterId,
+                            tag=request.json["tag"],
                             userId=session["user"]["userId"],
                         ),
                     }
                 )
-            else:
+            if request.json["action"] == "patch":
                 return jsonify(
                     {
                         "success": True,
                         "branch": get_api_driver().workspace.commit_workspace_as_patch(
-                            deltaGraphId=request.args.get("workspaceId"),
-                            tag=request.args.get("tag"),
+                            overwriterId=overwriterId,
+                            overwriteeId=overwriteeId,
+                            tag=request.json["tag"],
                             userId=session["user"]["userId"],
                         ),
                     }
                 )
-        if request.args.get("overwriteeId") is not None:
-            if request.args.get("fork") is not None:
+        if overwriterId is not None and overwriteeId is not None:
+            if request.json["action"] == "fork":
                 return jsonify(
                     {
                         "success": True,
                         "branch": get_api_driver().branch.merge_as_fork(
-                            deltaGraphId=request.args.get("workspaceId"),
-                            tag=request.args.get("tag"),
+                            overwriterId=overwriterId,
+                            overwriteeId=overwriteeId,
+                            tag=request.json["tag"],
                             userId=session["user"]["userId"],
                         ),
                     }
                 )
-            else:
-                pass
+            if request.json["action"] == "patch":
+                return jsonify(
+                    {
+                        "success": True,
+                        "branch": get_api_driver().branch.merge_as_patch(
+                            overwriterId=overwriterId,
+                            overwriteeId=overwriteeId,
+                            tag=request.json["tag"],
+                            userId=session["user"]["userId"],
+                        ),
+                    }
+                )
+    return jsonify({"success": False, "message": "incomplete request"})
+
+
+@branch.patch("/", defaults={"deltaGraphId": None})
+@branch.patch("/<deltaGraphId>")
+def patch(deltaGraphId):
+    if deltaGraphId is not None:
+        if "canPush" in request.json:
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().branch.set_canPush(
+                        deltaGraphId=deltaGraphId,
+                        userId=session["user"]["userId"],
+                        canPush=request.json["canPush"],
+                    ),
+                }
+            )
     return jsonify({"success": False, "message": "incomplete request"})

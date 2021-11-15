@@ -8,7 +8,7 @@ graph = Blueprint("graph", __name__, url_prefix="graph")
 
 @graph.route("/compare/<overwriterId>/", defaults={"overwriteeId": None})
 @graph.get("compare/<overwriterId>/<overwriteeId>")
-@authorize_RESTful_with(["canForkAssignedCourseBranch"])
+@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
 def get_compare(overwriterId, overwriteeId):
     if overwriteeId:
         return jsonify(

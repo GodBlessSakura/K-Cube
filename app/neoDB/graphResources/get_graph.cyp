@@ -8,18 +8,18 @@ CALL{
         user,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(branch.deltaGraphId,'.')[0]})) as isAssigned
+        EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned,
+        EXISTS((graph)<-[:USER_OWN]-(user)) as isOwner
     WHERE        
         (graph.visibility = 'public') OR
         (graph.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
         (graph.visibility = 'instructor' AND isInstructor) OR
         (graph.visibility = 'collaborator' AND isAssigned) OR
-        EXISTS((graph)<-[:USER_OWN]-(user))
-    RETURN graph
+        isOwner
+    RETURN graph, isOwner
 UNION
     MATCH (graph:Trunk{deltaGraphId: $deltaGraphId})
-    RETURN graph
+    RETURN graph, false as isOwner
 }
-WITH DISTINCT graph
 MATCH (:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})<-[:COURSE_DESCRIBE]-(course)
-RETURN DISTINCT graph, course
+RETURN DISTINCT graph, course, isOwner
