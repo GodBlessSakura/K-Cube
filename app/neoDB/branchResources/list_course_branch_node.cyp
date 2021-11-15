@@ -5,7 +5,7 @@ WITH
     branch,
     user,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
-    EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isInstructor,
+    EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})) as isAssigned
 WHERE
     split(branch.deltaGraphId,'.')[0] = replace($courseCode,' ' ,'_') AND (
