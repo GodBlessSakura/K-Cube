@@ -5,24 +5,21 @@
     <v-row dense style="width: 100%;">
         <v-col>
             <v-form dense ref="control">
-                <v-text-field v-model="tag" :rules="tagRules" label="tag for new version" required>
+                <v-text-field dense v-model="tag" :rules="tagRules" label="tag for new version" required
+                    :disabled=isTrival>
                 </v-text-field>
             </v-form>
         </v-col>
-        {% if fork %}
+        <v-col>
+            <v-select dense v-model="action" :items="options" :disabled='isTrival || options.length == 0'
+                label="Filled style">
+            </v-select>
+        </v-col>
         <v-col dense style="text-align: center;">
-            <v-btn block @click="submit()">
-                fork
+            <v-btn block @click="submit()" :disabled=isTrival>
+                ${isTrival?'No meaningful edge was found':'submit'}
             </v-btn>
         </v-col>
-        {% endif %}
-        {% if patch %}
-        <v-col dense style="text-align: center;">
-            <v-btn block @click="submit()">
-                patch
-            </v-btn>
-        </v-col>
-        {% endif %}
     </v-row>
     <v-row dense style="height: 10%; width: 100%;">
         <v-col dense style="text-align: center;">
@@ -245,6 +242,9 @@
                 v => /^[a-zA-Z0-9\s]+$/.test(v) ||
                 'Tag can only contains alphanumeric characters and space.'
             ],
+            options: [],
+            action: [],
+            isTrival: false
         }),
         methods: {
             loadData() {
@@ -269,6 +269,21 @@
                     .then(body => {
                         if (body.overwriter && body.overwriter_triples && body.overwritee && body
                             .overwritee_triples) {
+                            //{% if isInstructor %}
+                            if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner) {
+                                this.options = ['patch', 'fork']
+                                this.action = 'patch'
+                            } else {
+                                this.options = ['fork']
+                                this.action = 'fork'
+                            }
+                            //{% endif %}
+                            //{% if isDLTC %}
+                            if (body.overwritee.labels.includes('Trunk')) {
+                                this.options = ['patch', 'fork']
+                                this.action = 'patch'
+                            }
+                            //{% endif %}
                             this.overwriterLabels = body.overwriter.labels
                             previewCy.add(nodeFactory(body.overwriter.deltaGraphId.split('.')[0])).data(
                                 'imageURL',
@@ -300,6 +315,13 @@
                                     previewCy.add(originalEdgeFactory(triple))
                                 }
                             })
+                            if (previewCy.edges(
+                                    '[preview_value = "false"][original_value = "true"],' +
+                                    '[preview_value = "true"][original_value = "false"],' +
+                                    '[preview_value = "true"][original_value = "undefined"]'
+                                ).length == 0) {
+                                this.isTrival = true
+                            }
                             this.rootName = body.overwriter.deltaGraphId.split('.')[0]
                             let previewCyDijkstra = previewCy.elements().dijkstra('node[id = "' + this
                                 .rootName +
@@ -340,29 +362,27 @@
                 this.$root.progress.show = true
                 let url = ''
                 if (this.overwriterLabels.includes('Workspace')) {
-                    //{% if fork %}
-                    url =
-                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
-                        this.tag
-                    //{% endif %}
-                    //{% if patch %}
-                    url =
-                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
-                        this.tag
-                    //{% endif %}
+                    if (this.action == 'fork') {
+                        url =
+                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
+                            this.tag
+                    } else if (this.action == 'patch') {
+                        url =
+                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
+                            this.tag
+                    }
                 }
                 if (this.overwriterLabels.includes('Branch')) {
-                    //{% if fork %}
-                    url =
-                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
-                        this.tag
-                    //{% endif %}
-                    //{% if patch %}
-                    url =
-                        '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
-                        this.tag
-                    //{% endif %}
+                    if (this.action == 'fork') {
+                        url =
+                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&fork=true&tag=' +
+                            this.tag
 
+                    } else if (this.action == 'patch') {
+                        url =
+                            '{{ url_for("RESTful.branch.post")}}?workspaceId={{overwriterId}}&patch=true&tag=' +
+                            this.tag
+                    }
                 }
                 fetch(
                         url, {

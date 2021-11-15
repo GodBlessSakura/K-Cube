@@ -124,7 +124,7 @@ class workspaceResources:
                         else str(value.iso_format())
                         for key, value in record["subject"].items()
                     }.items()
-                    | {"isUpToDate": record["isUpToDate"]}.items(),
+                    | {"isUpToDate": record["isUpToDate"],"isOwner": record["isOwner"]}.items(),
                     labels=list(record["subject"].labels),
                 )
                 for record in result

@@ -4,10 +4,10 @@
 <v-card style="height: 100%; width: 100%;">
     <div id="cy" style="height: 100%; width: 100%;"></div>
     <v-snackbar v-model="showSelectBar" timeout='-1'>
-        Select a ${ snackbarMethod.includes('branch')?'a branch or a trunk':'ready branch'} for ${
-        snackbarMethod.includes('branch')?'merging':'creation'}
+        Select a ${ (snackbarMethod == 'branch')?'a branch or a trunk':'ready branch'} for ${
+        (snackbarMethod == 'branch')?'merging':'creation'}
         <template v-slot:action="{ attrs }">
-            <v-btn color="blue" text v-bind="attrs" @click="showSelectBar = false">
+            <v-btn color="blue" text v-bind="attrs" @click="resume()">
                 Cancel
             </v-btn>
         </template>
@@ -18,22 +18,15 @@
             <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="readyToPush()">
                 <v-list-item-title>Ready to push</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother('patch')">
-                <v-list-item-title>Merge with another as patch</v-list-item-title>
-            </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother('fork')">
-                <v-list-item-title>Merge with another as fork</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother()">
+                <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
                 @click="createWorkspaceDialogue()">
                 <v-list-item-title>Create workspace</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('workspace') && selectedNodeClasses.includes('canPatch')"
-                @click="patch()">
-                <v-list-item-title>Commit as patch</v-list-item-title>
-            </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="fork()">
-                <v-list-item-title>Commit as fork</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="commit()">
+                <v-list-item-title>Commit workspace</v-list-item-title>
             </v-list-item>
             {% endif %}
             {% if isDLTC %}
@@ -41,11 +34,8 @@
                 @click="setActive()">
                 <v-list-item-title>Set as active</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="patch()">
-                <v-list-item-title>Create new patch</v-list-item-title>
-            </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="fork()">
-                <v-list-item-title>Create new fork</v-list-item-title>
+            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="release()">
+                <v-list-item-title>Release new version</v-list-item-title>
             </v-list-item>
             {% endif %}
         </v-list>
@@ -103,6 +93,12 @@
                     'label': 'data(tag)',
                     'target-arrow-shape': 'triangle',
                     'curve-style': 'bezier'
+                }
+            },
+            {
+                selector: 'node.uselectable',
+                style: {
+                    'opacity': 0.25
                 }
             }
         ],
@@ -227,14 +223,12 @@
             readyToPush() {
 
             },
-            mergeWithAnother(method) {
-                if (method == 'fork') {
-                    this.snackbarMethod = 'branchFork'
-                } else {
-                    this.snackbarMethod = 'branchFork'
-                }
-                this.showSelectBar = true
-
+            mergeWithAnother() {
+                this.snackbarMethod = 'branch'
+                this.selectableNodes = cy.nodes(
+                    '.branch[deltaGraphId  != "' + this.selectedDeltaGraphId + '"],' +
+                    '.trunk')
+                this.selectAnotherMode()
             },
             createWorkspaceDialogue() {
                 this.workspaceCreateDialog = true
@@ -271,37 +265,38 @@
                         })
                 }
             },
-            fork() {
-                let w = window.open("{{ url_for('instructor.workspaceFork')}}" + this.selectedDeltaGraphId,
-                    '_blank')
-                w.onbeforeunload = function () {
-                    location.reload()
-                }
-                w.focus()
-
-            },
-            patch() {
-                let w = window.open("{{ url_for('instructor.workspacePatch')}}" + this.selectedDeltaGraphId,
-                    '_blank')
-                w.onbeforeunload = function () {
-                    location.reload()
-                }
-                w.focus()
+            commit() {
+                this.newTab("{{ url_for('instructor.commit')}}" + this.selectedDeltaGraphId)
             },
             // {% endif %}
             // {% if isDLTC %}
             setActive() {
 
             },
-            fork() {
-                this.snackbarMethod = 'trunkFork'
-                this.showSelectBar = true
-            },
-            patch() {
-                this.snackbarMethod = 'trunkFork'
-                this.showSelectBar = true
+            release() {
+                this.snackbarMethod = 'trunk'
+                this.selectableNodes = cy.nodes(
+                    '.branch.canPush')
+                this.selectAnotherMode()
             },
             // {% endif %}
+            selectAnotherMode() {
+                cy.nodes().difference(this.selectableNodes).addClass('uselectable')
+                cy.nodes().unselectify()
+                this.showSelectBar = true
+            },
+            resume() {
+                this.showSelectBar = false
+                cy.nodes(".uselectable").removeClass('uselectable')
+                cy.nodes().unselectify()
+            },
+            newTab(url) {
+                let w = window.open(url, '_blank')
+                w.onbeforeunload = function () {
+                    this.loadData()
+                }
+                w.focus()
+            }
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
@@ -314,53 +309,43 @@
                 self.cursor_y = event.originalEvent.clientY
                 this.selectedNodeClasses = event.target.classes()
                 this.selectedDeltaGraphId = event.target.data("deltaGraphId")
+                event.target[0].select()
             })
             cy.on('tap', 'node', (event) => {
                 console.log(event)
+                if (event.target == event.cy) return
                 if (this.showSelectBar) {
-                    if (this.snackbarMethod.includes('branch')) {
-                        if (event.target.classes().includes("workspace")) {
-                            event.target.unselect()
-                            return
-                        } else {
-
-                        }
-                    } else if (this.snackbarMethod.includes('trunk')) {
-                        if (event.target.classes().includes("branch") && event.target.classes()
-                            .includes("canPush")) {
-
-                        } else {
-                            event.target.unselect()
-                            return
+                    // {% if isInstructor %}
+                    if (this.snackbarMethod == 'branch') {
+                        if (this.selectableNodes.contains(event.target[0])) {
+                            this.newTab("{{ url_for('instructor.branch')}}" + this
+                                .selectedDeltaGraphId + '/' + event.target[0].data(
+                                    'deltaGraphId'))
                         }
                     }
-                    this.showSelectBar = false
+                    // {% endif %}
+                    // {% if isDLTC %}
+                    if (this.snackbarMethod == 'trunk') {
+                        if (this.selectableNodes.contains(event.target[0])) {
+                            this.newTab("{{ url_for('DLTC.trunk')}}" + this
+                                .selectedDeltaGraphId + '/' + event.target[0].data(
+                                    'deltaGraphId'))
+                        }
+                    }
+                    // {% endif %}
                     return
                 }
-                if (event.target == event.cy) return
 
                 if (event.target.classes().includes("trunk")) {
-                    let w = window.open("127.0.0.1:5000", '_blank')
-                    w.onbeforeunload = function () {
-                        location.reload()
-                    }
-                    w.focus()
+                    this.newTab("127.0.0.1:5000")
                 }
                 if (event.target.classes().includes("branch")) {
-                    let w = window.open("127.0.0.1:5000", '_blank')
-                    w.onbeforeunload = function () {
-                        location.reload()
-                    }
-                    w.focus()
+                    this.newTab("127.0.0.1:5000")
                 }
                 // {% if isInstructor %}
                 if (event.target.classes().includes("workspace")) {
-                    let w = window.open("{{ url_for('instructor.workspace')}}" + event.target.data(
-                        "deltaGraphId"), '_blank')
-                    w.onbeforeunload = function () {
-                        location.reload()
-                    }
-                    w.focus()
+                    this.newTab("{{ url_for('instructor.workspace')}}" + event.target.data(
+                        "deltaGraphId"))
                 }
                 // {% endif %}
                 // {% if isDLTC %}

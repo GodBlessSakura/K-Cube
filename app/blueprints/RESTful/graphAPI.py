@@ -14,16 +14,16 @@ def get_compare(overwriterId, overwriteeId):
         return jsonify(
             {
                 "success": True,
-                "overwriter": get_api_driver().workspace.get_workspace(
+                "overwriter": get_api_driver().graph.get_graph(
                     deltaGraphId=overwriterId, userId=session["user"]["userId"]
                 ),
-                "overwriter_triples": get_api_driver().triple.get_workspace_triple(
+                "overwriter_triples": get_api_driver().triple.get_graph_triple(
                     deltaGraphId=overwriterId, userId=session["user"]["userId"]
                 ),
-                "overwritee": get_api_driver().workspace.get_workspace_subject(
+                "overwritee": get_api_driver().graph.get_graph(
                     deltaGraphId=overwriteeId, userId=session["user"]["userId"]
                 ),
-                "overwritee_triples": get_api_driver().triple.get_workspace_subject_triple(
+                "overwritee_triples": get_api_driver().triple.get_graph_triple(
                     deltaGraphId=overwriteeId, userId=session["user"]["userId"]
                 ),
             }

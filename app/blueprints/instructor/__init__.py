@@ -26,7 +26,7 @@ def courseList():
 
 @instructor.route("/versionTree/", defaults={"courseCode": None})
 @instructor.route("/versionTree/<courseCode>")
-def branch(courseCode):
+def versionTree(courseCode):
     if courseCode is not None:
         return render_template(
             "instructor/versionTree.html",
@@ -67,32 +67,33 @@ def workspace(deltaGraphId):
 
 
 @instructor.route(
-    "/workspace/fork/", defaults={"overwriterId": None, "overwriteeId": None}
+    "/workspace/commit/", defaults={"overwriterId": None, "overwriteeId": None}
 )
-@instructor.route("/workspace/fork/<overwriterId>/", defaults={"overwriteeId": None})
-@instructor.route("/workspace/fork/<overwriterId>/<overwriteeId>")
-def workspaceFork(overwriterId, overwriteeId):
+@instructor.route("/workspace/commit/<overwriterId>/", defaults={"overwriteeId": None})
+@instructor.route("/workspace/commit/<overwriterId>/<overwriteeId>")
+def commit(overwriterId, overwriteeId):
     if overwriterId is not None:
         return render_template(
             "instructor/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
-            fork=True,
+            isInstructor=True,
+            isDLTC=False,
         )
     abort(404)
 
-
 @instructor.route(
-    "/workspace/patch/", defaults={"overwriterId": None, "overwriteeId": None}
+    "/branch/", defaults={"overwriterId": None, "overwriteeId": None}
 )
-@instructor.route("/workspace/patch/<overwriterId>/", defaults={"overwriteeId": None})
-@instructor.route("/workspace/patch/<overwriterId>/<overwriteeId>")
-def workspacePatch(overwriterId, overwriteeId):
+@instructor.route("/branch/<overwriterId>/", defaults={"overwriteeId": None})
+@instructor.route("/branch/<overwriterId>/<overwriteeId>")
+def branch(overwriterId, overwriteeId):
     if overwriterId is not None:
         return render_template(
             "instructor/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
-            patch=True,
+            isInstructor=True,
+            isDLTC=False,
         )
     abort(404)

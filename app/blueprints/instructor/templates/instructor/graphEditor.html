@@ -588,8 +588,7 @@
                         cy.nodes().unselect()
                         cy.edges().unselect()
                         edge.select()
-                        this.canLinkEdge = edge.data("workspace_value") != "true" &&
-                            edge.data("subject_value") != "true"
+                        this.canLinkEdge = edge.data("workspace_value") != "true"
                         this.canDeleteEdge = edge.data("workspace_value") != "undefined"
                     } else {
                         this.canLinkEdge = true

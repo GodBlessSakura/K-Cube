@@ -23,7 +23,7 @@ def middleware():
 
 @DLTC.route("/versionTree")
 @DLTC.route("/versionTree/<courseCode>")
-def trunk(courseCode):
+def versionTree(courseCode):
     if courseCode is not None:
         return render_template(
             "instructor/versionTree.html",

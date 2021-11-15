@@ -3,4 +3,4 @@ WITH DISTINCT owner
 MATCH
     (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(owner),
     (workspace)-[:WORK_ON]->(subject)
-RETURN subject, NOT EXISTS((subject)<-[:PATCH]-()) as isUpToDate
+RETURN subject, NOT EXISTS((subject)<-[:PATCH]-()) as isUpToDate, EXISTS((subject)<-[:USER_OWN]-(owner)) as isOwner

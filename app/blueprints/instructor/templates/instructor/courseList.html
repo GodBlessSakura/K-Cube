@@ -108,7 +108,7 @@
                     })
             },
             courseBranch(courseCode) {
-                window.location.replace("{{ url_for('instructor.branch') }}/" + courseCode)
+                window.location.replace("{{ url_for('instructor.versionTree') }}/" + courseCode)
             },
             courseSchedule(courseCode) {
                 window.location.replace("{{ url_for('instructor.courseSchedule') }}/" + courseCode)

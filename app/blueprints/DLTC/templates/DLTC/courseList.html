@@ -120,7 +120,7 @@
                     })
             },
             courseTrunk(courseCode) {
-                window.location.replace("{{ url_for('DLTC.trunk') }}/" + courseCode)
+                window.location.replace("{{ url_for('DLTC.versionTree') }}/" + courseCode)
             },
             courseAssignment(course) {
                 if (this.$root.progress.show == true) {
