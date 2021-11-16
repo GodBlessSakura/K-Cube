@@ -72,9 +72,14 @@
                     'label': 'data(tag)'
                 }
             }, {
-                selector: 'node.isActive',
+                selector: 'node.trunk',
                 style: {
                     'shape': 'star'
+                }
+            }, {
+                selector: 'node.isActive',
+                style: {
+                    'background-color': 'red'
                 }
             }, {
                 selector: 'node.workspace',
@@ -132,7 +137,8 @@
             data: {
                 id: 'node' + node.id,
                 tag: node.property.tag,
-                deltaGraphId: node.property.deltaGraphId
+                deltaGraphId: node.property.deltaGraphId,
+                creationDate: new Date(node.property.creationDate)
             },
             classes: classes,
             position: {
@@ -213,6 +219,31 @@
                             body.edges.forEach(edge => {
                                 cy.add(edgeFactory(edge))
                             })
+                            cy.nodes().merge(
+                                cy.nodes().sort((a, b) => {
+                                    if (a.classes().includes('trunk')) {
+                                        if (b.classes().includes('trunk')) {
+                                            return a.data('creationDate') - b.data('creationDate')
+                                        }
+                                        return 1
+                                    }
+                                    if (a.classes().includes('branch')) {
+                                        if (b.classes().includes('trunk')) {
+                                            return -1
+                                        }
+                                        if (b.classes().includes('workspace')) {
+                                            return 1
+                                        }
+                                        return a.data('creationDate') - b.data('creationDate')
+                                    }
+                                    if (a.classes().includes('workspace')) {
+                                        if (!b.classes().includes('workspace')) {
+                                            return -1
+                                        }
+                                        return a.data('creationDate') - b.data('creationDate')
+                                    }
+                                })
+                            )
                             cy.layout({
                                 name: 'breadthfirst',
                                 fit: true,
@@ -249,7 +280,7 @@
                     .then(body => {
                         this.$root.progress.show = false
                         this.$root.responseSnackBar(body,
-                            'Creation failed for unkown reason.',
+                            'Creation failed for unknown reason.',
                             () => {
                                 this.loadData()
                             })
@@ -288,7 +319,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             this.$root.responseSnackBar(body,
-                                'Creation failed for unkown reason.',
+                                'Creation failed for unknown reason.',
                                 () => {
                                     this.workspaceCreateDialog = false
                                     this.$refs.createWorkspaceControl.reset()
@@ -324,7 +355,7 @@
                     .then(body => {
                         this.$root.progress.show = false
                         this.$root.responseSnackBar(body,
-                            'Creation failed for unkown reason.',
+                            'Creation failed for unknown reason.',
                             () => {
                                 this.loadData()
                             })

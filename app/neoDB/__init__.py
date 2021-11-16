@@ -54,6 +54,14 @@ class APIDriver:
 
         self.workspace = workspaceResources(driver=self.driver)
 
+        from .materialResources import materialResources
+
+        self.material = materialResources(driver=self.driver)
+
+        from .feedbackResources import feedbackResources
+
+        self.feedback = feedbackResources(driver=self.driver)
+
     def close(self):
         self.driver.close()
 

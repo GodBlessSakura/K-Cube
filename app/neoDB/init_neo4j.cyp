@@ -19,7 +19,7 @@ SET
         canApproveRelationship : true,
         canWriteAllCourseBranch : true,
         canReadAllCourseBranch : true,
-        canWriteAllCourseResources : true,
+        canWriteAllCourseMaterial : true,
         canAccessDLTCPanel : true,
         canCreateCourse : true,
         canUploadPhoto : true,
@@ -32,7 +32,7 @@ SET
         canBeAssignedCourse : false,
         canWriteAssignedCourseBranch : false,
         canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseResources : false,
+        canWriteAssignedCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -48,7 +48,7 @@ SET
         canApproveRelationship : false,
         canWriteAllCourseBranch : false,
         canReadAllCourseBranch : false,
-        canWriteAllCourseResources : false,
+        canWriteAllCourseMaterial : false,
         canAccessDLTCPanel : true,
         canCreateCourse : true,
         canUploadPhoto : true,
@@ -61,7 +61,7 @@ SET
         canBeAssignedCourse : false,
         canWriteAssignedCourseBranch : false,
         canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseResources : false,
+        canWriteAssignedCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -77,7 +77,7 @@ SET
         canApproveRelationship : false,
         canWriteAllCourseBranch : false,
         canReadAllCourseBranch : false,
-        canWriteAllCourseResources : false,
+        canWriteAllCourseMaterial : false,
         canAccessDLTCPanel : false,
         canCreateCourse : false,
         canUploadPhoto : false,
@@ -90,7 +90,7 @@ SET
         canBeAssignedCourse : true,
         canWriteAssignedCourseBranch : true,
         canReadAssignedCourseBranch : true,
-        canWriteAssignedCourseResources : true,
+        canWriteAssignedCourseMaterial : true,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -106,7 +106,7 @@ SET
         canApproveRelationship : false,
         canWriteAllCourseBranch : false,
         canReadAllCourseBranch : false,
-        canWriteAllCourseResources : false,
+        canWriteAllCourseMaterial : false,
         canAccessDLTCPanel : false,
         canCreateCourse : false,
         canUploadPhoto : false,
@@ -119,7 +119,7 @@ SET
         canBeAssignedCourse : false,
         canWriteAssignedCourseBranch : false,
         canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseResources : false,
+        canWriteAssignedCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -135,7 +135,7 @@ SET
         canApproveRelationship : false,
         canWriteAllCourseBranch : false,
         canReadAllCourseBranch : false,
-        canWriteAllCourseResources : false,
+        canWriteAllCourseMaterial : false,
         canAccessDLTCPanel : false,
         canCreateCourse : false,
         canUploadPhoto : false,
@@ -148,7 +148,7 @@ SET
         canBeAssignedCourse : false,
         canWriteAssignedCourseBranch : false,
         canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseResources : false,
+        canWriteAssignedCourseMaterial : false,
         canGiveFeedback : false,
         canReplyFeedback : false
     }

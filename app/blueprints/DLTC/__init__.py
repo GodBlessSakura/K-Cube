@@ -73,6 +73,7 @@ def courseForm():
 def uploadImage():
     return render_template("DLTC/uploadImage.html")
 
+
 @DLTC.route("/trunk/", defaults={"overwriterId": None, "overwriteeId": None})
 @DLTC.route("/trunk/<overwriterId>/", defaults={"overwriteeId": None})
 @DLTC.route("/trunk/<overwriterId>/<overwriteeId>")

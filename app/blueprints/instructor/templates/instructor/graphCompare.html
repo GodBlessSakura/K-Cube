@@ -404,25 +404,25 @@
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))
             subjectCy.mount(document.getElementById("preview"))
-            previewCy.on('dragpan',(event)=>{
+            previewCy.on('dragpan', (event) => {
                 subjectCy.pan(previewCy.pan())
             })
-            previewCy.on('pinchzoom',(event)=>{
+            previewCy.on('pinchzoom', (event) => {
                 subjectCy.zoom(previewCy.zoom())
                 subjectCy.pan(previewCy.pan())
             })
-            previewCy.on('scrollzoom ',(event)=>{
+            previewCy.on('scrollzoom ', (event) => {
                 subjectCy.zoom(previewCy.zoom())
                 subjectCy.pan(previewCy.pan())
             })
-            subjectCy.on('dragpan',(event)=>{
+            subjectCy.on('dragpan', (event) => {
                 previewCy.pan(subjectCy.pan())
             })
-            subjectCy.on('pinchzoom',(event)=>{
+            subjectCy.on('pinchzoom', (event) => {
                 previewCy.zoom(subjectCy.zoom())
                 previewCy.pan(subjectCy.pan())
             })
-            subjectCy.on('scrollzoom ',(event)=>{
+            subjectCy.on('scrollzoom ', (event) => {
                 previewCy.zoom(subjectCy.zoom())
                 previewCy.pan(subjectCy.pan())
             })

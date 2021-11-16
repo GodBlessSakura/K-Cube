@@ -45,11 +45,11 @@ def courseSchedule(courseCode):
     abort(404)
 
 
-@instructor.route("/resources/", defaults={"courseCode": None})
-@instructor.route("/resources/<courseCode>")
-def resources(courseCode):
+@instructor.route("/material/", defaults={"courseCode": None})
+@instructor.route("/material/<courseCode>")
+def material(courseCode):
     if courseCode is not None:
-        return render_template("instructor/courseList.html", courseCode=courseCode)
+        return render_template("instructor/material.html", courseCode=courseCode)
     abort(404)
 
 

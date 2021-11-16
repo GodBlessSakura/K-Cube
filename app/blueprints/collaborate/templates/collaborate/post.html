@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<div>
+    <v-card></v-card>
+    <v-card></v-card>
+
+</div>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.filter("formatDate", (value) => {
+        if (value) {
+            return (new Date(value)).toLocaleString("en-US", {})
+        }
+    })
+    Vue.component('app-content', {
+        data: () => ({
+            post: null,
+            reply: []
+
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                let feedbackPromise = fetch(
+                        "{{ url_for('RESTful.feedback.get', id = id)}}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.feedbacks = []
+                        if (body.post && body.reply) {
+                            this.reply = body.reply
+                            this.post = body.post
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting feedbacks information.')
+                        }
+                    })
+                Promise.all([feedbackPromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
+            },
+        },
+        mounted: function () {
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

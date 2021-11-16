@@ -100,9 +100,16 @@ def reject_invalid(function):
             raise InvalidRequest(
                 "Invalid triple pattern, self-referencing is not allowed."
             )
+        if "text" in kwargs and (len(kwargs["text"]) < 4 or len(kwargs["text"]) > 500):
+            raise InvalidRequest("Invalid text pattern.")
         if (
-            "text" in kwargs
-            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["text"]) == None
+            "desc" in kwargs
+            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["desc"]) == None
+        ):
+            raise InvalidRequest("Invalid text pattern.")
+        if (
+            "title" in kwargs
+            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["title"]) == None
         ):
             raise InvalidRequest("Invalid text pattern.")
         if "week" in kwargs and (kwargs["text"] < 1 or kwargs["text"] > 13):

@@ -45,3 +45,11 @@ RESTful.register_blueprint(branch)
 from .trunkAPI import trunk
 
 RESTful.register_blueprint(trunk)
+
+from .materialAPI import material
+
+RESTful.register_blueprint(material)
+
+from .feedbackAPI import feedback
+
+RESTful.register_blueprint(feedback)

@@ -31,7 +31,8 @@ class graphResources:
                     }.items()
                     | {
                         "isOwner": record["isOwner"],
-                    }.items()| record["course"].items(),
+                    }.items()
+                    | record["course"].items(),
                     labels=list(record["graph"].labels),
                 )
                 for record in result

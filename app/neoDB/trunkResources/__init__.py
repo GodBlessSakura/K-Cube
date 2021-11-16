@@ -68,6 +68,7 @@ class trunkResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
     def merge_as_fork(self, overwriterId, overwriteeId, userId, tag):
         fname = sys._getframe().f_code.co_name
 
@@ -124,14 +125,14 @@ class trunkResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def set_active(self,  userId, deltaGraphId):
+    def set_active(self, userId, deltaGraphId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
-                deltaGraphId = deltaGraphId,
+                deltaGraphId=deltaGraphId,
                 userId=userId,
             )
             try:
