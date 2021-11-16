@@ -66,7 +66,7 @@ class materialResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def set_material(self, courseCode, userId, name, url):
+    def set_material(self, courseCode, userId, name, url, desc):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):

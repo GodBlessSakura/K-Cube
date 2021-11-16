@@ -119,8 +119,8 @@ class feedbackResources:
                             if not isinstance(value, DateTime)
                             else str(value.iso_format())
                             for key, value in record["reply"].items()
-                        }.items(),
-                        {"user": record["user"]["userId"]}.items(),
+                        }.items()
+                        | {"user": record["user"]["userId"]}.items(),
                     )
                     for record in result
                 ]

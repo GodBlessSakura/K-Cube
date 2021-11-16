@@ -111,7 +111,7 @@
                 isTempory: isTempory,
                 isNew: isNew
             }),
-            title: "Suggested by " + vote + " teacher" + (vote > 1 ? 's.' : '.'),
+            title: "Associated with " + vote + " course" + (vote > 1 ? 's.' : '.'),
             width: vote,
         }
         return edge
@@ -119,13 +119,6 @@
     }
     Vue.component('app-content', {
         data: () => ({
-            relationships: [],
-            nameRules: [v => !!v || 'Name is required',
-                v => v.length > 3 && v.length < 101 ||
-                'Name should be anything between 4 and 100 charactors',
-                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
-                'Name can only contains alphanumeric characters and space.'
-            ],
         }),
         methods: {
             loadData() {
@@ -154,7 +147,7 @@
                                         from: triple.h_name,
                                         to: triple.t_name,
                                         label: triple.r_name,
-                                        vote: triple.userVote
+                                        vote: triple.trunkVote
                                     })
                                 )
                                 nodeSet.add(triple.h_name)

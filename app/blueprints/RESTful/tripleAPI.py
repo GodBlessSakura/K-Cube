@@ -75,7 +75,7 @@ def deleteUnreachable(deltaGraphId):
 
 def aggregatedTriple():
     try:
-        result = get_api_driver().triple.aggregate_triple()
+        result = get_api_driver().triple.get_aggregated_triple()
         return jsonify(
             {
                 "success": True,
