@@ -36,6 +36,27 @@ class materialResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+    def list_a_course_material(self, courseCode):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode)
+            try:
+                return [
+                    {
+                        "user": record["user"]["userId"],
+                        "concept": record["concept"]["name"],
+                        "desc": record["material"]["desc"],
+                        "url": record["material"]["url"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
 
     def create_material(self, courseCode, userId, name, url, desc):
         fname = sys._getframe().f_code.co_name

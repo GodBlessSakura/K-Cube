@@ -1,14 +1,151 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
-{{ layout.echartsCDN() }}
-{% block body %}
+{% block VueComponent %}
+<v-card style="height: 100%; width: 100%;">
+    <div id="cy" style="height: 100%; width: 100%;"></div>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+{{ layout.cytoscapeCDN() }}
 <script>
-    // Vue.use(Vuetify)
-    // var app = new Vue({
-    //     el: '#nav',
-    //     data: {},
-    //     delimiters: ['[[', ']]'],
-    //     vuetify: new Vuetify(),
-    // })
+    cy = cytoscape({
+        style: [{
+            selector: 'node',
+            style: {
+                'background-color': 'white',
+                'border-width': 1,
+                'border-color': 'grey'
+
+            }
+        }, {
+            selector: 'node.course',
+            style: {
+                'label': 'data(tag)',
+                'text-outline-color': 'white',
+                'text-outline-width': 3,
+                'font-size': 8,
+                'background-image': 'data(imageURL)',
+                'background-fit': 'cover'
+            }
+        }, {
+            selector: 'edge',
+            style: {
+                'width': 1,
+            }
+        }, ],
+        userZoomingEnabled: false,
+        userPanningEnabled: false,
+        boxSelectionEnabled: false,
+        autounselectify: true,
+
+    })
+
+    function nodeFactory(node, classes) {
+        let output = {
+            group: 'nodes',
+            data: {
+                id: node.id,
+                tag: node.tag,
+            },
+            classes: classes,
+            grabbable: false,
+            pannable: false,
+        }
+        return output
+    }
+
+    function edgeFactory(edge) {
+        let output = {
+            group: 'edges',
+            data: {
+                source: edge.start,
+                target: edge.end,
+            }
+        }
+        return output
+
+    }
+    Vue.component('app-content', {
+        data: () => ({}),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                fetch(
+                        "{{ url_for('RESTful.course.query', list=True) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.courses) {
+                            body.courses.forEach(c => {
+                                cy.add(nodeFactory({
+                                    id: c.concept.name,
+                                    tag: c.course.displayName
+                                }, ["course"])).data(
+                                    'imageURL',
+                                    c.course.imageURL,
+                                )
+
+                            })
+                            for (let i = cy.nodes().length; i < 20; i++) {
+                                cy.add(nodeFactory({
+                                    id: i,
+                                    tag: ''
+                                }, ))
+
+                            }
+                            cy.nodes().forEach((a, index) => {
+                                cy.nodes().slice(index + 1).forEach(b => {
+                                    cy.add(edgeFactory({
+                                        start: a.data('id'),
+                                        end: b.data('id'),
+                                    }))
+                                })
+                            })
+                            cy.layout({
+                                name: 'circle',
+                                fit: true,
+                                sweep: Math.PI,
+                                startAngle: Math.PI,
+                                padding: document.documentElement.clientHeight * 0.15
+                            }).run()
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+            },
+            newTab(url) {
+                let w = window.open(url, '_blank')
+            }
+        },
+        mounted: function () {
+            cy.mount(document.getElementById("cy"))
+            self = this
+            cy.on('tap', 'node', (event) => {
+                if (event.target == event.cy) return
+                if (event.target.classes().includes("course")) {
+                    this.newTab("{{ url_for('course')}}" + event.target[0].data(
+                        'id'))
+                }
+            })
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
 </script>
 {% endblock %}

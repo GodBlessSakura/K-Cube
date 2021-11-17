@@ -24,6 +24,15 @@
         </v-col>
         {% endif %}
     </v-row>
+    <v-row dense style="width: 100%;">
+        <v-col dense>
+            <v-btn @click="fit()">
+                <v-icon>
+                    fit_screen
+                </v-icon>
+            </v-btn>
+        </v-col>
+    </v-row>
     <v-row dense style="height: 90%; width: 100%;">
         <v-col dense style="height: 100%">
             <v-card style="height: 100%; width: 100%;">
@@ -368,6 +377,10 @@
                 Promise.all([graphPromise]).then(_ => {
                     this.$root.progress.show = false
                 })
+            },
+            fit(){
+                previewCy.fit()
+                subjectCy.fit()
             },
             //{% if not readOnly %}
             submit() {

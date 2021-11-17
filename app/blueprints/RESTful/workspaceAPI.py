@@ -23,12 +23,10 @@ def put(deltaGraphId):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@workspace.get("/")
-@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
-def query():
-    # if request.args.get("ofUser"):
-    #     return draftOfUser()
-    return jsonify({"success": False, "message": "incomplete request"})
+# @workspace.get("/")
+# @authorize_RESTful_with(["canWriteAssignedCourseBranch"])
+# def query():
+#     return jsonify({"success": False, "message": "incomplete request"})
 
 
 @workspace.get("<deltaGraphId>")

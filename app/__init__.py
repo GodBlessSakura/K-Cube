@@ -86,6 +86,18 @@ def create_app(config_object):
     @app.route("/comprehensive")
     def comprehensive():
         return render_template("comprehensive.html")
+    @app.route("/course/", defaults={"courseCode":None})
+    @app.route("/course/<courseCode>")
+    def course(courseCode):
+        if courseCode is not None:
+            return render_template("course.html", courseCode=courseCode)
+        abort(404)
+    @app.route("/material/", defaults={"courseCode":None})
+    @app.route("/material/<courseCode>")
+    def material(courseCode):
+        if courseCode is not None:
+            return render_template("material.html", courseCode=courseCode)
+        abort(404)
 
     from . import api_driver
 

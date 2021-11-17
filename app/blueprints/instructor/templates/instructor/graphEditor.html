@@ -281,8 +281,8 @@
                                 })
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
                                     .r_name, triple.t_name))
-                                if (edge) {
-                                    edge.data({
+                                if (edge.length > 1) {
+                                    edge[0].data({
                                         subject_value: triple.r_value ? 'true' : 'false'
                                     })
                                 } else {

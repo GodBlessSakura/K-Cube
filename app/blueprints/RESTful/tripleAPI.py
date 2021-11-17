@@ -14,6 +14,21 @@ def query():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
+@triple.get("/course/", defaults={"courseCode": None})
+@triple.get("/course/<courseCode>")
+def getCourse(courseCode):
+    if courseCode is not None:
+        result = get_api_driver().triple.get_course_triple(courseCode=courseCode)
+        return jsonify(
+            {
+                "success": True,
+                "triples": result,
+                "course": get_api_driver().course.get_course(courseCode=courseCode),
+            }
+        )
+    return jsonify({"success": False, "message": "incomplete request"})
+
+
 @triple.put("<deltaGraphId>")
 @authorize_RESTful_with(["canWriteAssignedCourseBranch"])
 def put(deltaGraphId):

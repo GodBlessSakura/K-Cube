@@ -251,6 +251,59 @@
                                 roots: 'node[tag = "init"]',
                                 padding: document.documentElement.clientHeight * 0.15
                             }).run()
+                            let root = cy.nodes('[tag = "init"]')
+                            root.position({
+                                x: 0,
+                                y: 0
+                            })
+
+                            function locatePredecessors(node) {
+                                let i = 1
+                                let j = Math.PI * 0.75
+                                let position = node.position()
+                                node.incomers('edge').forEach(edge => {
+                                    let child = edge.source()
+                                    if (edge.data('tag') == 'FORK') {
+                                        child.position({
+                                            x: position.x + 200 * i,
+                                            y: position.y + 200,
+                                        })
+                                        i++
+                                        locatePredecessors(child)
+                                    } else if (edge.data('tag') == 'WORK_ON') {
+                                        child.position({
+                                            x: position.x + 75 * Math.cos(j),
+                                            y: position.y + 75 * Math.sin(j)
+                                        })
+                                        j = j + Math.PI / 4;
+                                    }
+                                })
+                                node.incomers('edge').forEach(edge => {
+                                    let child = edge.source()
+                                    let position = node.position()
+                                    if (edge.data('tag') == 'PATCH') {
+                                        let pulling = child.outgoers(
+                                            'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
+                                        )
+                                        if (pulling.length == 0) {
+                                            child.position({
+                                                x: position.x,
+                                                y: position.y + 200,
+                                            })
+
+                                        } else {
+                                            console.log(child.data())
+                                            child.position({
+                                                x: position.x,
+                                                y: pulling[0].target().position().y + 200,
+                                            })
+                                        }
+                                        locatePredecessors(child)
+                                    }
+                                })
+                            }
+                            locatePredecessors(root)
+                            cy.fit()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting drafts information.')
@@ -424,7 +477,6 @@
                     // {% endif %}
                     return
                 }
-
                 if (event.target.classes().includes("trunk")) {
                     this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
                         'deltaGraphId') + '/' + event.target[0].connectedEdges(
