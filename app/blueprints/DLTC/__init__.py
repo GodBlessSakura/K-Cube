@@ -26,7 +26,7 @@ def middleware():
 def versionTree(courseCode):
     if courseCode is not None:
         return render_template(
-            "instructor/versionTree.html",
+            "collegue/versionTree.html",
             courseCode=courseCode,
             isInstructor=False,
             isDLTC=True,
@@ -36,7 +36,11 @@ def versionTree(courseCode):
 
 @DLTC.route("/courseList")
 def courseList():
-    return render_template("DLTC/courseList.html")
+    return render_template(
+        "collegue/courseList.html",
+        isInstructor=False,
+        isDLTC=True,
+    )
 
 
 @DLTC.route("/courseCreate")
@@ -80,7 +84,7 @@ def uploadImage():
 def trunk(overwriterId, overwriteeId):
     if overwriterId is not None:
         return render_template(
-            "instructor/graphCompare.html",
+            "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
             isInstructor=False,

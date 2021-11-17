@@ -3,6 +3,8 @@
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     <v-row dense style="width: 100%;">
+        {% if readOnly %}
+        {% else %}
         <v-col>
             <v-form dense ref="control">
                 <v-text-field dense v-model="tag" :rules="tagRules" label="tag for new version" required
@@ -20,21 +22,36 @@
                 ${isTrival?'No meaningful edge was found':'submit'}
             </v-btn>
         </v-col>
+        {% endif %}
     </v-row>
-    <v-row dense style="height: 10%; width: 100%;">
-        <v-col dense style="text-align: center;">
-            Original graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
+    <v-row dense style="height: 90%; width: 100%;">
+        <v-col dense style="height: 100%">
+            <v-card style="height: 100%; width: 100%;">
+                <v-container dense style="height: 100%; width: 100%;">
+                    <v-row dense>
+                        <v-col dense style="text-align: center;">
+                            Original graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
+                        </v-col>
+                    </v-row>
+                    <v-row dense style="height: 100%; width: 100%;">
+                        <div id="preview" style="height: 100%; width: 100%;"></div>
+                    </v-row>
+                </v-container>
+            </v-card>
         </v-col>
-        <v-col dense style="text-align: center;">
-            Update preview - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
-        </v-col>
-    </v-row>
-    <v-row dense style="height: 80%; width: 100%;">
-        <v-col dense>
-            <div id="preview" style="height: 100%; width: 100%;"></div>
-        </v-col>
-        <v-col dense>
-            <div id="subject" style="height: 100%; width: 100%;"></div>
+        <v-col dense style="height: 100%">
+            <v-card style="height: 100%; width: 100%;">
+                <v-container dense style="height: 100%; width: 100%;">
+                    <v-row dense>
+                        <v-col dense style="text-align: center;">
+                            Update preview - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
+                        </v-col>
+                    </v-row>
+                    <v-row dense style="height: 100%; width: 100%;">
+                        <div id="subject" style="height: 100%; width: 100%;"></div>
+                    </v-row>
+                </v-container>
+            </v-card>
         </v-col>
     </v-row>
 </v-container>
@@ -352,6 +369,7 @@
                     this.$root.progress.show = false
                 })
             },
+            //{% if not readOnly %}
             submit() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
@@ -400,6 +418,7 @@
                             })
                     })
             }
+            // {% endif %}
         },
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))

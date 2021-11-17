@@ -21,7 +21,11 @@ def middleware():
 
 @instructor.route("/courseList")
 def courseList():
-    return render_template("instructor/courseList.html")
+    return render_template(
+        "collegue/courseList.html",
+        isInstructor=True,
+        isDLTC=False,
+    )
 
 
 @instructor.route("/versionTree/", defaults={"courseCode": None})
@@ -29,7 +33,7 @@ def courseList():
 def versionTree(courseCode):
     if courseCode is not None:
         return render_template(
-            "instructor/versionTree.html",
+            "collegue/versionTree.html",
             courseCode=courseCode,
             isInstructor=True,
             isDLTC=False,
@@ -41,7 +45,7 @@ def versionTree(courseCode):
 @instructor.route("/courseSchedule/<courseCode>")
 def courseSchedule(courseCode):
     if courseCode is not None:
-        return render_template("instructor/courseList.html", courseCode=courseCode)
+        return render_template("collegue/courseList.html", courseCode=courseCode)
     abort(404)
 
 
@@ -55,7 +59,11 @@ def material(courseCode):
 
 @instructor.route("/schedule")
 def schedule():
-    return render_template("instructor/courseList.html")
+    return render_template(
+        "collegue/courseList.html",
+        isInstructor=True,
+        isDLTC=False,
+    )
 
 
 @instructor.route("/workspace/", defaults={"deltaGraphId": None})
@@ -74,7 +82,7 @@ def workspace(deltaGraphId):
 def commit(overwriterId, overwriteeId):
     if overwriterId is not None:
         return render_template(
-            "instructor/graphCompare.html",
+            "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
             isInstructor=True,
@@ -89,7 +97,7 @@ def commit(overwriterId, overwriteeId):
 def branch(overwriterId, overwriteeId):
     if overwriterId is not None:
         return render_template(
-            "instructor/graphCompare.html",
+            "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
             isInstructor=True,

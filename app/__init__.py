@@ -9,6 +9,7 @@ from app.blueprints.RESTful import RESTful
 from app.blueprints.user import user
 from app.blueprints.DLTC import DLTC
 from app.blueprints.instructor import instructor
+from app.blueprints.collegue import collegue
 import click
 
 mail = Mail()
@@ -42,6 +43,7 @@ def create_app(config_object):
     app.register_blueprint(job, url_prefix="/job")
     app.register_blueprint(RESTful, url_prefix="/RESTful")
     app.register_blueprint(user, url_prefix="/user")
+    app.register_blueprint(collegue, url_prefix="/collegue")
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
 

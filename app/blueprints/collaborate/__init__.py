@@ -13,7 +13,12 @@ def relationships():
 @collaborate.route("/feedbacks")
 @authorize_with(["canProposeRelationship"])
 def feedbacks():
-    return render_template("collaborate/courseList.html")
+    return render_template(
+        "collegue/courseList.html",
+        isInstructor=False,
+        isDLTC=False,
+        isFeedback=True,
+    )
 
 
 @collaborate.route("/feedbacks/<courseCode>")

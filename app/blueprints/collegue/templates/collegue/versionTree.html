@@ -426,10 +426,18 @@
                 }
 
                 if (event.target.classes().includes("trunk")) {
-                    this.newTab("127.0.0.1:5000")
+                    this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
+                        'deltaGraphId') + '/' + event.target[0].connectedEdges(
+                        '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
+                            0]
+                        .data('id') + '"]').data('deltaGraphId'))
                 }
                 if (event.target.classes().includes("branch")) {
-                    this.newTab("127.0.0.1:5000")
+                    this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
+                        'deltaGraphId') + '/' + event.target[0].connectedEdges(
+                        '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
+                            0]
+                        .data('id') + '"]').data('deltaGraphId'))
                 }
                 // {% if isInstructor %}
                 if (event.target.classes().includes("workspace")) {
