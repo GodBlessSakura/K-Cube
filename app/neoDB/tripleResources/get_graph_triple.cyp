@@ -10,10 +10,10 @@ CALL{
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
         EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned
     WHERE
-        (graph.visibility = 'public') OR
-        (graph.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
-        (graph.visibility = 'instructor' AND isInstructor) OR
-        (graph.visibility = 'collaborator' AND isAssigned) OR
+        (graph.visibility = 4) OR
+        (graph.visibility = 3 AND (isDLTC OR isInstructor)) OR
+        (graph.visibility = 2 AND isInstructor) OR
+        (graph.visibility = 1 AND isAssigned) OR
         EXISTS((graph)<-[:USER_OWN]-(user))
         
     RETURN graph

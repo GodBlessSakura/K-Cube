@@ -10,7 +10,7 @@ material = Blueprint("material", __name__, url_prefix="material")
 def query():
     if request.args.get("ofUser") and request.args.get("courseCode"):
         return materialOfUser(request.args.get("courseCode"))
-    if request.args.get('courseCode'):
+    if request.args.get("courseCode"):
         return materialOfCourse(request.args.get("courseCode"))
     return jsonify({"success": False, "message": "incomplete request"})
 
@@ -27,6 +27,8 @@ def materialOfUser(courseCode):
         )
     except Exception as e:
         raise e
+
+
 def materialOfCourse(courseCode):
     try:
         return jsonify(
@@ -39,6 +41,7 @@ def materialOfCourse(courseCode):
         )
     except Exception as e:
         raise e
+
 
 @material.post("<courseCode>/", defaults={"name": None})
 @material.post("<courseCode>/<name>")

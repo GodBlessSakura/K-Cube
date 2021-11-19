@@ -6,7 +6,7 @@ from app.authorizer import authorize_RESTful_with
 graph = Blueprint("graph", __name__, url_prefix="graph")
 
 
-@graph.route("/compare/<overwriterId>/", defaults={"overwriteeId": None})
+@graph.get("/compare/<overwriterId>/", defaults={"overwriteeId": None})
 @graph.get("compare/<overwriterId>/<overwriteeId>")
 @authorize_RESTful_with(["canWriteAssignedCourseBranch"])
 def get_compare(overwriterId, overwriteeId):
@@ -51,3 +51,18 @@ def get_compare(overwriterId, overwriteeId):
                 ),
             }
         )
+
+
+@graph.get("/<deltaGraphId>/")
+def get(deltaGraphId):
+    return jsonify(
+        {
+            "success": True,
+            "graph": get_api_driver().graph.get_graph(
+                deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+            ),
+            "triples": get_api_driver().triple.get_graph_triple(
+                deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+            ),
+        }
+    )

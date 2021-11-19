@@ -37,7 +37,7 @@ def versionTree(courseCode):
 @DLTC.route("/courseList")
 def courseList():
     return render_template(
-        "collegue/courseList.html",
+        "courseList.html",
         isInstructor=False,
         isDLTC=True,
     )

@@ -63,8 +63,14 @@ def reject_invalid(function):
             and re.search("^[a-zA-Z][a-zA-Z0-9]{3,100}$", kwargs["ownerId"]) == None
         ):
             raise InvalidRequest("Invalid ownerId pattern.")
-        if "visibility" in kwargs and kwargs["visibility"] not in ["private", "collaborator", "instructor", "colleague", "public"]:
-            raise InvalidRequest("Invalid status pattern.")
+        if "visibility" in kwargs:
+            if isinstance(kwargs["visibility"], str):
+                try:
+                    kwargs["visibility"] = int(kwargs["visibility"])
+                except:
+                    raise InvalidRequest("Invalid visibility pattern.")
+            if kwargs["visibility"] not in [0, 1, 2, 3, 4]:
+                raise InvalidRequest("Invalid visibility pattern.")
         if "email" in kwargs and len(kwargs["email"]) >= 320:
             raise InvalidRequest("A valid email should have less then 320 characters")
         if (

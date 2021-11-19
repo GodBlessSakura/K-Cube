@@ -51,13 +51,14 @@
         gravity: 0.15
     }
 
-    function nodeFactory(name) {
+    function nodeFactory(name, classes) {
         let output = {
             group: 'nodes',
             data: {
                 id: name,
                 name: name
             },
+            classes: classes,
             position: {
                 x: 0,
                 y: 0
@@ -89,7 +90,7 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode) }}", {
+                        "{{ url_for('RESTful.graph.get', deltaGraphId = deltaGraphId) }}", {
                             method: 'GET',
                             cache: 'no-store',
                             headers: {
@@ -107,22 +108,20 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        if (body.course && body.triples) {
-                            cy.add(nodeFactory('{{ courseCode }}', ["course"]))
+                        if (body.graph && body.triples) {
+                            cy.add(nodeFactory(body.graph.deltaGraphId.split('.')[0], ["course"]))
                                 .data(
                                     'imageURL',
-                                    body.course.imageURL,
-                                ).data('name', body.course.diaplsyName)
+                                    body.graph.imageURL,
+                                )
                             body.triples.forEach(triple => {
-                                if (triple.r_value) {
-                                    [triple.h_name, triple.t_name].forEach(
-                                        name => {
-                                            if (cy.getElementById(name).length == 0) {
-                                                cy.add(nodeFactory(name))
-                                            }
-                                        })
-                                    cy.add(edgeFactory(triple))
-                                }
+                                if (!triple.r_value) return [triple.h_name, triple.t_name].forEach(
+                                    name => {
+                                        if (cy.getElementById(name).length == 0) {
+                                            cy.add(nodeFactory(name))
+                                        }
+                                    })
+                                cy.add(edgeFactory(triple))
                             })
                             cy.elements().style('visibility', 'hidden')
                             let cyLayout = cy.layout({
@@ -155,9 +154,12 @@
             cy.on('tap', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
-                this.newTab("{{ url_for('material', courseCode = courseCode)}}?concept=" + event
-                    .target[0].data(
-                        'id'))
+                console.log(event.target.classes())
+                if (event.target.classes().includes("course")) {} else {
+                    this.newTab("{{ url_for('material', courseCode = courseCode)}}?concept=" + event
+                        .target[0].data(
+                            'id'))
+                }
             })
             this.loadData()
         },

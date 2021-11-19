@@ -22,7 +22,7 @@ def middleware():
 @instructor.route("/courseList")
 def courseList():
     return render_template(
-        "collegue/courseList.html",
+        "courseList.html",
         isInstructor=True,
         isDLTC=False,
     )
@@ -45,7 +45,7 @@ def versionTree(courseCode):
 @instructor.route("/courseSchedule/<courseCode>")
 def courseSchedule(courseCode):
     if courseCode is not None:
-        return render_template("collegue/courseList.html", courseCode=courseCode)
+        return render_template("courseList.html", courseCode=courseCode)
     abort(404)
 
 
@@ -60,7 +60,7 @@ def material(courseCode):
 @instructor.route("/schedule")
 def schedule():
     return render_template(
-        "collegue/courseList.html",
+        "courseList.html",
         isInstructor=True,
         isDLTC=False,
     )

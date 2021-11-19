@@ -27,8 +27,7 @@ def post(overwriterId, overwriteeId):
                     {
                         "success": True,
                         "branch": get_api_driver().workspace.commit_workspace_as_patch(
-                            overwriterId=overwriterId,
-                            overwriteeId=overwriteeId,
+                            deltaGraphId=overwriterId,
                             tag=request.json["tag"],
                             userId=session["user"]["userId"],
                         ),
@@ -66,6 +65,17 @@ def post(overwriterId, overwriteeId):
 @branch.patch("/<deltaGraphId>")
 def patch(deltaGraphId):
     if deltaGraphId is not None:
+        if "isExposed" in request.json:
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().branch.set_isExposed(
+                        deltaGraphId=deltaGraphId,
+                        userId=session["user"]["userId"],
+                        isExposed=request.json["isExposed"],
+                    ),
+                }
+            )
         if "canPush" in request.json:
             return jsonify(
                 {
@@ -77,4 +87,16 @@ def patch(deltaGraphId):
                     ),
                 }
             )
+        if "visibility" in request.json:
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().branch.set_visibility(
+                        deltaGraphId=deltaGraphId,
+                        userId=session["user"]["userId"],
+                        visibility=request.json["visibility"],
+                    ),
+                }
+            )
+
     return jsonify({"success": False, "message": "incomplete request"})

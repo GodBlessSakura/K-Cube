@@ -166,10 +166,10 @@ class tripleResources:
             try:
                 return [
                     {
-                        "h_name": record["h.name"],
-                        "r_name": record["r.name"],
-                        "t_name": record["t.name"],
-                        "r_value": record["r.value"],
+                        "h_name": record["h_name"],
+                        "r_name": record["r_name"],
+                        "t_name": record["t_name"],
+                        "r_value": record["r_value"],
                     }
                     for record in result
                 ]

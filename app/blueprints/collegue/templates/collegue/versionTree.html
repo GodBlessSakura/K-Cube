@@ -15,7 +15,10 @@
     <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
         <v-list>
             {% if isInstructor %}
-            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="readyToPush()">
+            <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="toggleExposure()">
+                <v-list-item-title>Toggle exposure</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="readyToPush()">
                 <v-list-item-title>Ready to push</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother()">
@@ -77,6 +80,11 @@
                     'shape': 'star'
                 }
             }, {
+                selector: 'node.isExposed',
+                style: {
+                    'background-color': 'green'
+                }
+            }, {
                 selector: 'node.isActive',
                 style: {
                     'background-color': 'red'
@@ -131,6 +139,12 @@
         }
         if (node.property.canPush) {
             classes.push('canPush')
+        }
+        if (node.property.isExposed) {
+            classes.push('isExposed')
+        }
+        if (node.isOwner) {
+            classes.push('isOwner')
         }
         let output = {
             group: 'nodes',
@@ -217,6 +231,18 @@
                                 cy.add(nodeFactory(node, ["workspace"]))
                             })
                             body.edges.forEach(edge => {
+                                [edge.start, edge.end].forEach(id => {
+                                    let node = cy.getElementById('node' + id)
+                                    if (node.length == 0) {
+                                        cy.add(nodeFactory({
+                                            property: {
+                                                tag: 'hidden'
+                                            },
+                                            id: id
+                                        }, ["invisible"]))
+                                    }
+                                })
+
                                 cy.add(edgeFactory(edge))
                             })
                             cy.nodes().merge(
@@ -339,6 +365,36 @@
                             })
                     })
             },
+            toggleExposure() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                let isExposed = this.selectedNode.classes().includes("isExposed") ? false : true
+                fetch("{{ url_for('RESTful.branch.patch') }}" + this.selectedNode.data("deltaGraphId"), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            isExposed: isExposed,
+                        })
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Creation failed for unknown reason.',
+                            () => {
+                                this.loadData()
+                            })
+                    })
+
+            },
             mergeWithAnother() {
                 this.snackbarMethod = 'branch'
                 this.selectableNodes = cy.nodes(
@@ -442,6 +498,9 @@
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
+            window.onresize = () => {
+                cy.fit()
+            }
             self = this
             cy.on('cxttapend', (event) => {
                 console.log(event)
@@ -478,18 +537,30 @@
                     return
                 }
                 if (event.target.classes().includes("trunk")) {
-                    this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
-                        'deltaGraphId') + '/' + event.target[0].connectedEdges(
+                    let parent = event.target[0].connectedEdges(
                         '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
                             0]
-                        .data('id') + '"]').data('deltaGraphId'))
+                        .data('id') + '"]')
+                    if (parent.length == 0) {
+                        this.newTab("{{ url_for('collegue.graphView')}}" + event.target[0].data(
+                            'deltaGraphId'))
+                    } else {
+                        this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
+                            'deltaGraphId') + '/' + parent.data('deltaGraphId'))
+                    }
                 }
                 if (event.target.classes().includes("branch")) {
-                    this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
-                        'deltaGraphId') + '/' + event.target[0].connectedEdges(
+                    let parent = event.target[0].connectedEdges(
                         '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
                             0]
-                        .data('id') + '"]').data('deltaGraphId'))
+                        .data('id') + '"]')
+                    if (parent.length == 0) {
+                        this.newTab("{{ url_for('collegue.graphView')}}" + event.target[0].data(
+                            'deltaGraphId'))
+                    } else {
+                        this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
+                            'deltaGraphId') + '/' + parent.data('deltaGraphId'))
+                    }
                 }
                 // {% if isInstructor %}
                 if (event.target.classes().includes("workspace")) {

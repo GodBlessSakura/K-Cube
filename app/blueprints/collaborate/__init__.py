@@ -14,7 +14,7 @@ def relationships():
 @authorize_with(["canProposeRelationship"])
 def feedbacks():
     return render_template(
-        "collegue/courseList.html",
+        "courseList.html",
         isInstructor=False,
         isDLTC=False,
         isFeedback=True,

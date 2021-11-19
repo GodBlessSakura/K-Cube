@@ -128,10 +128,7 @@ class courseResources:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode)
             try:
-                return [
-                    dict(record["course"].items())
-                    for record in result
-                ][0]
+                return [dict(record["course"].items()) for record in result][0]
             except Exception as exception:
                 raise exception
 

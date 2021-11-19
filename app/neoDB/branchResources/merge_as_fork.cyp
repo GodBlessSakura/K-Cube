@@ -10,10 +10,10 @@ CALL{
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
         EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned
     WHERE        
-        (overwriter.visibility = 'public') OR
-        (overwriter.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
-        (overwriter.visibility = 'instructor' AND isInstructor) OR
-        (overwriter.visibility = 'collaborator' AND isAssigned) OR
+        (overwriter.visibility = 4) OR
+        (overwriter.visibility = 3 AND (isDLTC OR isInstructor)) OR
+        (overwriter.visibility = 2 AND isInstructor) OR
+        (overwriter.visibility = 1 AND isAssigned) OR
         EXISTS((overwriter)<-[:USER_OWN]-(user))
     RETURN overwriter
 UNION
@@ -30,10 +30,10 @@ WITH
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned
 WHERE        
-    (overwritee.visibility = 'public') OR
-    (overwritee.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
-    (overwritee.visibility = 'instructor' AND isInstructor) OR
-    (overwritee.visibility = 'collaborator' AND isAssigned) OR
+    (overwritee.visibility = 4) OR
+    (overwritee.visibility = 3 AND (isDLTC OR isInstructor)) OR
+    (overwritee.visibility = 2 AND isInstructor) OR
+    (overwritee.visibility = 1 AND isAssigned) OR
     EXISTS((overwritee)<-[:USER_OWN]-(user))
 CREATE
     (overwritee)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),

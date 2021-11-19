@@ -27,8 +27,7 @@ def post(overwriterId, overwriteeId):
                     {
                         "success": True,
                         "trunk": get_api_driver().workspace.commit_workspace_as_patch(
-                            overwriterId=overwriterId,
-                            overwriteeId=overwriteeId,
+                            deltaGraphId=overwriterId,
                             tag=request.json["tag"],
                             userId=session["user"]["userId"],
                         ),

@@ -2,9 +2,29 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
+    {% if readOnly %}
+    <v-row dense style="width: 100%;" v-if="overwriter?.labels.includes('Branch')">
+        <v-col>
+            <v-form dense ref="control">
+                <v-select dense v-model="visibility" :items="greaterVisibility" :disabled="!this.overwriter?.isOwner"
+                    label="Filled style">
+                </v-select>
+            </v-form>
+        </v-col>
+        <v-col>
+            <v-btn block @click="proceeded = true" v-if="!proceeded" :disabled="!this.overwriter?.isOwner">
+                update
+            </v-btn>
+            <v-btn block v-if="proceeded">
+                this may also affect visibility of predecessor &nbsp; &nbsp;
+                <v-btn @click="update()" :disabled="!this.overwriter?.isOwner">
+                    ${confirmed?'update':'confirm'}
+                </v-btn>
+            </v-btn>
+        </v-col>
+    </v-row>
+    {% else %}
     <v-row dense style="width: 100%;">
-        {% if readOnly %}
-        {% else %}
         <v-col>
             <v-form dense ref="control">
                 <v-text-field dense v-model="tag" :rules="tagRules" label="tag for new version" required
@@ -22,8 +42,8 @@
                 ${isTrival?'No meaningful edge was found':'submit'}
             </v-btn>
         </v-col>
-        {% endif %}
     </v-row>
+    {% endif %}
     <v-row dense style="width: 100%;">
         <v-col dense>
             <v-btn @click="fit()">
@@ -39,7 +59,11 @@
                 <v-container dense style="height: 100%; width: 100%;">
                     <v-row dense>
                         <v-col dense style="text-align: center;">
+                            {% if readOnly %}
+                            Target graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
+                            {% else %}
                             Original graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
+                            {% endif %}
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
@@ -53,7 +77,11 @@
                 <v-container dense style="height: 100%; width: 100%;">
                     <v-row dense>
                         <v-col dense style="text-align: center;">
+                            {% if readOnly %}
                             Update preview - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
+                            {% else %}
+                            Graph - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
+                            {% endif %}
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
@@ -265,7 +293,11 @@
             action: [],
             isTrival: false,
             overwriter: undefined,
-            overwritee: undefined
+            overwritee: undefined,
+            visibility: '',
+            greaterVisibility: [],
+            proceeded: false,
+            confirmed: false,
 
         }),
         methods: {
@@ -293,6 +325,14 @@
                             .overwritee_triples) {
                             this.overwriter = body.overwriter
                             this.overwritee = body.overwritee
+
+                            //{% if readOnly %}
+                            if (body.overwriter.labels.includes('Branch')) {
+                                this.visibility = KCube.visibility[body.overwriter.visibility]
+                                this.greaterVisibility = KCube.visibility.slice(body.overwriter.visibility)
+                            }
+
+                            //{% endif %}
                             //{% if isInstructor %}
                             if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner) {
                                 this.options = ['patch', 'fork']
@@ -378,7 +418,7 @@
                     this.$root.progress.show = false
                 })
             },
-            fit(){
+            fit() {
                 previewCy.fit()
                 subjectCy.fit()
             },
@@ -430,6 +470,43 @@
                                 }
                             })
                     })
+            },
+            // {% else %}
+            update() {
+                if (this.confirmed) {
+                    fetch("{{ url_for('RESTful.branch.patch', deltaGraphId=overwriterId) }}", {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                visibility: KCube.visibility.indexOf(this.visibility)
+                            })
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
+                                () => {
+                                    if (this.overwriterLabels.includes('Workspace')) {
+                                        location.reload.bind(window.location)
+                                    } else {
+                                        window.close()
+                                    }
+                                })
+                        })
+                } else {
+                    this.confirmed = true
+                }
             }
             // {% endif %}
         },

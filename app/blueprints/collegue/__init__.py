@@ -14,7 +14,7 @@ collegue = Blueprint("collegue", __name__, template_folder="templates")
 
 
 @collegue.before_request
-@authorize_with([["canAccessDLTCPanel"], ["canAccessInstructorPanel"]])
+@authorize_with([["canAccessDLTCPanel", "canAccessInstructorPanel"]])
 def middleware():
     pass
 
@@ -34,5 +34,21 @@ def compare(overwriterId, overwriteeId):
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
             readOnly=True,
+        )
+    abort(404)
+
+
+@collegue.route(
+    "view/",
+    defaults={
+        "deltaGraphId": None,
+    },
+)
+@collegue.route("view/<deltaGraphId>")
+def graphView(deltaGraphId):
+    if deltaGraphId is not None:
+        return render_template(
+            "collegue/graphView.html",
+            deltaGraphId=deltaGraphId,
         )
     abort(404)

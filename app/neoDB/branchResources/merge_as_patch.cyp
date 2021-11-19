@@ -10,10 +10,10 @@ CALL{
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
         EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(overwriter.deltaGraphId,'.')[0]})) as isAssigned
     WHERE        
-        (overwriter.visibility = 'public') OR
-        (overwriter.visibility = 'colleague' AND (isDLTC OR isInstructor)) OR
-        (overwriter.visibility = 'instructor' AND isInstructor) OR
-        (overwriter.visibility = 'collaborator' AND isAssigned) OR
+        (overwriter.visibility = 4) OR
+        (overwriter.visibility = 3 AND (isDLTC OR isInstructor)) OR
+        (overwriter.visibility = 2 AND isInstructor) OR
+        (overwriter.visibility = 1 AND isAssigned) OR
         EXISTS((overwriter)<-[:USER_OWN]-(user))
     RETURN overwriter
 UNION

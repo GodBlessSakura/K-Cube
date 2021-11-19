@@ -5,7 +5,11 @@ from flask import current_app, g
 
 def get_api_driver() -> APIDriver:
     if "api_driver" not in g:
-        g.api_driver = APIDriver("bolt://localhost:7687", "neo4j", "1234")
+        g.api_driver = APIDriver(
+            current_app.config["DATABASE_ADDRESS"],
+            current_app.config["DATABASE"],
+            current_app.config["DATABASE_PASSWORD"],
+        )
     return g.api_driver
 
 
