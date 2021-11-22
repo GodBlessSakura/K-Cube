@@ -109,6 +109,12 @@
                 }
             },
             {
+                selector: 'edge[tag="WORK_ON"]',
+                style: {
+                    'text-opacity': 0
+                }
+            },
+            {
                 selector: 'node.uselectable',
                 style: {
                     'opacity': 0.25
@@ -245,31 +251,6 @@
 
                                 cy.add(edgeFactory(edge))
                             })
-                            cy.nodes().merge(
-                                cy.nodes().sort((a, b) => {
-                                    if (a.classes().includes('trunk')) {
-                                        if (b.classes().includes('trunk')) {
-                                            return a.data('creationDate') - b.data('creationDate')
-                                        }
-                                        return 1
-                                    }
-                                    if (a.classes().includes('branch')) {
-                                        if (b.classes().includes('trunk')) {
-                                            return -1
-                                        }
-                                        if (b.classes().includes('workspace')) {
-                                            return 1
-                                        }
-                                        return a.data('creationDate') - b.data('creationDate')
-                                    }
-                                    if (a.classes().includes('workspace')) {
-                                        if (!b.classes().includes('workspace')) {
-                                            return -1
-                                        }
-                                        return a.data('creationDate') - b.data('creationDate')
-                                    }
-                                })
-                            )
                             cy.layout({
                                 name: 'breadthfirst',
                                 fit: true,
@@ -282,53 +263,113 @@
                                 x: 0,
                                 y: 0
                             })
+                            let stepX = 200
+                            let stepY = 200
 
-                            function locatePredecessors(node) {
-                                let i = 1
-                                let j = Math.PI * 0.75
+                            function locatePredecessorsX(node) {
+                                let i = 0
                                 let position = node.position()
-                                node.incomers('edge').forEach(edge => {
+                                let forkEdges = node.incomers('edge[tag="FORK"]').sort((edgeA, edgeB) => {
+                                    let childA = edgeA.source()
+                                    let childB = edgeB.source()
+                                    return childA.data('creationDate') - childB.data('creationDate')
+                                })
+                                let patchEdges = node.incomers('edge[tag="PATCH"]').sort((edgeA,
+                                    edgeB) => {
+                                    let childA = edgeA.source()
+                                    let childB = edgeB.source()
+                                    return childA.data('creationDate') - childB.data('creationDate')
+                                })
+                                forkEdges.forEach(edge => {
+                                    i++
                                     let child = edge.source()
-                                    if (edge.data('tag') == 'FORK') {
-                                        child.position({
-                                            x: position.x + 200 * i,
-                                            y: position.y + 200,
-                                        })
-                                        i++
-                                        locatePredecessors(child)
-                                    } else if (edge.data('tag') == 'WORK_ON') {
-                                        child.position({
-                                            x: position.x + 75 * Math.cos(j),
-                                            y: position.y + 75 * Math.sin(j)
-                                        })
-                                        j = j + Math.PI / 4;
+                                    child.position({
+                                        x: position.x + stepX * i,
+                                    })
+                                    i += locatePredecessorsX(child)
+                                })
+                                let thickness = i
+                                patchEdges.forEach(edge => {
+                                    let child = edge.source()
+                                    child.position({
+                                        x: position.x,
+                                    })
+                                    thickness = Math.max(thickness, locatePredecessorsX(child))
+                                })
+                                return thickness
+                            }
+
+                            function locatePredecessorsY(node) {
+                                let position = node.position()
+                                let fixedEdges = node.incomers('edge[tag="PATCH"],edge[tag = "FORK"]')
+                                    .filter(edge => {
+                                        let child = edge.source()
+                                        return child.outgoers(
+                                            'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
+                                        ).length == 0
+                                    });
+                                let pulledEdge = node.incomers(
+                                    'edge[tag="BRANCH_PULL"],edge[tag = "TRUNK_PULL"]')
+                                fixedEdges.forEach(edge => {
+                                    let child = edge.source()
+                                    child.position({
+                                        y: position.y + stepY,
+                                    })
+                                    console.log(child.data('tag'))
+                                    let pulling = child.incomers(
+                                        'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
+                                    )
+                                    if (pulling.length > 0) {
+                                        pulling.map(edge => edge.source()).forEach(puller => {
+                                                console.log("pulled by " + puller.data('tag'))
+                                                puller.position({
+                                                    y: child.position().y + stepY,
+                                                })
+                                                locatePredecessorsY(puller)
+                                            }
+
+                                        )
                                     }
                                 })
-                                node.incomers('edge').forEach(edge => {
-                                    let child = edge.source()
-                                    let position = node.position()
-                                    if (edge.data('tag') == 'PATCH') {
-                                        let pulling = child.outgoers(
-                                            'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
-                                        )
-                                        if (pulling.length == 0) {
-                                            child.position({
-                                                x: position.x,
-                                                y: position.y + 200,
-                                            })
-
-                                        } else {
-                                            console.log(child.data())
-                                            child.position({
-                                                x: position.x,
-                                                y: pulling[0].target().position().y + 200,
-                                            })
-                                        }
-                                        locatePredecessors(child)
+                                pulledEdge.forEach(edge => {
+                                        let child = edge.source()
+                                        child.position({
+                                            y: position.y + stepY,
+                                        })
+                                        locatePredecessorsY(child)
                                     }
+                                )
+                                fixedEdges.forEach(edge => {
+                                    let child = edge.source()
+                                    locatePredecessorsY(child)
                                 })
                             }
-                            locatePredecessors(root)
+
+                            function locateWorkspace(node) {
+                                let j = Math.PI * 0.75
+                                let position = node.position()
+                                let workEdges = node.incomers('edge[tag="WORK_ON"]').sort((edgeA,
+                                    edgeB) => {
+                                    let childA = edgeA.source()
+                                    let childB = edgeB.source()
+                                    return childA.data('creationDate') - childB.data('creationDate')
+                                })
+                                workEdges.forEach(edge => {
+                                    let child = edge.source()
+                                    child.position({
+                                        x: position.x + 75 * Math.cos(j),
+                                        y: position.y + 75 * Math.sin(j)
+                                    })
+                                    j = j + Math.PI / 4;
+                                })
+                                node.incomers('edge[tag!="WORK_ON"]').forEach(edge => {
+                                    let child = edge.source()
+                                    locateWorkspace(child)
+                                })
+                            }
+                            locatePredecessorsX(root)
+                            locatePredecessorsY(root)
+                            locateWorkspace(root)
                             cy.fit()
                         } else {
                             this.$root.errorDisplay(body,
