@@ -32,6 +32,7 @@ def create_app(config_string):
     if config_string is None:
         config_object = config["default"]
     else:
+        print("using config:" + config_string)
         config_object = config[config_string]
     # https://stackoverflow.com/questions/26080872/secret-key-not-set-in-flask-session-using-the-flask-session-extension
     app.secret_key = "super secret key"
@@ -39,6 +40,9 @@ def create_app(config_string):
     app.config["upload_image_directory"] = os.path.join("uploads", "image")
 
     app.config.from_object(config_object)
+    if 'FLASK_SETTING' in os.environ:
+        print("using config file:" + os.environ['FLASK_SETTING'])
+        app.config.from_envvar('FLASK_SETTING')
     app.register_blueprint(admin, url_prefix="/admin")
     app.register_blueprint(collaborate, url_prefix="/collaborate")
     app.register_blueprint(instructor, url_prefix="/instructor")
