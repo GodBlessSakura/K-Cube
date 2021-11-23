@@ -104,3 +104,13 @@ def branch(overwriterId, overwriteeId):
             isDLTC=False,
         )
     abort(404)
+
+
+@instructor.route("/import/", defaults={"deltaGraphId": None})
+@instructor.route("/import/<deltaGraphId>/")
+def graphimport(deltaGraphId):
+    if deltaGraphId is not None:
+        return render_template(
+            "instructor/graphImport.html", deltaGraphId=deltaGraphId
+        )
+    abort(404)

@@ -26,6 +26,10 @@
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
+                @click="newTab('{{ url_for('instructor.graphimport')}}' + selectedNode.data('deltaGraphId'))">
+                <v-list-item-title>Import graph</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
                 @click="createWorkspaceDialogue()">
                 <v-list-item-title>Create workspace</v-list-item-title>
             </v-list-item>

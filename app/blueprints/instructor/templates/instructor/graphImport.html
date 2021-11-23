@@ -2,28 +2,6 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
-    {% if readOnly %}
-    <v-row dense style="width: 100%;" v-if="overwriter?.labels.includes('Branch')">
-        <v-col>
-            <v-form dense ref="control">
-                <v-select dense v-model="visibility" :items="greaterVisibility" :disabled="!this.overwriter?.isOwner"
-                    label="Filled style">
-                </v-select>
-            </v-form>
-        </v-col>
-        <v-col>
-            <v-btn block @click="proceeded = true" v-if="!proceeded" :disabled="!this.overwriter?.isOwner">
-                update
-            </v-btn>
-            <v-btn block v-if="proceeded">
-                this may also affect visibility of predecessor &nbsp; &nbsp;
-                <v-btn @click="update()" :disabled="!this.overwriter?.isOwner">
-                    ${confirmed?'update':'confirm'}
-                </v-btn>
-            </v-btn>
-        </v-col>
-    </v-row>
-    {% else %}
     <v-row dense style="width: 100%;">
         <v-col>
             <v-form dense ref="control">
@@ -43,7 +21,6 @@
             </v-btn>
         </v-col>
     </v-row>
-    {% endif %}
     <v-row dense style="width: 100%;">
         <v-col dense>
             <v-btn @click="fit()">
@@ -53,15 +30,18 @@
             </v-btn>
         </v-col>
         <v-col dense>
-            <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                        export
-                    </v-btn>
-                </template>
-                <v-list>
-                </v-list>
-            </v-menu>
+            <v-expansion-panels>
+                <v-expansion-panel>
+                    <v-expansion-panel-header>
+                        Textual import
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-textarea @change="update()" v-model="tripleString">
+
+                        </v-textarea>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
         </v-col>
     </v-row>
     <v-row dense style="height: 90%; width: 100%;">
@@ -70,11 +50,7 @@
                 <v-container dense style="height: 100%; width: 100%;">
                     <v-row dense>
                         <v-col dense style="text-align: center;">
-                            {% if readOnly %}
-                            Target graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
-                            {% else %}
-                            Original graph - ${overwritee?.tag} (${overwritee?.labels?.join(', ')})
-                            {% endif %}
+                            Original graph - ${graph?.tag} (${graph?.labels?.join(', ')})
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
@@ -88,11 +64,7 @@
                 <v-container dense style="height: 100%; width: 100%;">
                     <v-row dense>
                         <v-col dense style="text-align: center;">
-                            {% if readOnly %}
-                            Resulting Graph - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
-                            {% else %}
-                            Update preview - ${overwriter?.tag} (${overwriter?.labels?.join(', ')})
-                            {% endif %}
+                            Update preview
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
@@ -276,7 +248,6 @@
 
     Vue.component('app-content', {
         data: () => ({
-            overwriterLabels: [],
             tag: '',
             tagRules: [v => !!v || 'Tag is required',
                 v => v.length > 3 && v.length < 101 ||
@@ -287,19 +258,18 @@
             options: [],
             action: [],
             isTrival: false,
-            overwriter: undefined,
-            overwritee: undefined,
+            graph: undefined,
             visibility: '',
             greaterVisibility: [],
             proceeded: false,
             confirmed: false,
-
+            tripleString: '',
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 let graphPromise = fetch(
-                        "{{ url_for('RESTful.graph.get_compare', overwriterId=overwriterId, overwriteeId=overwriteeId) }}", {
+                        "{{ url_for('RESTful.graph.get', deltaGraphId=deltaGraphId) }}", {
                             method: 'GET',
                             cache: 'no-store',
                             headers: {
@@ -316,47 +286,20 @@
                         }
                     })
                     .then(body => {
-                        if (body.overwriter && body.overwriter_triples && body.overwritee && body
-                            .overwritee_triples) {
-                            this.overwriter = body.overwriter
-                            this.overwritee = body.overwritee
-
-                            //{% if readOnly %}
-                            if (body.overwriter.labels.includes('Branch')) {
-                                this.visibility = KCube.visibility[body.overwriter.visibility]
-                                this.greaterVisibility = KCube.visibility.slice(body.overwriter.visibility)
-                            }
-
-                            //{% endif %}
-                            //{% if isInstructor %}
-                            if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner) {
+                        if (body.graph && body.triples) {
+                            this.graph = body.graph
+                            if (body.graph.labels.includes('Branch') && body.graph.isOwner) {
                                 this.options = ['patch', 'fork']
                                 this.action = 'patch'
                             } else {
                                 this.options = ['fork']
                                 this.action = 'fork'
                             }
-                            //{% endif %}
-                            //{% if isDLTC %}
-                            if (body.overwritee.labels.includes('Trunk')) {
-                                this.options = ['patch', 'fork']
-                                this.action = 'patch'
-                            }
-                            //{% endif %}
-                            this.overwriterLabels = body.overwriter.labels
-                            previewCy.add(nodeFactory(body.overwriter.deltaGraphId.split('.')[0])).data(
+                            previewCy.add(nodeFactory(body.graph.deltaGraphId.split('.')[0])).data(
                                 'imageURL',
-                                body.overwriter.imageURL,
+                                body.graph.imageURL,
                             )
-                            body.overwriter_triples.forEach(triple => {
-                                [triple.h_name, triple.t_name].forEach(name => {
-                                    if (previewCy.getElementById(name).length == 0) {
-                                        previewCy.add(nodeFactory(name))
-                                    }
-                                })
-                                previewCy.add(previewEdgeFactory(triple))
-                            })
-                            body.overwritee_triples.forEach(triple => {
+                            body.triples.forEach(triple => {
                                 [triple.h_name, triple.t_name].forEach(name => {
                                     if (previewCy.getElementById(name).length == 0) {
                                         previewCy.add(nodeFactory(name))
@@ -381,7 +324,7 @@
                                 ).length == 0) {
                                 this.isTrival = true
                             }
-                            this.rootName = body.overwriter.deltaGraphId.split('.')[0]
+                            this.rootName = body.graph.deltaGraphId.split('.')[0]
                             let previewCyDijkstra = previewCy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
@@ -417,24 +360,25 @@
                 previewCy.fit()
                 subjectCy.fit()
             },
-            //{% if not readOnly %}
             submit() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
+                if (this.isTrival) {
+                    this.$root.errorDisplay({},
+                        "You can't submit a trival update")
+                    return
+                }
                 this.$root.progress.show = true
-                //{% if isInstructor %}
                 let url =
-                    '{{ url_for("RESTful.branch.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
-                //{% endif %}
-                //{% if isDLTC %}
-                let url =
-                    '{{ url_for("RESTful.trunk.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
-                //{% endif %}
+                    '{{ url_for("RESTful.branch.post")}}'
                 let body = {
                     tag: this.tag,
-                    action: this.action
+                    action: this.action,
+                    deltaGraphId: this.graph.deltaGraphId,
+                    triples: this.tripleString,
+
                 }
                 fetch(
                         url, {
@@ -457,53 +401,65 @@
                     .then(body => {
                         this.$root.progress.show = false
                         this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
-                            () => {
-                                if (this.overwriterLabels.includes('Workspace')) {
-                                    location.reload.bind(window.location)
-                                } else {
-                                    window.close()
-                                }
-                            })
+                            () => {})
                     })
             },
-            // {% else %}
             update() {
-                if (this.confirmed) {
-                    fetch("{{ url_for('RESTful.branch.patch', deltaGraphId=overwriterId) }}", {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                visibility: KCube.visibility.indexOf(this.visibility)
-                            })
-                        })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
+                try {
+                    let triples = JSON.parse(this.tripleString.trim())
+                    previewCy.edges().forEach(edge => {
+                        edge.data('preview_value', 'undefined')
+                    })
+                    triples.forEach(triple => {
+                        [triple.h_name, triple.t_name].forEach(name => {
+                            if (previewCy.getElementById(name).length == 0) {
+                                previewCy.add(nodeFactory(name))
                             }
                         })
-                        .then(body => {
-                            this.$root.progress.show = false
-                            this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
-                                () => {
-                                    if (this.overwriterLabels.includes('Workspace')) {
-                                        location.reload.bind(window.location)
-                                    } else {
-                                        window.close()
-                                    }
-                                })
+                        let edge = previewCy.getElementById(edgeIdFromNames(triple.h_name,
+                            triple
+                            .r_name,
+                            triple.t_name))[0]
+                        if (edge) {
+                            edge.data({
+                                preview_value: (triple.r_value == undefined || triple.r_value) ?
+                                    'true' : 'false'
+                            })
+                        } else {
+                            previewCy.add(originalEdgeFactory(triple))
+                        }
+                    })
+                    if (previewCy.edges(
+                            '[preview_value = "false"][original_value = "true"],' +
+                            '[preview_value = "true"][original_value = "false"],' +
+                            '[preview_value = "true"][original_value = "undefined"]'
+                        ).length == 0) {
+                        this.isTrival = true
+                    } else {
+                        this.isTrival = false
+                    }
+                    previewCy.elements().style('visibility', 'hidden')
+                    let previewLayout = previewCy.layout({
+                        ...concentricLayoutOptions,
+                        // concentric: function (node) {
+                        //     return previewCyDijkstra.distanceTo(node) * -1
+                        // }
+                    })
+                    previewLayout.one('layoutstop', function () {
+                        let previewLayout = previewCy.layout(coseLayoutOptions)
+                        previewLayout.one('layoutstop', function () {
+                            subjectCy.add(previewCy.elements().clone())
+                            subjectCy.fit(coseLayoutOptions.padding)
+                            previewCy.elements().style('visibility', 'visible')
                         })
-                } else {
-                    this.confirmed = true
+                        previewLayout.run()
+                    })
+                    previewLayout.run()
+                } catch {
+                    this.$root.errorDisplay({},
+                        'Textual import is not a valid json string.')
                 }
             }
-            // {% endif %}
         },
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))
