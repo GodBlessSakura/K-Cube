@@ -98,5 +98,4 @@ def patch(deltaGraphId):
                     ),
                 }
             )
-
     return jsonify({"success": False, "message": "incomplete request"})

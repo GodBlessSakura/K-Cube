@@ -52,3 +52,35 @@ def get(deltaGraphId):
         )
     except Exception as e:
         raise e
+
+
+@workspace.patch("/", defaults={"deltaGraphId": None})
+@workspace.patch("/<deltaGraphId>")
+def patch(deltaGraphId):
+    if deltaGraphId is not None:
+        if "sync" in request.json and request.json["sync"]:
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().workspace.sync_workspace(
+                        deltaGraphId=deltaGraphId,
+                        userId=session["user"]["userId"],
+                    ),
+                }
+            )
+        if (
+            "checkout" in request.json
+            and request.json["checkout"]
+            and "deltaGraphId" in request.json
+        ):
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().workspace.checkout_workspace(
+                        deltaGraphId=deltaGraphId,
+                        checkout=request.json["deltaGraphId"],
+                        userId=session["user"]["userId"],
+                    ),
+                }
+            )
+    return jsonify({"success": False, "message": "incomplete request"})

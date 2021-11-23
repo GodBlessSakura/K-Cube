@@ -184,3 +184,46 @@ class workspaceResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def sync_workspace(self, deltaGraphId, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["workspace"].items()
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def checkout_workspace(self, deltaGraphId, userId,checkout):
+        fname = sys._getframe().f_code.co_name
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId, checkout=checkout)
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["workspace"].items()
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

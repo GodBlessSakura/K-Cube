@@ -7,15 +7,24 @@
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                        ${workspace?.tag + ' (' + subject?.tag + ')'}
+                        ${workspace?.tag? (workspace?.tag + ' (' + subject?.tag + ')'):''}
+                        <v-icon v-if="!subject?.isUpToDate">
+                            sync
+                        </v-icon>
                     </v-btn>
                 </template>
                 <v-list>
-                    <v-list-item @click="editorFit()">
-                        <v-list-item-title>fit viewport</v-list-item-title>
+                    <v-list-item v-if="!subject?.isUpToDate" @click="sync()">
+                        <v-list-item-title>sync</v-list-item-title>
                         <v-list-item-icon>
-                            <v-icon>fit_screen</v-icon>
+                            <v-icon>sync</v-icon>
                         </v-list-item-icon>
+                    </v-list-item>
+                    <v-list-item v-else>
+                        <v-list-item-title>the workspace is <br> up to date</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
+                        <v-list-item-title>commit</v-list-item-title>
                     </v-list-item>
                 </v-list>
             </v-menu>
@@ -23,7 +32,18 @@
         <v-col dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-bind="attrs" v-on="on" tile>
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        export
+                    </v-btn>
+                </template>
+                <v-list>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         viewport & layout
                     </v-btn>
                 </template>
@@ -46,7 +66,7 @@
         <v-col dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn v-bind="attrs" v-on="on" tile>
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         triples operation
                     </v-btn>
                 </template>
@@ -189,7 +209,7 @@
                     'width': 5,
                 }
             }, {
-                selector: 'edge[workspace_value = "false"]',
+                selector: 'edge[workspace_value = " false"]',
                 style: {
                     'line-gradient-stop-colors': 'grey white white grey',
                     'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
@@ -213,24 +233,22 @@
         ],
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
-    })
+    });
     concentricLayoutOptions = {
         name: 'concentric',
-
     }
-    fitPadding = document.documentElement.clientHeight * 0.10,
-        coseLayoutOptions = {
-            name: 'cose',
-            padding: fitPadding,
-            fit: true,
-            idealEdgeLength: function (edge) {
-                return 64;
-            },
-            edgeElasticity: function (edge) {
-                return 128;
-            },
-            gravity: 0.15
-        }
+    fitPadding = document.documentElement.clientHeight * 0.10, coseLayoutOptions = {
+        name: 'cose',
+        padding: fitPadding,
+        fit: true,
+        idealEdgeLength: function (edge) {
+            return 64;
+        },
+        edgeElasticity: function (edge) {
+            return 128;
+        },
+        gravity: 0.15
+    }
 
     function nodeFactory(name) {
         let output = {
@@ -254,13 +272,13 @@
                 source: edge.h_name,
                 target: edge.t_name,
                 name: edge.r_name,
-                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
+                id: edgeIdFromNames(edge.h_name, edge.r_name,
+                    edge.t_name),
                 workspace_value: edge.r_value ? 'true' : 'false',
                 subject_value: 'undefined',
             }
         }
         return output
-
     }
 
     function subjectEdgeFactory(edge) {
@@ -270,20 +288,19 @@
                 source: edge.h_name,
                 target: edge.t_name,
                 name: edge.r_name,
-                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
+                id: edgeIdFromNames(edge.h_name,
+                    edge.r_name, edge.t_name),
                 workspace_value: 'undefined',
                 subject_value: edge.r_value ? 'true' : 'false',
             }
         }
         return output
-
     }
 
     function edgeIdFromNames(h_name, r_name, t_name) {
-
-        return h_name + '.' + r_name + '.' + t_name
+        return h_name +
+            '.' + r_name + '.' + t_name
     }
-
     Vue.component('app-content', {
         data: () => ({
             relationships: [],
@@ -305,7 +322,9 @@
             wasNewNode: [],
             wasNewEdge: [],
             concepts: [],
-            subject: undefined,
+            subject: {
+                isUpToDate: true
+            },
             workspace: undefined
         }),
         methods: {
@@ -332,6 +351,7 @@
                         if (body.workspace && body.triples && body.subject && body.subject_triples) {
                             this.workspace = body.workspace
                             this.subject = body.subject
+                            cy.elements().remove();
                             cy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0])).style({
                                 'background-image': body.workspace.imageURL,
                                 'background-fit': 'cover'
@@ -368,7 +388,7 @@
                             let cyLayout = cy.layout({
                                 ...concentricLayoutOptions,
                                 // concentric: function (node) {
-                                //     return cyDijkstra.distanceTo(node) * -1
+                                // return cyDijkstra.distanceTo(node) * -1
                                 // }
                             })
                             cyLayout.one('layoutstop', function () {
@@ -385,7 +405,8 @@
                                 'Unexpected error on getting draft information.')
                         }
                     })
-                let relationshipPromise = fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
+                let relationshipPromise =
+                    fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -495,7 +516,7 @@
                                 let cyLayout = cy.layout({
                                     ...concentricLayoutOptions,
                                     // concentric: function (node) {
-                                    //     return cyDijkstra.distanceTo(node) * -1
+                                    // return cyDijkstra.distanceTo(node) * -1
                                     // }
                                 })
                                 cyLayout.one('layoutstop', function () {
@@ -680,7 +701,7 @@
                 let cyLayout = cy.layout({
                     ...concentricLayoutOptions,
                     // concentric: function (node) {
-                    //     return cyDijkstra.distanceTo(node) * -1
+                    // return cyDijkstra.distanceTo(node) * -1
                     // }
                 })
                 cyLayout.one('layoutstop', function () {
@@ -691,6 +712,37 @@
                     cyLayout.run()
                 })
                 cyLayout.run()
+            },
+            sync() {
+
+                fetch("{{ url_for('RESTful.workspace.patch', deltaGraphId=deltaGraphId) }}", {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sync: true
+                        })
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Sync failed for unknown reason.',
+                            () => {
+                                this.loadData()
+                            })
+                    })
+
             }
         },
         mounted: function () {

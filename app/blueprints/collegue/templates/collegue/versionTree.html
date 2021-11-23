@@ -4,8 +4,9 @@
 <v-card style="height: 100%; width: 100%;">
     <div id="cy" style="height: 100%; width: 100%;"></div>
     <v-snackbar v-model="showSelectBar" timeout='-1'>
-        Select a ${ (snackbarMethod == 'branch')?'a branch or a trunk':'ready branch'} for ${
-        (snackbarMethod == 'branch')?'merging':'creation'}
+        Select a ${ (snackbarMethod == 'branch' || snackbarMethod == 'workspace')?'a branch or a trunk':'ready branch'}
+        for ${
+        (snackbarMethod == 'branch')?'merging':(snackbarMethod == 'workspace')?'checkout':'creation'}
         <template v-slot:action="{ attrs }">
             <v-btn color="blue" text v-bind="attrs" @click="resume()">
                 Cancel
@@ -30,6 +31,9 @@
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="commit()">
                 <v-list-item-title>Commit workspace</v-list-item-title>
+            </v-list-item>
+            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="checkout()">
+                <v-list-item-title>Checkout different graph</v-list-item-title>
             </v-list-item>
             {% endif %}
             {% if isDLTC %}
@@ -332,13 +336,12 @@
                                     }
                                 })
                                 pulledEdge.forEach(edge => {
-                                        let child = edge.source()
-                                        child.position({
-                                            y: position.y + stepY,
-                                        })
-                                        locatePredecessorsY(child)
-                                    }
-                                )
+                                    let child = edge.source()
+                                    child.position({
+                                        y: position.y + stepY,
+                                    })
+                                    locatePredecessorsY(child)
+                                })
                                 fixedEdges.forEach(edge => {
                                     let child = edge.source()
                                     locatePredecessorsY(child)
@@ -441,6 +444,11 @@
                 this.selectableNodes = cy.nodes(
                     '.branch[deltaGraphId  != "' + this.selectedNode.data("deltaGraphId") + '"],' +
                     '.trunk')
+                this.selectAnotherMode()
+            },
+            checkout() {
+                this.snackbarMethod = 'workspace'
+                this.selectableNodes = cy.nodes('.branch,.trunk')
                 this.selectAnotherMode()
             },
             createWorkspaceDialogue() {
@@ -563,6 +571,40 @@
                             this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
                                     'deltaGraphId') + '/' + this
                                 .selectedNode.data("deltaGraphId"))
+                        }
+                    }
+                    if (this.snackbarMethod == 'workspace') {
+                        if (this.selectableNodes.contains(event.target[0])) {
+                            fetch("{{ url_for('RESTful.workspace.patch') }}" + this
+                                    .selectedNode.data("deltaGraphId"), {
+                                        method: 'PATCH',
+                                        cache: 'no-store',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            checkout: true,
+                                            deltaGraphId: event.target[0].data(
+                                                'deltaGraphId')
+                                        })
+                                    })
+                                .then(response => {
+                                    try {
+                                        return response.json()
+                                    } catch {
+                                        this.$root.progress.show = false
+                                        this.$root.errorDisplay({},
+                                            'Unexpected error occured.')
+                                    }
+                                })
+                                .then(body => {
+                                    this.$root.progress.show = false
+                                    this.$root.responseSnackBar(body,
+                                        'Sync failed for unknown reason.',
+                                        () => {
+                                            this.loadData()
+                                        })
+                                })
                         }
                     }
                     // {% endif %}
