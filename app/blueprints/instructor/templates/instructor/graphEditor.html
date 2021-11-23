@@ -1,100 +1,165 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
-<v-card>
-    <v-speed-dial absolute bottom right>
-        <template v-slot:activator>
-            <v-btn color="blue darken-2" dark fab>
-                <v-icon>handyman</v-icon>
-            </v-btn>
-        </template>
-        <v-btn color="primary" fab @click="editorFit()">
-            <v-icon>fit_screen</v-icon>
-        </v-btn>
-        <v-btn color="primary" fab @click="removeUnreachable">
-            <v-icon>cleaning_services</v-icon>
-        </v-btn>
-    </v-speed-dial>
-    <div style="height: calc(100vh - 64px); width: calc(100vw - 50px);">
+<v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
+    <v-row dense style="width: 100%;">
+        <v-col dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        ${workspace?.tag + ' (' + subject?.tag + ')'}
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item @click="editorFit()">
+                        <v-list-item-title>fit viewport</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>fit_screen</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on" tile>
+                        viewport & layout
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item @click="editorFit()">
+                        <v-list-item-title>fit viewport</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>fit_screen</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                    <v-list-item @click="redoLayout()">
+                        <v-list-item-title>tidy layout</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon></v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on" tile>
+                        triples operation
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item @click="removeUnreachable">
+                        <v-list-item-title>remove unreachable</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>cleaning_services</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-col>
+    </v-row>
+    <v-row dense style="height: calc(100% - 44px); width: 100%;">
         <div id="editor" style="height: 100%; width: 100%;"></div>
-    </div>
-    <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
-        <v-sheet>
-            <v-form ref="tripleForm">
-                <v-container>
-                    <v-row>
-                        <v-btn :ripple="false" color="error" plain block small @click="unselectAll" elevation="2">
-                            dismiss
+    </v-row>
+    <v-card>
+        <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
+            <template v-slot:activator="{ on, attrs }">
+                <v-bottom-sheet :value="!tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
+                    <v-sheet>
+                        <v-btn :ripple="false" color="success" plain block small @click="tripleBottomSheet = true"
+                            elevation="2">
+                            open triple form
                             <v-icon right>
-                                clear_all
+                                menu_open
                             </v-icon>
                         </v-btn>
-                    </v-row>
-                    <v-row>
-                        <v-col>
-                            <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
-                                persistent-hint @focus="nodeFieldFocus('head')" @input="nodeFieldChange"
-                                @keydown="disableButtons()">
-                                <template v-slot:no-data>
-                                    <v-list-item>
-                                        <v-list-item-content>
-                                            <v-list-item-title>
-                                                No existing graph concept matching "<strong>${ h_name }</strong>". New
-                                                graph concept would be created. Press
-                                                <kbd>enter</kbd> or click elsewhere to proceed.
-                                            </v-list-item-title>
-                                        </v-list-item-content>
-                                    </v-list-item>
+                    </v-sheet>
+                </v-bottom-sheet>
+            </template>
+            <v-sheet>
+                <v-form ref="tripleForm">
+                    <v-container>
+                        <v-row>
+                            <v-btn :ripple="false" color="error" plain block small @click="unselectAll" elevation="2">
+                                dismiss
+                                <v-icon right>
+                                    clear_all
+                                </v-icon>
+                            </v-btn>
+                        </v-row>
+                        <v-row>
+                            <v-col>
+                                <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
+                                    persistent-hint @focus="nodeFieldFocus('head')" @input="nodeFieldChange"
+                                    @keydown="disableButtons()">
+                                    <template v-slot:no-data>
+                                        <v-list-item>
+                                            <v-list-item-content>
+                                                <v-list-item-title>
+                                                    No existing graph concept matching "<strong>${ h_name }</strong>".
+                                                    New
+                                                    graph concept would be created. Press
+                                                    <kbd>enter</kbd> or click elsewhere to proceed.
+                                                </v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                    </template>
+                                </v-combobox>
+                            </v-col>
+                            <v-col>
+                                <v-select v-model="r_name" :rules="nameRules" :items="relationships"
+                                    label="relationship" @input="edgeFieldChange">
+                                </v-select>
+                            </v-col>
+                            <v-col>
+                                <v-combobox v-model="t_name" :items="concepts" :rules="nameRules" label="tail entity"
+                                    persistent-hint @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"
+                                    @keydown="disableButtons()">
+                                    <template v-slot:no-data>
+                                        <v-list-item>
+                                            <v-list-item-content>
+                                                <v-list-item-title>
+                                                    No existing graph concept matching "<strong>${ t_name }</strong>".
+                                                    New
+                                                    graph concept would be created. Press
+                                                    <kbd>enter</kbd> or click elsewhere to proceed.
+                                                </v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                    </template></v-combobox>
+                            </v-col>
+                        </v-row>
+                        <v-row>
+                            <v-btn color="success" @click="createTriple(true)"
+                                :disabled="!canLinkEdge || !canUpdateEdge">
+                                associate
+                            </v-btn>
+                            <v-btn color="indigo lighten-2" @click="createTriple(false)"
+                                :disabled="!canUnlinkEdge || !canUpdateEdge">
+                                dissociate
+                            </v-btn>
+                            <v-tooltip top v-if="canDeleteEdge">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on"
+                                        @click="tripledelete()">
+                                        defer decision
+                                    </v-btn>
                                 </template>
-                            </v-combobox>
-                        </v-col>
-                        <v-col>
-                            <v-select v-model="r_name" :rules="nameRules" :items="relationships" label="relationship"
-                                @input="edgeFieldChange">
-                            </v-select>
-                        </v-col>
-                        <v-col>
-                            <v-combobox v-model="t_name" :items="concepts" :rules="nameRules" label="tail entity"
-                                persistent-hint @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"
-                                @keydown="disableButtons()">
-                                <template v-slot:no-data>
-                                    <v-list-item>
-                                        <v-list-item-content>
-                                            <v-list-item-title>
-                                                No existing graph concept matching "<strong>${ t_name }</strong>". New
-                                                graph concept would be created. Press
-                                                <kbd>enter</kbd> or click elsewhere to proceed.
-                                            </v-list-item-title>
-                                        </v-list-item-content>
-                                    </v-list-item>
-                                </template></v-combobox>
-                        </v-col>
-                    </v-row>
-                    <v-row>
-                        <v-btn color="success" @click="createTriple(true)" v-if="canLinkEdge"
-                            :disabled="!canUpdateEdge">
-                            associate
-                        </v-btn>
-                        <v-btn @click="createTriple(false)" v-else :disabled="!canUpdateEdge">
-                            dissociate
-                        </v-btn>
-                        <v-tooltip top v-if="canDeleteEdge">
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on" color="error"
-                                    @click="tripledelete()">
-                                    defer to others
-                                </v-btn>
-                            </template>
-                            <span>
-                                Let others decide whether these concept should be linked or not
-                            </span>
-                        </v-tooltip>
-                    </v-row>
-                </v-container>
-            </v-form>
-        </v-sheet>
-    </v-bottom-sheet>
-</v-card>
+                                <span>
+                                    Let others decide whether these concept should be linked or not
+                                </span>
+                            </v-tooltip>
+                        </v-row>
+                    </v-container>
+                </v-form>
+            </v-sheet>
+        </v-bottom-sheet>
+    </v-card>
+</v-container>
+
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
@@ -153,18 +218,19 @@
         name: 'concentric',
 
     }
-    coseLayoutOptions = {
-        name: 'cose',
-        padding: document.documentElement.clientHeight * 0.15,
-        fit: true,
-        idealEdgeLength: function (edge) {
-            return 64;
-        },
-        edgeElasticity: function (edge) {
-            return 128;
-        },
-        gravity: 0.15
-    }
+    fitPadding = document.documentElement.clientHeight * 0.10,
+        coseLayoutOptions = {
+            name: 'cose',
+            padding: fitPadding,
+            fit: true,
+            idealEdgeLength: function (edge) {
+                return 64;
+            },
+            edgeElasticity: function (edge) {
+                return 128;
+            },
+            gravity: 0.15
+        }
 
     function nodeFactory(name) {
         let output = {
@@ -232,12 +298,15 @@
             r_name: '',
             tripleBottomSheet: false,
             canLinkEdge: false,
+            canUnlinkEdge: false,
             canDeleteEdge: false,
             canUpdateEdge: false,
             focusing: '',
             wasNewNode: [],
             wasNewEdge: [],
-            concepts: []
+            concepts: [],
+            subject: undefined,
+            workspace: undefined
         }),
         methods: {
             loadData() {
@@ -261,6 +330,8 @@
                     })
                     .then(body => {
                         if (body.workspace && body.triples && body.subject && body.subject_triples) {
+                            this.workspace = body.workspace
+                            this.subject = body.subject
                             cy.add(nodeFactory(body.workspace.deltaGraphId.split('.')[0])).style({
                                 'background-image': body.workspace.imageURL,
                                 'background-fit': 'cover'
@@ -589,9 +660,11 @@
                         cy.edges().unselect()
                         edge.select()
                         this.canLinkEdge = edge.data("workspace_value") != "true"
+                        this.canUnlinkEdge = edge.data("workspace_value") != "false"
                         this.canDeleteEdge = edge.data("workspace_value") != "undefined"
                     } else {
                         this.canLinkEdge = true
+                        this.canUnlinkEdge = true
                         this.canDeleteEdge = false
                     }
 
@@ -600,7 +673,24 @@
                 }
             },
             editorFit() {
-                cy.fit(cy, document.documentElement.clientHeight * 0.25)
+                cy.fit(cy, fitPadding)
+            },
+            redoLayout() {
+                cy.elements().style('visibility', 'hidden')
+                let cyLayout = cy.layout({
+                    ...concentricLayoutOptions,
+                    // concentric: function (node) {
+                    //     return cyDijkstra.distanceTo(node) * -1
+                    // }
+                })
+                cyLayout.one('layoutstop', function () {
+                    let cyLayout = cy.layout(coseLayoutOptions)
+                    cyLayout.one('layoutstop', function () {
+                        cy.elements().style('visibility', 'visible')
+                    })
+                    cyLayout.run()
+                })
+                cyLayout.run()
             }
         },
         mounted: function () {
@@ -626,6 +716,7 @@
                 self.t_name = event.target.target().data("id")
                 self.determineTripleOptions()
             })
+            cy.on('tapdrag', 'node', (event) => {})
             this.loadData()
         },
         template: '#content',
