@@ -12,8 +12,9 @@ branch = Blueprint("branch", __name__, url_prefix="branch")
 def post(overwriterId, overwriteeId):
     if overwriterId is None:
         if "tag" in request.json and "action" in request.json:
-            if "import" in request.json  and "deletaGraphId" in request.json:
+            if "import" in request.json and "deletaGraphId" in request.json:
                 import json
+
                 triples = json.loads(request.json["triples"])
                 if request.json["action"] == "fork":
                     return jsonify(
@@ -23,7 +24,7 @@ def post(overwriterId, overwriteeId):
                                 deltaGraphId=request.json["deletaGraphId"],
                                 tag=request.json["tag"],
                                 userId=session["user"]["userId"],
-                                triples = triples
+                                triples=triples,
                             ),
                         }
                     )
@@ -35,7 +36,7 @@ def post(overwriterId, overwriteeId):
                                 deltaGraphId=request.json["deletaGraphId"],
                                 tag=request.json["tag"],
                                 userId=session["user"]["userId"],
-                                triples = triples
+                                triples=triples,
                             ),
                         }
                     )

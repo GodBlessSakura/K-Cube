@@ -12,11 +12,13 @@ cypher = {
 
 class APIDriver:
     def __init__(self, uri, user, password):
-        print('connect neo4j with: ' + uri)
-        if 'neo4j+s' in uri:
+        print("connect neo4j with: " + uri)
+        if "neo4j+s" in uri:
             self.driver = GraphDatabase.driver(uri, auth=(user, password))
         else:
-            self.driver = GraphDatabase.driver(uri, auth=(user, password), encrypted=False)
+            self.driver = GraphDatabase.driver(
+                uri, auth=(user, password), encrypted=False
+            )
 
         from .userResources import userResources
 
