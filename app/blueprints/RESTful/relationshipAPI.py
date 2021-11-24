@@ -92,7 +92,7 @@ def createApproval():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.put("approval")
+@relationship.delete("approval")
 @authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
 def removeApproval():
     if "name" in request.json:
