@@ -44,15 +44,14 @@ def getRelationShipView():
         raise e
 
 
-@relationship.put("proposal", defaults={"name": None})
-@relationship.put("proposal/<name>")
+@relationship.put("proposal")
 @authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
-def createProposal(name):
-    if name is not None:
+def createProposal():
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.create_proposal(
-                    userId=session["user"]["userId"], name=name
+                    userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -61,15 +60,14 @@ def createProposal(name):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.delete("proposal", defaults={"name": None})
-@relationship.delete("proposal/<name>")
+@relationship.delete("proposal")
 @authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
 def removeProposal(name):
-    if name is not None:
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.remove_proposal(
-                    userId=session["user"]["userId"], name=name
+                    userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -78,15 +76,14 @@ def removeProposal(name):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.put("approval", defaults={"name": None})
-@relationship.put("approval/<name>")
+@relationship.put("approval")
 @authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
 def createApproval(name):
-    if name is not None:
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.create_approval(
-                    userId=session["user"]["userId"], name=name
+                    userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -95,15 +92,14 @@ def createApproval(name):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.put("approval", defaults={"name": None})
-@relationship.put("approval/<name>")
+@relationship.put("approval")
 @authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
-def removeApproval(name):
-    if name is not None:
+def removeApproval():
+    if "name" in request.json:
         try:
             result = jsonify(
                 get_api_driver().relationship.remove_approval(
-                    userId=session["user"]["userId"], name=name
+                    userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
