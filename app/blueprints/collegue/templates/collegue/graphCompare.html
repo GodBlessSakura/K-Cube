@@ -60,6 +60,12 @@
                     </v-btn>
                 </template>
                 <v-list>
+                    <v-list-item @click="copyJson()">
+                        <v-list-item-title>json</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>content_copy</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
                 </v-list>
             </v-menu>
         </v-col>
@@ -129,14 +135,14 @@
                     'opacity': 0
                 }
             }, {
-                selector: 'edge[preview_value = "undefined"][original_value = "true"]',
+                selector: 'edge[preview_value != "false"][original_value = "true"]',
                 style: {
                     'line-style': 'solid',
                     'width': 1,
                     'opacity': 0.25
                 }
             }, {
-                selector: 'edge[preview_value = "undefined"][original_value = "false"]',
+                selector: 'edge[preview_value != "true"][original_value = "false"]',
                 style: {
                     'line-gradient-stop-colors': 'grey white white grey',
                     'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
@@ -309,7 +315,6 @@
             greaterVisibility: [],
             proceeded: false,
             confirmed: false,
-
         }),
         methods: {
             loadData() {
@@ -334,6 +339,7 @@
                     .then(body => {
                         if (body.overwriter && body.overwriter_triples && body.overwritee && body
                             .overwritee_triples) {
+                            this.overwriter_triples = body.overwriter_triples
                             this.overwriter = body.overwriter
                             this.overwritee = body.overwritee
 
@@ -523,8 +529,18 @@
                 } else {
                     this.confirmed = true
                 }
-            }
+            },
             // {% endif %}
+            copyJson() {
+                navigator.clipboard.writeText(JSON.stringify(
+                    this.overwriter_triples
+                )).then(() => {
+                    this.$root.responseSnackBar({
+                        success: true,
+                        message: 'json copied to clipboard'
+                    })
+                })
+            }
         },
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))

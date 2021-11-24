@@ -97,14 +97,14 @@
                     'opacity': 0
                 }
             }, {
-                selector: 'edge[preview_value = "undefined"][original_value = "true"]',
+                selector: 'edge[preview_value != "false"][original_value = "true"]',
                 style: {
                     'line-style': 'solid',
                     'width': 1,
                     'opacity': 0.25
                 }
             }, {
-                selector: 'edge[preview_value = "undefined"][original_value = "false"]',
+                selector: 'edge[preview_value != "true"][original_value = "false"]',
                 style: {
                     'line-gradient-stop-colors': 'grey white white grey',
                     'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
