@@ -233,6 +233,7 @@ class workspaceResources:
 
     def create_from_import(self, deltaGraphId, triples, userId, tag):
         fname = sys._getframe().f_code.co_name
+        print(triples)
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
@@ -244,15 +245,25 @@ class workspaceResources:
                 tag=tag,
             )
             try:
-                return [
-                    {
-                        key: value
-                        if not isinstance(value, DateTime)
-                        else str(value.iso_format())
-                        for key, value in record["workspace"].items()
-                    }
-                    for record in result
-                ][0]
+                return [record for record in result][0]["deltaGraphId"]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def delete_workspace(self, deltaGraphId, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                deltaGraphId=deltaGraphId,
+                userId=userId,
+            )
+            try:
+                return True
             except Exception as exception:
                 raise exception
 

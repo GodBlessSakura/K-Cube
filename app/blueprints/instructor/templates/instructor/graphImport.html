@@ -440,8 +440,11 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
-                            () => {})
+                        this.$root.responseSnackBar(body, 'Unexpected error on importing triples.',
+                            () => {
+                                window.location.replace("{{ url_for('instructor.workspace')}}" + body
+                                    .deltaGraphId)
+                            })
                     })
             },
             update() {
@@ -450,6 +453,7 @@
                     previewCy.edges().forEach(edge => {
                         edge.data('preview_value', 'undefined')
                     })
+                    subjectCy.elements().remove()
                     let unacceptedRelationship = []
                     triples.forEach(triple => {
                         if (!triple.h_name instanceof String ||
@@ -480,8 +484,11 @@
                     });
                     if (unacceptedRelationship.length > 0) {
                         this.$root.errorDisplay({},
-                            'some relationships are not approved, related triple will not be reflected: ' +
+                            'some relationships are not approved: ' +
                             unacceptedRelationship.join(', '))
+                        previewCy.edges().forEach(edge => {
+                            edge.data('preview_value', 'undefined')
+                        })
                     }
                     if (previewCy.edges(
                             '[preview_value = "false"][original_value = "true"],' +
@@ -502,7 +509,6 @@
                     previewLayout.one('layoutstop', function () {
                         let previewLayout = previewCy.layout(coseLayoutOptions)
                         previewLayout.one('layoutstop', function () {
-                            subjectCy.elements().remove()
                             subjectCy.add(previewCy.elements().clone())
                             subjectCy.fit(coseLayoutOptions.padding)
                             previewCy.elements().style('visibility', 'visible')
@@ -512,6 +518,9 @@
                     previewLayout.run()
                 } catch (e) {
                     console.log(e)
+                    previewCy.edges().forEach(edge => {
+                        edge.data('preview_value', 'undefined')
+                    })
                     this.$root.errorDisplay({},
                         'Textual import is not a valid json string.')
                 }

@@ -21,10 +21,17 @@
                         </v-list-item-icon>
                     </v-list-item>
                     <v-list-item v-else>
-                        <v-list-item-title>the workspace is <br> up to date</v-list-item-title>
+                        <v-list-item-subtitle style="font-size: small;">Already editing<br>lastest patch
+                        </v-list-item-subtitle>
+                        <v-list-item-icon>
+                            <v-icon>sync</v-icon>
+                        </v-list-item-icon>
                     </v-list-item>
                     <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
                         <v-list-item-title>commit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="deleteSelectBar = true">
+                        <v-list-item-title>delete workspace</v-list-item-title>
                     </v-list-item>
                 </v-list>
             </v-menu>
@@ -167,6 +174,14 @@
             </v-sheet>
         </v-bottom-sheet>
     </v-card>
+    <v-snackbar v-model="deleteSelectBar" timeout='10000'>
+        Deletion can not be undone, are you sure?
+        <template v-slot:action="{ attrs }">
+            <v-btn color="error" text v-bind="attrs" @click="workspaceDelete()">
+                delete
+            </v-btn>
+        </template>
+    </v-snackbar>
 </v-container>
 
 {% endblock %}
@@ -198,7 +213,7 @@
                     'width': 5,
                 }
             }, {
-                selector: 'edge[workspace_value = " false"]',
+                selector: 'edge[workspace_value = "false"]',
                 style: {
                     'line-gradient-stop-colors': 'grey white white grey',
                     'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
@@ -314,7 +329,8 @@
             subject: {
                 isPatchLeaf: true
             },
-            workspace: undefined
+            workspace: undefined,
+            deleteSelectBar: false,
         }),
         methods: {
             loadData() {
@@ -729,6 +745,34 @@
                             'Sync failed for unknown reason.',
                             () => {
                                 this.loadData()
+                            })
+                    })
+            },
+            workspaceDelete() {
+
+                fetch("{{ url_for('RESTful.workspace.delete', deltaGraphId=deltaGraphId) }}", {
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'delete failed for unknown reason.',
+                            () => {
+                                window.location.replace("{{ url_for('instructor.versionTree') }}/" +
+                                    this.workspace.deltaGraphId.split('.')[0])
                             })
                     })
 

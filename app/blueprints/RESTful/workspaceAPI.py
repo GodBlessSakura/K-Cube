@@ -18,8 +18,8 @@ def post(deltaGraphId):
             return jsonify(
                 {
                     "success": True,
-                    "branch": get_api_driver().workspace.create_from_import(
-                        deltaGraphId=request.json["deltaGraphId"],
+                    "deltaGraphId": get_api_driver().workspace.create_from_import(
+                        deltaGraphId=deltaGraphId,
                         tag=request.json["tag"],
                         userId=session["user"]["userId"],
                         triples=triples,
@@ -98,4 +98,20 @@ def patch(deltaGraphId):
                     ),
                 }
             )
+    return jsonify({"success": False, "message": "incomplete request"})
+
+
+@workspace.delete("/", defaults={"deltaGraphId": None})
+@workspace.delete("/<deltaGraphId>")
+def delete(deltaGraphId):
+    if deltaGraphId is not None:
+        get_api_driver().workspace.delete_workspace(
+            deltaGraphId=deltaGraphId,
+            userId=session["user"]["userId"],
+        )
+        return jsonify(
+            {
+                "success": True,
+            }
+        )
     return jsonify({"success": False, "message": "incomplete request"})
