@@ -532,6 +532,9 @@
             },
             // {% endif %}
             copyJson() {
+                console.log(JSON.stringify(
+                    this.overwriter_triples
+                ))
                 navigator.clipboard.writeText(JSON.stringify(
                     this.overwriter_triples
                 )).then(() => {
