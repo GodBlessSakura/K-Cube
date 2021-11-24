@@ -44,11 +44,10 @@ def getRelationShipView():
         raise e
 
 
-@relationship.put("proposal")
+@relationship.put("proposal", defaults={"name": None})
 @relationship.put("proposal/<name>")
 @authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
 def createProposal(name):
-
     if name is not None:
         try:
             result = jsonify(
@@ -62,7 +61,7 @@ def createProposal(name):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.delete("proposal")
+@relationship.delete("proposal", defaults={"name": None})
 @relationship.delete("proposal/<name>")
 @authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
 def removeProposal(name):
@@ -79,7 +78,7 @@ def removeProposal(name):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.put("approval")
+@relationship.put("approval", defaults={"name": None})
 @relationship.put("approval/<name>")
 @authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
 def createApproval(name):
@@ -96,7 +95,7 @@ def createApproval(name):
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@relationship.put("approval")
+@relationship.put("approval", defaults={"name": None})
 @relationship.put("approval/<name>")
 @authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
 def removeApproval(name):
