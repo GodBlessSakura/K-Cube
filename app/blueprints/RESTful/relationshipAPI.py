@@ -62,7 +62,7 @@ def createProposal():
 
 @relationship.delete("proposal")
 @authorize_RESTful_with(["canProposeRelationship"], require_userId=True)
-def removeProposal(name):
+def removeProposal():
     if "name" in request.json:
         try:
             result = jsonify(
@@ -78,7 +78,7 @@ def removeProposal(name):
 
 @relationship.put("approval")
 @authorize_RESTful_with(["canApproveRelationship"], require_userId=True)
-def createApproval(name):
+def createApproval():
     if "name" in request.json:
         try:
             result = jsonify(
