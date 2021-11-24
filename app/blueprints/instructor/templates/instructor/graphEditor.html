@@ -579,7 +579,7 @@
                                 edge.data({
                                     workspace_value: "undefined"
                                 })
-                                cy.edges('[workspace_value = "undefined"][^subject_value = "undefined"]')
+                                cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
                                     .remove()
                                 cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
                                     "tempory")
