@@ -29,7 +29,7 @@ SET
     branch.visibility = 
         CASE overwritee.visibility
             WHEN null
-            THEN 'private'
+            THEN 0
             ELSE overwritee.visibility
             END,
     branch.creationDate = datetime.transaction(),

@@ -5,13 +5,15 @@ SET branch.visibility =
         ELSE branch.visibility
     END
 WITH DISTINCT branch
-MATCH p = (ancestor)<-[:PATCH*]-(branch)
-WITH collect(ancestor) + [branch] AS list, branch
 CALL{
-    WITH list
-    UNWIND list as graph
-    RETURN max(graph.visibility) as visibility
+    WITH branch
+    MATCH (ancestor)<-[:PATCH*]-(branch)
+    WITH DISTINCT ancestor, branch
+    SET ancestor.visibility = 
+    CASE ancestor.visibility < branch.visibility
+        WHEN true THEN branch.visibility
+        ELSE ancestor.visibility
+    END
+    RETURN null
 }
-UNWIND list as graph
-SET graph.visibility = visibility
 RETURN branch

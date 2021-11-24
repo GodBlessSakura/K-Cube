@@ -10,7 +10,7 @@ SET
     branch.visibility = 
         CASE subject.visibility
             WHEN null
-            THEN 'private'
+            THEN 0
             ELSE subject.visibility
             END,
     branch.creationDate = datetime.transaction(),
