@@ -15,5 +15,7 @@ CALL{
         ELSE ancestor.visibility
     END
     RETURN null
+UNION
+    RETURN null
 }
 RETURN branch
