@@ -6,11 +6,26 @@ from app.authorizer import authorize_RESTful_with
 workspace = Blueprint("workspace", __name__, url_prefix="workspace")
 
 
-@workspace.put("/")
-@workspace.put("/<deltaGraphId>")
+@workspace.post("/")
+@workspace.post("/<deltaGraphId>")
 @authorize_RESTful_with(["canWriteAssignedCourseBranch"])
-def put(deltaGraphId):
+def post(deltaGraphId):
     if "tag" in request.json and deltaGraphId is not None:
+        if "triples" in request.json:
+            import json
+
+            triples = json.loads(request.json["triples"])
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().workspace.create_from_import(
+                        deltaGraphId=request.json["deltaGraphId"],
+                        tag=request.json["tag"],
+                        userId=session["user"]["userId"],
+                        triples=triples,
+                    ),
+                }
+            )
         try:
             newId = get_api_driver().workspace.create_workspace(
                 deltaGraphId=deltaGraphId,

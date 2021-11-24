@@ -10,11 +10,6 @@
                 </v-text-field>
             </v-form>
         </v-col>
-        <v-col>
-            <v-select dense v-model="action" :items="options" :disabled='isTrival || options.length == 0'
-                label="Filled style">
-            </v-select>
-        </v-col>
         <v-col dense style="text-align: center;">
             <v-btn block @click="submit()" :disabled=isTrival>
                 ${isTrival?'No meaningful edge was found':'submit'}
@@ -100,6 +95,22 @@
                     'text-rotation': 'autorotate',
                     'line-style': 'solid',
                     'opacity': 0
+                }
+            }, {
+                selector: 'edge[preview_value = "undefined"][original_value = "true"]',
+                style: {
+                    'line-style': 'solid',
+                    'width': 1,
+                    'opacity': 0.25
+                }
+            }, {
+                selector: 'edge[preview_value = "undefined"][original_value = "false"]',
+                style: {
+                    'line-gradient-stop-colors': 'grey white white grey',
+                    'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                    'line-fill': 'linear-gradient ',
+                    'width': 1,
+                    'opacity': 0.25
                 }
             },
             {
@@ -218,7 +229,7 @@
                 target: edge.t_name,
                 name: edge.r_name,
                 id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
-                preview_value: edge.r_value ? 'true' : 'false',
+                preview_value: (edge.r_value == undefined || edge.r_value) ? 'true' : 'false',
                 original_value: 'undefined',
             }
         }
@@ -249,6 +260,7 @@
 
     Vue.component('app-content', {
         data: () => ({
+            relationships: [],
             tag: '',
             tagRules: [v => !!v || 'Tag is required',
                 v => v.length > 3 && v.length < 101 ||
@@ -257,7 +269,6 @@
                 'Tag can only contains alphanumeric characters, dot(.) and space.'
             ],
             options: [],
-            action: [],
             isTrival: false,
             graph: undefined,
             visibility: '',
@@ -289,14 +300,6 @@
                     .then(body => {
                         if (body.graph && body.triples) {
                             this.graph = body.graph
-                            if (body.graph.labels.includes('Branch') && body.graph.isOwner &&
-                                body.graph.isPatchLeaf) {
-                                this.options = ['patch', 'fork']
-                                this.action = 'patch'
-                            } else {
-                                this.options = ['fork']
-                                this.action = 'fork'
-                            }
                             previewCy.add(nodeFactory(body.graph.deltaGraphId.split('.')[0])).data(
                                 'imageURL',
                                 body.graph.imageURL,
@@ -353,8 +356,33 @@
                                 'Unexpected error on getting draft information.')
                         }
                     })
+                let relationshipPromise =
+                    fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.relationships) {
+                            this.relationships = body.relationships
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+                        }
+                    })
 
-                Promise.all([graphPromise]).then(_ => {
+                Promise.all([graphPromise, relationshipPromise]).then(_ => {
                     this.$root.progress.show = false
                 })
             },
@@ -363,6 +391,9 @@
                 subjectCy.fit()
             },
             submit() {
+                if (!this.$refs.control.validate()) {
+                    return
+                }
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
@@ -373,24 +404,31 @@
                     return
                 }
                 this.$root.progress.show = true
-                let url =
-                    '{{ url_for("RESTful.branch.post")}}'
+                let userTriples = JSON.parse(this.tripleString.trim())
+                let acceptedTriple = []
+                userTriples.forEach(triple => {
+                    if (!triple.h_name instanceof String ||
+                        !triple.t_name instanceof String ||
+                        !triple.r_name instanceof String)
+                        return;
+                    if (!this.relationships.includes(triple.r_name)) {
+                        return
+                    }
+                    acceptedTriple.push(triple)
+                })
                 let body = {
                     tag: this.tag,
-                    action: this.action,
-                    deltaGraphId: this.graph.deltaGraphId,
-                    triples: this.tripleString,
+                    triples: JSON.stringify(acceptedTriple),
 
                 }
-                fetch(
-                        url, {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(body)
-                        })
+                fetch('{{ url_for("RESTful.workspace.post", deltaGraphId=deltaGraphId)}}', {
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -412,7 +450,16 @@
                     previewCy.edges().forEach(edge => {
                         edge.data('preview_value', 'undefined')
                     })
+                    let unacceptedRelationship = []
                     triples.forEach(triple => {
+                        if (!triple.h_name instanceof String ||
+                            !triple.t_name instanceof String ||
+                            !triple.r_name instanceof String)
+                            return;
+                        if (!this.relationships.includes(triple.r_name)) {
+                            unacceptedRelationship.push(triple.r_name)
+                            return
+                        }
                         [triple.h_name, triple.t_name].forEach(name => {
                             if (previewCy.getElementById(name).length == 0) {
                                 previewCy.add(nodeFactory(name))
@@ -428,9 +475,14 @@
                                     'true' : 'false'
                             })
                         } else {
-                            previewCy.add(originalEdgeFactory(triple))
+                            previewCy.add(previewEdgeFactory(triple))
                         }
-                    })
+                    });
+                    if (unacceptedRelationship.length > 0) {
+                        this.$root.errorDisplay({},
+                            'some relationships are not approved, related triple will not be reflected: ' +
+                            unacceptedRelationship.join(', '))
+                    }
                     if (previewCy.edges(
                             '[preview_value = "false"][original_value = "true"],' +
                             '[preview_value = "true"][original_value = "false"],' +
@@ -450,6 +502,7 @@
                     previewLayout.one('layoutstop', function () {
                         let previewLayout = previewCy.layout(coseLayoutOptions)
                         previewLayout.one('layoutstop', function () {
+                            subjectCy.elements().remove()
                             subjectCy.add(previewCy.elements().clone())
                             subjectCy.fit(coseLayoutOptions.padding)
                             previewCy.elements().style('visibility', 'visible')
@@ -457,7 +510,8 @@
                         previewLayout.run()
                     })
                     previewLayout.run()
-                } catch {
+                } catch (e) {
+                    console.log(e)
                     this.$root.errorDisplay({},
                         'Textual import is not a valid json string.')
                 }

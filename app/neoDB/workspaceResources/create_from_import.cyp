@@ -26,4 +26,5 @@ SET
     workspace.creationDate = datetime.transaction(),
     workspace.deltaGraphId = split(graph.deltaGraphId,'.')[0] + '.' + id(workspace),
     workspace.tag = $tag
+
 RETURN workspace.deltaGraphId as deltaGraphId;

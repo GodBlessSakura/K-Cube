@@ -465,8 +465,8 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.workspace.put') }}" + this.selectedNode.data("deltaGraphId"), {
-                            method: 'PUT',
+                    fetch("{{ url_for('RESTful.workspace.post') }}" + this.selectedNode.data("deltaGraphId"), {
+                            method: 'POST',
                             cache: 'no-store',
                             headers: {
                                 'Content-Type': 'application/json'

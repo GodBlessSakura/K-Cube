@@ -10,37 +10,6 @@ branch = Blueprint("branch", __name__, url_prefix="branch")
 @branch.post("/<overwriterId>/", defaults={"overwriteeId": None})
 @branch.post("/<overwriterId>/<overwriteeId>")
 def post(overwriterId, overwriteeId):
-    if overwriterId is None:
-        if "tag" in request.json and "action" in request.json:
-            if "import" in request.json and "deletaGraphId" in request.json:
-                import json
-
-                triples = json.loads(request.json["triples"])
-                if request.json["action"] == "fork":
-                    return jsonify(
-                        {
-                            "success": True,
-                            "branch": get_api_driver().branch.import_json(
-                                deltaGraphId=request.json["deletaGraphId"],
-                                tag=request.json["tag"],
-                                userId=session["user"]["userId"],
-                                triples=triples,
-                            ),
-                        }
-                    )
-                if request.json["action"] == "patch":
-                    return jsonify(
-                        {
-                            "success": True,
-                            "branch": get_api_driver().branch.import_json(
-                                deltaGraphId=request.json["deletaGraphId"],
-                                tag=request.json["tag"],
-                                userId=session["user"]["userId"],
-                                triples=triples,
-                            ),
-                        }
-                    )
-
     if overwriterId is not None:
         if "tag" in request.json and "action" in request.json:
             if overwriterId is not None and overwriteeId is None:
