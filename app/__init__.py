@@ -66,6 +66,16 @@ def create_app(config_string):
     def handle_bad_request(e):
         return not_found(e)
 
+    @app.errorhandler(IndexError)
+    def handle_bad_request(e):
+        return jsonify(
+            {
+                "success": False,
+                "message": "Unable to retrive relavent record. You may press F12 and look for the error message in the console.",
+                "error": str(e),
+            }
+        )
+
     @app.errorhandler(InvalidRequest)
     def handle_bad_request(e):
         return jsonify({"success": False, "message": e.message})

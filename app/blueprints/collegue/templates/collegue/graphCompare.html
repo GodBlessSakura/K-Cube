@@ -329,7 +329,8 @@
 
                             //{% endif %}
                             //{% if isInstructor %}
-                            if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner) {
+                            if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner &&
+                                body.overwritee.isPatchLeaf) {
                                 this.options = ['patch', 'fork']
                                 this.action = 'patch'
                             } else {

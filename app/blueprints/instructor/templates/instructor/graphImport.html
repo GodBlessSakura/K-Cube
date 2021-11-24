@@ -36,7 +36,8 @@
                         Textual import
                     </v-expansion-panel-header>
                     <v-expansion-panel-content>
-                        <v-textarea @change="update()" v-model="tripleString">
+                        <v-textarea @change="update()" v-model="tripleString" label='json array' persistent-placeholder
+                            :placeholder="'[{&quot;h_name&quot;: &quot;COMP1&quot;, &quot;r_name&quot;: &quot;Has Subtopic&quot;, &quot;t_name&quot;:&quot;Cyber security&quot;, &quot;r_value&quot;:false }]\n triple with undefined r_value is considered as a true edge.'">
 
                         </v-textarea>
                     </v-expansion-panel-content>
@@ -288,7 +289,8 @@
                     .then(body => {
                         if (body.graph && body.triples) {
                             this.graph = body.graph
-                            if (body.graph.labels.includes('Branch') && body.graph.isOwner) {
+                            if (body.graph.labels.includes('Branch') && body.graph.isOwner &&
+                                body.graph.isPatchLeaf) {
                                 this.options = ['patch', 'fork']
                                 this.action = 'patch'
                             } else {

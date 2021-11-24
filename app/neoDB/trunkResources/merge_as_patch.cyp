@@ -1,6 +1,7 @@
 MATCH (user:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canWriteTrunk: true})
 WITH DISTINCT user
 MATCH (overwritee:Trunk{deltaGraphId: $overwriteeId})
+WHERE NOT EXISTS((overwritee)<-[:PATCH]-())
 WITH DISTINCT user, overwritee
 MATCH (overwriter:Branch{deltaGraphId: $overwriterId})
 WITH 

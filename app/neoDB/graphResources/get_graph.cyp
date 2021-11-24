@@ -22,4 +22,4 @@ UNION
     RETURN graph, false as isOwner
 }
 MATCH (:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})<-[:COURSE_DESCRIBE]-(course)
-RETURN DISTINCT graph, course, isOwner
+RETURN DISTINCT graph, course, isOwner, NOT EXISTS((graph)<-[:PATCH]-()) as isPatchLeaf

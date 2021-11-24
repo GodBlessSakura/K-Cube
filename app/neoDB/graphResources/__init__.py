@@ -30,6 +30,7 @@ class graphResources:
                         for key, value in record["graph"].items()
                     }.items()
                     | {
+                        "isPatchLeaf": record["isPatchLeaf"],
                         "isOwner": record["isOwner"],
                     }.items()
                     | record["course"].items(),

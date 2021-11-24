@@ -323,13 +323,13 @@
                                     child.position({
                                         y: position.y + stepY,
                                     })
-                                    console.log(child.data('tag'))
+                                    // console.log(child.data('tag'))
                                     let pulling = child.incomers(
                                         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
                                     )
                                     if (pulling.length > 0) {
                                         pulling.map(edge => edge.source()).forEach(puller => {
-                                                console.log("pulled by " + puller.data('tag'))
+                                                // console.log("pulled by " + puller.data('tag'))
                                                 puller.position({
                                                     y: child.position().y + stepY,
                                                 })

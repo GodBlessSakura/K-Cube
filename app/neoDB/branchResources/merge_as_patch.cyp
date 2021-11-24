@@ -1,4 +1,5 @@
 MATCH (user)-[:USER_OWN]->(overwritee{deltaGraphId: $overwriteeId})
+WHERE NOT EXISTS((overwritee)<-[:PATCH]-())
 WITH DISTINCT overwritee, user
 CALL{
     WITH user

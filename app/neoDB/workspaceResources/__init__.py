@@ -125,7 +125,7 @@ class workspaceResources:
                         for key, value in record["subject"].items()
                     }.items()
                     | {
-                        "isUpToDate": record["isUpToDate"],
+                        "isPatchLeaf": record["isPatchLeaf"],
                         "isOwner": record["isOwner"],
                     }.items(),
                     labels=list(record["subject"].labels),
