@@ -1,95 +1,38 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
-<v-card style="height: 100%; width: 100%;">
-    <div id="cy" style="height: 100%; width: 100%;"></div>
-</v-card>
+<v-container>
+    <v-row v-for="row in rows">
+        <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
+            <v-card v-if="col.userName" :href="'{{ url_for('courseGraph', courseCode=courseCode) }}' + (col.userId !=
+            null ? '/' + col.userId : '')">
+                <v-card-title>
+                    ${col.userName}
+                </v-card-title>
+            </v-card>
+        </v-col>
+    </v-row>
+</v-container>
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
 <script>
-    cy = cytoscape({
-        style: [{
-                selector: 'node',
-                style: {
-                    'label': 'data(name)',
-                    'font-size': 8,
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'label': 'data(name)',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier',
-                    'font-size': 8,
-                    'text-rotation': 'autorotate',
-                    'line-style': 'solid',
-                    'width': 2,
-                }
-            },
-        ],
-        wheelSensitivity: 0.15,
-        boxSelectionEnabled: false,
-    })
-    concentricLayoutOptions = {
-        name: 'concentric',
-
-    }
-    coseLayoutOptions = {
-        name: 'cose',
-        padding: document.documentElement.clientHeight * 0.15,
-        fit: true,
-        idealEdgeLength: function (edge) {
-            return 64;
-        },
-        edgeElasticity: function (edge) {
-            return 128;
-        },
-        gravity: 0.15
-    }
-
-    function nodeFactory(name) {
-        let output = {
-            group: 'nodes',
-            data: {
-                id: name,
-                name: name
-            },
-            position: {
-                x: 0,
-                y: 0
-            },
-        }
-        return output
-    }
-
-    function edgeFactory(edge) {
-        let output = {
-            group: 'edges',
-            data: {
-                source: edge.h_name,
-                target: edge.t_name,
-                name: edge.r_name,
-                id: edgeIdFromNames(edge.h_name, edge.r_name, edge.t_name),
-                value: edge.r_value ? 'true' : 'false',
-            }
-        }
-        return output
-    }
-
-    function edgeIdFromNames(h_name, r_name, t_name) {
-        return h_name + '.' + r_name + '.' + t_name
-    }
     Vue.component('app-content', {
-        data: () => ({}),
+        data: () => ({
+            rows: [
+                []
+            ],
+            course: null,
+            // {% if isDLTC %}
+            instructors: null,
+            instructorDialogue: false,
+            // {% endif %}
+        }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode) }}", {
+                        "{{ url_for('RESTful.course.query', graphs=True, courseCode = courseCode) | safe }}", {
                             method: 'GET',
                             cache: 'no-store',
                             headers: {
@@ -107,58 +50,37 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        if (body.course && body.triples) {
-                            cy.add(nodeFactory('{{ courseCode }}', ["course"]))
-                                .data(
-                                    'imageURL',
-                                    body.course.imageURL,
-                                ).data('name', body.course.diaplsyName)
-                            body.triples.forEach(triple => {
-                                if (triple.r_value) {
-                                    [triple.h_name, triple.t_name].forEach(
-                                        name => {
-                                            if (cy.getElementById(name).length == 0) {
-                                                cy.add(nodeFactory(name))
-                                            }
-                                        })
-                                    cy.add(edgeFactory(triple))
+                        let colPerRow = 4
+                        if (body.instructors) {
+                            body.instructors.forEach(instructor => {
+                                let lastRow = this.rows[this.rows.length - 1]
+                                if (lastRow.length == colPerRow) {
+                                    this.rows.push([])
+                                    lastRow = this.rows[this.rows.length - 1]
                                 }
+                                lastRow.push(instructor)
+
                             })
-                            cy.elements().style('visibility', 'hidden')
-                            let cyLayout = cy.layout({
-                                ...concentricLayoutOptions,
-                                // concentric: function (node) {
-                                //     return cyDijkstra.distanceTo(node) * -1
-                                // }
+                            let lastRow = this.rows[this.rows.length - 1]
+                            if (lastRow.length == colPerRow) {
+                                this.rows.push([])
+                                lastRow = this.rows[this.rows.length - 1]
+                            }
+                            lastRow.push({
+                                userName: 'department',
+                                userId: null
                             })
-                            cyLayout.one('layoutstop', function () {
-                                let cyLayout = cy.layout(coseLayoutOptions)
-                                cyLayout.one('layoutstop', function () {
-                                    cy.elements().style('visibility', 'visible')
-                                })
-                                cyLayout.run()
-                            })
-                            cyLayout.run()
+                            while (lastRow.length < colPerRow) {
+                                lastRow.push({})
+                            }
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
                         }
                     })
             },
-            newTab(url) {
-                let w = window.open(url, '_blank')
-            }
         },
         mounted: function () {
-            cy.mount(document.getElementById("cy"))
-            self = this
-            cy.on('tap', 'node', (event) => {
-                console.log(event)
-                if (event.target == event.cy) return
-                this.newTab("{{ url_for('material', courseCode = courseCode)}}?concept=" + event
-                    .target[0].data(
-                        'id'))
-            })
             this.loadData()
         },
         template: '#content',

@@ -134,3 +134,17 @@ class courseResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def list_course_graph(self, courseCode):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode)
+            try:
+                return [dict(record["user"].items()) for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

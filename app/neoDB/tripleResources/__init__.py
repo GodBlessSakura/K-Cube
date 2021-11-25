@@ -179,6 +179,28 @@ class tripleResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def get_course_instructor_triple(self, courseCode, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode, userId=userId)
+            try:
+                return [
+                    {
+                        "h_name": record["h_name"],
+                        "r_name": record["r_name"],
+                        "t_name": record["t_name"],
+                        "r_value": record["r_value"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def get_aggregated_triple(self):
         fname = sys._getframe().f_code.co_name
 

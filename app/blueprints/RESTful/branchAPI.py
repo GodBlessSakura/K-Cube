@@ -68,16 +68,27 @@ def post(overwriterId, overwriteeId):
 def patch(deltaGraphId):
     if deltaGraphId is not None:
         if "isExposed" in request.json:
-            return jsonify(
-                {
-                    "success": True,
-                    "branch": get_api_driver().branch.set_isExposed(
-                        deltaGraphId=deltaGraphId,
-                        userId=session["user"]["userId"],
-                        isExposed=request.json["isExposed"],
-                    ),
-                }
-            )
+            if request.json["isExposed"]:
+                return jsonify(
+                    {
+                        "success": True,
+                        "branch": get_api_driver().branch.set_isExposed(
+                            deltaGraphId=deltaGraphId,
+                            userId=session["user"]["userId"],
+                        ),
+                    }
+                )
+            else:
+                return jsonify(
+                    {
+                        "success": True,
+                        "branch": get_api_driver().branch.unset_isExposed(
+                            deltaGraphId=deltaGraphId,
+                            userId=session["user"]["userId"],
+                        ),
+                    }
+                )
+
         if "canPush" in request.json:
             return jsonify(
                 {

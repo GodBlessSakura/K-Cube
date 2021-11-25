@@ -14,7 +14,10 @@ def query():
         return courseInstructor(request.args.get("courseCode"))
     if request.args.get("user"):
         return userCourse()
+    if request.args.get("graphs") and request.args.get("courseCode") is not None:
+        return courseInstructorGraph(request.args.get("courseCode"))
     return jsonify({"success": False, "message": "incomplete request"})
+
 
 
 @authorize_RESTful_with([], require_userId=True)
@@ -75,6 +78,18 @@ def courseInstructor(courseCode):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+def courseInstructorGraph(courseCode):
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "instructors": get_api_driver().course.list_course_graph(
+                    courseCode=courseCode
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
 
 @course.patch("/", defaults={"courseCode": None})
 @course.patch("<courseCode>")

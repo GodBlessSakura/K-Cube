@@ -14,18 +14,21 @@ def query():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@triple.get("/course/", defaults={"courseCode": None})
-@triple.get("/course/<courseCode>")
-def getCourse(courseCode):
+@triple.get("/course/", defaults={"courseCode": None, "userId": None})
+@triple.get("/course/<courseCode>", defaults={"userId": None})
+@triple.get("/course/<courseCode>/<userId>")
+def getCourse(courseCode, userId):
     if courseCode is not None:
-        result = get_api_driver().triple.get_course_triple(courseCode=courseCode)
-        return jsonify(
-            {
-                "success": True,
-                "triples": result,
-                "course": get_api_driver().course.get_course(courseCode=courseCode),
-            }
-        )
+        course = get_api_driver().course.get_course(courseCode=courseCode)
+        if userId is None:
+            result = get_api_driver().triple.get_course_triple(courseCode=courseCode)
+            return jsonify({"success": True, "triples": result, "course": course})
+        else:
+            result = get_api_driver().triple.get_course_instructor_triple(
+                courseCode=courseCode, userId=userId
+            )
+            return jsonify({"success": True, "triples": result, "course": course})
+
     return jsonify({"success": False, "message": "incomplete request"})
 
 
