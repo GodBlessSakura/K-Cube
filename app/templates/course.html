@@ -2,6 +2,11 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-container>
+    <v-row>
+        <v-card-title>
+            choose a graph provided by:
+        </v-card-title>
+    </v-row>
     <v-row v-for="row in rows">
         <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
             <v-card v-if="col.userName" :href="'{{ url_for('courseGraph', courseCode=courseCode) }}' + (col.userId !=
