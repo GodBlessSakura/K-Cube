@@ -73,17 +73,19 @@ def login():
     if "userId" in request.json and "password" in request.json:
         userId = request.json["userId"]
         password = request.json["password"]
-        user = get_api_driver().user.authenticate_user(userId=userId, password=password)
-        if user is not None:
-            session["user"] = user
-            try:
+        try:
+            user = get_api_driver().user.authenticate_user(
+                userId=userId, password=password
+            )
+            if user is not None:
+                session["user"] = user
                 session["permission"] = get_api_driver().user.get_user_permission(
                     userId=user["userId"]
                 )
-            except Exception as e:
-                return jsonify({"success": False})
-            finally:
                 return jsonify({"success": True})
+            return jsonify({"success": False})
+        except Exception as e:
+            return jsonify({"success": False})
     return jsonify({"success": False, "message": "incomplete login request"})
 
 
