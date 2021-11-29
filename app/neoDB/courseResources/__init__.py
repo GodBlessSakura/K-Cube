@@ -14,14 +14,14 @@ class courseResources:
     def __init__(self, driver):
         self.driver = driver
 
-    def create_course(self, displayName, name, imageURL):
+    def create_course(self, courseName, name, imageURL):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
-                displayName=displayName,
+                courseName=courseName,
                 name=name,
                 imageURL=imageURL,
             )

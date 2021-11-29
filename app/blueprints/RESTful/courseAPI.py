@@ -39,16 +39,16 @@ def userCourse():
 @authorize_RESTful_with(["canCreateCourse"])
 def post():
     if (
-        "displayName" in request.json
+        "courseName" in request.json
         and "name" in request.json
         and "imageURL" in request.json
     ):
-        displayName = request.json["displayName"]
+        courseName = request.json["courseName"]
         name = request.json["name"]
         imageURL = request.json["imageURL"]
         try:
             result = get_api_driver().course.create_course(
-                displayName=displayName, name=name, imageURL=imageURL
+                courseName=courseName, name=name, imageURL=imageURL
             )
             return jsonify({"success": True})
         except Exception as e:

@@ -93,7 +93,7 @@
                             body.courses.forEach(c => {
                                 cy.add(nodeFactory({
                                     id: c.concept.name,
-                                    tag: c.course.displayName
+                                    tag: c.course.courseName
                                 }, ["course"])).data(
                                     'imageURL',
                                     c.course.imageURL,

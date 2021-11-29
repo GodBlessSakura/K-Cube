@@ -4,6 +4,40 @@
 
 <v-container>
     {% if isDLTC %}
+    <v-dialog v-model="courseInfoDialogue" max-width="500px">
+        <v-card v-if="course">
+            <v-card-title>${course.courseName}</v-card-title>
+            <v-card-text>
+                <v-form ref="courseInfoFormControl">
+                    <v-container>
+                        <v-row>
+                            <v-text-field v-model="courseCode" :rules="courseCodeRules" label="Cource Code" required>
+                            </v-text-field>
+                        </v-row>
+                        <v-row>
+
+                            <v-text-field v-model="courseName" :rules="courseNameRules" label="Course Name" required>
+                            </v-text-field>
+
+                        </v-row>
+                        <v-row>
+                            <v-select label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl"
+                                required>
+                                <template v-slot:item="{ item }">
+                                    <v-img :src="item" height="40" contain></v-img>
+                                </template>
+                            </v-select>
+                        </v-row>
+                        <v-row>
+                            <v-btn @click="updateCourseInfo()" color="success">
+                                update
+                            </v-btn>
+                        </v-row>
+                    </v-container>
+                </v-form>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
     <v-dialog v-model="instructorDialogue" max-width="500px">
         <v-card v-if="course">
             <v-card-title>Instructors for ${course.courseName}</v-card-title>
@@ -34,11 +68,11 @@
                     ${col.courseCode}
                 </v-card-title>
                 <v-card-subtitle>
-                    <v-avatar size="96">
-                        <img :src="col.img">
-                    </v-avatar>
                     ${col.courseName}
                 </v-card-subtitle>
+                <v-avatar size="96">
+                    <img :src="col.imageURL">
+                </v-avatar>
             </v-card>
             {% else %}
             <v-menu bottom right offset-x v-if="col.courseCode" direction="right" open-on-hover max-width="36">
@@ -49,7 +83,7 @@
                         </v-card-title>
                         <v-card-subtitle>
                             <v-avatar size="96">
-                                <img :src="col.img">
+                                <img :src="col.imageURL">
                             </v-avatar>
                             ${col.courseName}
                         </v-card-subtitle>
@@ -97,6 +131,14 @@
                     </template>
                     <span>Assign Instructor</span>
                 </v-tooltip>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn v-bind="attrs" v-on="on" @click="courseInfo(col)" icon>
+                            <v-icon>edit</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Edit info</span>
+                </v-tooltip>
                 {% endif %}
             </v-menu>
             {% endif %}
@@ -116,6 +158,28 @@
             // {% if isDLTC %}
             instructors: null,
             instructorDialogue: false,
+            courseInfoDialogue: false,
+            imagesUrl: [
+                //{% for url in imagesUrl %}
+                '{{ url | safe}}',
+                //{% endfor %}
+            ],
+            courseCode: '',
+            courseCodeRules: [v => !!v || 'Course code is required',
+                v => v.length > 3 && v.length < 101 ||
+                'Course code should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Course code can only contains alphanumeric characters and space.'
+            ],
+            courseName: '',
+            courseNameRules: [v => !!v || 'Course name is required',
+                v => v.length > 3 && v.length < 101 ||
+                'Course name should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s]+$/.test(v) ||
+                'Course name can only contains alphanumeric characters and space.'
+            ],
+            imageURL: '',
+            imageURLRules: [],
             // {% endif %}
         }),
         methods: {
@@ -155,8 +219,8 @@
                                 }
                                 lastRow.push({
                                     courseCode: c.concept.name,
-                                    img: c.course.imageURL,
-                                    courseName: c.course.displayName
+                                    imageURL: c.course.imageURL,
+                                    courseName: c.course.courseName
                                 })
 
                             })
@@ -185,6 +249,49 @@
 
             courseTrunk(courseCode) {
                 window.location.replace("{{ url_for('DLTC.versionTree') }}/" + courseCode)
+            },
+            courseInfo(course) {
+                this.course = course
+                this.courseInfoDialogue = true
+                this.courseCode = course.courseCode
+                this.courseName = course.courseName
+                this.imageURL = course.imageURL
+            },
+            updateCourseInfo() {
+                if (this.$refs.courseInfoFormControl.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.post') }}", {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                courseName: this.courseName,
+                                imageURL: this.imageURL,
+                                name: this.courseCode,
+                            })
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'Creation failed for unknown reason.',
+                                this.control.reset)
+                        })
+                }
             },
             courseAssignment(course) {
                 if (this.$root.progress.show == true) {

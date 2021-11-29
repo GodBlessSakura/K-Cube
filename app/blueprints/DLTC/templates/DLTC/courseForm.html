@@ -15,7 +15,7 @@
 
             </v-row>
             <v-row>
-                <v-select label="Image url" v-model="imageUrl" :rules="imageUrlRules" :items="imagesUrl" required>
+                <v-select label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl" required>
                     <template v-slot:item="{ item }">
                         <v-img :src="item" height="40" contain></v-img>
                     </template>
@@ -54,8 +54,8 @@
                 v => /^[a-zA-Z0-9\s]+$/.test(v) ||
                 'Course name can only contains alphanumeric characters and space.'
             ],
-            imageUrl: '',
-            imageUrlRules: [],
+            imageURL: '',
+            imageURLRules: [],
 
         }),
         methods: {
@@ -73,8 +73,8 @@
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                displayName: this.courseName,
-                                imageURL: this.imageUrl,
+                                courseName: this.courseName,
+                                imageURL: this.imageURL,
                                 name: this.courseCode,
                             })
                         })
