@@ -124,6 +124,9 @@ def patch(courseCode):
             canCreateCourse()
             get_api_driver().course.update_course(
                 courseCode=courseCode,
+                name=request.json["name"],
+                courseName=request.json["courseName"],
+                imageURL=request.json["imageURL"],
             )
             return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete request"})

@@ -264,7 +264,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.course.patch') }}&courseCode=" + course
+                    fetch("{{ url_for('RESTful.course.patch') }}" + this.course
                             .courseCode, {
                                 method: 'PATCH',
                                 cache: 'no-store',
