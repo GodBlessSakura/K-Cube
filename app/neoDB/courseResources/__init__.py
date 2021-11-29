@@ -149,7 +149,7 @@ class courseResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def update_course(self, courseCode,courseName, name, imageURL):
+    def update_course(self, courseCode, courseName, name, imageURL):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):

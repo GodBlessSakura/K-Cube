@@ -185,11 +185,7 @@ class branchResources:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(
-                query,
-                deltaGraphId=deltaGraphId,
-                userId=userId
-            )
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             try:
                 return [
                     {
@@ -211,11 +207,7 @@ class branchResources:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(
-                query,
-                deltaGraphId=deltaGraphId,
-                userId=userId
-            )
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             try:
                 return [
                     {

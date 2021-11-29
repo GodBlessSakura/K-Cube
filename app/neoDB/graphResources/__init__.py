@@ -35,7 +35,7 @@ class graphResources:
                     }.items()
                     | record["course"].items(),
                     labels=list(record["graph"].labels),
-                    courseCode = record["courseCode"],
+                    courseCode=record["courseCode"],
                 )
                 for record in result
             ][0]
