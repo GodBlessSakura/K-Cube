@@ -367,7 +367,7 @@
                             }
                             //{% endif %}
                             this.overwriterLabels = body.overwriter.labels
-                            previewCy.add(nodeFactory(body.overwriter.deltaGraphId.split('.')[0])).data(
+                            previewCy.add(nodeFactory(body.overwriter.courseCode)).data(
                                 'imageURL',
                                 body.overwriter.imageURL,
                             )
@@ -404,7 +404,7 @@
                                 ).length == 0) {
                                 this.isTrival = true
                             }
-                            this.rootName = body.overwriter.deltaGraphId.split('.')[0]
+                            this.rootName = body.overwriter.courseCode
                             let previewCyDijkstra = previewCy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')

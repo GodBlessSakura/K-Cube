@@ -109,7 +109,7 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.graph && body.triples) {
-                            cy.add(nodeFactory(body.graph.deltaGraphId.split('.')[0], ["course"]))
+                            cy.add(nodeFactory(body.graph.courseCode, ["course"]))
                                 .data(
                                     'imageURL',
                                     body.graph.imageURL,

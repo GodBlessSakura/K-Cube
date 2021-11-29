@@ -129,6 +129,7 @@ class workspaceResources:
                         "isOwner": record["isOwner"],
                     }.items(),
                     labels=list(record["subject"].labels),
+                    courseCode = record["courseCode"],
                 )
                 for record in result
             ][0]

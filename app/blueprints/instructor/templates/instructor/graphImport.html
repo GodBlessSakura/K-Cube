@@ -300,7 +300,7 @@
                     .then(body => {
                         if (body.graph && body.triples) {
                             this.graph = body.graph
-                            previewCy.add(nodeFactory(body.graph.deltaGraphId.split('.')[0])).data(
+                            previewCy.add(nodeFactory(body.graph.courseCode)).data(
                                 'imageURL',
                                 body.graph.imageURL,
                             )
@@ -329,7 +329,7 @@
                                 ).length == 0) {
                                 this.isTrival = true
                             }
-                            this.rootName = body.graph.deltaGraphId.split('.')[0]
+                            this.rootName = body.graph.courseCode
                             let previewCyDijkstra = previewCy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')

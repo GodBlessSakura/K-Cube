@@ -1,6 +1,7 @@
 MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(:User{userId: $userId})
 WITH DISTINCT workspace
-MATCH (root:GraphConcept{name: split($deltaGraphId,'.')[0]})
+MATCH (course:Course)-[:COURSE_DESCRIBE]->(root)
+WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
 WITH workspace, root
 OPTIONAL MATCH reachable=(root)-[:DELTA_GRAPH_RELATIONSHIP*{deltaGraphId : workspace.deltaGraphId}]-(:GraphConcept)
 UNWIND (

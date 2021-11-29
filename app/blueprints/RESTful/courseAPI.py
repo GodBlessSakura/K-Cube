@@ -19,7 +19,6 @@ def query():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-
 @authorize_RESTful_with([], require_userId=True)
 def userCourse():
     try:
@@ -78,6 +77,7 @@ def courseInstructor(courseCode):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+
 def courseInstructorGraph(courseCode):
     try:
         return jsonify(
@@ -91,12 +91,21 @@ def courseInstructorGraph(courseCode):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+
 @course.patch("/", defaults={"courseCode": None})
 @course.patch("<courseCode>")
-@authorize_RESTful_with(["canAssignCourse"])
 def patch(courseCode):
+    @authorize_RESTful_with(["canAssignCourse"])
+    def canAssignCourse():
+        return
+
+    @authorize_RESTful_with(["canCreateCourse"])
+    def canCreateCourse():
+        return
+
     if courseCode is not None:
         if "assignment" in request.json and "userId" in request.json:
+            canAssignCourse()
             if request.json["assignment"]:
                 get_api_driver().course.assign_course_instructor(
                     courseCode=courseCode, userId=request.json["userId"]
@@ -107,4 +116,14 @@ def patch(courseCode):
                     courseCode=courseCode, userId=request.json["userId"]
                 )
                 return jsonify({"success": True})
+        if (
+            "name" in request.json
+            and "courseName" in request.json
+            and "imageURL" in request.json
+        ):
+            canCreateCourse()
+            get_api_driver().course.update_course(
+                courseCode=courseCode,
+            )
+            return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete request"})

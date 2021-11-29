@@ -264,18 +264,19 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.course.post') }}", {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                courseName: this.courseName,
-                                imageURL: this.imageURL,
-                                name: this.courseCode,
+                    fetch("{{ url_for('RESTful.course.patch') }}&courseCode=" + course
+                            .courseCode, {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    courseName: this.courseName,
+                                    imageURL: this.imageURL,
+                                    name: this.courseCode,
+                                })
                             })
-                        })
                         .then(response => {
                             try {
                                 return response.json()
@@ -288,8 +289,10 @@
                         .then(body => {
                             this.$root.progress.show = false
                             this.$root.responseSnackBar(body,
-                                'Creation failed for unknown reason.',
-                                this.control.reset)
+                                'Update failed for unknown reason.',
+                                () => {
+                                    location.reload()
+                                })
                         })
                 }
             },

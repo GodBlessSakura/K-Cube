@@ -5,17 +5,11 @@ SET branch.visibility =
         ELSE branch.visibility
     END
 WITH DISTINCT branch
-CALL{
-    WITH branch
-    MATCH (ancestor)<-[:PATCH*]-(branch)
-    WITH DISTINCT ancestor, branch
-    SET ancestor.visibility = 
-    CASE ancestor.visibility < branch.visibility
-        WHEN true THEN branch.visibility
-        ELSE ancestor.visibility
-    END
-    RETURN null
-UNION
-    RETURN null
-}
+OPTIONAL MATCH (ancestor)<-[:PATCH*]-(branch)
+WITH DISTINCT ancestor, branch
+SET ancestor.visibility = 
+CASE ancestor.visibility < branch.visibility
+    WHEN true THEN branch.visibility
+    ELSE ancestor.visibility
+END
 RETURN branch

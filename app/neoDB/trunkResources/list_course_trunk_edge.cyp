@@ -1,6 +1,7 @@
 MATCH
-    (nodes:Trunk)
-WHERE split(nodes.deltaGraphId,'.')[0] = replace($courseCode,' ' ,'_')
+    (nodes:Trunk),
+    (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode})
+WHERE split(nodes.deltaGraphId,'.')[0] = toString(id(course))
 WITH DISTINCT nodes
 CALL{
     WITH nodes

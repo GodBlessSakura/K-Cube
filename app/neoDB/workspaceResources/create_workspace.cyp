@@ -2,13 +2,14 @@ MATCH (user:User{userId: $userId})
 WITH user
 CALL{
     WITH user
-    MATCH (graph:Branch{deltaGraphId: $deltaGraphId})
+    MATCH (graph:Branch{deltaGraphId: $deltaGraphId}), (course:Course)
+    WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
     WITH 
         graph,
         user,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned,
+        EXISTS((user)-[:USER_TEACH]->(course)) as isAssigned,
         EXISTS((graph)<-[:USER_OWN]-(user)) as isOwner
     WHERE        
         (graph.visibility = 4) OR

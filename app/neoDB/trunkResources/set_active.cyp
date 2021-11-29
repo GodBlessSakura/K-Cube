@@ -2,7 +2,8 @@ MATCH (user:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canWriteTrunk:
 WITH user
 MATCH (trunk:Trunk{deltaGraphId: $deltaGraphId})
 WITH trunk
-MATCH(course:Course)-[:COURSE_DESCRIBE]->(courseConcept:GraphConcept{name: split(trunk.deltaGraphId,'.')[0]})
+MATCH (course:Course)
+WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
 WITH trunk, course
 MATCH (course)<-[wasAstive:TRUNK_DESCRIBE]-(:Trunk)
 DELETE wasAstive

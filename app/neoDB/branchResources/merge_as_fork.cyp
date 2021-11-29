@@ -2,13 +2,14 @@ MATCH (user:User{userId: $userId})
 WITH DISTINCT user
 CALL{
     WITH user
-    MATCH (overwriter:Branch{deltaGraphId: $overwriterId})
+    MATCH (overwriter:Branch{deltaGraphId: $overwriterId}), (course:Course)
+    WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
     WITH 
         overwriter,
         user,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned
+        EXISTS((user)-[:USER_TEACH]->(course)) as isAssigned
     WHERE        
         (overwriter.visibility = 4) OR
         (overwriter.visibility = 3 AND (isDLTC OR isInstructor)) OR
@@ -22,13 +23,15 @@ UNION
 }
 WITH user, overwriter
 
-MATCH (overwritee:Branch{deltaGraphId: $overwriteeId})
+MATCH (overwritee:Branch{deltaGraphId: $overwriteeId}), (course:Course)
+    WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
 WITH 
     overwritee,
+    course,
     user,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-    EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: split(graph.deltaGraphId,'.')[0]})) as isAssigned
+        EXISTS((user)-[:USER_TEACH]->(course)) as isAssigned
 WHERE        
     (overwritee.visibility = 4) OR
     (overwritee.visibility = 3 AND (isDLTC OR isInstructor)) OR

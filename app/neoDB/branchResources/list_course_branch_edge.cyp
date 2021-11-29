@@ -1,6 +1,7 @@
 MATCH
     (branch:Branch),
-    (user:User{userId: $userId})
+    (user:User{userId: $userId}),
+    (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode})
 WITH 
     branch,
     user,
@@ -8,7 +9,7 @@ WITH
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})) as isAssigned
 WHERE
-    split(branch.deltaGraphId,'.')[0] = replace($courseCode,' ' ,'_') AND (
+    split(branch.deltaGraphId,'.')[0] = toString(id(course)) AND (
         (branch.visibility = 4) OR
         (branch.visibility = 3 AND (isDLTC OR isInstructor)) OR
         (branch.visibility = 2 AND isInstructor) OR

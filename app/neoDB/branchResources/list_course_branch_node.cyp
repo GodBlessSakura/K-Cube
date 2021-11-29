@@ -1,6 +1,7 @@
 MATCH
     (branch:Branch),
-    (user:User{userId: $userId})
+    (user:User{userId: $userId}),
+    (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode})
 WITH 
     branch,
     user,
@@ -10,7 +11,7 @@ WITH
     EXISTS((branch)<-[:USER_OWN]-(user)) as isOwner,
     EXISTS((:GraphConcept{name: $courseCode})-[:COURSE_DESCRIBE]-()<-[:BRANCH_DESCRIBE]-(branch)) as isExposed
 WHERE
-    split(branch.deltaGraphId,'.')[0] = replace($courseCode,' ' ,'_') AND (
+    split(branch.deltaGraphId,'.')[0] = toString(id(course)) AND (
         (branch.visibility = 4) OR
         (branch.visibility = 3 AND (isDLTC OR isInstructor)) OR
         (branch.visibility = 2 AND isInstructor) OR

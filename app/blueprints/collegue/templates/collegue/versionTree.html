@@ -133,7 +133,7 @@
                     'shape': 'rectangle'
                 }
             }, {
-                selector: 'node.canPush[]',
+                selector: 'node.canPush',
                 style: {
                     'shape': 'diamond'
                 }
@@ -275,6 +275,7 @@
                             let stepY = 200
 
                             function locatePredecessorsX(node) {
+                                console.log(node.data())
                                 let i = 0
                                 let position = node.position()
                                 let forkEdges = node.incomers('edge[tag="FORK"]').sort((edgeA, edgeB) => {
@@ -288,6 +289,8 @@
                                     let childB = edgeB.source()
                                     return childA.data('creationDate') - childB.data('creationDate')
                                 })
+                                console.log(forkEdges.length)
+                                console.log(patchEdges.length)
                                 forkEdges.forEach(edge => {
                                     i++
                                     let child = edge.source()
