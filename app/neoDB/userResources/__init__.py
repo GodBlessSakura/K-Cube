@@ -68,6 +68,26 @@ class userResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+            
+    def update_user(self, userId, userName, email):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                userId=userId,
+                userName=userName,
+                email=email,
+            )
+            try:
+                rows = [record for record in result]
+                return dict(rows[0]["user"].items())
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
 
     def assign_user_role(
         self,
