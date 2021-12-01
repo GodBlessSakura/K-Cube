@@ -241,17 +241,16 @@
     concentricLayoutOptions = {
         name: 'concentric',
     }
-    fitPadding = document.documentElement.clientHeight * 0.10, coseLayoutOptions = {
+    fitPadding = document.documentElement.clientHeight * 0.10
+    coseLayoutOptions = {
         name: 'cose',
         padding: fitPadding,
         fit: true,
         idealEdgeLength: function (edge) {
             return 64;
         },
-        edgeElasticity: function (edge) {
-            return 128;
-        },
-        gravity: 0.15
+        gravity: 0.15,
+        animationDuration: 750
     }
 
     function nodeFactory(name) {
@@ -357,7 +356,7 @@
                             this.workspace = body.workspace
                             this.subject = body.subject
                             cy.elements().remove();
-                            cy.add(nodeFactory(body.workspace.courseCode)).style({
+                            cy.add(nodeFactory(body.subject.courseCode)).style({
                                 'background-image': body.workspace.imageURL,
                                 'background-fit': 'cover'
                             })
@@ -497,12 +496,14 @@
                             this.$root.progress.show = false
                             if (body.triple) {
                                 let triple = body.triple;
-                                [triple.h_name, triple.t_name].forEach(name => {
-                                    if (cy.getElementById(name).length == 0) {
-                                        cy.add(nodeFactory(name))
-                                    }
-                                    if (!this.concepts.includes(name)) this.concepts.push(name)
-                                })
+                                let newNodes = cy.collection();
+                                [triple.h_name, triple.t_name].forEach(
+                                    name => {
+                                        if (cy.getElementById(name).length == 0) {
+                                            newNodes.union(cy.add(nodeFactory(name)))
+                                        }
+                                        if (!this.concepts.includes(name)) this.concepts.push(name)
+                                    })
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple.t_name))[0]
 
@@ -517,20 +518,17 @@
                                 let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                     .rootName +
                                     '"]')
-                                cy.elements().style('visibility', 'hidden')
-                                let cyLayout = cy.layout({
-                                    ...concentricLayoutOptions,
-                                    // concentric: function (node) {
-                                    // return cyDijkstra.distanceTo(node) * -1
-                                    // }
-                                })
-                                cyLayout.one('layoutstop', function () {
-                                    let cyLayout = cy.layout(coseLayoutOptions)
-                                    cyLayout.one('layoutstop', function () {
-                                        cy.elements().style('visibility', 'visible')
-                                    })
-                                    cyLayout.run()
-                                })
+                                let options = {
+                                    ...coseLayoutOptions
+                                }
+                                options.fit = false
+                                options.animate = 'end'
+                                options.initialTemp = 1
+                                options.minTemp = 0.1
+                                // options.animateFilter = (node, i) => {
+                                //     return newNodes.contains(node)
+                                // }
+                                let cyLayout = cy.layout(options)
                                 cyLayout.run()
                                 this.determineTripleOptions()
                             } else {
