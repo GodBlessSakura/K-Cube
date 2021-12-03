@@ -111,12 +111,12 @@
                         color
                     </v-col>
                     <v-col>
-                        <v-color-picker canvas-height="50" v-model="metricsVisualization.zeroColor" hide-mode-switch
+                        <v-color-picker @input="metricsVisualize()" canvas-height="50" v-model="metricsVisualization.zeroColor" hide-mode-switch
                             hide-inputs>
                         </v-color-picker>
                     </v-col>
                     <v-col>
-                        <v-color-picker canvas-height="50" v-model="metricsVisualization.oneColor" hide-mode-switch
+                        <v-color-picker @input="metricsVisualize()" canvas-height="50" v-model="metricsVisualization.oneColor" hide-mode-switch
                             hide-inputs>
                         </v-color-picker>
                     </v-col>
@@ -127,13 +127,13 @@
                     </v-col>
                     <v-col>
                         <v-slider thumb-label v-model="metricsVisualization.thickness" max="20" min="1"
-                            @change=metricsVisualize()>
+                            @change="metricsVisualize()">
                         </v-slider>
                     </v-col>
                 </v-row>
                 <v-row>
                     <v-col>
-                        <v-btn-toggle v-model="metricsVisualization.metric" @change=metricsVisualize()>
+                        <v-btn-toggle v-model="metricsVisualization.metric" @change="metricsVisualize()">
                             <v-btn>Degree
                             </v-btn>
                             <v-btn>Closeness
