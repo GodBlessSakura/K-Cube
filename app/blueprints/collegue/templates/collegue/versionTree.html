@@ -15,13 +15,21 @@
     </v-snackbar>
     <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
         <v-list>
+            <v-subheader>${selectedNode?.data('tag')}</v-subheader>
+            <v-divider> </v-divider>
             {% if isInstructor %}
+            <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">status
+            </v-subheader>
             <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="toggleExposure()">
                 <v-list-item-title>Toggle exposure</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="readyToPush()">
-                <v-list-item-title>Ready to push</v-list-item-title>
+                <v-list-item-title>Toggle ready-to-push</v-list-item-title>
             </v-list-item>
+            <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
+            </v-divider>
+            <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
+                versioning</v-subheader>
             <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother()">
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
@@ -29,6 +37,9 @@
                 @click="newTab('{{ url_for('instructor.graphimport')}}' + selectedNode.data('deltaGraphId'))">
                 <v-list-item-title>Import graph</v-list-item-title>
             </v-list-item>
+            <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
+            </v-divider>
+            <v-subheader>workspaces</v-subheader>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
                 @click="createWorkspaceDialogue()">
                 <v-list-item-title>Create workspace</v-list-item-title>
@@ -401,7 +412,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            canPush: true,
+                            canPush: !this.selectedNode.classes().includes("canPush")
                         })
                     })
                     .then(response => {
@@ -558,7 +569,7 @@
                 cy.fit()
             }
             self = this
-            cy.on('cxttapend', (event) => {
+            cy.on('cxttapend', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
                 self.showMenu = true
@@ -566,6 +577,8 @@
                 self.cursor_y = event.originalEvent.clientY
                 this.selectedNode = event.target[0]
                 this.selectedNodeClasses = event.target[0].classes()
+                cy.nodes().unselect()
+                cy.edges().unselect()
                 event.target[0].select()
             })
             cy.on('tap', 'node', (event) => {

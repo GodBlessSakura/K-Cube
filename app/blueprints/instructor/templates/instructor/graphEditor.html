@@ -3,7 +3,7 @@
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     <v-row dense style="width: 100%;">
-        <v-col dense>
+        <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
@@ -21,7 +21,7 @@
                         </v-list-item-icon>
                     </v-list-item>
                     <v-list-item v-else>
-                        <v-list-item-subtitle style="font-size: small;">Already editing<br>lastest patch
+                        <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch
                         </v-list-item-subtitle>
                         <v-list-item-icon>
                             <v-icon>sync</v-icon>
@@ -36,7 +36,7 @@
                 </v-list>
             </v-menu>
         </v-col>
-        <v-col dense>
+        <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
@@ -59,7 +59,30 @@
                 </v-list>
             </v-menu>
         </v-col>
-        <v-col dense>
+        <v-col cols="auto" dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        visualization
+                    </v-btn>
+                </template>
+                <v-list>
+                    <!-- <v-list-item @click="edgeStyleDialogue = true">
+                        <v-list-item-title>edge style<br>option</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>settings</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item> -->
+                    <v-list-item @click="metricsBottomSheet = true">
+                        <v-list-item-title>centrality<br>metrics</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>insights</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
@@ -68,7 +91,7 @@
                 </template>
                 <v-list>
                     <v-list-item @click="removeUnreachable">
-                        <v-list-item-title>remove unreachable</v-list-item-title>
+                        <v-list-item-title>remove<br>unreachable</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon>cleaning_services</v-icon>
                         </v-list-item-icon>
@@ -80,6 +103,53 @@
     <v-row dense style="height: calc(100% - 44px); width: 100%;">
         <div id="editor" style="height: 100%; width: 100%;"></div>
     </v-row>
+    <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
+        <v-container>
+            <v-row>
+                <v-col cols="1">
+                    color
+                </v-col>
+                <v-col>
+                    <v-color-picker v-model="metricsVisualization.zeroColor" hide-mode-switch hide-inputs hide-canvas>
+                    </v-color-picker>
+                </v-col>
+                <v-col>
+                    <v-color-picker v-model="metricsVisualization.oneColor" hide-mode-switch hide-inputs hide-canvas>
+                    </v-color-picker>
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col cols="1">
+                    thickness
+                </v-col>
+                <v-col>
+                    <v-slider thumb-label v-model="metricsVisualization.thickness" max="20" min="1"
+                        @change=metricsVisualize()>
+                    </v-slider>
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col>
+                    <v-btn-toggle v-model="metricsVisualization.metric" @change=metricsVisualize()>
+                        <v-btn>Degree
+                        </v-btn>
+                        <v-btn>Closeness
+                        </v-btn>
+                        <v-btn>Betweeness
+                        </v-btn>
+                        <v-btn>PageRank
+                        </v-btn>
+                    </v-btn-toggle>
+
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col>
+
+                </v-col>
+            </v-row>
+        </v-container>
+    </v-bottom-sheet>
     <v-card>
         <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
             <template v-slot:activator="{ on, attrs }">
@@ -148,7 +218,7 @@
                                     </template></v-combobox>
                             </v-col>
                         </v-row>
-                        <v-row>
+                        <v-row v-if="diffMode">
                             <v-btn color="success" @click="createTriple(true)"
                                 :disabled="!canLinkEdge || !canUpdateEdge">
                                 associate
@@ -169,6 +239,16 @@
                                 </span>
                             </v-tooltip>
                         </v-row>
+                        <v-row v-else>
+                            <v-btn color="success" @click="smartLink()"
+                                :disabled="!canNontrivalLinkEdge || !canUpdateEdge">
+                                link
+                            </v-btn>
+                            <v-btn style=" margin-left: auto; margin-right: 0;" color="indigo lighten-2"
+                                @click="smartUnlink()" :disabled="!canNontrivalRemoveEdge || !canUpdateEdge">
+                                unlink
+                            </v-btn>
+                        </v-row>
                     </v-container>
                 </v-form>
             </v-sheet>
@@ -182,59 +262,246 @@
             </v-btn>
         </template>
     </v-snackbar>
+    <v-container style="bottom: 5vh; right:5vh; position: fixed; width:15vw;">
+        <v-row no-gutters justify="end">
+            <v-col cols="auto" dense>
+                <v-switch style="margin-top:0px" @change="switchStyle()" v-model="diffMode" messages="view diff"
+                    prepend-icon="difference" dense>
+                </v-switch>
+            </v-col>
+            <v-col cols="auto" dense>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-badge color="error" :content="workspaceNegativeEdgeCount">
+                            <v-icon v-bind="attrs" v-on="on">remove_circle_outline</v-icon>
+                        </v-badge>
+                    </template> ${workspaceNegativeEdgeCount} edge negation ${workspaceNegativeEdgeCount>1?"have":"has"}
+                    been declared. Turn 'view diff' mode on to
+                    visualize such
+                    explicit concept dissociation.
+                </v-tooltip>
+            </v-col>
+        </v-row>
+        <div v-if="diffMode">
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="opacity: .7;">
+                        <v-avatar left>
+                            ${originalPositiveEdgeCount}
+                        </v-avatar>
+                        edge proposal in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="opacity: .7;">
+                        <v-avatar left>
+                            ${originalNegativeEdgeCount}
+                        </v-avatar>
+                        edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters></v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="opacity: .7;">
+                        <v-avatar left>
+                            ${workspacePositiveEdgeCount}
+                        </v-avatar>
+                        edge proposal in workspace
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="opacity: .7;">
+                        <v-avatar left>
+                            ${workspaceNegativeEdgeCount}
+                        </v-avatar>
+                        edge negation in workspace
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="opacity: .7;">
+                        <v-avatar left>
+                            ${inactivePositiveEdgeCount}
+                        </v-avatar>
+                        inactive edge proposal in workspace
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon v-bind="attrs" v-on="on" right x-small>
+                                    help_outline
+                                </v-icon>
+                            </template>An inactive edge proposal is created if you are trying to create an already
+                            existing
+                            edge
+                        </v-tooltip>
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="opacity: .7;">
+                        <v-avatar left>
+                            ${inactiveNegativeEdgeCount}
+                        </v-avatar>
+                        inactive edge negation in workspace
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-icon v-bind="attrs" v-on="on" right x-small>
+                                    help_outline
+                                </v-icon>
+                            </template>An inactive edge negation is created if you are trying to negation a nonexistent
+                            edge
+                        </v-tooltip>
+                    </v-chip>
+                </v-col>
+            </v-row>
+        </div>
+    </v-container>
+
+    <v-dialog v-model="edgeStyleDialogue">
+        <v-container>
+            <v-row>
+                <v-col>
+                    Edge proposal
+                </v-col>
+                <v-col>
+
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-col>
+
+                </v-col>
+                <v-col>
+
+                </v-col>
+            </v-row>
+        </v-container>
+    </v-dialog>
 </v-container>
 
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
 <script>
-    cy = cytoscape({
-        style: [{
-                selector: 'node',
-                style: {
-                    'label': 'data(name)',
-                    'font-size': 8
-                }
-            }, {
-                selector: 'node.tempory',
-                style: {
-                    'opacity': 0.25,
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'label': 'data(name)',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier',
-                    'font-size': 8,
-                    'text-rotation': 'autorotate',
-                    'line-style': 'solid',
-                    'width': 5,
-                }
-            }, {
-                selector: 'edge[workspace_value = "false"]',
-                style: {
-                    'line-gradient-stop-colors': 'grey white white grey',
-                    'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
-                    'line-fill': 'linear-gradient ',
-                    'width': 5,
-                }
-            }, {
-                selector: 'edge[workspace_value = "undefined"][subject_value = "true"]',
-                style: {
-                    'line-style': 'solid',
-                    'width': 1,
-                }
-            }, {
-                selector: 'edge[workspace_value = "undefined"][subject_value = "false"]',
-                style: {
-                    'line-style': 'dashed',
-                    'line-dash-pattern': '10%, 80%',
-                    'width': 1,
-                }
+    basicStyle = [{
+            selector: 'node',
+            style: {
+                'label': 'data(name)',
+                'font-size': 8
             }
-        ],
+        }, {
+            selector: 'node.suppress',
+            style: {
+                'opacity': 0.5,
+            }
+        },
+        {
+            selector: 'node.tempory',
+            style: {
+                'opacity': 0.25,
+            }
+        },
+        {
+            selector: 'edge',
+            style: {
+                'label': 'data(name)',
+                'target-arrow-shape': 'triangle',
+                'curve-style': 'bezier',
+                'font-size': 8,
+                'text-rotation': 'autorotate',
+                'display': 'none',
+            }
+        }, {
+            selector: 'edge[subject_value = "true"][workspace_value != "false"],[workspace_value = "true"]',
+            style: {
+                'line-style': 'solid',
+                'width': 3,
+                'display': 'element',
+            }
+        }
+    ]
+    diffStyle = [{
+            selector: 'node',
+            style: {
+                'label': 'data(name)',
+                'font-size': 8
+            }
+        }, {
+            selector: 'node.suppress',
+            style: {
+                'opacity': 0.5,
+            }
+        },
+        {
+            selector: 'node.tempory',
+            style: {
+                'opacity': 0.25,
+            }
+        },
+        {
+            selector: 'edge',
+            style: {
+                'label': 'data(name)',
+                'target-arrow-shape': 'triangle',
+                'curve-style': 'bezier',
+                'font-size': 8,
+                'text-rotation': 'autorotate',
+                'width': 3,
+            }
+        }, {
+            selector: 'edge[workspace_value = "true"][subject_value != "true"]',
+            style: {
+                'line-style': 'solid',
+                'font-weight': 'bold',
+            }
+        }, {
+            selector: 'edge[workspace_value = "false"][subject_value = "true"]',
+            style: {
+                'line-gradient-stop-colors': 'grey white white grey',
+                'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                'line-fill': 'linear-gradient ',
+                'font-weight': 'bold',
+            }
+        }, {
+            selector: 'edge[workspace_value = "true"][subject_value = "true"]',
+            style: {
+                'line-style': 'solid',
+                'opacity': 0.75,
+                'font-style': 'italic',
+            }
+        }, {
+            selector: 'edge[workspace_value = "false"][subject_value != "true"]',
+            style: {
+                'line-gradient-stop-colors': 'grey white white grey',
+                'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
+                'line-fill': 'linear-gradient ',
+                'opacity': 0.75,
+                'font-style': 'italic',
+            }
+        }, {
+            selector: 'edge[workspace_value = "undefined"][subject_value = "true"]',
+            style: {
+                'line-style': 'solid',
+            }
+        }, {
+            selector: 'edge[workspace_value = "undefined"][subject_value = "false"]',
+            style: {
+                'line-style': 'dashed',
+                'line-dash-pattern': '10%, 80%',
+            }
+        }
+    ]
+    cy = cytoscape({
+        style: basicStyle,
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     });
@@ -283,6 +550,7 @@
         }
         return output
     }
+    edgeCollections = {}
 
     function subjectEdgeFactory(edge) {
         let output = {
@@ -330,6 +598,23 @@
             },
             workspace: undefined,
             deleteSelectBar: false,
+            originalPositiveEdgeCount: 0,
+            originalNegativeEdgeCount: 0,
+            workspacePositiveEdgeCount: 0,
+            workspaceNegativeEdgeCount: 0,
+            inactivePositiveEdgeCount: 0,
+            inactiveNegativeEdgeCount: 0,
+            diffMode: false,
+            canNontrivalLinkEdge: false,
+            canNontrivalRemoveEdge: false,
+            edgeStyleDialogue: false,
+            metricsBottomSheet: false,
+            metricsVisualization: {
+                thickness: 3,
+                metric: undefined,
+                zeroColor: "#0000FF",
+                oneColor: "#FF0000",
+            }
         }),
         methods: {
             loadData() {
@@ -403,7 +688,7 @@
                                 cyLayout.run()
                             })
                             cyLayout.run()
-
+                            this.edgeStatistic()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting draft information.')
@@ -462,6 +747,70 @@
                 Promise.all([workspacePromise, relationshipPromise, entityPromise]).then(_ => {
                     this.$root.progress.show = false
                 })
+            },
+            metricsVisualize() {
+                if (this.metricsVisualization.metric == undefined) {
+                    cy.nodes.forEach(node => {
+                        node.style("border-width", null)
+                        node.style("border-color", null)
+                    })
+                } else {
+                    let metric = ["degreeCentralityNormalized", "closenessCentralityNormalized",
+                        "betweennessCentrality", "pageRank"
+                    ][this.metricsVisualization.metric]
+                    let measure = ["degree", "closeness",
+                        "betweenness", "rank"
+                    ][this.metricsVisualization.metric]
+                    let result = cy.elements()[metric]()
+                    cy.nodes().forEach(node => {
+                        let value = undefined
+                        try {
+                            value = result[measure]('#' + node.data("id"))
+                        }
+                        catch{
+                            return
+                        }
+                        let zeroColor = [parseInt("0x" + this.metricsVisualization.zeroColor.slice(1,
+                            3)), parseInt("0x" + this.metricsVisualization.zeroColor.slice(3,
+                            5)), parseInt("0x" + this.metricsVisualization.zeroColor.slice(5,
+                            7))]
+                        let oneColor = [parseInt("0x" + this.metricsVisualization.oneColor.slice(1,
+                            3)), parseInt("0x" + this.metricsVisualization.oneColor.slice(3,
+                            5)), parseInt("0x" + this.metricsVisualization.oneColor.slice(5,
+                            7))]
+                        console.log(value)
+                        let color = [];
+                        [0, 1, 2].forEach(c => {
+                            color.push((oneColor[c] - zeroColor[c]) * value + zeroColor[c])
+                        })
+                        node.style("border-width", this.metricsVisualization.thickness)
+                        node.style("border-color", color)
+                    })
+                }
+            },
+            switchStyle() {
+                cy.style().resetToDefault()
+                if (this.diffMode) {
+                    cy.style(diffStyle)
+                } else {
+                    cy.style(basicStyle)
+                }
+            },
+            edgeStatistic() {
+                edgeCollections.originalPositiveEdge = cy.edges('[subject_value = "true"]')
+                edgeCollections.originalNegativeEdge = cy.edges('[subject_value = "false"]')
+                edgeCollections.workspacePositiveEdge = cy.edges('[workspace_value = "true"]')
+                edgeCollections.workspaceNegativeEdge = cy.edges('[workspace_value = "false"]')
+                edgeCollections.inactivePositiveEdge = cy.edges(
+                    '[workspace_value = "true"][subject_value = "true"]')
+                edgeCollections.inactiveNegativeEdge = cy.edges(
+                    '[workspace_value = "false"][subject_value != "true"]')
+                this.originalPositiveEdgeCount = edgeCollections.originalPositiveEdge.length
+                this.originalNegativeEdgeCount = edgeCollections.originalNegativeEdge.length
+                this.workspacePositiveEdgeCount = edgeCollections.workspacePositiveEdge.length
+                this.workspaceNegativeEdgeCount = edgeCollections.workspaceNegativeEdge.length
+                this.inactivePositiveEdgeCount = edgeCollections.inactivePositiveEdge.length
+                this.inactiveNegativeEdgeCount = edgeCollections.inactiveNegativeEdge.length
             },
             createTriple(r_value) {
                 if (this.$root.progress.show == true) {
@@ -530,6 +879,7 @@
                                 // }
                                 let cyLayout = cy.layout(options)
                                 cyLayout.run()
+                                this.edgeStatistic()
                                 this.determineTripleOptions()
                             } else {
                                 this.$root.errorDisplay(body,
@@ -569,7 +919,6 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
-                                this.unselectAll()
                                 let triple = body.triple
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
@@ -581,12 +930,49 @@
                                     .remove()
                                 cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
                                     "tempory")
+                                this.edgeStatistic()
+                                this.determineTripleOptions()
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when deleted triple.')
                             }
                         })
                 }
+            },
+            smartLink() {
+                if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
+                    this.t_name && this.t_name != '') {
+                    let edge = cy.getElementById(edgeIdFromNames(this.h_name, this.r_name, this.t_name))
+                    console.log(edge.data())
+                    if (edge) {
+                        if (edge.data("workspace_value") != "true" && edge.data("subject_value") !=
+                            "true") {
+                            this.createTriple(true)
+                        } else if (edge.data("workspace_value") != "undefined" && edge.data("subject_value") ==
+                            "true") {
+                            this.tripledelete()
+                        }
+                    } else {
+                        this.createTriple(true)
+                    }
+                } else {}
+            },
+            smartUnlink() {
+                if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
+                    this.t_name && this.t_name != '') {
+                    let edge = cy.getElementById(edgeIdFromNames(this.h_name, this.r_name, this.t_name))
+                    console.log(edge.data())
+                    if (edge) {
+                        if (edge.data("workspace_value") != "false" && edge.data("subject_value") ==
+                            "true") {
+                            this.createTriple(false)
+                        } else if (edge.data("workspace_value") != "undefined" && edge.data("subject_value") !=
+                            "true") {
+                            this.tripledelete()
+                        }
+                    }
+                } else {}
+
             },
             disableButtons() {
                 this.canUpdateEdge = false
@@ -619,9 +1005,11 @@
                         if (body.triples) {
                             this.unselectAll()
                             body.triples.forEach(triple => {
-                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple
+                                let id = edgeIdFromNames(triple.h_name, triple.r_name,
+                                    triple
                                     .t_name)
-                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
+                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name,
+                                    triple
                                     .r_name,
                                     triple.t_name))[0]
                                 edge.data({
@@ -630,8 +1018,11 @@
                                 cy.edges(
                                     '[workspace_value = "undefined"][subject_value = "undefined"]'
                                 ).remove()
-                                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').remove()
+                                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]')
+                                    .remove()
                             })
+                            this.edgeStatistic()
+                            this.determineTripleOptions()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error when deleted unreachable triple.')
@@ -664,14 +1055,12 @@
                 }
             },
             nodeFieldChange(event) {
-                this.canDeleteEdge = false
                 cy.nodes().unselect()
                 cy.edges().unselect()
                 cy.nodes('[id = "' + event + '"]').select()
                 this.determineTripleOptions()
             },
             edgeFieldChange(event) {
-                this.canDeleteEdge = false
                 this.determineTripleOptions()
             },
             determineTripleOptions() {
@@ -683,10 +1072,20 @@
                         cy.nodes().unselect()
                         cy.edges().unselect()
                         edge.select()
+                        this.canNontrivalLinkEdge = (edge.data("workspace_value") != "true" && edge
+                                .data(
+                                    "subject_value") != "true") || edge.data("workspace_value") ==
+                            "false"
+                        this.canNontrivalRemoveEdge = edge.data("workspace_value") == "true" || (edge
+                            .data(
+                                "subject_value") == "true" && edge.data("workspace_value") ==
+                            "undefined")
                         this.canLinkEdge = edge.data("workspace_value") != "true"
                         this.canUnlinkEdge = edge.data("workspace_value") != "false"
                         this.canDeleteEdge = edge.data("workspace_value") != "undefined"
                     } else {
+                        this.canNontrivalLinkEdge = true
+                        this.canNontrivalRemoveEdge = false
                         this.canLinkEdge = true
                         this.canUnlinkEdge = true
                         this.canDeleteEdge = false
@@ -768,7 +1167,8 @@
                         this.$root.responseSnackBar(body,
                             'delete failed for unknown reason.',
                             () => {
-                                window.location.replace("{{ url_for('instructor.versionTree') }}/" +
+                                window.location.replace(
+                                    "{{ url_for('instructor.versionTree') }}/" +
                                     this.subject.courseCode)
                             })
                     })
