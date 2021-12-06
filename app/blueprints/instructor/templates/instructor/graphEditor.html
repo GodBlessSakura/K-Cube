@@ -111,13 +111,13 @@
                         color
                     </v-col>
                     <v-col>
-                        <v-color-picker @input="metricsVisualize()" canvas-height="50" v-model="metricsVisualization.zeroColor" hide-mode-switch
-                            hide-inputs>
+                        <v-color-picker @input="metricsVisualize()" canvas-height="50"
+                            v-model="metricsVisualization.zeroColor" hide-mode-switch hide-inputs>
                         </v-color-picker>
                     </v-col>
                     <v-col>
-                        <v-color-picker @input="metricsVisualize()" canvas-height="50" v-model="metricsVisualization.oneColor" hide-mode-switch
-                            hide-inputs>
+                        <v-color-picker @input="metricsVisualize()" canvas-height="50"
+                            v-model="metricsVisualization.oneColor" hide-mode-switch hide-inputs>
                         </v-color-picker>
                     </v-col>
                 </v-row>
@@ -289,7 +289,7 @@
         <div v-if="diffMode">
             <v-row no-gutters>
                 <v-col dense>
-                    <v-chip label x-small style="opacity: .7;">
+                    <v-chip label x-small>
                         <v-avatar left>
                             ${originalPositiveEdgeCount}
                         </v-avatar>
@@ -297,20 +297,10 @@
                     </v-chip>
                 </v-col>
             </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small style="opacity: .7;">
-                        <v-avatar left>
-                            ${originalNegativeEdgeCount}
-                        </v-avatar>
-                        edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
-                    </v-chip>
-                </v-col>
-            </v-row>
             <v-row no-gutters></v-row>
             <v-row no-gutters>
                 <v-col dense>
-                    <v-chip label x-small style="opacity: .7;">
+                    <v-chip label x-small>
                         <v-avatar left>
                             ${workspacePositiveEdgeCount}
                         </v-avatar>
@@ -320,19 +310,17 @@
             </v-row>
             <v-row no-gutters>
                 <v-col dense>
-                    <v-chip label x-small style="opacity: .7;">
+                    <v-chip label x-small style="font-weight: bold;">
                         <v-avatar left>
-                            ${workspaceNegativeEdgeCount}
+                            ${activePositiveEdgeCount}
                         </v-avatar>
-                        edge negation in workspace
+                        active proposal in workspace
                     </v-chip>
                 </v-col>
             </v-row>
             <v-row no-gutters>
-            </v-row>
-            <v-row no-gutters>
                 <v-col dense>
-                    <v-chip label x-small style="opacity: .7;">
+                    <v-chip label x-small style="font-style: italic;">
                         <v-avatar left>
                             ${inactivePositiveEdgeCount}
                         </v-avatar>
@@ -351,11 +339,47 @@
             </v-row>
             <v-row no-gutters>
                 <v-col dense>
-                    <v-chip label x-small style="opacity: .7;">
+                    <v-chip label x-small>
+                        <v-avatar left>
+                            ${originalNegativeEdgeCount}
+                        </v-avatar>
+                        <span style="background-color: white;">
+                            edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+                        </span>
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small>
+                        <v-avatar left>
+                            ${workspaceNegativeEdgeCount}
+                        </v-avatar>
+                        <span style="background-color: white;">
+                            edge negation in workspace
+                        </span>
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="font-weight: bold;">
+                        <v-avatar left>
+                            ${activeNegativeEdgeCount}
+                        </v-avatar><span style="background-color: white;">
+                            active negation in workspace
+                        </span>
+                    </v-chip>
+                </v-col>
+            </v-row>
+            <v-row no-gutters>
+                <v-col dense>
+                    <v-chip label x-small style="font-style: italic;">
                         <v-avatar left>
                             ${inactiveNegativeEdgeCount}
-                        </v-avatar>
-                        inactive edge negation in workspace
+                        </v-avatar><span style="background-color: white;">
+                            inactive edge negation in workspace
+                        </span>
                         <v-tooltip top>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-icon v-bind="attrs" v-on="on" right x-small>
@@ -479,7 +503,6 @@
             selector: 'edge[workspace_value = "true"][subject_value = "true"]',
             style: {
                 'line-style': 'solid',
-                'opacity': 0.75,
                 'font-style': 'italic',
             }
         }, {
@@ -488,7 +511,6 @@
                 'line-gradient-stop-colors': 'grey white white grey',
                 'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
                 'line-fill': 'linear-gradient ',
-                'opacity': 0.75,
                 'font-style': 'italic',
             }
         }, {
@@ -606,6 +628,8 @@
             originalNegativeEdgeCount: 0,
             workspacePositiveEdgeCount: 0,
             workspaceNegativeEdgeCount: 0,
+            activePositiveEdgeCount: 0,
+            activeNegativeEdgeCount: 0,
             inactivePositiveEdgeCount: 0,
             inactiveNegativeEdgeCount: 0,
             diffMode: false,
@@ -773,10 +797,11 @@
                     let measure = ["degree", "closeness",
                         "betweenness", "rank"
                     ][this.metricsVisualization.metric]
-                    let nodeSet = cy.nodes()
-                    let set = nodeSet.union(cy.edges(
+                    let edgeSet = cy.edges(
                         '[subject_value = "true"][workspace_value != "false"],[workspace_value = "true"]'
-                    ))
+                    )
+                    let nodeSet = edgeSet.sources().union(edgeSet.targets())
+                    let set = nodeSet.union(edgeSet)
                     let result = set[metric]()[measure]
                     let max
                     let min
@@ -786,7 +811,7 @@
                         max = Math.max(...max)
                         min = Math.min(...min)
                     }
-                    cy.nodes().forEach(node => {
+                    nodeSet.forEach(node => {
                         let value = result('[id = "' + node.data("id") + '"]')
 
                         if (!metric.includes("Normalized")) {
@@ -816,6 +841,10 @@
                 edgeCollections.originalNegativeEdge = cy.edges('[subject_value = "false"]')
                 edgeCollections.workspacePositiveEdge = cy.edges('[workspace_value = "true"]')
                 edgeCollections.workspaceNegativeEdge = cy.edges('[workspace_value = "false"]')
+                edgeCollections.activePositiveEdge = cy.edges(
+                    '[workspace_value = "true"][subject_value != "true"]')
+                edgeCollections.activeNegativeEdge = cy.edges(
+                    '[workspace_value = "false"][subject_value = "true"]')
                 edgeCollections.inactivePositiveEdge = cy.edges(
                     '[workspace_value = "true"][subject_value = "true"]')
                 edgeCollections.inactiveNegativeEdge = cy.edges(
@@ -824,6 +853,8 @@
                 this.originalNegativeEdgeCount = edgeCollections.originalNegativeEdge.length
                 this.workspacePositiveEdgeCount = edgeCollections.workspacePositiveEdge.length
                 this.workspaceNegativeEdgeCount = edgeCollections.workspaceNegativeEdge.length
+                this.activePositiveEdgeCount = edgeCollections.activePositiveEdge.length
+                this.activeNegativeEdgeCount = edgeCollections.activeNegativeEdge.length
                 this.inactivePositiveEdgeCount = edgeCollections.inactivePositiveEdge.length
                 this.inactiveNegativeEdgeCount = edgeCollections.inactiveNegativeEdge.length
             },
