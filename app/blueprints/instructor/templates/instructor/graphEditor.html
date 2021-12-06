@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
+{% import 'cyMetricsVisualize.html' as cyMetricsVisualize %}
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     <v-row dense style="width: 100%;">
@@ -104,56 +105,9 @@
         <div id="editor" style="height: 100%; width: 100%;"></div>
     </v-row>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
-        <v-card>
-            <v-container>
-                <v-row>
-                    <v-col cols="1">
-                        color
-                    </v-col>
-                    <v-col>
-                        <v-color-picker @input="metricsVisualize()" canvas-height="50"
-                            v-model="metricsVisualization.zeroColor" hide-mode-switch hide-inputs>
-                        </v-color-picker>
-                    </v-col>
-                    <v-col>
-                        <v-color-picker @input="metricsVisualize()" canvas-height="50"
-                            v-model="metricsVisualization.oneColor" hide-mode-switch hide-inputs>
-                        </v-color-picker>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col cols="1">
-                        thickness
-                    </v-col>
-                    <v-col>
-                        <v-slider thumb-label v-model="metricsVisualization.thickness" max="20" min="1"
-                            @change="metricsVisualize()">
-                        </v-slider>
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col>
-                        <v-btn-toggle v-model="metricsVisualization.metric" @change="metricsVisualize()">
-                            <v-btn>Degree
-                            </v-btn>
-                            <v-btn>Closeness
-                            </v-btn>
-                            <v-btn>Betweeness
-                            </v-btn>
-                            <v-btn>PageRank
-                            </v-btn>
-                        </v-btn-toggle>
-
-                    </v-col>
-                </v-row>
-                <v-row>
-                    <v-col>
-
-                    </v-col>
-                </v-row>
-            </v-container>
-        </v-card>
+        <v-cy-metrics-visualize-bottom-sheet></v-cy-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
+
     <v-card>
         <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
             <template v-slot:activator="{ on, attrs }">
@@ -286,112 +240,79 @@
                 </v-tooltip>
             </v-col>
         </v-row>
-        <div v-if="diffMode">
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small>
-                        <v-avatar left>
-                            ${originalPositiveEdgeCount}
-                        </v-avatar>
-                        edge proposal in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters></v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small>
-                        <v-avatar left>
-                            ${workspacePositiveEdgeCount}
-                        </v-avatar>
-                        edge proposal in workspace
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small style="font-weight: bold;">
-                        <v-avatar left>
-                            ${activePositiveEdgeCount}
-                        </v-avatar>
-                        active proposal in workspace
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small style="font-style: italic;">
-                        <v-avatar left>
-                            ${inactivePositiveEdgeCount}
-                        </v-avatar>
-                        inactive edge proposal in workspace
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-icon v-bind="attrs" v-on="on" right x-small>
-                                    help_outline
-                                </v-icon>
-                            </template>An inactive edge proposal is created if you are trying to create an already
-                            existing
-                            edge
-                        </v-tooltip>
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small>
-                        <v-avatar left>
-                            ${originalNegativeEdgeCount}
-                        </v-avatar>
-                        <span style="background-color: white;">
-                            edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
-                        </span>
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small>
-                        <v-avatar left>
-                            ${workspaceNegativeEdgeCount}
-                        </v-avatar>
-                        <span style="background-color: white;">
-                            edge negation in workspace
-                        </span>
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small style="font-weight: bold;">
-                        <v-avatar left>
-                            ${activeNegativeEdgeCount}
-                        </v-avatar><span style="background-color: white;">
-                            active negation in workspace
-                        </span>
-                    </v-chip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters>
-                <v-col dense>
-                    <v-chip label x-small style="font-style: italic;">
-                        <v-avatar left>
-                            ${inactiveNegativeEdgeCount}
-                        </v-avatar><span style="background-color: white;">
-                            inactive edge negation in workspace
-                        </span>
-                        <v-tooltip top>
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-icon v-bind="attrs" v-on="on" right x-small>
-                                    help_outline
-                                </v-icon>
-                            </template>An inactive edge negation is created if you are trying to negation a nonexistent
-                            edge
-                        </v-tooltip>
-                    </v-chip>
-                </v-col>
-            </v-row>
-        </div>
+        <v-chip-group v-if="diffMode" column @change="highlightEdge($event)">
+            <v-chip label x-small>
+                <v-avatar left>
+                    ${originalPositiveEdgeCount}
+                </v-avatar>
+                edge proposal in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+            </v-chip>
+            <v-chip label x-small>
+                <v-avatar left>
+                    ${workspacePositiveEdgeCount}
+                </v-avatar>
+                edge proposal in workspace
+            </v-chip>
+            <v-chip label x-small style="font-weight: bold;">
+                <v-avatar left>
+                    ${activePositiveEdgeCount}
+                </v-avatar>
+                active proposal in workspace
+            </v-chip>
+            <v-chip label x-small style="font-style: italic;">
+                <v-avatar left>
+                    ${inactivePositiveEdgeCount}
+                </v-avatar>
+                inactive edge proposal in workspace
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" right x-small>
+                            help_outline
+                        </v-icon>
+                    </template>An inactive edge proposal is created if you are trying to create an already
+                    existing
+                    edge
+                </v-tooltip>
+            </v-chip>
+            <v-chip label x-small>
+                <v-avatar left>
+                    ${originalNegativeEdgeCount}
+                </v-avatar>
+                <span style="background-color: white;">
+                    edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+                </span>
+            </v-chip>
+            <v-chip label x-small>
+                <v-avatar left>
+                    ${workspaceNegativeEdgeCount}
+                </v-avatar>
+                <span style="background-color: white;">
+                    edge negation in workspace
+                </span>
+            </v-chip>
+            <v-chip label x-small style="font-weight: bold;">
+                <v-avatar left>
+                    ${activeNegativeEdgeCount}
+                </v-avatar><span style="background-color: white;">
+                    active negation in workspace
+                </span>
+            </v-chip>
+            <v-chip label x-small style="font-style: italic;">
+                <v-avatar left>
+                    ${inactiveNegativeEdgeCount}
+                </v-avatar><span style="background-color: white;">
+                    inactive edge negation in workspace
+                </span>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" right x-small>
+                            help_outline
+                        </v-icon>
+                    </template>An inactive edge negation is created if you are trying to negation a nonexistent
+                    edge
+                </v-tooltip>
+            </v-chip>
+        </v-chip-group>
     </v-container>
 
     <v-dialog v-model="edgeStyleDialogue">
@@ -419,17 +340,26 @@
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
+{{ cyMetricsVisualize.component()}}
+{{ cyMetricsVisualize.script()}}
+<style>
+    .v-chip--active {
+        background-color: lightblue;
+    }
+</style>
 <script>
     basicStyle = [{
+            selector: ':selected',
+            style: {
+                'color': 'DarkMagenta'
+            }
+        },
+        {
             selector: 'node',
             style: {
                 'label': 'data(name)',
-                'font-size': 8
-            }
-        }, {
-            selector: 'node.suppress',
-            style: {
-                'opacity': 0.5,
+                'font-size': 8,
+                'background-color': 'grey',
             }
         },
         {
@@ -447,6 +377,8 @@
                 'font-size': 8,
                 'text-rotation': 'autorotate',
                 'display': 'none',
+                'line-color': 'grey',
+                'target-arrow-color': 'grey',
             }
         }, {
             selector: 'edge[subject_value = "true"][workspace_value != "false"],[workspace_value = "true"]',
@@ -458,13 +390,19 @@
         }
     ]
     diffStyle = [{
+            selector: ':selected',
+            style: {
+                'color': 'DarkMagenta'
+            }
+        }, {
             selector: 'node',
             style: {
                 'label': 'data(name)',
-                'font-size': 8
+                'font-size': 8,
+                'background-color': 'grey',
             }
         }, {
-            selector: 'node.suppress',
+            selector: 'edge.suppress',
             style: {
                 'opacity': 0.5,
             }
@@ -484,6 +422,8 @@
                 'font-size': 8,
                 'text-rotation': 'autorotate',
                 'width': 3,
+                'line-color': 'grey',
+                'target-arrow-color': 'grey',
             }
         }, {
             selector: 'edge[workspace_value = "true"][subject_value != "true"]',
@@ -531,6 +471,9 @@
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     });
+    metricOptions = [{
+        cy: cy
+    }]
     concentricLayoutOptions = {
         name: 'concentric',
     }
@@ -637,20 +580,6 @@
             canNontrivalRemoveEdge: false,
             edgeStyleDialogue: false,
             metricsBottomSheet: false,
-            metricsVisualization: {
-                thickness: 3,
-                metric: undefined,
-                zeroColor: {
-                    r: 0,
-                    g: 0,
-                    b: 255,
-                },
-                oneColor: {
-                    r: 255,
-                    g: 0,
-                    b: 0,
-                },
-            }
         }),
         methods: {
             loadData() {
@@ -784,55 +713,12 @@
                     this.$root.progress.show = false
                 })
             },
-            metricsVisualize() {
-                if (this.metricsVisualization.metric == undefined) {
-                    cy.nodes.forEach(node => {
-                        node.style("border-width", null)
-                        node.style("border-color", null)
-                    })
-                } else {
-                    let metric = ["degreeCentralityNormalized", "closenessCentralityNormalized",
-                        "betweennessCentrality", "pageRank"
-                    ][this.metricsVisualization.metric]
-                    let measure = ["degree", "closeness",
-                        "betweenness", "rank"
-                    ][this.metricsVisualization.metric]
-                    let edgeSet = cy.edges(
-                        '[subject_value = "true"][workspace_value != "false"],[workspace_value = "true"]'
-                    )
-                    let nodeSet = edgeSet.sources().union(edgeSet.targets())
-                    let set = nodeSet.union(edgeSet)
-                    let result = set[metric]()[measure]
-                    let max
-                    let min
-                    if (!metric.includes("Normalized")) {
-                        max = nodeSet.map(node => result('[id = "' + node.data("id") + '"]'))
-                        min = nodeSet.map(node => result('[id = "' + node.data("id") + '"]'))
-                        max = Math.max(...max)
-                        min = Math.min(...min)
-                    }
-                    nodeSet.forEach(node => {
-                        let value = result('[id = "' + node.data("id") + '"]')
-
-                        if (!metric.includes("Normalized")) {
-                            value = (value - min) / (max - min)
-                        }
-                        let color = [];
-                        ["r", "g", "b"].forEach(c => {
-                            color.push((this.metricsVisualization.oneColor[c] - this
-                                    .metricsVisualization.zeroColor[c]) * value + this
-                                .metricsVisualization.zeroColor[c])
-                        })
-                        node.style("border-width", this.metricsVisualization.thickness)
-                        node.style("border-color", color)
-                    })
-                }
-            },
             switchStyle() {
                 cy.style().resetToDefault()
                 if (this.diffMode) {
                     cy.style(diffStyle)
                 } else {
+                    cy.edges(".suppress").removeClass('suppress')
                     cy.style(basicStyle)
                 }
             },
@@ -983,6 +869,22 @@
                                     'Unexpected error when deleted triple.')
                             }
                         })
+                }
+            },
+            highlightEdge(index) {
+                cy.edges(".suppress").removeClass('suppress')
+                if (index != null) {
+                    let selectedEdge = [
+                        edgeCollections.originalPositiveEdge,
+                        edgeCollections.workspacePositiveEdge,
+                        edgeCollections.activePositiveEdge,
+                        edgeCollections.inactivePositiveEdge,
+                        edgeCollections.originalNegativeEdge,
+                        edgeCollections.workspaceNegativeEdge,
+                        edgeCollections.activeNegativeEdge,
+                        edgeCollections.inactiveNegativeEdge,
+                    ][index]
+                    cy.edges().difference(selectedEdge).addClass('suppress')
                 }
             },
             smartLink() {
@@ -1245,6 +1147,88 @@
                 self.determineTripleOptions()
             })
             cy.on('tapdrag', 'node', (event) => {})
+            // let size
+            // cy.on('select', 'node', event => {
+            //     let node = event.target[0]
+            //     size = {
+            //         height: node.height(),
+            //         width: node.width()
+            //     }
+            //     let newSize = 1.125
+            //     let newDuration = 300
+            //     let animation = node.animation({
+            //         style: {
+            //             height: size.height * newSize,
+            //             width: size.height * newSize
+            //         },
+            //         duration: newDuration
+            //     });
+            //     let loop = () => {
+
+            //         animation.reverse().rewind().play().promise().then(() => {
+            //             node.delayAnimation(newDuration).play().promise().then(() => {
+            //                 loop()
+            //             })
+            //         })
+            //     }
+            //     animation.play().promise().then(() => {
+            //         node.delayAnimation(newDuration).play().promise().then(() => {
+            //             loop()
+            //         })
+            //     })
+            // })
+            // cy.on('unselect', 'node', event => {
+            //     let node = event.target[0]
+            //     console.log('unselect')
+            //     node.stop()
+            //     node.clearQueue()
+            //     let animation = node.animation({
+            //         style: {
+            //             height: size.height,
+            //             width: size.height
+            //         },
+            //         duration: 0
+            //     });
+            //     animation.play()
+            // })
+            // let width
+            // cy.on('select', 'edge', event => {
+            //     let edge = event.target[0]
+            //     width = edge.width()
+            //     let newWidth = 2
+            //     let newDuration = 300
+            //     let animation = edge.animation({
+            //         style: {
+            //             width: width * newWidth
+            //         },
+            //         duration: newDuration
+            //     });
+            //     let loop = () => {
+            //         animation.reverse().rewind().play().promise().then(() => {
+            //             edge.delayAnimation(newDuration).play().promise().then(() => {
+            //                 loop()
+            //             })
+            //         })
+            //     }
+            //     animation.play().promise().then(() => {
+            //         edge.delayAnimation(newDuration).play().promise().then(() => {
+            //             loop()
+            //         })
+            //     })
+            // })
+            // cy.on('unselect', 'edge', event => {
+            //     let edge = event.target[0]
+            //     console.log('unselect')
+            //     edge.stop()
+            //     edge.clearQueue()
+            //     let animation = edge.animation({
+            //         style: {
+            //             width: width
+            //         },
+            //         duration: 0
+            //     });
+            //     animation.play()
+            // })
             this.loadData()
         },
         template: '#content',

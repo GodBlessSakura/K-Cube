@@ -1,12 +1,26 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout %}
+{% import 'cyMetricsVisualize.html' as cyMetricsVisualize %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
     <div id="cy" style="height: 100%; width: 100%;"></div>
+    <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
+        <v-cy-metrics-visualize-bottom-sheet></v-cy-metrics-visualize-bottom-sheet>
+    </v-bottom-sheet>
+    <v-tooltip>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn absolute style="bottom:3vh;left:3vh" fab v-on="on" @click="metricsBottomSheet = true">
+                <v-icon>insights</v-icon>
+            </v-btn>
+        </template>
+        centrality metrics
+    </v-tooltip>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
+{{ cyMetricsVisualize.component()}}
+{{ cyMetricsVisualize.script()}}
 <script>
     cy = cytoscape({
         style: [{
@@ -34,6 +48,10 @@
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     })
+    metricOptions = [{
+        cy: cy,
+        edgeSelector: "[value = 'true']"
+    }]
     concentricLayoutOptions = {
         name: 'concentric',
 
@@ -84,7 +102,9 @@
         return h_name + '.' + r_name + '.' + t_name
     }
     Vue.component('app-content', {
-        data: () => ({}),
+        data: () => ({
+            metricsBottomSheet: false,
+        }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
