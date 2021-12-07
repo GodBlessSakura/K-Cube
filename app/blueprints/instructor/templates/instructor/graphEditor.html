@@ -103,8 +103,7 @@
     </v-row>
     <v-row dense style="height: calc(100% - 44px); width: 100%;">
         <div id="editor" style="height: 100%; width: 100%;">
-            <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128"
-                v-if="layoutLoading">
+            <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128" v-if="graphLoading">
             </v-progress-circular>
 
         </div>
@@ -225,46 +224,44 @@
             </v-btn>
         </template>
     </v-snackbar>
-    <v-container style="bottom: 5vh; right:5vh; position: fixed; width:15vw;">
+    <v-container style="bottom: 5vh; right:5vh; position: fixed; width:17vw;">
         <v-row no-gutters justify="end">
             <v-col cols="auto" dense>
-                <v-switch style="margin-top:0px" @change="switchStyle()" v-model="diffMode" messages="view diff"
-                    prepend-icon="rule" dense>
+                <v-switch style="margin-top:0px" @change="switchStyle()" :disabled="graphLoading" v-model="diffMode"
+                    messages="view diff" prepend-icon="rule" dense>
                 </v-switch>
             </v-col>
             <v-col cols="auto" dense>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-badge color="error" :content="workspaceNegativeEdgeCount">
+                        <v-badge color="error" :content="activeNegativeEdgeCount + inactiveNegativeEdgeCount">
                             <v-icon v-bind="attrs" v-on="on">playlist_remove</v-icon>
                         </v-badge>
-                    </template> ${workspaceNegativeEdgeCount} edge negation ${workspaceNegativeEdgeCount>1?"have":"has"}
+                    </template> ${activeNegativeEdgeCount + inactiveNegativeEdgeCount} edge negation
+                    ${activeNegativeEdgeCount + inactiveNegativeEdgeCount>1?"have":"has"}
                     been declared. Turn 'view diff' mode on to
                     visualize such
                     explicit concept dissociation.
                 </v-tooltip>
             </v-col>
         </v-row>
-        <v-chip-group v-if="diffMode" column @change="highlightEdge($event)">
-            <v-chip label x-small>
+        <v-row v-if="diffMode">
+            filters:
+        </v-row>
+        <v-chip-group v-if="diffMode" multiple column @change="highlightEdge($event)">
+            <v-chip filter label x-small>
                 <v-avatar left>
                     ${originalPositiveEdgeCount}
                 </v-avatar>
                 edge proposal in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
             </v-chip>
-            <v-chip label x-small>
-                <v-avatar left>
-                    ${workspacePositiveEdgeCount}
-                </v-avatar>
-                edge proposal in workspace
-            </v-chip>
-            <v-chip label x-small style="font-weight: bold;">
+            <v-chip filter label x-small style="font-weight: bold;">
                 <v-avatar left>
                     ${activePositiveEdgeCount}
                 </v-avatar>
                 active proposal in workspace
             </v-chip>
-            <v-chip label x-small style="font-style: italic;">
+            <v-chip filter label x-small style="font-style: italic;">
                 <v-avatar left>
                     ${inactivePositiveEdgeCount}
                 </v-avatar>
@@ -279,7 +276,7 @@
                     edge
                 </v-tooltip>
             </v-chip>
-            <v-chip label x-small>
+            <v-chip filter label x-small>
                 <v-avatar left>
                     ${originalNegativeEdgeCount}
                 </v-avatar>
@@ -287,22 +284,14 @@
                     edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
                 </span>
             </v-chip>
-            <v-chip label x-small>
-                <v-avatar left>
-                    ${workspaceNegativeEdgeCount}
-                </v-avatar>
-                <span style="background-color: white;">
-                    edge negation in workspace
-                </span>
-            </v-chip>
-            <v-chip label x-small style="font-weight: bold;">
+            <v-chip filter label x-small style="font-weight: bold;">
                 <v-avatar left>
                     ${activeNegativeEdgeCount}
                 </v-avatar><span style="background-color: white;">
                     active negation in workspace
                 </span>
             </v-chip>
-            <v-chip label x-small style="font-style: italic;">
+            <v-chip filter label x-small style="font-style: italic;">
                 <v-avatar left>
                     ${inactiveNegativeEdgeCount}
                 </v-avatar><span style="background-color: white;">
@@ -574,8 +563,6 @@
             deleteSelectBar: false,
             originalPositiveEdgeCount: 0,
             originalNegativeEdgeCount: 0,
-            workspacePositiveEdgeCount: 0,
-            workspaceNegativeEdgeCount: 0,
             activePositiveEdgeCount: 0,
             activeNegativeEdgeCount: 0,
             inactivePositiveEdgeCount: 0,
@@ -585,7 +572,7 @@
             canNontrivalRemoveEdge: false,
             edgeStyleDialogue: false,
             metricsBottomSheet: false,
-            layoutLoading: false,
+            graphLoading: true,
         }),
         methods: {
             loadData() {
@@ -644,7 +631,7 @@
                             let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
-                            this.layoutLoading = true
+                            this.graphLoading = true
                             cy.elements().style('visibility', 'hidden')
                             let cyLayout = cy.layout({
                                 ...concentricLayoutOptions,
@@ -656,7 +643,7 @@
                                 let cyLayout = cy.layout(coseLayoutOptions)
                                 cyLayout.one('layoutstop', () => {
                                     cy.elements().style('visibility', 'visible')
-                                    this.layoutLoading = false
+                                    this.graphLoading = false
                                 })
                                 cyLayout.run()
                             })
@@ -733,8 +720,6 @@
             edgeStatistic() {
                 edgeCollections.originalPositiveEdge = cy.edges('[subject_value = "true"]')
                 edgeCollections.originalNegativeEdge = cy.edges('[subject_value = "false"]')
-                edgeCollections.workspacePositiveEdge = cy.edges('[workspace_value = "true"]')
-                edgeCollections.workspaceNegativeEdge = cy.edges('[workspace_value = "false"]')
                 edgeCollections.activePositiveEdge = cy.edges(
                     '[workspace_value = "true"][subject_value != "true"]')
                 edgeCollections.activeNegativeEdge = cy.edges(
@@ -745,8 +730,6 @@
                     '[workspace_value = "false"][subject_value != "true"]')
                 this.originalPositiveEdgeCount = edgeCollections.originalPositiveEdge.length
                 this.originalNegativeEdgeCount = edgeCollections.originalNegativeEdge.length
-                this.workspacePositiveEdgeCount = edgeCollections.workspacePositiveEdge.length
-                this.workspaceNegativeEdgeCount = edgeCollections.workspaceNegativeEdge.length
                 this.activePositiveEdgeCount = edgeCollections.activePositiveEdge.length
                 this.activeNegativeEdgeCount = edgeCollections.activeNegativeEdge.length
                 this.inactivePositiveEdgeCount = edgeCollections.inactivePositiveEdge.length
@@ -879,19 +862,22 @@
                         })
                 }
             },
-            highlightEdge(index) {
+            highlightEdge(indexes) {
                 cy.edges(".suppress").removeClass('suppress')
-                if (index != null) {
-                    let selectedEdge = [
-                        edgeCollections.originalPositiveEdge,
-                        edgeCollections.workspacePositiveEdge,
-                        edgeCollections.activePositiveEdge,
-                        edgeCollections.inactivePositiveEdge,
-                        edgeCollections.originalNegativeEdge,
-                        edgeCollections.workspaceNegativeEdge,
-                        edgeCollections.activeNegativeEdge,
-                        edgeCollections.inactiveNegativeEdge,
-                    ][index]
+                if (indexes.length != 0) {
+                    let selectedEdge = cy.collection()
+                    indexes.forEach(index => {
+                        selectedEdge = selectedEdge.union(
+                            [
+                                edgeCollections.originalPositiveEdge,
+                                edgeCollections.activePositiveEdge,
+                                edgeCollections.inactivePositiveEdge,
+                                edgeCollections.originalNegativeEdge,
+                                edgeCollections.activeNegativeEdge,
+                                edgeCollections.inactiveNegativeEdge,
+                            ][index]
+                        )
+                    })
                     cy.edges().difference(selectedEdge).addClass('suppress')
                 }
             },
