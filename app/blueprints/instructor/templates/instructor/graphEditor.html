@@ -224,14 +224,14 @@
         <v-row no-gutters justify="end">
             <v-col cols="auto" dense>
                 <v-switch style="margin-top:0px" @change="switchStyle()" v-model="diffMode" messages="view diff"
-                    prepend-icon="difference" dense>
+                    prepend-icon="rule" dense>
                 </v-switch>
             </v-col>
             <v-col cols="auto" dense>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
                         <v-badge color="error" :content="workspaceNegativeEdgeCount">
-                            <v-icon v-bind="attrs" v-on="on">remove_circle_outline</v-icon>
+                            <v-icon v-bind="attrs" v-on="on">playlist_remove</v-icon>
                         </v-badge>
                     </template> ${workspaceNegativeEdgeCount} edge negation ${workspaceNegativeEdgeCount>1?"have":"has"}
                     been declared. Turn 'view diff' mode on to
@@ -404,7 +404,7 @@
         }, {
             selector: 'edge.suppress',
             style: {
-                'opacity': 0.5,
+                'opacity': 0.15,
             }
         },
         {
