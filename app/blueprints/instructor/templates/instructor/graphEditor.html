@@ -102,7 +102,12 @@
         </v-col>
     </v-row>
     <v-row dense style="height: calc(100% - 44px); width: 100%;">
-        <div id="editor" style="height: 100%; width: 100%;"></div>
+        <div id="editor" style="height: 100%; width: 100%;">
+            <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128"
+                v-if="layoutLoading">
+            </v-progress-circular>
+
+        </div>
     </v-row>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <v-cy-metrics-visualize-bottom-sheet></v-cy-metrics-visualize-bottom-sheet>
@@ -580,6 +585,7 @@
             canNontrivalRemoveEdge: false,
             edgeStyleDialogue: false,
             metricsBottomSheet: false,
+            layoutLoading: false,
         }),
         methods: {
             loadData() {
@@ -638,6 +644,7 @@
                             let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
+                            this.layoutLoading = true
                             cy.elements().style('visibility', 'hidden')
                             let cyLayout = cy.layout({
                                 ...concentricLayoutOptions,
@@ -645,10 +652,11 @@
                                 // return cyDijkstra.distanceTo(node) * -1
                                 // }
                             })
-                            cyLayout.one('layoutstop', function () {
+                            cyLayout.one('layoutstop', () => {
                                 let cyLayout = cy.layout(coseLayoutOptions)
-                                cyLayout.one('layoutstop', function () {
+                                cyLayout.one('layoutstop', () => {
                                     cy.elements().style('visibility', 'visible')
+                                    this.layoutLoading = false
                                 })
                                 cyLayout.run()
                             })
