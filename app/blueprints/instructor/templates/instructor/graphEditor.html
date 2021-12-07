@@ -192,7 +192,7 @@
                             <v-tooltip top v-if="canDeleteEdge">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on"
-                                        @click="tripledelete()">
+                                        @click="tripledelete()" :disabled="!canDeleteEdge || !canUpdateEdge">
                                         defer decision
                                     </v-btn>
                                 </template>
@@ -248,20 +248,27 @@
         <v-row v-if="diffMode">
             filters:
         </v-row>
+        <v-row>
+            <v-col cols="auto">
+                <v-btn x-small @click="activePositiveEdgeChip=true;inactivePositiveEdgeChip=true;">
+                    workspace proposal
+                </v-btn>
+            </v-col>
+        </v-row>
         <v-chip-group v-if="diffMode" multiple column @change="highlightEdge($event)">
-            <v-chip filter label x-small>
+            <v-chip v-model="originalPositiveEdgeChip" filter label x-small>
                 <v-avatar left>
                     ${originalPositiveEdgeCount}
                 </v-avatar>
                 edge proposal in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
             </v-chip>
-            <v-chip filter label x-small style="font-weight: bold;">
+            <v-chip v-model="activePositiveEdgeChip" filter label x-small style="font-weight: bold;">
                 <v-avatar left>
                     ${activePositiveEdgeCount}
                 </v-avatar>
                 active proposal in workspace
             </v-chip>
-            <v-chip filter label x-small style="font-style: italic;">
+            <v-chip v-model="inactivePositiveEdgeChip" filter label x-small style="font-style: italic;">
                 <v-avatar left>
                     ${inactivePositiveEdgeCount}
                 </v-avatar>
@@ -276,7 +283,7 @@
                     edge
                 </v-tooltip>
             </v-chip>
-            <v-chip filter label x-small>
+            <v-chip v-model="originalNegativeEdgeChip" filter label x-small>
                 <v-avatar left>
                     ${originalNegativeEdgeCount}
                 </v-avatar>
@@ -284,14 +291,14 @@
                     edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
                 </span>
             </v-chip>
-            <v-chip filter label x-small style="font-weight: bold;">
+            <v-chip v-model="activeNegativeEdgeChip" filter label x-small style="font-weight: bold;">
                 <v-avatar left>
                     ${activeNegativeEdgeCount}
                 </v-avatar><span style="background-color: white;">
                     active negation in workspace
                 </span>
             </v-chip>
-            <v-chip filter label x-small style="font-style: italic;">
+            <v-chip v-model="inactiveNegativeEdgeChip" filter label x-small style="font-style: italic;">
                 <v-avatar left>
                     ${inactiveNegativeEdgeCount}
                 </v-avatar><span style="background-color: white;">
@@ -561,6 +568,12 @@
             },
             workspace: undefined,
             deleteSelectBar: false,
+            originalPositiveEdgeChip: 0,
+            originalNegativeEdgeChip: 0,
+            activePositiveEdgeChip: 0,
+            activeNegativeEdgeChip: 0,
+            inactivePositiveEdgeChip: 0,
+            inactiveNegativeEdgeChip: 0,
             originalPositiveEdgeCount: 0,
             originalNegativeEdgeCount: 0,
             activePositiveEdgeCount: 0,
@@ -1010,7 +1023,7 @@
                     this.t_name && this.t_name != '') {
                     this.canUpdateEdge = true
                     let edge = cy.getElementById(edgeIdFromNames(this.h_name, this.r_name, this.t_name))
-                    if (edge) {
+                    if (edge.length > 0) {
                         cy.nodes().unselect()
                         cy.edges().unselect()
                         edge.select()
