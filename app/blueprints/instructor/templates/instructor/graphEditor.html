@@ -117,7 +117,7 @@
             <template v-slot:activator="{ on, attrs }">
                 <v-bottom-sheet :value="!tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
                     <v-sheet>
-                        <v-btn :ripple="false" color="success" plain block small @click="tripleBottomSheet = true"
+                        <v-btn :ripple="false" color="success" plain block @click="tripleBottomSheet = true"
                             elevation="2">
                             open triple form
                             <v-icon right>
@@ -131,7 +131,7 @@
                 <v-form ref="tripleForm">
                     <v-container>
                         <v-row>
-                            <v-btn :ripple="false" color="error" plain block small @click="unselectAll" elevation="2">
+                            <v-btn :ripple="false" color="error" plain block @click="unselectAll" elevation="2">
                                 dismiss
                                 <v-icon right>
                                     clear_all
@@ -224,7 +224,7 @@
             </v-btn>
         </template>
     </v-snackbar>
-    <v-container style="bottom: 5vh; right:5vh; position: fixed; width:17vw;">
+    <v-container style="bottom: 5vh; right:5vh; position: fixed; width:19vw;">
         <v-row no-gutters justify="end">
             <v-col cols="auto" dense>
                 <v-switch style="margin-top:0px" @change="switchStyle()" :disabled="graphLoading" v-model="diffMode"
@@ -246,36 +246,86 @@
             </v-col>
         </v-row>
         <v-row v-if="diffMode">
-            filters:
-        </v-row>
-        <v-row>
             <v-col cols="auto">
-                <v-btn x-small @click="activePositiveEdgeChip=true;inactivePositiveEdgeChip=true;">
-                    workspace proposal
+                <v-menu>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn v-bind="attrs" v-on="on">
+                            filter bank
+                        </v-btn>
+                    </template>
+                    <v-btn style="text-transform: none; font-weight: normal;" block tile
+                        @click="edgeChip=[0,3];highlightEdge()">
+                        ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+                    </v-btn>
+                    <v-btn style="text-transform: none; font-weight: normal;" block tile
+                        @click="edgeChip=[1,2,4,5];highlightEdge()">
+                        workspace
+                    </v-btn>
+                    <v-btn style="text-transform: none; font-weight: normal;" block tile
+                        @click="edgeChip=[0,1,2];highlightEdge()">
+                        proposal
+                    </v-btn>
+                    <v-btn style="text-transform: none; font-weight: normal;" block tile
+                        @click="edgeChip=[3,4,5];highlightEdge()">
+                        negation
+                    </v-btn>
+                    <v-btn style="text-transform: none; font-weight: normal;" block tile
+                        @click="edgeChip=[1,2];highlightEdge()">
+                        workspace proposal
+                    </v-btn>
+                    <v-btn style="text-transform: none; font-weight: normal;" block tile
+                        @click="edgeChip=[4,5];highlightEdge()">
+                        workspace negation
+                    </v-btn>
+                    <v-btn style="text-transform: none; font-weight: bold;" block tile
+                        @click="edgeChip=[1,4];highlightEdge()">
+                        active
+                    </v-btn>
+
+                    <v-tooltip top>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on"
+                                style="text-transform: none; font-weight: bold; -webkit-text-stroke: 0.75px black; color:white"
+                                block tile @click="edgeChip=[2,5];highlightEdge()">
+                                inactive
+                                <v-icon right>
+                                    help_outline
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Inactive edges are redundant data in the workspace that do not cause any changes to the
+                            final graph.</span>
+                    </v-tooltip>
+                </v-menu>
+            </v-col>
+            <v-col cols="auto" @click="edgeChip=[];highlightEdge()">
+                <v-btn>
+                    clear
                 </v-btn>
             </v-col>
         </v-row>
-        <v-chip-group v-if="diffMode" multiple column @change="highlightEdge($event)">
-            <v-chip v-model="originalPositiveEdgeChip" filter label x-small>
+        <v-chip-group v-model="edgeChip" v-if="diffMode" multiple column @change="highlightEdge()">
+            <v-chip filter label>
                 <v-avatar left>
                     ${originalPositiveEdgeCount}
                 </v-avatar>
                 edge proposal in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
             </v-chip>
-            <v-chip v-model="activePositiveEdgeChip" filter label x-small style="font-weight: bold;">
+            <v-chip filter label>
                 <v-avatar left>
                     ${activePositiveEdgeCount}
                 </v-avatar>
-                active proposal in workspace
+                <span style="font-weight: bold;">active proposal</span>
             </v-chip>
-            <v-chip v-model="inactivePositiveEdgeChip" filter label x-small style="font-style: italic;">
+            <v-chip filter label>
                 <v-avatar left>
                     ${inactivePositiveEdgeCount}
                 </v-avatar>
-                inactive edge proposal in workspace
+                <span style="font-weight: bold; -webkit-text-stroke: 0.75px black; color:white">inactive edge
+                    proposal</span>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on" right x-small>
+                        <v-icon v-bind="attrs" v-on="on" right>
                             help_outline
                         </v-icon>
                     </template>An inactive edge proposal is created if you are trying to create an already
@@ -283,30 +333,36 @@
                     edge
                 </v-tooltip>
             </v-chip>
-            <v-chip v-model="originalNegativeEdgeChip" filter label x-small>
+            <v-chip filter label>
                 <v-avatar left>
                     ${originalNegativeEdgeCount}
                 </v-avatar>
-                <span style="background-color: white;">
-                    edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
-                </span>
+                <div style="display: flex; height: 100%; align-items: center;  background-color: white;">
+                    <span>
+                        edge negation in ${subject?.labels?.includes("Branch")?"branch":"trunk"}
+                    </span>
+                </div>
             </v-chip>
-            <v-chip v-model="activeNegativeEdgeChip" filter label x-small style="font-weight: bold;">
+            <v-chip filter label>
                 <v-avatar left>
                     ${activeNegativeEdgeCount}
-                </v-avatar><span style="background-color: white;">
-                    active negation in workspace
-                </span>
+                </v-avatar>
+                <div style="display: flex; height: 100%; align-items: center;  background-color: white;">
+                    <span style="font-weight: bold;">
+                        active negation
+                    </span></div>
             </v-chip>
-            <v-chip v-model="inactiveNegativeEdgeChip" filter label x-small style="font-style: italic;">
+            <v-chip filter label>
                 <v-avatar left>
                     ${inactiveNegativeEdgeCount}
-                </v-avatar><span style="background-color: white;">
-                    inactive edge negation in workspace
-                </span>
+                </v-avatar>
+                <div style="display: flex; height: 100%; align-items: center;  background-color: white;">
+                    <span style="font-weight: bold; -webkit-text-stroke: 0.75px black; color:white">inactive
+                        edge negation</span></div>
+                </div>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on" right x-small>
+                        <v-icon v-bind="attrs" v-on="on" right>
                             help_outline
                         </v-icon>
                     </template>An inactive edge negation is created if you are trying to negation a nonexistent
@@ -444,7 +500,9 @@
             selector: 'edge[workspace_value = "true"][subject_value = "true"]',
             style: {
                 'line-style': 'solid',
-                'font-style': 'italic',
+                'text-outline-color': 'black',
+                'text-outline-width': 0.25,
+                'color': 'white',
             }
         }, {
             selector: 'edge[workspace_value = "false"][subject_value != "true"]',
@@ -452,7 +510,10 @@
                 'line-gradient-stop-colors': 'grey white white grey',
                 'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
                 'line-fill': 'linear-gradient ',
-                'font-style': 'italic',
+                'text-outline-color': 'black',
+                'text-outline-width': 0.25,
+                'color': 'white',
+
             }
         }, {
             selector: 'edge[workspace_value = "undefined"][subject_value = "true"]',
@@ -568,12 +629,7 @@
             },
             workspace: undefined,
             deleteSelectBar: false,
-            originalPositiveEdgeChip: 0,
-            originalNegativeEdgeChip: 0,
-            activePositiveEdgeChip: 0,
-            activeNegativeEdgeChip: 0,
-            inactivePositiveEdgeChip: 0,
-            inactiveNegativeEdgeChip: 0,
+            edgeChip: [],
             originalPositiveEdgeCount: 0,
             originalNegativeEdgeCount: 0,
             activePositiveEdgeCount: 0,
@@ -875,11 +931,11 @@
                         })
                 }
             },
-            highlightEdge(indexes) {
+            highlightEdge() {
                 cy.edges(".suppress").removeClass('suppress')
-                if (indexes.length != 0) {
+                if (this.edgeChip.length != 0) {
                     let selectedEdge = cy.collection()
-                    indexes.forEach(index => {
+                    this.edgeChip.forEach(index => {
                         selectedEdge = selectedEdge.union(
                             [
                                 edgeCollections.originalPositiveEdge,
