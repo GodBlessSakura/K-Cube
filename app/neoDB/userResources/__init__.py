@@ -68,7 +68,7 @@ class userResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
-            
+
     def update_user(self, userId, userName, email):
         fname = sys._getframe().f_code.co_name
 

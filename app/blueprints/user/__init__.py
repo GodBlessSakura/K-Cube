@@ -96,29 +96,37 @@ def isUserIdAvaliable():
         {"avaliable": not get_api_driver().user.is_userId_used(userId=userId)}
     )
 
+
 @user.patch("/")
 def patch():
     if "userName" in request.json and "email" in request.json and "user" in session:
         user = get_api_driver().user.update_user(
-                userId=session["user"]["userId"], email=request.json["email"], userName=request.json["userName"])
-        
+            userId=session["user"]["userId"],
+            email=request.json["email"],
+            userName=request.json["userName"],
+        )
+
         if user is not None:
             session["user"] = user
-            try: 
+            try:
                 verify()
             except:
                 pass
             return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete request"})
 
+
 @user.post("/verify")
 def verify():
     if "user" in session:
         if "verified" not in session["user"] or not session["user"]["verified"]:
             from ...sender import send_email
+
             # send_email(session["user"]["email"],
             # "email verification",
             # "")
-            return jsonify({"success": True, "message": "A verification is sent (not implemented)"})
+            return jsonify(
+                {"success": True, "message": "A verification is sent (not implemented)"}
+            )
         return jsonify({"success": True, "message": "User already verified"})
     return jsonify({"success": False, "message": "no user session was found"})
