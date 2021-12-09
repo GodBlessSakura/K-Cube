@@ -4,7 +4,7 @@ MATCH (overwritee:Trunk{deltaGraphId: $overwriteeId})
 WHERE NOT EXISTS((overwritee)<-[:PATCH]-())
 WITH DISTINCT user, overwritee
 MATCH (overwriter:Branch{deltaGraphId: $overwriterId}), (course:Course)
-WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
+WHERE toString(id(course)) = split($overwriterId,'.')[0]
 WITH 
     overwriter,
     user,

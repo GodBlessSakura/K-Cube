@@ -4,7 +4,7 @@ WITH DISTINCT overwritee, user
 CALL{
     WITH user
     MATCH (overwriter:Branch{deltaGraphId: $overwriterId}), (course:Course)
-    WHERE toString(id(course)) = split($deltaGraphId,'.')[0]
+    WHERE toString(id(course)) = split($overwriterId,'.')[0]
     WITH 
         overwriter,
         user,

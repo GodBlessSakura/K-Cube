@@ -287,7 +287,7 @@
 
                             function locatePredecessorsX(node) {
                                 console.log(node.data())
-                                let i = 0
+                                let thickness = 0
                                 let position = node.position()
                                 let forkEdges = node.incomers('edge[tag="FORK"]').sort((edgeA, edgeB) => {
                                     let childA = edgeA.source()
@@ -302,15 +302,6 @@
                                 })
                                 console.log(forkEdges.length)
                                 console.log(patchEdges.length)
-                                forkEdges.forEach(edge => {
-                                    i++
-                                    let child = edge.source()
-                                    child.position({
-                                        x: position.x + stepX * i,
-                                    })
-                                    i += locatePredecessorsX(child)
-                                })
-                                let thickness = i
                                 patchEdges.forEach(edge => {
                                     let child = edge.source()
                                     child.position({
@@ -318,24 +309,32 @@
                                     })
                                     thickness = Math.max(thickness, locatePredecessorsX(child))
                                 })
+                                forkEdges.forEach(edge => {
+                                    thickness++
+                                    let child = edge.source()
+                                    child.position({
+                                        x: position.x + stepX * thickness,
+                                    })
+                                    thickness += locatePredecessorsX(child)
+                                })
                                 return thickness
                             }
 
                             function locatePredecessorsY(node) {
                                 let position = node.position()
                                 let fixedEdges = node.incomers('edge[tag="PATCH"],edge[tag = "FORK"]')
-                                    .filter(edge => {
-                                        let child = edge.source()
-                                        return child.outgoers(
-                                            'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
-                                        ).length == 0
-                                    });
+                                    // .filter(edge => {
+                                    //     let child = edge.source()
+                                    //     return child.outgoers(
+                                    //         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
+                                    //     ).length == 0
+                                    // });
                                 let pulledEdge = node.incomers(
                                     'edge[tag="BRANCH_PULL"],edge[tag = "TRUNK_PULL"]')
                                 fixedEdges.forEach(edge => {
                                     let child = edge.source()
                                     child.position({
-                                        y: position.y + stepY,
+                                        y: Math.max(position.y + stepY, child.position().y),
                                     })
                                     // console.log(child.data('tag'))
                                     let pulling = child.incomers(
@@ -356,7 +355,7 @@
                                 pulledEdge.forEach(edge => {
                                     let child = edge.source()
                                     child.position({
-                                        y: position.y + stepY,
+                                        y: Math.max(position.y + stepY, child.position().y),
                                     })
                                     locatePredecessorsY(child)
                                 })
