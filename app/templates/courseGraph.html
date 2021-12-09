@@ -7,7 +7,7 @@
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <v-cy-metrics-visualize-bottom-sheet></v-cy-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
-    <v-tooltip>
+    <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
             <v-btn absolute style="bottom:3vh;left:3vh" fab v-on="on" @click="metricsBottomSheet = true">
                 <v-icon>insights</v-icon>
