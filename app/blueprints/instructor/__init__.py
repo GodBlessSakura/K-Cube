@@ -25,6 +25,29 @@ def courseList():
         "courseList.html",
         isInstructor=True,
         isDLTC=False,
+        imagesUrl=[
+            url_for(
+                "static",
+                filename=current_app.config["upload_image_directory"].replace("\\", "/")
+                + "/"
+                + f,
+            )
+            for f in os.listdir(
+                os.path.join(
+                    current_app.root_path,
+                    "static",
+                    current_app.config["upload_image_directory"],
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    current_app.root_path,
+                    "static",
+                    current_app.config["upload_image_directory"],
+                    f,
+                )
+            )
+        ],
     )
 
 
@@ -59,11 +82,7 @@ def material(courseCode):
 
 @instructor.route("/schedule")
 def schedule():
-    return render_template(
-        "courseList.html",
-        isInstructor=True,
-        isDLTC=False,
-    )
+    return render_template("courseList.html", isInstructor=True, isDLTC=False)
 
 
 @instructor.route("/workspace/", defaults={"deltaGraphId": None})
@@ -112,3 +131,38 @@ def graphimport(deltaGraphId):
     if deltaGraphId is not None:
         return render_template("instructor/graphImport.html", deltaGraphId=deltaGraphId)
     abort(404)
+
+
+@instructor.route("/courseCreate")
+def courseForm():
+    return render_template(
+        "instructor/courseForm.html",
+        imagesUrl=[
+            url_for(
+                "static",
+                filename=current_app.config["upload_image_directory"].replace("\\", "/")
+                + "/"
+                + f,
+            )
+            for f in os.listdir(
+                os.path.join(
+                    current_app.root_path,
+                    "static",
+                    current_app.config["upload_image_directory"],
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    current_app.root_path,
+                    "static",
+                    current_app.config["upload_image_directory"],
+                    f,
+                )
+            )
+        ],
+    )
+
+
+@instructor.route("/upload")
+def uploadImage():
+    return render_template("instructor/uploadImage.html")

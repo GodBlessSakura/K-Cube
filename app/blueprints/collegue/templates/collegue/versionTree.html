@@ -323,12 +323,12 @@
                             function locatePredecessorsY(node) {
                                 let position = node.position()
                                 let fixedEdges = node.incomers('edge[tag="PATCH"],edge[tag = "FORK"]')
-                                    // .filter(edge => {
-                                    //     let child = edge.source()
-                                    //     return child.outgoers(
-                                    //         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
-                                    //     ).length == 0
-                                    // });
+                                // .filter(edge => {
+                                //     let child = edge.source()
+                                //     return child.outgoers(
+                                //         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
+                                //     ).length == 0
+                                // });
                                 let pulledEdge = node.incomers(
                                     'edge[tag="BRANCH_PULL"],edge[tag = "TRUNK_PULL"]')
                                 fixedEdges.forEach(edge => {

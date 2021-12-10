@@ -40,65 +40,7 @@ def courseList():
         "courseList.html",
         isInstructor=False,
         isDLTC=True,
-        imagesUrl=[
-            url_for(
-                "static",
-                filename=current_app.config["upload_image_directory"].replace("\\", "/")
-                + "/"
-                + f,
-            )
-            for f in os.listdir(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                    f,
-                )
-            )
-        ],
     )
-
-
-@DLTC.route("/courseCreate")
-def courseForm():
-    return render_template(
-        "DLTC/courseForm.html",
-        imagesUrl=[
-            url_for(
-                "static",
-                filename=current_app.config["upload_image_directory"].replace("\\", "/")
-                + "/"
-                + f,
-            )
-            for f in os.listdir(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                    f,
-                )
-            )
-        ],
-    )
-
-
-@DLTC.route("/upload")
-def uploadImage():
-    return render_template("DLTC/uploadImage.html")
 
 
 @DLTC.route("/trunk/", defaults={"overwriterId": None, "overwriteeId": None})

@@ -228,18 +228,6 @@
                             </v-list-item-icon>
                             <v-list-item-title>Manage Courses</v-list-item-title>
                         </v-list-item>
-                        <v-list-item link href="{{ url_for('DLTC.courseForm') }}">
-                            <v-list-item-icon>
-                                <v-icon>library_add</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Create New Course</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item link href="{{ url_for('DLTC.uploadImage') }}">
-                            <v-list-item-icon>
-                                <v-icon>upload</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Upload Image</v-list-item-title>
-                        </v-list-item>
                     </v-list-group>
                     {% endif %}
                     {% if session['permission'] and session['permission'].canAccessInstructorPanel %}
@@ -259,6 +247,18 @@
                                 <v-icon>event_note</v-icon>
                             </v-list-item-icon>
                             <v-list-item-title>Schedules</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('instructor.courseForm') }}">
+                            <v-list-item-icon>
+                                <v-icon>library_add</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Create New Course</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('instructor.uploadImage') }}">
+                            <v-list-item-icon>
+                                <v-icon>upload</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Upload Image</v-list-item-title>
                         </v-list-item>
                     </v-list-group>
                     {% endif %}

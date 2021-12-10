@@ -3,7 +3,7 @@
 {% block VueComponent %}
 
 <v-container>
-    {% if isDLTC %}
+    {% if isInstructor %}
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
         <v-card v-if="course">
             <v-card-title>${course.courseName}</v-card-title>
@@ -120,15 +120,6 @@
                     </template>
                     <span>Course Resources</span>
                 </v-tooltip>
-                {% elif isDLTC %}
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseTrunk(col.courseCode)" icon>
-                            <v-icon>account_tree</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Versions</span>
-                </v-tooltip>
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
@@ -144,6 +135,15 @@
                         </v-btn>
                     </template>
                     <span>Edit info</span>
+                </v-tooltip>
+                {% elif isDLTC %}
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn v-bind="attrs" v-on="on" @click="courseTrunk(col.courseCode)" icon>
+                            <v-icon>account_tree</v-icon>
+                        </v-btn>
+                    </template>
+                    <span>Versions</span>
                 </v-tooltip>
                 {% endif %}
             </v-menu>
@@ -161,7 +161,7 @@
                 []
             ],
             course: null,
-            // {% if isDLTC %}
+            // {% if isInstructor %}
             instructors: null,
             instructorDialogue: false,
             courseInfoDialogue: false,
@@ -250,12 +250,6 @@
             courseLink(courseCode) {
                 window.location.replace("{{ url_for('instructor.material') }}/" + courseCode)
             },
-            // {% endif %}
-            // {% if isDLTC %}
-
-            courseTrunk(courseCode) {
-                window.location.replace("{{ url_for('DLTC.versionTree') }}/" + courseCode)
-            },
             courseInfo(course) {
                 this.course = course
                 this.courseInfoDialogue = true
@@ -309,14 +303,13 @@
                 }
                 this.$root.progress.show = true
                 this.course = course
-                fetch("{{ url_for('RESTful.course.query', instructor=True) }}&courseCode=" + course
-                        .courseCode, {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                        })
+                fetch("{{ url_for('RESTful.course.query') }}/" + course.courseCode + "&instructor=true", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -412,6 +405,12 @@
                             })
 
                     })
+            },
+            // {% endif %}
+            // {% if isDLTC %}
+
+            courseTrunk(courseCode) {
+                window.location.replace("{{ url_for('DLTC.versionTree') }}/" + courseCode)
             },
             // {% endif %}
             // {% if isFeedback %}

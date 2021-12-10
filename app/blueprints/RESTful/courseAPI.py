@@ -6,16 +6,25 @@ from app.authorizer import authorize_RESTful_with
 course = Blueprint("course", __name__, url_prefix="course")
 
 
-@course.get("/")
-def query():
-    if request.args.get("list"):
-        return courseList()
-    if request.args.get("instructor") and request.args.get("courseCode") is not None:
-        return courseInstructor(request.args.get("courseCode"))
-    if request.args.get("user"):
-        return userCourse()
-    if request.args.get("graphs") and request.args.get("courseCode") is not None:
-        return courseInstructorGraph(request.args.get("courseCode"))
+@course.get("/<courseCode>/", defaults={"courseCode": None})
+@course.get("/<courseCode>/")
+def query(courseCode):
+    if courseCode is None:
+        if request.args.get("list"):
+            return courseList()
+        if (
+            request.args.get("instructor")
+            and request.args.get("courseCode") is not None
+        ):
+            return courseInstructor(request.args.get("courseCode"))
+        if request.args.get("user"):
+            return userCourse()
+        if request.args.get("graphs") and request.args.get("courseCode") is not None:
+            return courseInstructorGraph(request.args.get("courseCode"))
+    else:
+        if request.args.get("instructor"):
+            return courseInstructor(courseCode)
+
     return jsonify({"success": False, "message": "incomplete request"})
 
 
