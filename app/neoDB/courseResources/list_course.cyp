@@ -1,2 +1,2 @@
-MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept)
+MATCH (course:Course{isInternal:false})-[:COURSE_DESCRIBE]->(courseConcept)
 RETURN course,courseConcept

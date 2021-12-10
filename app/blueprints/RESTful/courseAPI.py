@@ -6,35 +6,25 @@ from app.authorizer import authorize_RESTful_with
 course = Blueprint("course", __name__, url_prefix="course")
 
 
-@course.get("/<courseCode>/", defaults={"courseCode": None})
-@course.get("/<courseCode>/")
-def query(courseCode):
-    if courseCode is None:
-        if request.args.get("list"):
-            return courseList()
-        if (
-            request.args.get("instructor")
-            and request.args.get("courseCode") is not None
-        ):
-            return courseInstructor(request.args.get("courseCode"))
-        if request.args.get("user"):
-            return userCourse()
-        if request.args.get("graphs") and request.args.get("courseCode") is not None:
-            return courseInstructorGraph(request.args.get("courseCode"))
-    else:
-        if request.args.get("instructor"):
-            return courseInstructor(courseCode)
+@course.get("/")
+def query():
+    if request.args.get("list"):
+        return courseList()
+    if request.args.get("user"):
+        return userCourse()
+    if request.args.get("graphs") and request.args.get("courseCode") is not None:
+        return courseInstructorGraph(request.args.get("courseCode"))
 
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@authorize_RESTful_with([], require_userId=True)
+@authorize_RESTful_with(["canViewInternalCourse"], require_userId=True)
 def userCourse():
     try:
         return jsonify(
             {
                 "success": True,
-                "courses": get_api_driver().course.list_instructor_course(
+                "courses": get_api_driver().course.list_internal_course(
                     userId=session["user"]["userId"]
                 ),
             }
@@ -56,7 +46,10 @@ def post():
         imageURL = request.json["imageURL"]
         try:
             result = get_api_driver().course.create_course(
-                courseName=courseName, name=name, imageURL=imageURL
+                courseName=courseName,
+                name=name,
+                imageURL=imageURL,
+                userId=session["user"]["userId"],
             )
             return jsonify({"success": True})
         except Exception as e:
@@ -73,6 +66,7 @@ def courseList():
         return jsonify({"success": False, "message": str(e)})
 
 
+@course.get("/<courseCode>/instructors")
 def courseInstructor(courseCode):
     try:
         return jsonify(
@@ -104,25 +98,35 @@ def courseInstructorGraph(courseCode):
 @course.patch("/", defaults={"courseCode": None})
 @course.patch("<courseCode>")
 def patch(courseCode):
-    @authorize_RESTful_with(["canAssignCourse"])
-    def canAssignCourse():
+    @authorize_RESTful_with(["canJoinCourse"])
+    def canJoinCourse():
         return
 
     @authorize_RESTful_with(["canCreateCourse"])
     def canCreateCourse():
         return
 
+    @authorize_RESTful_with(["canSetInternalCourse"])
+    def canSetInternalCourse():
+        return
+
     if courseCode is not None:
-        if "assignment" in request.json and "userId" in request.json:
-            canAssignCourse()
-            if request.json["assignment"]:
+        if "isInternal" in request.json:
+            canSetInternalCourse()
+            get_api_driver().course.setInternal_course(
+                courseCode=courseCode, isInternal=request.json["isInternal"]
+            )
+            return jsonify({"success": True})
+        if "join" in request.json:
+            canJoinCourse()
+            if request.json["join"]:
                 get_api_driver().course.assign_course_instructor(
-                    courseCode=courseCode, userId=request.json["userId"]
+                    courseCode=courseCode, userId=session["user"]["userId"]
                 )
                 return jsonify({"success": True})
             else:
                 get_api_driver().course.unassign_course_instructor(
-                    courseCode=courseCode, userId=request.json["userId"]
+                    courseCode=courseCode, userId=session["user"]["userId"]
                 )
                 return jsonify({"success": True})
         if (

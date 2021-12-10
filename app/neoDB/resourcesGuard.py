@@ -127,6 +127,8 @@ def reject_invalid(function):
             raise InvalidRequest("Invalid tag pattern.")
         if "r_value" in kwargs and not isinstance(kwargs["r_value"], bool):
             raise InvalidRequest("Invalid r_value.")
+        if "isInternal" in kwargs and not isinstance(kwargs["isInternal"], bool):
+            raise InvalidRequest("Invalid isInternal.")
         return function(self, **kwargs)
 
     return wrapper

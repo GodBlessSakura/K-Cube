@@ -43,18 +43,8 @@
             <v-card-title>Instructors for ${course.courseName}</v-card-title>
             <v-card-text>
                 <v-subheader>Assigned</v-subheader>
-                <v-chip @click="unassign(user.userId)" v-for="user in instructors" v-if="user.isAssigned"
-                    close-icon="file_download">
+                <v-chip v-for="user in instructors" v-if="user.isAssigned">
                     ${user.userId}
-                    <v-icon right>file_download</v-icon>
-                </v-chip>
-            </v-card-text>
-            <v-card-text>
-                <v-subheader>Not assigned</v-subheader>
-                <v-chip @click="assign(user.userId)" v-for="user in instructors" v-if="!user.isAssigned"
-                    close-icon="upload">
-                    ${user.userId}
-                    <v-icon right>upload</v-icon>
                 </v-chip>
             </v-card-text>
         </v-card>
@@ -78,75 +68,89 @@
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-menu bottom right offset-x v-if="col.courseCode" direction="right" open-on-hover max-width="36">
-                <template v-slot:activator="{ on, attrs }">
-                    <v-card v-bind="attrs" v-on="on">
-                        <v-list-item three-line>
-                            <v-list-item-content>
-                                <v-list-item-title>
-                                    ${col.courseCode}
-                                </v-list-item-title>
-                                <v-list-item-subtitle>
-                                    ${col.courseName}</v-list-item-subtitle>
-                            </v-list-item-content>
-                            <v-list-item-avatar tile size="96">
-                                <img :src="col.imageURL">
-                            </v-list-item-avatar>
-                        </v-list-item>
-                    </v-card>
-                </template>
-                {% if isInstructor %}
-                <v-tooltip bottom>
+            <v-badge :value="col.isInternal === false" icon="public">
+                <v-menu right offset-x v-if="col.courseCode" open-on-hover max-width="36">
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseBranch(col.courseCode)" icon>
-                            <v-icon>account_tree</v-icon>
-                        </v-btn>
+                        <v-card v-bind="attrs" v-on="on">
+                            <v-list-item three-line>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        ${col.courseCode}
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                        ${col.courseName}</v-list-item-subtitle>
+                                </v-list-item-content>
+                                <v-list-item-avatar tile size="96">
+                                    <img :src="col.imageURL">
+                                </v-list-item-avatar>
+                            </v-list-item>
+                            <v-card-actions>
+                                <v-btn text color="success" @click="join(col)" v-if="!col.isAssigned">join</v-btn>
+                                <v-btn text color="error" @click="quit(col)" v-if="col.isAssigned">quit</v-btn>
+                            </v-card-actions>
+                        </v-card>
                     </template>
-                    <span>Branchs</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseSchedule(col.courseCode)" icon>
-                            <v-icon>edit_calendar</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Course Schedules</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseLink(col.courseCode)" icon>
-                            <v-icon>add_link</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Course Resources</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
-                            <v-icon>assignment_ind</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Assign Instructor</span>
-                </v-tooltip>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseInfo(col)" icon>
-                            <v-icon>edit</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Edit info</span>
-                </v-tooltip>
-                {% elif isDLTC %}
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn v-bind="attrs" v-on="on" @click="courseTrunk(col.courseCode)" icon>
-                            <v-icon>account_tree</v-icon>
-                        </v-btn>
-                    </template>
-                    <span>Versions</span>
-                </v-tooltip>
-                {% endif %}
-            </v-menu>
+                    {% if isInstructor %}
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseBranch(col.courseCode)" icon>
+                                <v-icon>account_tree</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Branchs</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseSchedule(col.courseCode)" icon>
+                                <v-icon>edit_calendar</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Course Schedules</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseLink(col.courseCode)" icon>
+                                <v-icon>add_link</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Course Resources</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
+                                <v-icon>assignment_ind</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>List Instructor</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseInfo(col)" icon>
+                                <v-icon>edit</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Edit info</span>
+                    </v-tooltip>
+                    {% elif isDLTC %}
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseTrunk(col.courseCode)" icon>
+                                <v-icon>account_tree</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Versions</span>
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(col)" icon>
+                                <v-icon>${col.isInternal === false?'public_off':'public'}</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>${col.isInternal === false?'set internal':'set public'}</span>
+                    </v-tooltip>
+                    {% endif %}
+                </v-menu>
+            </v-badge>
             {% endif %}
         </v-col>
     </v-row>
@@ -195,7 +199,7 @@
                         // {% if isInstructor %}
                         "{{ url_for('RESTful.course.query', user=True) }}",
                         // {% else %}
-                        "{{ url_for('RESTful.course.query', list=True) }}",
+                        "{{ url_for('RESTful.course.query', user=True) }}",
                         // {% endif %}
                         {
                             method: 'GET',
@@ -226,7 +230,9 @@
                                 lastRow.push({
                                     courseCode: c.concept.name,
                                     imageURL: c.course.imageURL,
-                                    courseName: c.course.courseName
+                                    courseName: c.course.courseName,
+                                    isInternal: c.course.isInternal,
+                                    isAssigned: c.isAssigned,
                                 })
 
                             })
@@ -303,7 +309,7 @@
                 }
                 this.$root.progress.show = true
                 this.course = course
-                fetch("{{ url_for('RESTful.course.query') }}/" + course.courseCode + "&instructor=true", {
+                fetch("{{ url_for('RESTful.course.query') }}/" + course.courseCode + "/instructors", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -332,83 +338,123 @@
 
                     })
             },
-            assign(userId) {
-                if (this.$root.progress.show == true) {
-                    this.$root.bePatientSnackBar.show = true
-                    return
-                }
-                this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.course.patch') }}" + this.course
-                        .courseCode, {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userId: userId,
-                                assignment: true
+            join(course) {
+                this.$root.actionDisplay("You are joining " + course.courseCode, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.patch') }}" + course
+                            .courseCode, {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    join: true
+                                })
                             })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
                         })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
+                        .then(body => {
                             this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        this.$root.responseSnackBar(body,
-                            'Assignment failed for unknown reason.',
-                            () => {
-                                this.courseAssignment(this.course)
-                            })
+                            this.$root.responseSnackBar(body,
+                                'Assignment failed for unknown reason.',
+                                () => {
+                                    location.reload()
+                                })
 
-                    })
+                        })
+                })
             },
-            unassign(userId) {
-                if (this.$root.progress.show == true) {
-                    this.$root.bePatientSnackBar.show = true
-                    return
-                }
-                this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.course.patch') }}" + this.course
-                        .courseCode, {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userId: userId,
-                                assignment: false
+            quit(course) {
+                this.$root.actionDisplay("You are quiting " + course.courseCode, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.patch') }}" + course
+                            .courseCode, {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    join: false
+                                })
                             })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
                         })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
+                        .then(body => {
                             this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        this.$root.responseSnackBar(body,
-                            'Assignment failed for unknown reason.',
-                            () => {
-                                this.courseAssignment(this.course)
-                            })
-
-                    })
+                            this.$root.responseSnackBar(body,
+                                'Assignment failed for unknown reason.',
+                                () => {
+                                    location.reload()
+                                })
+                        })
+                })
             },
             // {% endif %}
             // {% if isDLTC %}
-
+            courseIsInternal(course) {
+                this.course = course
+                this.$root.actionDisplay("This set " + course.courseCode + " " + (this.course.isInternal ===
+                        false ? "internal" : "public"),
+                    "proceed", () => {
+                        if (this.$root.progress.show == true) {
+                            this.$root.bePatientSnackBar.show = true
+                            return
+                        }
+                        this.$root.progress.show = true
+                        fetch("{{ url_for('RESTful.course.patch') }}" + this.course
+                                .courseCode, {
+                                    method: 'PATCH',
+                                    cache: 'no-store',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        isInternal: this.course.isInternal === false ? true : false
+                                    })
+                                })
+                            .then(response => {
+                                try {
+                                    return response.json()
+                                } catch {
+                                    this.$root.progress.show = false
+                                    this.$root.errorDisplay({},
+                                        'Unexpected error occured.')
+                                }
+                            })
+                            .then(body => {
+                                this.$root.progress.show = false
+                                this.$root.responseSnackBar(body,
+                                    'Update failed for unknown reason.',
+                                    () => {
+                                        location.reload()
+                                    })
+                            })
+                    })
+            },
             courseTrunk(courseCode) {
                 window.location.replace("{{ url_for('DLTC.versionTree') }}/" + courseCode)
             },

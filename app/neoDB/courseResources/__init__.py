@@ -14,7 +14,7 @@ class courseResources:
     def __init__(self, driver):
         self.driver = driver
 
-    def create_course(self, courseName, name, imageURL):
+    def create_course(self, courseName, name, imageURL, userId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
@@ -24,6 +24,7 @@ class courseResources:
                 courseName=courseName,
                 name=name,
                 imageURL=imageURL,
+                userId=userId,
             )
             try:
                 return True
@@ -101,7 +102,7 @@ class courseResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def list_instructor_course(self, userId):
+    def list_internal_course(self, userId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
@@ -112,6 +113,7 @@ class courseResources:
                     {
                         "course": dict(record["course"].items()),
                         "concept": dict(record["courseConcept"].items()),
+                        "isAssigned": record["isAssigned"]
                     }
                     for record in result
                 ]
@@ -160,6 +162,24 @@ class courseResources:
                 courseName=courseName,
                 name=name,
                 imageURL=imageURL,
+            )
+            try:
+                return True
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def setInternal_course(self, courseCode, isInternal):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                courseCode=courseCode,
+                isInternal=isInternal,
             )
             try:
                 return True

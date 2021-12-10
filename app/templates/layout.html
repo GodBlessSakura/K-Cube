@@ -318,6 +318,17 @@
                     </v-btn>
                 </template>
             </v-snackbar>
+            <v-snackbar v-model="actionSnackBar.show">
+                ${ actionSnackBar.message }
+                <template v-slot:action="{ attrs }">
+                    <v-btn color="blue" text v-bind="attrs" @click="actionSnackBar.action()">
+                        ${actionSnackBar.actionName} </v-btn>
+                    <v-btn color="error" text v-bind="attrs" @click="actionSnackBar.show = false">
+                        Close
+                    </v-btn>
+                </template>
+            </v-snackbar>
+
             </v-app-bar>
             <v-main>
                 <app-content></app-content>
@@ -353,6 +364,12 @@
                 completeSnackBar: {
                     show: false,
                     message: ''
+                },
+                actionSnackBar: {
+                    show: false,
+                    message: '',
+                    actionName: '',
+                    action: () => {}
                 },
                 bePatientSnackBar: {
                     show: false
@@ -531,6 +548,13 @@
                     if (body.error) {
                         console.error(body.error)
                     }
+
+                },
+                actionDisplay(message, actionName, action) {
+                    this.actionSnackBar.message = message
+                    this.actionSnackBar.action = action
+                    this.actionSnackBar.actionName = actionName
+                    this.actionSnackBar.show = true
 
                 }
             },
