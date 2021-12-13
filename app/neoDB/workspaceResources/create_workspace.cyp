@@ -9,13 +9,13 @@ CALL{
         user,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->(course)) as isAssigned,
+        EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching,
         EXISTS((graph)<-[:USER_OWN]-(user)) as isOwner
     WHERE        
         (graph.visibility = 4) OR
         (graph.visibility = 3 AND (isDLTC OR isInstructor)) OR
         (graph.visibility = 2 AND isInstructor) OR
-        (graph.visibility = 1 AND isAssigned) OR
+        (graph.visibility = 1 AND isTeaching) OR
         isOwner
     RETURN graph, isOwner
 UNION

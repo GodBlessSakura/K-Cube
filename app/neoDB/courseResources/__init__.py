@@ -64,7 +64,7 @@ class courseResources:
                 return [
                     {
                         "userId": record["userId"],
-                        "isAssigned": record["isAssigned"],
+                        "isTeaching": record["isTeaching"],
                     }
                     for record in result
                 ]
@@ -113,7 +113,7 @@ class courseResources:
                     {
                         "course": dict(record["course"].items()),
                         "concept": dict(record["courseConcept"].items()),
-                        "isAssigned": record["isAssigned"]
+                        "isTeaching": record["isTeaching"]
                     }
                     for record in result
                 ]

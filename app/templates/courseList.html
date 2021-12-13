@@ -42,8 +42,8 @@
         <v-card v-if="course">
             <v-card-title>Instructors for ${course.courseName}</v-card-title>
             <v-card-text>
-                <v-subheader>Assigned</v-subheader>
-                <v-chip v-for="user in instructors" v-if="user.isAssigned">
+                <v-subheader>Joined</v-subheader>
+                <v-chip v-for="user in instructors" v-if="user.isTeaching">
                     ${user.userId}
                 </v-chip>
             </v-card-text>
@@ -85,15 +85,16 @@
                                 </v-list-item-avatar>
                             </v-list-item>
                             <v-card-actions>
-                                <v-btn text color="success" @click="join(col)" v-if="!col.isAssigned">join</v-btn>
-                                <v-btn text color="error" @click="quit(col)" v-if="col.isAssigned">quit</v-btn>
+                                <v-btn text color="success" @click="join(col)" v-if="!col.isTeaching">join</v-btn>
+                                <v-btn text color="error" @click="quit(col)" v-if="col.isTeaching">quit</v-btn>
                             </v-card-actions>
                         </v-card>
                     </template>
                     {% if isInstructor %}
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" v-on="on" @click="courseBranch(col.courseCode)" icon>
+                            <v-btn v-bind="attrs" v-on="on" @auxclick="courseBranch(col.courseCode)"
+                                @click="courseBranch(col.courseCode)" icon>
                                 <v-icon>account_tree</v-icon>
                             </v-btn>
                         </template>
@@ -232,7 +233,7 @@
                                     imageURL: c.course.imageURL,
                                     courseName: c.course.courseName,
                                     isInternal: c.course.isInternal,
-                                    isAssigned: c.isAssigned,
+                                    isTeaching: c.isTeaching,
                                 })
 
                             })

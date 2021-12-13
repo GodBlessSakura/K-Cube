@@ -30,9 +30,9 @@ SET
         canProposeRelationship : true,
         canCreateGraphConcept : true,
         canJoinCourse : false,
-        canWriteAssignedCourseBranch : false,
-        canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseMaterial : false,
+        canWriteTeachingCourseBranch : false,
+        canReadTeachingCourseBranch : false,
+        canWriteTeachingCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -60,9 +60,9 @@ SET
         canProposeRelationship : false,
         canCreateGraphConcept : false,
         canJoinCourse : false,
-        canWriteAssignedCourseBranch : false,
-        canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseMaterial : false,
+        canWriteTeachingCourseBranch : false,
+        canReadTeachingCourseBranch : false,
+        canWriteTeachingCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -90,9 +90,9 @@ SET
         canProposeRelationship : true,
         canCreateGraphConcept : true,
         canJoinCourse : true,
-        canWriteAssignedCourseBranch : true,
-        canReadAssignedCourseBranch : true,
-        canWriteAssignedCourseMaterial : true,
+        canWriteTeachingCourseBranch : true,
+        canReadTeachingCourseBranch : true,
+        canWriteTeachingCourseMaterial : true,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -120,9 +120,9 @@ SET
         canProposeRelationship : false,
         canCreateGraphConcept : false,
         canJoinCourse : false,
-        canWriteAssignedCourseBranch : false,
-        canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseMaterial : false,
+        canWriteTeachingCourseBranch : false,
+        canReadTeachingCourseBranch : false,
+        canWriteTeachingCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true
     };
@@ -150,9 +150,9 @@ SET
         canProposeRelationship : false,
         canCreateGraphConcept : false,
         canJoinCourse : false,
-        canWriteAssignedCourseBranch : false,
-        canReadAssignedCourseBranch : false,
-        canWriteAssignedCourseMaterial : false,
+        canWriteTeachingCourseBranch : false,
+        canReadTeachingCourseBranch : false,
+        canWriteTeachingCourseMaterial : false,
         canGiveFeedback : false,
         canReplyFeedback : false
     }

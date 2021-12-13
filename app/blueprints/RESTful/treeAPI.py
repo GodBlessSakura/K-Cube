@@ -8,7 +8,7 @@ tree = Blueprint("tree", __name__, url_prefix="tree")
 
 @tree.get("/<courseCode>")
 @authorize_RESTful_with(
-    [["canReadAssignedCourseBranch", "canReadTrunk"]], require_userId=True
+    [["canReadTeachingCourseBranch", "canReadTrunk"]], require_userId=True
 )
 def get(courseCode):
     branch_edges = get_api_driver().branch.list_course_branch_edge(

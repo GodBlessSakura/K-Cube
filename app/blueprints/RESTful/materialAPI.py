@@ -46,7 +46,7 @@ def materialOfCourse(courseCode):
 @material.post("<courseCode>/", defaults={"name": None})
 @material.post("<courseCode>/<name>")
 @authorize_RESTful_with(
-    [["canWriteAssignedCourseMaterial", "canWriteAllCourseMaterial"]]
+    [["canWriteTeachingCourseMaterial", "canWriteAllCourseMaterial"]]
 )
 def post(courseCode, name):
     if "url" in request.json and "desc" in request.json:
@@ -68,7 +68,7 @@ def post(courseCode, name):
 @material.delete("/", defaults={"id": None})
 @material.delete("<id>")
 @authorize_RESTful_with(
-    [["canWriteAssignedCourseMaterial", "canWriteAllCourseMaterial"]]
+    [["canWriteTeachingCourseMaterial", "canWriteAllCourseMaterial"]]
 )
 def delete(id):
     if id is not None:

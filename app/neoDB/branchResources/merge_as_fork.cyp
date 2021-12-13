@@ -9,12 +9,12 @@ CALL{
         user,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
         EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->(course)) as isAssigned
+        EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching
     WHERE        
         (overwriter.visibility = 4) OR
         (overwriter.visibility = 3 AND (isDLTC OR isInstructor)) OR
         (overwriter.visibility = 2 AND isInstructor) OR
-        (overwriter.visibility = 1 AND isAssigned) OR
+        (overwriter.visibility = 1 AND isTeaching) OR
         EXISTS((overwriter)<-[:USER_OWN]-(user))
     RETURN overwriter
 UNION
@@ -31,12 +31,12 @@ WITH
     user,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->(course)) as isAssigned
+        EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching
 WHERE        
     (overwritee.visibility = 4) OR
     (overwritee.visibility = 3 AND (isDLTC OR isInstructor)) OR
     (overwritee.visibility = 2 AND isInstructor) OR
-    (overwritee.visibility = 1 AND isAssigned) OR
+    (overwritee.visibility = 1 AND isTeaching) OR
     EXISTS((overwritee)<-[:USER_OWN]-(user))
 CREATE
     (overwritee)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),

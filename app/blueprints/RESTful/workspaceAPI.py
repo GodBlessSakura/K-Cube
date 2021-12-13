@@ -8,7 +8,7 @@ workspace = Blueprint("workspace", __name__, url_prefix="workspace")
 
 @workspace.post("/")
 @workspace.post("/<deltaGraphId>")
-@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
+@authorize_RESTful_with(["canWriteTeachingCourseBranch"])
 def post(deltaGraphId):
     if "tag" in request.json and deltaGraphId is not None:
         if "triples" in request.json:
@@ -39,13 +39,13 @@ def post(deltaGraphId):
 
 
 # @workspace.get("/")
-# @authorize_RESTful_with(["canWriteAssignedCourseBranch"])
+# @authorize_RESTful_with(["canWriteTeachingCourseBranch"])
 # def query():
 #     return jsonify({"success": False, "message": "incomplete request"})
 
 
 @workspace.get("<deltaGraphId>")
-@authorize_RESTful_with(["canWriteAssignedCourseBranch"])
+@authorize_RESTful_with(["canWriteTeachingCourseBranch"])
 def get(deltaGraphId):
     try:
         return jsonify(
