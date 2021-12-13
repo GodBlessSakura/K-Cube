@@ -234,7 +234,8 @@
             <v-col cols="auto" dense>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-badge color="error" :content="activeNegativeEdgeCount + inactiveNegativeEdgeCount">
+                        <v-badge color="error" :value="(activeNegativeEdgeCount + inactiveNegativeEdgeCount)>0"
+                            :content="activeNegativeEdgeCount + inactiveNegativeEdgeCount">
                             <v-icon v-bind="attrs" v-on="on">playlist_remove</v-icon>
                         </v-badge>
                     </template> ${activeNegativeEdgeCount + inactiveNegativeEdgeCount} edge negation
