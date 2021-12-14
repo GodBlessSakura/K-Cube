@@ -144,7 +144,7 @@
                     'shape': 'rectangle'
                 }
             }, {
-                selector: 'node.canPush',
+                selector: 'node.canPull',
                 style: {
                     'shape': 'diamond'
                 }
@@ -162,8 +162,8 @@
         if (node.canPatch) {
             classes.push('canPatch')
         }
-        if (node.property.canPush) {
-            classes.push('canPush')
+        if (node.property.canPull) {
+            classes.push('canPull')
         }
         if (node.isExposed) {
             classes.push('isExposed')
@@ -411,7 +411,7 @@
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            canPush: !this.selectedNode.classes().includes("canPush")
+                            canPull: !this.selectedNode.classes().includes("canPull")
                         })
                     })
                     .then(response => {
@@ -539,7 +539,7 @@
             release() {
                 this.snackbarMethod = 'trunk'
                 this.selectableNodes = cy.nodes(
-                    '.branch.canPush')
+                    '.branch.canPull')
                 this.selectAnotherMode()
             },
             // {% endif %}

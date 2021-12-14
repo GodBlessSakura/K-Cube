@@ -40,7 +40,7 @@ def post(overwriterId, overwriteeId):
                     return jsonify(
                         {
                             "success": True,
-                            "branch": get_api_driver().branch.merge_as_fork(
+                            "branch": get_api_driver().branch.pull_as_fork(
                                 overwriterId=overwriterId,
                                 overwriteeId=overwriteeId,
                                 tag=request.json["tag"],
@@ -52,7 +52,7 @@ def post(overwriterId, overwriteeId):
                     return jsonify(
                         {
                             "success": True,
-                            "branch": get_api_driver().branch.merge_as_patch(
+                            "branch": get_api_driver().branch.pull_as_patch(
                                 overwriterId=overwriterId,
                                 overwriteeId=overwriteeId,
                                 tag=request.json["tag"],
@@ -89,14 +89,14 @@ def patch(deltaGraphId):
                     }
                 )
 
-        if "canPush" in request.json:
+        if "canPull" in request.json:
             return jsonify(
                 {
                     "success": True,
-                    "branch": get_api_driver().branch.set_canPush(
+                    "branch": get_api_driver().branch.set_canPull(
                         deltaGraphId=deltaGraphId,
                         userId=session["user"]["userId"],
-                        canPush=request.json["canPush"],
+                        canPull=request.json["canPull"],
                     ),
                 }
             )
