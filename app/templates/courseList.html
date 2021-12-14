@@ -118,10 +118,10 @@
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on"
                                 :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
-                                <v-icon>account_tree</v-icon>
+                                <v-icon>table_view</v-icon>
                             </v-btn>
                         </template>
-                        <span>Branchs</span>
+                        <span>Repository</span>
                     </v-tooltip>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
@@ -141,7 +141,25 @@
                         </template>
                         <span>Course Resources</span>
                     </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on"
+                                :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
+                                <v-icon>account_tree</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Versions</span>
+                    </v-tooltip>
                     {% elif isDLTC %}
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on"
+                                :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
+                                <v-icon>library_add_check</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Approve</span>
+                    </v-tooltip>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on"
