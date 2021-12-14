@@ -1,13 +1,11 @@
 MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(user:User{userId: $userId})
 WITH DISTINCT workspace, user
-MATCH
-    (user)-[:USER_OWN]->(subject)<-[:WORK_ON]-(workspace),
-    (repo)<-[wasCurosr:BRANCH_CURSOR]-(subject)
+MATCH (user)-[:USER_OWN]->(subject)<-[oldWork:WORK_ON]-(workspace)
 WHERE NOT EXISTS((subject)<-[:PATCH]-())
-DELETE wasCurosr
+DELETE oldWork
 CREATE
     (subject)<-[:PATCH]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
-    (branch)-[:BRANCH_CURSOR]->(repo)
+    (branch)<-[:WORK_ON]-(workspace)
 SET 
     branch.visibility = 
         CASE subject.visibility

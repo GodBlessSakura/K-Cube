@@ -89,14 +89,14 @@ def patch(deltaGraphId):
                     }
                 )
 
-        if "canPull" in request.json:
+        if "canPush" in request.json:
             return jsonify(
                 {
                     "success": True,
-                    "branch": get_api_driver().branch.set_canPull(
+                    "branch": get_api_driver().branch.set_canPush(
                         deltaGraphId=deltaGraphId,
                         userId=session["user"]["userId"],
-                        canPull=request.json["canPull"],
+                        canPush=request.json["canPush"],
                     ),
                 }
             )

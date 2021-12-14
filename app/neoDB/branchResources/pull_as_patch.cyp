@@ -23,12 +23,9 @@ UNION
     RETURN overwriter
 }
 WITH overwriter, overwritee, user
-MATCH (repo)<-[wasCurosr:BRANCH_CURSOR]-(overwritee)
-DELETE wasCurosr
 CREATE
     (overwritee)<-[:PATCH]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
-    (branch)-[:BRANCH_PULL]->(overwriter),
-    (branch)-[:BRANCH_CURSOR]->(repo)
+    (branch)-[:BRANCH_PULL]->(overwriter)
 SET 
     branch.visibility = 
         CASE overwritee.visibility

@@ -1,12 +1,10 @@
 MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(user:User{userId: $userId})
 WITH DISTINCT workspace, user
-MATCH (subject)<-[:WORK_ON]-(workspace)
+MATCH (subject)<-[oldWork:WORK_ON]-(workspace)
+DELETE oldWork
 CREATE
-    (repo:Repository{tag: $tag}),
     (subject)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
-    (repo)<-[:USER_OWN]-(user),
-    (repo)<-[:BRANCH_DESCRIBE]-(branch),
-    (repo)<-[:BRANCH_CURSOR]-(branch)
+    (branch)<-[:WORK_ON]-(workspace)
 SET 
     branch.visibility = 
         CASE subject.visibility
@@ -16,7 +14,6 @@ SET
             END,
     branch.creationDate = datetime.transaction(),
     branch.deltaGraphId = split(subject.deltaGraphId,'.')[0] + '.' + id(branch),
-    repo.deltaGraphId = split(subject.deltaGraphId,'.')[0] + '.' + id(repo),
     branch.tag = $tag
 WITH subject, branch
 MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: $deltaGraphId}]->(wt:GraphConcept)

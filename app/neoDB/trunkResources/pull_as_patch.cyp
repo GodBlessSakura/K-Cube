@@ -3,7 +3,7 @@ WITH DISTINCT user
 MATCH (overwritee:Trunk{deltaGraphId: $overwriteeId})
 WHERE NOT EXISTS((overwritee)<-[:PATCH]-())
 WITH DISTINCT user, overwritee
-MATCH (overwriter:Branch{deltaGraphId: $overwriterId, canPull: true}), (course:Course)
+MATCH (overwriter:Branch{deltaGraphId: $overwriterId}), (course:Course)
 WHERE toString(id(course)) = split($overwriterId,'.')[0]
 WITH 
     overwriter,
@@ -18,13 +18,10 @@ WHERE
     (overwriter.visibility = 2 AND isInstructor) OR
     (overwriter.visibility = 1 AND isTeaching) OR
     EXISTS((overwriter)<-[:USER_OWN]-(user))
-WITH user, overwriter, overwritee, course
-MATCH (course)<-[wasCurosr:TRUNK_CURSOR]-()
-DELETE wasCurosr
+WITH user, overwriter, overwritee
 CREATE
     (overwritee)<-[:PATCH]-(trunk:Trunk:DeltaGraph),
-    (trunk)-[:TRUNK_PULL]->(overwriter),
-    (course)<-[:TRUNK_CURSOR]-(trunk)
+    (trunk)-[:TRUNK_PULL]->(overwriter)
 SET 
     trunk.deltaGraphId = split(overwritee.deltaGraphId,'.')[0]  + '.' + id(trunk),
     trunk.tag = $tag
