@@ -68,10 +68,6 @@ class APIDriver:
 
         self.feedback = feedbackResources(driver=self.driver)
 
-        from .repositoryResources import repositoryResources
-
-        self.repository = repositoryResources(driver=self.driver)
-
     def close(self):
         self.driver.close()
 
