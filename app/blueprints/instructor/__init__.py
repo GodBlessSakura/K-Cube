@@ -166,3 +166,13 @@ def courseForm():
 @instructor.route("/upload")
 def uploadImage():
     return render_template("instructor/uploadImage.html")
+
+@instructor.route("/repositories/", defaults={"courseCode": None})
+@instructor.route("/repositories/<courseCode>")
+def repositories(courseCode):
+    return render_template("instructor/repository.html", courseCode=courseCode)
+
+@instructor.route("/repositories/<courseCode>//versions/", defaults={"id": None})
+@instructor.route("/repositories/<courseCode>/versions/<id>")
+def repositoryVersions(courseCode, id):
+    return render_template("instructor/repositoryVersions.html", courseCode=courseCode, id=id)

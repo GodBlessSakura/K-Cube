@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card>
+    <v-container>
+        <v-row>
+            <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" hide-details>
+            </v-text-field>
+        </v-row>
+        <v-row>
+            <v-data-table :headers="headers" style="width:100%" :items="versions" :items-per-page="500" multi-sort
+                :search="search">
+                <template v-slot:item.actions="{ item }">
+                    <v-icon @click="newTab(item.id)">
+                        open_in_new
+                    </v-icon>
+                </template>
+            </v-data-table>
+        </v-row>
+    </v-container>
+
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+            search: new URLSearchParams(window.location
+                .search).get('concept'),
+            versions: [],
+            headers: [{
+                    text: 'tag',
+                    value: 'tag',
+                },
+                {
+                    text: 'Open in new tab',
+                    value: 'actions',
+                },
+            ],
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                let treePromise =
+                    fetch(
+                        "{{ url_for('RESTful.tree.get', courseCode = courseCode, isInstructor = True, isDLTC = False) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.versions = []
+                        if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
+                            let cursor = "{{ id }}"
+                            let branch = body.branch_nodes.filter(b => b.id == cursor)[0]
+                            let candidate = body.edges.filter(e => e.type == "PATCH" && e.end ==
+                                cursor)
+                            this.versions.push({
+                                tag: branch.property.tag,
+                            })
+                            while (candidate.length > 0) {
+                                cursor = candidate[0].start
+                                branch = body.branch_nodes.filter(b => b.id == cursor)[0]
+                                candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
+                                    e.end == cursor)
+                                this.versions.push({
+                                    tag: branch.property.tag,
+                                })
+                            }
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
+                Promise.all([treePromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
+            },
+            newTab(id) {
+                let w = window.open("{{ url_for('instructor.repositoryVersions', courseCode=courseCode) }}/" +
+                    id, '_blank')
+            }
+        },
+        mounted: function () {
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

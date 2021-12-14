@@ -117,7 +117,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on"
-                                :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
+                                :href="'{{ url_for('instructor.repositories') }}/' + col.courseCode" icon>
                                 <v-icon>table_view</v-icon>
                             </v-btn>
                         </template>

@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block VueComponent %}
+<v-card>
+    <v-container>
+        <v-row>
+            <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" hide-details>
+            </v-text-field>
+        </v-row>
+        <v-row>
+            <v-data-table :headers="headers" style="width:100%" :items="repositories" :items-per-page="500" multi-sort
+                :search="search">
+                <template v-slot:item.actions="{ item }">
+                    <v-icon @click="newTab(item.id)">
+                        open_in_new
+                    </v-icon>
+                </template>
+            </v-data-table>
+        </v-row>
+    </v-container>
+
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+            search: new URLSearchParams(window.location
+                .search).get('concept'),
+            repositories: [],
+            headers: [{
+                    text: 'tag',
+                    value: 'tag',
+                },
+                {
+                    text: '# of versions',
+                    value: 'versions',
+                },
+                {
+                    text: 'Open in new tab',
+                    value: 'actions',
+                },
+            ],
+        }),
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                let treePromise =
+                    fetch(
+                        "{{ url_for('RESTful.tree.get', courseCode = courseCode, isInstructor = True, isDLTC = False) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.repositories = []
+                        if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
+                            body.edges.filter(e => e.type == "FORK").filter(e => body.branch_nodes.filter(
+                                b => b.id == e.start).length > 0).forEach(edge => {
+                                let branch = body.branch_nodes.filter(b => b.id == edge.start)[0]
+                                let versions = 1
+                                let cursor = edge.start
+                                let candidate = body.edges.filter(e => e.type == "PATCH" && e.end ==
+                                    cursor)
+                                while (candidate.length > 0) {
+                                    cursor = candidate[0].start
+                                    candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
+                                        e.end == cursor)
+                                    versions++;
+                                }
+                                this.repositories.push({
+                                    tag: branch.property.tag,
+                                    versions: versions,
+                                    id: branch.id
+                                })
+                            })
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
+                Promise.all([treePromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
+            },
+            newTab(id) {
+                let w = window.open("{{ url_for('instructor.repositoryVersions', courseCode=courseCode) }}/" +
+                    id, '_blank')
+            }
+        },
+        mounted: function () {
+            this.loadData()
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}
