@@ -126,7 +126,7 @@ class branchResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def set_canPush(self, deltaGraphId, userId, canPush):
+    def set_canPull(self, deltaGraphId, userId, canPull):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
@@ -135,7 +135,7 @@ class branchResources:
                 query,
                 deltaGraphId=deltaGraphId,
                 userId=userId,
-                canPush=canPush,
+                canPull=canPull,
             )
             try:
                 return [

@@ -2,7 +2,7 @@ MATCH (user:User{userId: $userId})-[:PRIVILEGED_OF]->(:Permission{canWriteTrunk:
 WITH DISTINCT user
 MATCH (overwritee:Trunk{deltaGraphId: $overwriteeId})
 WITH DISTINCT user, overwritee
-MATCH (overwriter:Branch{deltaGraphId: $overwriterId}), (course:Course)
+MATCH (overwriter:Branch{deltaGraphId: $overwriterId, canPull: true}), (course:Course)
 WHERE toString(id(course)) = split($overwriterId,'.')[0]
 WITH 
     overwriter,
@@ -17,10 +17,13 @@ WHERE
     (overwriter.visibility = 2 AND isInstructor) OR
     (overwriter.visibility = 1 AND isTeaching) OR
     EXISTS((overwriter)<-[:USER_OWN]-(user))
-WITH user, overwriter, overwritee
+WITH user, overwriter, overwritee, course
+MATCH (course)<-[wasCurosr:TRUNK_CURSOR]-()
+DELETE wasCurosr
 CREATE
     (overwritee)<-[:FORK]-(trunk:Trunk:DeltaGraph),
-    (trunk)-[:TRUNK_PULL]->(overwriter)
+    (trunk)-[:TRUNK_PULL]->(overwriter),
+    (course)<-[:TRUNK_CURSOR]-(trunk)
 SET 
     trunk.deltaGraphId = split(overwritee.deltaGraphId,'.')[0]  + '.' + id(trunk),
     trunk.tag = $tag

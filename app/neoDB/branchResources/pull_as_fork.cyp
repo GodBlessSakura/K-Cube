@@ -39,17 +39,17 @@ WHERE
     (overwritee.visibility = 1 AND isTeaching) OR
     EXISTS((overwritee)<-[:USER_OWN]-(user))
 CREATE
+    (repo:Repository{tag: $tag}),
     (overwritee)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
-    (branch)-[:BRANCH_PULL]->(overwriter)
+    (branch)-[:BRANCH_PULL]->(overwriter),
+    (repo)<-[:USER_OWN]-(user),
+    (repo)<-[:BRANCH_DESCRIBE]-(branch),
+    (repo)<-[:BRANCH_CURSOR]-(branch)
 SET 
-    branch.visibility = 
-        CASE overwritee.visibility
-            WHEN null
-            THEN 0
-            ELSE overwritee.visibility
-            END,
+    branch.visibility = 0,
     branch.creationDate = datetime.transaction(),
     branch.deltaGraphId = split(overwritee.deltaGraphId,'.')[0] + '.' + id(branch),
+    repo.deltaGraphId = split(overwritee.deltaGraphId,'.')[0] + '.' + id(repo),
     branch.tag = $tag
 WITH overwritee, branch
 MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: $overwriterId}]->(wt:GraphConcept)
