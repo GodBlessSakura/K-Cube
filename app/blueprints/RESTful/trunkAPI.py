@@ -38,7 +38,7 @@ def post(overwriterId, overwriteeId):
                 return jsonify(
                     {
                         "success": True,
-                        "trunk": get_api_driver().trunk.merge_as_fork(
+                        "trunk": get_api_driver().trunk.pull_as_fork(
                             overwriterId=overwriterId,
                             overwriteeId=overwriteeId,
                             tag=request.json["tag"],
@@ -50,7 +50,7 @@ def post(overwriterId, overwriteeId):
                 return jsonify(
                     {
                         "success": True,
-                        "trunk": get_api_driver().trunk.merge_as_patch(
+                        "trunk": get_api_driver().trunk.pull_as_patch(
                             overwriterId=overwriterId,
                             overwriteeId=overwriteeId,
                             tag=request.json["tag"],

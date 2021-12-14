@@ -69,7 +69,7 @@ class trunkResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def merge_as_fork(self, overwriterId, overwriteeId, userId, tag):
+    def pull_as_fork(self, overwriterId, overwriteeId, userId, tag):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
@@ -97,7 +97,7 @@ class trunkResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def merge_as_patch(self, overwriterId, overwriteeId, userId, tag):
+    def pull_as_patch(self, overwriterId, overwriteeId, userId, tag):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
