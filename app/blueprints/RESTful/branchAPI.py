@@ -12,7 +12,7 @@ branch = Blueprint("branch", __name__, url_prefix="branch")
 def post(overwriterId, overwriteeId):
     if overwriterId is not None:
         if "tag" in request.json and "action" in request.json:
-            if overwriterId is not None and overwriteeId is None:
+            if overwriteeId is None:
                 if request.json["action"] == "fork":
                     return jsonify(
                         {
@@ -35,7 +35,7 @@ def post(overwriterId, overwriteeId):
                             ),
                         }
                     )
-            if overwriterId is not None and overwriteeId is not None:
+            else:
                 if request.json["action"] == "fork":
                     return jsonify(
                         {
