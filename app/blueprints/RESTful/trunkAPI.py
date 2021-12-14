@@ -22,6 +22,17 @@ def post(overwriterId, overwriteeId):
                         ),
                     }
                 )
+            if request.json["action"] == "patch":
+                return jsonify(
+                    {
+                        "success": True,
+                        "trunk": get_api_driver().workspace.commit_workspace_as_patch(
+                            deltaGraphId=overwriterId,
+                            tag=request.json["tag"],
+                            userId=session["user"]["userId"],
+                        ),
+                    }
+                )
         if overwriterId is not None and overwriteeId is not None:
             if request.json["action"] == "fork":
                 return jsonify(
