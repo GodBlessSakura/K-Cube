@@ -9,6 +9,8 @@ WITH
     overwriter,
     user,
     overwritee,
+    wasAstive,
+    course,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching
