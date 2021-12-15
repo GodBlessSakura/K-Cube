@@ -18,18 +18,21 @@
         <v-row>
             <v-data-table show-group-by :headers="headers" style="width:100%" :items="repositories"
                 :items-per-page="500" multi-sort :search="search">
-                <template v-slot:item.actions="{ item }">
+                <template v-slot:item.versions="{ item }">
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon v-bind="attrs" v-on="on" :href="'{{ url_for('instructor.repositoryVersions', courseCode=courseCode) }}/' +
+                            <v-btn v-bind="attrs" v-on="on" :href="'{{ url_for('instructor.repositoryVersions', courseCode=courseCode) }}/' +
                             item.id">
                                 <v-icon>
-                                    summarize
+                                    open_in_new
                                 </v-icon>
+                                ${item.versions}
                             </v-btn>
                         </template>
-                        versions
+                        view all versions
                     </v-tooltip>
+                </template>
+                <template v-slot:item.actions="{ item }">
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn icon v-bind="attrs" v-on="on"
