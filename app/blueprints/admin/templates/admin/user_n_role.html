@@ -11,7 +11,8 @@
             <v-card>
                 <v-text-field v-model="search" append-icon="mdi-magnify" label="Search" single-line hide-details>
                 </v-text-field>
-                <v-data-table :headers="roles" :items="users" :items-per-page="500" multi-sort :search="search">
+                <v-data-table show-group-by :headers="roles" :items="users" :items-per-page="500" multi-sort
+                    :search="search">
                     <template v-slot:item="{ item }">
                         <tr>
                             <td v-for="(value, name) in item">
@@ -71,7 +72,8 @@
                         if (body.permissions) {
                             this.roles = [{
                                     text: "UserId",
-                                    value: 'userId'
+                                    value: 'userId',
+                                    groupable: false,
                                 }, ...body.permissions.sort((a, b) => {
                                     a_permission = Object.values(a).reduce((count, value) => {
                                         return count + (value ? 1 : 0)

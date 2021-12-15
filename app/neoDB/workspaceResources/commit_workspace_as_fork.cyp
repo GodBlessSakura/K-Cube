@@ -6,12 +6,7 @@ CREATE
     (subject)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
     (branch)<-[:WORK_ON]-(workspace)
 SET 
-    branch.visibility = 
-        CASE subject.visibility
-            WHEN null
-            THEN 0
-            ELSE subject.visibility
-            END,
+    branch.visibility = 0,
     branch.creationDate = datetime.transaction(),
     branch.deltaGraphId = split(subject.deltaGraphId,'.')[0] + '.' + id(branch),
     branch.tag = $tag
@@ -38,6 +33,7 @@ CALL{
     SET
         fr.creationDate = datetime.transaction(),
         fr.value = wr.value
+    DELETE wr
     RETURN null
 UNION
     WITH branch, subject

@@ -29,7 +29,7 @@
             </v-text-field>
         </v-row>
         <v-row>
-            <v-data-table :headers="headers" style="width:100%" :items="feedbacks" :items-per-page="500" multi-sort
+            <v-data-table show-group-by :headers="headers" style="width:100%" :items="feedbacks" :items-per-page="500" multi-sort
                 :search="search">
                 <template v-slot:item.creationDate="{ item }">
                     ${item.creationDate | formatDate}
@@ -59,6 +59,7 @@
             headers: [{
                     text: 'Title',
                     value: 'title',
+                    groupable: false,
                 }, {
                     text: 'Author',
                     value: 'user',
@@ -66,10 +67,12 @@
                 {
                     text: 'Date of creation',
                     value: 'creationDate',
+                    groupable: false,
                 },
                 {
                     text: 'Actions',
                     value: 'actions',
+                    groupable: false,
                 },
             ],
             concepts: [],

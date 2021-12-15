@@ -408,7 +408,7 @@
                             }
                             //{% endif %}
                             this.overwriterLabels = body.overwriter.labels
-                            previewCy.add(nodeFactory(body.overwriter.courseCode)).data(
+                            previewCy.add(nodeFactory(body.overwritee.courseCode)).data(
                                 'imageURL',
                                 body.overwriter.imageURL,
                             )
@@ -526,8 +526,10 @@
                         this.$root.progress.show = false
                         this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
                             () => {
-                                if (this.overwriterLabels.includes('Workspace')) {
-                                    location.reload.bind(window.location)
+                                console.log(this.overwriter.labels)
+                                console.log(this.overwriter.labels.includes('Workspace'))
+                                if (this.overwriter.labels.includes('Workspace')) {
+                                    location.reload()
                                 } else {
                                     window.close()
                                 }
@@ -560,11 +562,8 @@
                             this.$root.progress.show = false
                             this.$root.responseSnackBar(body, 'Unexpected error on creating new version.',
                                 () => {
-                                    if (this.overwriterLabels.includes('Workspace')) {
-                                        location.reload.bind(window.location)
-                                    } else {
-                                        window.close()
-                                    }
+                                    window.close()
+
                                 })
                         })
                 } else {

@@ -8,21 +8,47 @@
             </v-text-field>
         </v-row>
         <v-row>
-            <v-data-table :headers="headers" style="width:100%" :items="versions" :items-per-page="500" multi-sort
-                :search="search">
+            <v-data-table show-group-by :headers="headers" style="width:100%" :items="versions" :items-per-page="500"
+                multi-sort :search="search">
                 <template v-slot:item.actions="{ item }">
-                    <v-icon @click="newTab(item.id)">
-                        open_in_new
-                    </v-icon>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon v-bind="attrs" v-on="on"
+                                :href="'{{ url_for('collegue.compare')}}' + item.deltaGraphId + '/' + item.parent.property.deltaGraphId">
+                                <v-icon>
+                                    preview
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                        view latest versions
+                    </v-tooltip>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }" v-if="item.workspace">
+                            <v-btn icon v-bind="attrs" v-on="on"
+                                :href="'{{ url_for('instructor.workspace')}}' + item.workspace">
+                                <v-icon>
+                                    work
+                                </v-icon>
+                            </v-btn>
+                        </template>
+                        workspace for latest version
+                    </v-tooltip>
+                </template>
+                <template v-slot:item.creationDate="{ item }">
+                    ${item.creationDate | formatDate}
                 </template>
             </v-data-table>
         </v-row>
     </v-container>
-
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
 <script>
+    Vue.filter("formatDate", (value) => {
+        if (value) {
+            return (new Date(value)).toLocaleString("en-US", {})
+        }
+    })
     Vue.component('app-content', {
         data: () => ({
             search: new URLSearchParams(window.location
@@ -31,10 +57,22 @@
             headers: [{
                     text: 'tag',
                     value: 'tag',
+                    groupable: false,
                 },
                 {
-                    text: 'Open in new tab',
+                    text: 'creation date',
+                    value: 'creationDate',
+                    groupable: false,
+                },
+                {
+                    text: '',
+                    value: 'info',
+                    groupable: false,
+                },
+                {
+                    text: '',
                     value: 'actions',
+                    groupable: false,
                 },
             ],
         }),
@@ -62,22 +100,36 @@
                     .then(body => {
                         this.versions = []
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
-                            let cursor = "{{ id }}"
-                            let branch = body.branch_nodes.filter(b => b.id == cursor)[0]
-                            let candidate = body.edges.filter(e => e.type == "PATCH" && e.end ==
-                                cursor)
-                            this.versions.push({
-                                tag: branch.property.tag,
-                            })
-                            while (candidate.length > 0) {
-                                cursor = candidate[0].start
-                                branch = body.branch_nodes.filter(b => b.id == cursor)[0]
-                                candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
-                                    e.end == cursor)
+                            let candidate = body.edges.filter(e => e.start ==
+                                "{{ id }}")
+                            do {
+                                let cursor = candidate[0].start
+                                let branch = body.branch_nodes.filter(b => b.id == cursor)[0]
+                                let parent = body.branch_nodes.filter(b => b.id == candidate[0].end)[0]
+                                parent = parent ? parent : body.trunk_nodes.filter(b => b.id == candidate[0]
+                                    .end)[0]
+                                let work_on_candidate = body.edges.filter(e => e.type ==
+                                    "WORK_ON" && e.end == cursor)
+                                let workspace = work_on_candidate.map(we => {
+                                    return body.workspace_nodes
+                                        .filter(w => w.id == we.start)[0].property
+                                        .deltaGraphId
+                                }).sort(function (a, b) {
+                                    return new Date(b.lastModified) - new Date(a.lastModified);
+                                })[0]
                                 this.versions.push({
                                     tag: branch.property.tag,
+                                    creationDate: branch.property.creationDate,
+                                    owned: branch.isOwner,
+                                    exposed: branch.isExposed,
+                                    deltaGraphId: branch.property.deltaGraphId,
+                                    parent: parent,
+                                    workspace: workspace,
                                 })
+                                candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
+                                    e.end == cursor)
                             }
+                            while (candidate.length > 0)
 
                         } else {
                             this.$root.errorDisplay(body,

@@ -42,12 +42,7 @@ CREATE
     (overwritee)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
     (branch)-[:BRANCH_PULL]->(overwriter)
 SET 
-    branch.visibility = 
-        CASE overwritee.visibility
-            WHEN null
-            THEN 0
-            ELSE overwritee.visibility
-            END,
+    branch.visibility = 0,
     branch.creationDate = datetime.transaction(),
     branch.deltaGraphId = split(overwritee.deltaGraphId,'.')[0] + '.' + id(branch),
     branch.tag = $tag

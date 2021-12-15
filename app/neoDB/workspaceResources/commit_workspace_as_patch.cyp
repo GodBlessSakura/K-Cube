@@ -39,6 +39,7 @@ CALL{
     SET
         fr.creationDate = datetime.transaction(),
         fr.value = wr.value
+    DELETE wr
     RETURN null
 UNION
     WITH branch, subject
