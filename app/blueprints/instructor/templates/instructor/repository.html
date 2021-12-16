@@ -118,7 +118,7 @@
             </v-card-title>
             <v-form ref="createRepositoryControl">
                 <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId"
-                    v-model="selectedNode">
+                    v-model="selectedNode" label="base on version">
 
                 </v-autocomplete>
                 <v-text-field label="tag" :rules="repoTagRules" v-model="repoTag" required></v-text-field>

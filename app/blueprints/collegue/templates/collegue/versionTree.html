@@ -15,7 +15,7 @@
     </v-snackbar>
     <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
         <v-list>
-            <v-subheader>${selectedNode?.data('tag')}</v-subheader>
+            <v-subheader>${_selectedNode?.data('tag')}</v-subheader>
             <v-divider> </v-divider>
             {% if isInstructor %}
             <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">status
@@ -34,7 +34,7 @@
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
-                @click="newTab('{{ url_for('instructor.graphimport')}}' + selectedNode?.data('deltaGraphId'))">
+                @click="newTab('{{ url_for('instructor.graphimport')}}' + _selectedNode?.data('deltaGraphId'))">
                 <v-list-item-title>Import graph</v-list-item-title>
             </v-list-item>
             <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
@@ -210,7 +210,7 @@
             cursor_y: undefined,
             showSelectBar: false,
             snackbarMethod: '',
-            selectedNode: undefined,
+            _selectedNode: undefined, // this makes the vuetify not observing the object
             selectedNodeClasses: [],
             //{% if isInstructor %}
             workspaceCreateDialog: false,
@@ -287,7 +287,6 @@
                             let stepY = 200
 
                             function locatePredecessorsX(node) {
-                                console.log(node.data())
                                 let thickness = 0
                                 let position = node.position()
                                 let forkEdges = node.incomers('edge[tag="FORK"]').sort((edgeA, edgeB) => {
@@ -301,8 +300,6 @@
                                     let childB = edgeB.source()
                                     return childA.data('creationDate') - childB.data('creationDate')
                                 })
-                                console.log(forkEdges.length)
-                                console.log(patchEdges.length)
                                 patchEdges.forEach(edge => {
                                     let child = edge.source()
                                     child.position({
@@ -391,7 +388,9 @@
                             locatePredecessorsX(root)
                             locatePredecessorsY(root)
                             locateWorkspace(root)
+                            cy.nodes().forEach(node=>console.log(node.position().y))
                             cy.fit()
+                            cy.nodes().forEach(node=>console.log(node.position().y))
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting versions information.')
@@ -405,14 +404,14 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.branch.patch') }}" + this.selectedNode.data("deltaGraphId"), {
+                fetch("{{ url_for('RESTful.branch.patch') }}" + this._selectedNode.data("deltaGraphId"), {
                         method: 'PATCH',
                         cache: 'no-store',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            canPull: !this.selectedNode.classes().includes("canPull")
+                            canPull: !this._selectedNode.classes().includes("canPull")
                         })
                     })
                     .then(response => {
@@ -433,8 +432,8 @@
                     return
                 }
                 this.$root.progress.show = true
-                let isExposed = this.selectedNode.classes().includes("isExposed") ? false : true
-                fetch("{{ url_for('RESTful.branch.patch') }}" + this.selectedNode.data("deltaGraphId"), {
+                let isExposed = this._selectedNode.classes().includes("isExposed") ? false : true
+                fetch("{{ url_for('RESTful.branch.patch') }}" + this._selectedNode.data("deltaGraphId"), {
                         method: 'PATCH',
                         cache: 'no-store',
                         headers: {
@@ -460,7 +459,7 @@
             mergeWithAnother() {
                 this.snackbarMethod = 'branch'
                 this.selectableNodes = cy.nodes(
-                    '.branch[deltaGraphId  != "' + this.selectedNode.data("deltaGraphId") + '"],' +
+                    '.branch[deltaGraphId  != "' + this._selectedNode.data("deltaGraphId") + '"],' +
                     '.trunk')
                 this.selectAnotherMode()
             },
@@ -479,7 +478,7 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.workspace.post') }}" + this.selectedNode.data("deltaGraphId"), {
+                    fetch("{{ url_for('RESTful.workspace.post') }}" + this._selectedNode.data("deltaGraphId"), {
                             method: 'POST',
                             cache: 'no-store',
                             headers: {
@@ -505,7 +504,7 @@
                 }
             },
             commit() {
-                this.newTab("{{ url_for('instructor.commit')}}" + this.selectedNode.data("deltaGraphId"))
+                this.newTab("{{ url_for('instructor.commit')}}" + this._selectedNode.data("deltaGraphId"))
             },
             // {% endif %}
             // {% if isDLTC %}
@@ -515,7 +514,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.trunk.patch') }}" + this.selectedNode.data("deltaGraphId"), {
+                fetch("{{ url_for('RESTful.trunk.patch') }}" + this._selectedNode.data("deltaGraphId"), {
                         method: 'PATCH',
                         cache: 'no-store',
                         headers: {
@@ -575,7 +574,7 @@
                 self.showMenu = true
                 self.cursor_x = event.originalEvent.clientX
                 self.cursor_y = event.originalEvent.clientY
-                this.selectedNode = event.target[0]
+                this._selectedNode = event.target[0]
                 this.selectedNodeClasses = event.target[0].classes()
                 cy.nodes().unselect()
                 cy.edges().unselect()
@@ -590,13 +589,13 @@
                         if (this.selectableNodes.contains(event.target[0])) {
                             this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
                                     'deltaGraphId') + '/' + this
-                                .selectedNode.data("deltaGraphId"))
+                                ._selectedNode.data("deltaGraphId"))
                         }
                     }
                     if (this.snackbarMethod == 'workspace') {
                         if (this.selectableNodes.contains(event.target[0])) {
                             fetch("{{ url_for('RESTful.workspace.patch') }}" + this
-                                    .selectedNode.data("deltaGraphId"), {
+                                    ._selectedNode.data("deltaGraphId"), {
                                         method: 'PATCH',
                                         cache: 'no-store',
                                         headers: {
@@ -633,7 +632,7 @@
                         if (this.selectableNodes.contains(event.target[0])) {
                             this.newTab("{{ url_for('DLTC.trunk')}}" + event.target[0].data(
                                     'deltaGraphId') + '/' + this
-                                .selectedNode.data("deltaGraphId"))
+                                ._selectedNode.data("deltaGraphId"))
                         }
                     }
                     // {% endif %}
