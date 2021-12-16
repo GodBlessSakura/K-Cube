@@ -387,6 +387,7 @@
                             }
                             locatePredecessorsX(root)
                             locatePredecessorsY(root)
+                            cy.nodes().forEach(node=>console.log(node.position().y))
                             locateWorkspace(root)
                             cy.nodes().forEach(node=>console.log(node.position().y))
                             cy.fit()
