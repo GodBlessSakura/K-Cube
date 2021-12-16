@@ -387,11 +387,8 @@
                             }
                             locatePredecessorsX(root)
                             locatePredecessorsY(root)
-                            cy.nodes().forEach(node=>console.log(node.position().y))
                             locateWorkspace(root)
-                            cy.nodes().forEach(node=>console.log(node.position().y))
                             cy.fit()
-                            cy.nodes().forEach(node=>console.log(node.position().y))
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting versions information.')
