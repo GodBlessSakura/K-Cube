@@ -587,7 +587,7 @@
                     // {% if isInstructor %}
                     if (this.snackbarMethod == 'branch') {
                         if (this.selectableNodes.contains(event.target[0])) {
-                            this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
+                            this.newTab("{{ url_for('instructor.branchPull')}}" + event.target[0].data(
                                     'deltaGraphId') + '/' + this
                                 .selectedNode.data("deltaGraphId"))
                         }
