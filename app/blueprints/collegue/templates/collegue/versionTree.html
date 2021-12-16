@@ -34,7 +34,7 @@
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
-                @click="newTab('{{ url_for('instructor.graphimport')}}' + selectedNode.data('deltaGraphId'))">
+                @click="newTab('{{ url_for('instructor.graphimport')}}' + selectedNode?.data('deltaGraphId'))">
                 <v-list-item-title>Import graph</v-list-item-title>
             </v-list-item>
             <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
@@ -210,6 +210,7 @@
             cursor_y: undefined,
             showSelectBar: false,
             snackbarMethod: '',
+            selectedNode: undefined,
             selectedNodeClasses: [],
             //{% if isInstructor %}
             workspaceCreateDialog: false,
@@ -587,7 +588,7 @@
                     // {% if isInstructor %}
                     if (this.snackbarMethod == 'branch') {
                         if (this.selectableNodes.contains(event.target[0])) {
-                            this.newTab("{{ url_for('instructor.branchPull')}}" + event.target[0].data(
+                            this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
                                     'deltaGraphId') + '/' + this
                                 .selectedNode.data("deltaGraphId"))
                         }

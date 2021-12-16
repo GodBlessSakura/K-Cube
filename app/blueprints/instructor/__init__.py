@@ -110,10 +110,10 @@ def commit(overwriterId, overwriteeId):
     abort(404)
 
 
-@instructor.route("/branch/pull/", defaults={"overwriterId": None, "overwriteeId": None})
-@instructor.route("/branch/pull/<overwriterId>/", defaults={"overwriteeId": None})
-@instructor.route("/branch/pull/<overwriterId>/<overwriteeId>")
-def branchPull(overwriterId, overwriteeId):
+@instructor.route("/branch/", defaults={"overwriterId": None, "overwriteeId": None})
+@instructor.route("/branch/<overwriterId>/", defaults={"overwriteeId": None})
+@instructor.route("/branch/<overwriterId>/<overwriteeId>")
+def branch(overwriterId, overwriteeId):
     if overwriterId is not None:
         return render_template(
             "collegue/graphCompare.html",
@@ -121,24 +121,9 @@ def branchPull(overwriterId, overwriteeId):
             overwriteeId=overwriteeId,
             isInstructor=True,
             isDLTC=False,
-            pull=True,
         )
     abort(404)
 
-@instructor.route("/branch/push/", defaults={"overwriterId": None, "overwriteeId": None})
-@instructor.route("/branch/push/<overwriterId>/", defaults={"overwriteeId": None})
-@instructor.route("/branch/push/<overwriterId>/<overwriteeId>")
-def branchPush(overwriterId, overwriteeId):
-    if overwriterId is not None:
-        return render_template(
-            "collegue/graphCompare.html",
-            overwriterId=overwriterId,
-            overwriteeId=overwriteeId,
-            isInstructor=True,
-            isDLTC=False,
-            push=True,
-        )
-    abort(404)
 
 @instructor.route("/import/", defaults={"deltaGraphId": None})
 @instructor.route("/import/<deltaGraphId>/")
