@@ -1,5 +1,6 @@
-MATCH (user:User{userId: $userId})
-WITH DISTINCT user
+MATCH (user)-[:USER_OWN]->(overwritee{deltaGraphId: $overwriteeId})
+WHERE NOT EXISTS((overwritee)<-[:PATCH]-())
+WITH DISTINCT overwritee, user
 CALL{
     WITH user
     MATCH (overwriter:Branch{deltaGraphId: $overwriterId}), (course:Course)
@@ -21,28 +22,17 @@ UNION
     MATCH (overwriter:Trunk{deltaGraphId: $overwriterId})
     RETURN overwriter
 }
-WITH user, overwriter
-
-MATCH (overwritee:Branch{deltaGraphId: $overwriteeId}), (course:Course)
-    WHERE toString(id(course)) = split($overwriterId,'.')[0]
-WITH 
-    overwritee,
-    course,
-    user,
-    EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
-    EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
-        EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching
-WHERE        
-    (overwritee.visibility = 4) OR
-    (overwritee.visibility = 3 AND (isDLTC OR isInstructor)) OR
-    (overwritee.visibility = 2 AND isInstructor) OR
-    (overwritee.visibility = 1 AND isTeaching) OR
-    EXISTS((overwritee)<-[:USER_OWN]-(user))
+WITH overwriter, overwritee, user
 CREATE
-    (overwritee)<-[:FORK]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
-    (branch)-[:BRANCH_PULL]->(overwriter)
+    (overwritee)<-[:PATCH]-(branch:Branch:DeltaGraph)<-[:USER_OWN]-(user),
+    (branch)-[:BRANCH_PULL{increment: true}]->(overwriter)
 SET 
-    branch.visibility = 0,
+    branch.visibility = 
+        CASE overwritee.visibility
+            WHEN null
+            THEN 0
+            ELSE overwritee.visibility
+            END,
     branch.creationDate = datetime.transaction(),
     branch.deltaGraphId = split(overwritee.deltaGraphId,'.')[0] + '.' + id(branch),
     branch.tag = $tag
@@ -61,10 +51,7 @@ CALL{
             END as sr
     WHERE
         wr.value <> sr.value AND
-        NOT (
-            wr.value = false AND 
-            sr.value = 'null'
-            )
+        NOT wr.value = false
     MERGE (wh)-[fr:DELTA_GRAPH_RELATIONSHIP{name: wr.name, deltaGraphId: branch.deltaGraphId}]-> (wt)
     SET
         fr.creationDate = datetime.transaction(),
