@@ -154,7 +154,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on"
-                                :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
+                                :href="'{{ url_for('DLTC.pullRequest') }}/' + col.courseCode" icon>
                                 <v-icon>library_add_check</v-icon>
                             </v-btn>
                         </template>

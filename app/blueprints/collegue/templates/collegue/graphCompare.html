@@ -403,8 +403,13 @@
                             //{% endif %}
                             //{% if isDLTC %}
                             if (body.overwritee.labels.includes('Trunk')) {
-                                this.options = ['patch', 'fork']
-                                this.action = 'patch'
+                                if (body.overwritee.isPatchLeaf) {
+                                    this.options = ['patch', 'fork']
+                                    this.action = 'patch'
+                                } else {
+                                    this.options = ['fork']
+                                    this.action = 'fork'
+                                }
                             }
                             //{% endif %}
                             this.overwriterLabels = body.overwriter.labels

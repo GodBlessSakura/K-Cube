@@ -56,3 +56,11 @@ def trunk(overwriterId, overwriteeId):
             isDLTC=True,
         )
     abort(404)
+
+
+@DLTC.route("/approvalQueue/")
+@DLTC.route("/approvalQueue/<courseCode>")
+def pullRequest(courseCode):
+    if courseCode is not None:
+        return render_template("DLTC/pullRequest.html", courseCode=courseCode)
+    abort(404)

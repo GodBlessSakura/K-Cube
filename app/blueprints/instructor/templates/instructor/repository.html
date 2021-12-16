@@ -225,6 +225,7 @@
                     })
                     .then(body => {
                         this.repositories = []
+                        this.trunkOrBranch = [];
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
                             this.trunkOrBranch = [];
                             [body.trunk_nodes, body.branch_nodes].forEach(nodes => {

@@ -1,10 +1,12 @@
 MATCH
     (branch:Branch),
     (user:User{userId: $userId}),
-    (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode})
+    (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode}),
+    (branch)<-[:USER_OWN]-(owner)
 WITH 
     branch,
     user,
+    owner,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'DLTC'})) as isDLTC,
     EXISTS((user)-[:PRIVILEGED_OF]->(:Permission{role:'instructor'})) as isInstructor,
     EXISTS((user)-[:USER_TEACH]->()-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})) as isTeaching,
@@ -17,4 +19,4 @@ WHERE
         (branch.visibility = 1 AND isTeaching) OR
         isOwner
     )
-RETURN DISTINCT branch AS nodes, isOwner, EXISTS((:GraphConcept{name: $courseCode})-[:COURSE_DESCRIBE]-()<-[:BRANCH_DESCRIBE]-(branch)) AND isOwner as isExposed
+RETURN DISTINCT branch AS nodes, isOwner, EXISTS((:GraphConcept{name: $courseCode})-[:COURSE_DESCRIBE]-()<-[:BRANCH_DESCRIBE]-(branch)) AND isOwner as isExposed, owner.userId as userId

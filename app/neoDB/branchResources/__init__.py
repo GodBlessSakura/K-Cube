@@ -59,6 +59,7 @@ class branchResources:
                             else str(value.iso_format())
                             for key, value in record["nodes"].items()
                         },
+                        "userId": record["userId"],
                         "isOwner": record["isOwner"],
                         "isExposed": record["isExposed"],
                     }
