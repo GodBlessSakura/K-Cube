@@ -320,6 +320,8 @@
 
                             function locatePredecessorsY(node) {
                                 let position = node.position()
+                                console.log(node.data("tag"))
+                                console.log(position)
                                 let fixedEdges = node.incomers('edge[tag="PATCH"],edge[tag = "FORK"]')
                                 // .filter(edge => {
                                 //     let child = edge.source()
