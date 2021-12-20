@@ -334,13 +334,13 @@
                                 fixedEdges.forEach(edge => {
                                     let child = edge.source()
                                     console.log(child.data("tag"))
-                                    console.log(child.position())
+                                    console.log(child.position().y)
                                     console.log(stepY)
                                     child.position({
                                         y: Math.max(position.y + stepY, child.position().y),
                                     })
                                     console.log(child.data("tag"))
-                                    console.log(child.position())
+                                    console.log(child.position().y)
                                     // console.log(child.data('tag'))
                                     let pulling = child.incomers(
                                         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
