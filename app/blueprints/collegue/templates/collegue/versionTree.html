@@ -334,6 +334,8 @@
                                     child.position({
                                         y: Math.max(position.y + stepY, child.position().y),
                                     })
+                                    console.log(child.data("tag"))
+                                    console.log(child.position())
                                     // console.log(child.data('tag'))
                                     let pulling = child.incomers(
                                         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
@@ -344,6 +346,8 @@
                                                 puller.position({
                                                     y: child.position().y + stepY,
                                                 })
+                                                console.log(puller.data("tag"))
+                                                console.log(puller.position())
                                                 locatePredecessorsY(puller)
                                             }
 
@@ -355,6 +359,8 @@
                                     child.position({
                                         y: Math.max(position.y + stepY, child.position().y),
                                     })
+                                    console.log(child.data("tag"))
+                                    console.log(child.position())
                                     locatePredecessorsY(child)
                                 })
                                 fixedEdges.forEach(edge => {
