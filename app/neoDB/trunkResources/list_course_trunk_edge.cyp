@@ -11,5 +11,9 @@ UNION
     WITH nodes
     MATCH (:Trunk)-[edges:PATCH|FORK]->(nodes)
     RETURN edges
+UNION
+    WITH nodes
+    MATCH (nodes)-[edges:TRUNK_PULL|BRANCH_PULL]->(:Branch)
+    RETURN edges
 }
 RETURN DISTINCT edges as edges

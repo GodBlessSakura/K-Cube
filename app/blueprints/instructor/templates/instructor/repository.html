@@ -33,37 +33,63 @@
                     </v-tooltip>
                 </template>
                 <template v-slot:item.actions="{ item }">
-                    <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon v-bind="attrs" v-on="on"
-                                :href="'{{ url_for('collegue.compare')}}' + item.deltaGraphIds[item.deltaGraphIds.length-1] + '/' + item.deltaGraphIds[item.deltaGraphIds.length-2]">
-                                <v-icon>
-                                    preview
-                                </v-icon>
-                            </v-btn>
-                        </template>
-                        view latest versions
-                    </v-tooltip>
-                    <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <span>
-                                <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspace"
-                                    :href="'{{ url_for('instructor.workspace')}}' + item.workspace">
-                                    <v-icon>
-                                        work
-                                    </v-icon>
-                                </v-btn>
-                                <v-btn icon v-bind="attrs" v-on="on" v-else
-                                    @click="createWorkspaceDialogue(item.deltaGraphIds[item.deltaGraphIds.length-1])">
-                                    <v-icon>
-                                        work_outline
-                                    </v-icon>
-                                </v-btn>
-                            </span>
-                        </template>
-                        ${item.workspace?'workspace for latest version':'create workspace for latest version'}
-                    </v-tooltip>
-
+                    <v-row>
+                        <v-col cols="auto">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn icon v-bind="attrs" v-on="on"
+                                        :href="'{{ url_for('collegue.compare')}}' + item.deltaGraphIds[item.deltaGraphIds.length-1] + '/' + item.deltaGraphIds[item.deltaGraphIds.length-2]">
+                                        <v-icon>
+                                            preview
+                                        </v-icon>
+                                    </v-btn>
+                                </template>
+                                view latest versions
+                            </v-tooltip>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn icon v-bind="attrs" v-on="on"
+                                        :href="'{{ url_for('instructor.graphimport')}}' + item.deltaGraphIds[item.deltaGraphIds.length-1]">
+                                        <v-icon>
+                                            data_object
+                                        </v-icon>
+                                    </v-btn>
+                                </template>
+                                json import
+                            </v-tooltip>
+                        </v-col>
+                        <v-col>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <span>
+                                        <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces?.length==1"
+                                            :href="'{{ url_for('instructor.workspace')}}' + item.workspaces[0].deltaGraphId">
+                                            <v-icon>
+                                                work
+                                            </v-icon>
+                                        </v-btn>
+                                        <v-autocomplete dense append-outer-icon="work" v-bind="attrs" v-on="on"
+                                            item-text="tag" item-value="deltaGraphId" v-if="item.workspaces?.length>1"
+                                            :items="item.workspaces"
+                                            @change="this.window.open('{{ url_for('instructor.workspace')}}' + $event, '_blank')">
+                                            <template v-slot:item="data">
+                                                <v-list-item-content>
+                                                    ${data.item.tag!=''?data.item.tag:'(unnamed)'}
+                                                </v-list-item-content>
+                                        </v-autocomplete>
+                                        <v-btn icon v-bind="attrs" v-on="on" v-if="!item.workspaces"
+                                            @click="createWorkspaceDialogue(item.deltaGraphIds[item.deltaGraphIds.length-1])">
+                                            <v-icon>
+                                                work_outline
+                                            </v-icon>
+                                        </v-btn>
+                                    </span>
+                                </template>
+                                ${item.workspaces?'workspace' + (item.workspaces.length==1?'':'s') +' for latest'+
+                                ' version':'create workspace for latest version'}
+                            </v-tooltip>
+                        </v-col>
+                    </v-row>
                 </template>
                 <template v-slot:item.exposedOffset="{ item }">
                     <span bottom v-if="item.owned">
@@ -270,19 +296,18 @@
                                 }
                                 let work_on_candidate = body.edges.filter(e => e.type ==
                                     "WORK_ON" && e.end == cursor)
-                                let workspace = work_on_candidate.map(we => {
+                                let workspaces = work_on_candidate.map(we => {
                                     return body.workspace_nodes
                                         .filter(w => w.id == we.start)[0].property
-                                        .deltaGraphId
                                 }).sort(function (a, b) {
                                     return new Date(b.lastModified) - new Date(a
                                         .lastModified);
-                                })[0]
+                                })
                                 this.repositories.push({
                                     tag: branch.property.tag,
                                     versions: versions,
                                     id: branch.id,
-                                    workspace: workspace,
+                                    workspaces: workspaces,
                                     deltaGraphIds: deltaGraphIds,
                                     owned: branch.isOwner,
                                     exposedOffset: exposedOffset,

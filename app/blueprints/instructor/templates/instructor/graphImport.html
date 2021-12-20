@@ -6,14 +6,14 @@
     <v-row dense style="width: 100%;">
         <v-col>
             <v-form dense ref="control">
-                <v-text-field dense v-model="tag" :rules="tagRules" label="tag for new version" required
+                <v-text-field dense v-model="tag" :rules="tagRules" label="tag for new workspace " required
                     :disabled=isTrival>
                 </v-text-field>
             </v-form>
         </v-col>
         <v-col dense style="text-align: center;">
             <v-btn block @click="submit()" :disabled=isTrival>
-                ${isTrival?'No meaningful edge was found':'submit'}
+                ${isTrival?'No meaningful edge was found':'create workspace from json'}
             </v-btn>
         </v-col>
     </v-row>
@@ -48,7 +48,9 @@
                 </v-list>
             </v-menu>
         </v-col>
-        <v-col cols="auto" dense>
+    </v-row>
+    <v-row>
+        <v-col dense>
             <v-expansion-panels>
                 <v-expansion-panel>
                     <v-expansion-panel-header>

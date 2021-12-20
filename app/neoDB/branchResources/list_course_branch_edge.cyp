@@ -21,9 +21,5 @@ CALL{
     WITH branch
     MATCH (branch)-[edges:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->()
     RETURN edges
-UNION
-    WITH branch
-    MATCH ()-[edges:PATCH|FORK|TRUNK_PULL|BRANCH_PULL]->(branch)
-    RETURN edges
 }
 RETURN DISTINCT edges
