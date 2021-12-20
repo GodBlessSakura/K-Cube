@@ -186,6 +186,10 @@
             },
             grabbable: false,
             pannable: false,
+            position: {
+                x: 0,
+                y: 0
+            }
         }
         return output
     }
@@ -279,10 +283,6 @@
                                 padding: document.documentElement.clientHeight * 0.15
                             }).run()
                             let root = cy.nodes('[tag = "init"]')
-                            root.position({
-                                x: 0,
-                                y: 0
-                            })
                             let stepX = 200
                             let stepY = 200
 
@@ -320,8 +320,6 @@
 
                             function locatePredecessorsY(node) {
                                 let position = node.position()
-                                console.log(node.data("tag"))
-                                console.log(position)
                                 let fixedEdges = node.incomers('edge[tag="PATCH"],edge[tag = "FORK"]')
                                 // .filter(edge => {
                                 //     let child = edge.source()
@@ -333,26 +331,17 @@
                                     'edge[tag="BRANCH_PULL"],edge[tag = "TRUNK_PULL"]')
                                 fixedEdges.forEach(edge => {
                                     let child = edge.source()
-                                    console.log(child.data("tag"))
-                                    console.log(child.position().y)
-                                    console.log(stepY)
                                     child.position({
                                         y: Math.max(position.y + stepY, child.position().y),
                                     })
-                                    console.log(child.data("tag"))
-                                    console.log(child.position().y)
-                                    // console.log(child.data('tag'))
                                     let pulling = child.incomers(
                                         'edge[tag = "BRANCH_PULL"],edge[tag = "TRUNK_PULL"]'
                                     )
                                     if (pulling.length > 0) {
                                         pulling.map(edge => edge.source()).forEach(puller => {
-                                                // console.log("pulled by " + puller.data('tag'))
                                                 puller.position({
                                                     y: child.position().y + stepY,
                                                 })
-                                                console.log(puller.data("tag"))
-                                                console.log(puller.position())
                                                 locatePredecessorsY(puller)
                                             }
 
@@ -364,8 +353,6 @@
                                     child.position({
                                         y: Math.max(position.y + stepY, child.position().y),
                                     })
-                                    console.log(child.data("tag"))
-                                    console.log(child.position())
                                     locatePredecessorsY(child)
                                 })
                                 fixedEdges.forEach(edge => {
