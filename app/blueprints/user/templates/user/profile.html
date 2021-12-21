@@ -28,7 +28,8 @@
                 </v-col>
                 <v-col>
                     <v-checkbox readonly @click="tryVerification()" value="{{session['user'].verified}}"
-                        :label="{{ 'true' if session['user'].verified else 'false'}}?'':'send verification mail'"></v-checkbox>
+                        :label="{{ 'true' if session['user'].verified else 'false'}}?'':'send verification mail'">
+                    </v-checkbox>
                 </v-col>
             </v-row>
             <v-row>

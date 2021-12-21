@@ -147,7 +147,8 @@
                     v-model="selectedNode" label="base on version">
 
                 </v-autocomplete>
-                <v-text-field label="tag" :rules="repoTagRules" v-model="repoTag" required></v-text-field>
+                <v-text-field label="tag of repository" :rules="repoTagRules" v-model="repoTag" required></v-text-field>
+                <v-text-field label="tag of workspace" :rules="wTagRules" v-model="w_tag" required></v-text-field>
             </v-form>
             <v-divider></v-divider>
 
@@ -222,6 +223,13 @@
                 'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
             repoTagRules: [v => !!v || 'Tag name is required',
+                v => v.length > 3 && v.length < 101 ||
+                'Tag name should be anything between 4 and 100 charactors',
+                v => /^[a-zA-Z0-9\s.]+$/.test(v) ||
+                'Tag name can only contains alphanumeric characters, dot(.) and space.'
+            ],
+            w_tag: '',
+            wTagRules: [v => !!v || 'Tag name is required',
                 v => v.length > 3 && v.length < 101 ||
                 'Tag name should be anything between 4 and 100 charactors',
                 v => /^[a-zA-Z0-9\s.]+$/.test(v) ||
@@ -378,6 +386,7 @@
                             body: JSON.stringify({
                                 tag: this.repoTag,
                                 repository: true,
+                                w_tag: this.w_tag
                             })
                         })
                         .then(response => {

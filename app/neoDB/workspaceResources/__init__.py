@@ -83,12 +83,14 @@ class workspaceResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def create_repository(self, deltaGraphId, tag, userId):
+    def create_repository(self, deltaGraphId, tag, userId, w_tag):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, deltaGraphId=deltaGraphId, tag=tag, userId=userId)
+            result = tx.run(
+                query, deltaGraphId=deltaGraphId, tag=tag, userId=userId, w_tag=w_tag
+            )
             try:
                 return [record for record in result][0]["deltaGraphId"]
             except Exception as exception:

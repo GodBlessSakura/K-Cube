@@ -127,7 +127,6 @@ class branchResources:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-
     def increment_pull_as_fork(self, overwriterId, overwriteeId, userId, tag):
         fname = sys._getframe().f_code.co_name
 
@@ -183,7 +182,6 @@ class branchResources:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
-
 
     def set_canPull(self, deltaGraphId, userId, canPull):
         fname = sys._getframe().f_code.co_name

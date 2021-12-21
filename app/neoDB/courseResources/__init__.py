@@ -113,7 +113,7 @@ class courseResources:
                     {
                         "course": dict(record["course"].items()),
                         "concept": dict(record["courseConcept"].items()),
-                        "isTeaching": record["isTeaching"]
+                        "isTeaching": record["isTeaching"],
                     }
                     for record in result
                 ]

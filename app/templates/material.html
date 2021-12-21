@@ -8,8 +8,8 @@
             </v-text-field>
         </v-row>
         <v-row>
-            <v-data-table show-group-by :headers="headers" style="width:100%" :items="materials" :items-per-page="500" multi-sort
-                :search="search">
+            <v-data-table show-group-by :headers="headers" style="width:100%" :items="materials" :items-per-page="500"
+                multi-sort :search="search">
                 <template v-slot:item.actions="{ item }">
                     <v-icon @click="newTab(item.url)">
                         open_in_new

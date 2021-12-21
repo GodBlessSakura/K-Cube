@@ -67,7 +67,7 @@ class APIDriver:
         from .feedbackResources import feedbackResources
 
         self.feedback = feedbackResources(driver=self.driver)
-        
+
         from .feedbackResources import feedbackResources
 
         self.feedback = feedbackResources(driver=self.driver)

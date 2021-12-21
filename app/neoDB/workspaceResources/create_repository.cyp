@@ -33,7 +33,7 @@ SET
     branch.tag = $tag,
     workspace.creationDate = datetime.transaction(),
     workspace.deltaGraphId = split(graph.deltaGraphId,'.')[0] + '.' + id(workspace),
-    workspace.tag = ""
+    workspace.tag = $w_tag
 WITH branch, graph, workspace
 CALL
 {
@@ -41,7 +41,7 @@ CALL
     MATCH (sh:GraphConcept)-[sr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: graph.deltaGraphId}]->(st:GraphConcept)
     MERGE (sh) -[fr:DELTA_GRAPH_RELATIONSHIP{name: sr.name, deltaGraphId: branch.deltaGraphId}]-> (st)
     ON CREATE SET
-        fr.creationDate = datetime.transaction(),
+        fr.creationDate = sr.creationDate,
         fr.value = sr.value
     RETURN null
 UNION

@@ -129,6 +129,11 @@ def reject_invalid(function):
             raise InvalidRequest("Invalid r_value.")
         if "isInternal" in kwargs and not isinstance(kwargs["isInternal"], bool):
             raise InvalidRequest("Invalid isInternal.")
+        if (
+            "w_tag" in kwargs
+            and re.search("^[a-zA-Z0-9\s.]{4,100}$", kwargs["w_tag"]) == None
+        ):
+            raise InvalidRequest("Invalid tag pattern.")
         return function(self, **kwargs)
 
     return wrapper

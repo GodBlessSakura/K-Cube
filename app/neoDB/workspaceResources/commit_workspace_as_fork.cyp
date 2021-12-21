@@ -31,7 +31,7 @@ CALL{
             )
     MERGE (wh)-[fr:DELTA_GRAPH_RELATIONSHIP{name: wr.name, deltaGraphId: branch.deltaGraphId}]-> (wt)
     SET
-        fr.creationDate = datetime.transaction(),
+        fr.creationDate = wr.creationDate,
         fr.value = wr.value
     DELETE wr
     RETURN null
@@ -40,7 +40,7 @@ UNION
     MATCH (sh:GraphConcept)-[sr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: subject.deltaGraphId}]->(st:GraphConcept)
     MERGE (sh) -[fr:DELTA_GRAPH_RELATIONSHIP{name: sr.name, deltaGraphId: branch.deltaGraphId}]-> (st)
     ON CREATE SET
-        fr.creationDate = datetime.transaction(),
+        fr.creationDate = sr.creationDate,
         fr.value = sr.value
     RETURN null
 }

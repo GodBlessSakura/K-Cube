@@ -11,11 +11,16 @@ workspace = Blueprint("workspace", __name__, url_prefix="workspace")
 @authorize_RESTful_with(["canWriteTeachingCourseBranch"])
 def post(deltaGraphId):
     if "tag" in request.json and deltaGraphId is not None:
-        if "repository" in request.json and request.json["repository"]:
+        if (
+            "repository" in request.json
+            and request.json["repository"]
+            and "w_tag" in request.json
+        ):
             newId = get_api_driver().workspace.create_repository(
                 deltaGraphId=deltaGraphId,
                 tag=request.json["tag"],
                 userId=session["user"]["userId"],
+                w_tag=request.json["w_tag"],
             )
             return jsonify({"success": True, "deltaGraphId": newId})
         if "triples" in request.json:

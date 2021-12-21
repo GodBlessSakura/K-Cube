@@ -1,0 +1,262 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout %}
+{% block head %}
+<meta charset="UTF-8">
+<meta name="viewport"
+    content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<title>drag demo</title>
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html,
+    body {
+        height: 100%;
+    }
+
+    #app {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        max-width: 980px;
+        margin: auto;
+    }
+
+    #course {
+        position: relative;
+        bottom: 0;
+        width: 100%;
+        height: 30px;
+        line-height: 30px;
+        text-align: center;
+        background: #00F;
+        color: #FFF
+    }
+
+    .list {
+        padding: 10px;
+        height: 20px;
+        border-bottom: 1px solid #ddd;
+        display: inline-block;
+    }
+
+    .time {
+        padding: 10px;
+        height: 20px;
+        border-bottom: 1px solid #ddd;
+        display: inline-block;
+    }
+
+    .buttonContainer {
+        margin: 2rem 0;
+    }
+
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+        font-family: inherit;
+        font-weight: normal;
+        border: none;
+        border-radius: 0.5rem;
+        background: #0f4871;
+        color: #fff;
+        cursor: pointer;
+        position: relative;
+        max-width: 18rem;
+        word-break: break-word;
+        word-wrap: break-word;
+        transition: all 0.5s;
+        margin-right: 1rem;
+    }
+
+    .btn:focus,
+    .btn:hover {
+        outline: none;
+    }
+
+    .btn:focus::before,
+    .btn:hover::before {
+        box-shadow: #0f4871 0 0 0 0.0625rem;
+        content: '';
+        height: calc(100% + 0.25rem);
+        left: 0;
+        margin-left: -0.25rem;
+        margin-top: -0.25rem;
+        pointer-events: none;
+        position: absolute;
+        top: 0;
+        width: calc(100% + 0.25rem);
+        border-radius: inherit;
+        padding: 0.125rem;
+    }
+
+    @media print {
+
+        header,
+        .buttonContainer {
+            display: none;
+        }
+    }
+
+    @page {
+        margin-top: 80px;
+        margin-bottom: 80px;
+
+        @top-center {}
+
+        @bottom-center {
+            /* footer with counter functions to insert page counters */
+            content: "Page "counter(page) " of "counter(pages)
+        }
+    }
+
+    #recycle {
+        position: absolute;
+        bottom: 0;
+        width: 100%;
+        height: 70px;
+        line-height: 70px;
+        text-align: center;
+        background: #ddd;
+    }
+</style>
+{% endblock %}
+{% block body %}
+<!-- <script src="scripts/upload.js"></script> -->
+
+<!-- PDF export methods I wrote using the libraries above -->
+<script>
+    // START: browser print (native functionality, right-click >> Print (or Command + P))
+    function downloadPDFWithBrowserPrint() {
+        window.print();
+    }
+    document.querySelector('#browserPrint').addEventListener('click', downloadPDFWithBrowserPrint);
+    // END: browser print
+</script>
+
+
+<script src="{{ url_for('static', filename='scheduleScript/index.js')}}"></script>
+<script src="{{ url_for('static', filename='scheduleScript/mobile-drag-drop/index.min.js')}}"></script>
+<script src="{{ url_for('static', filename='scheduleScript/mobile-drag-drop/scroll-behaviour.min.js')}}"></script>
+<script>
+    MobileDragDrop.polyfill({
+        // use this to make use of the scroll behaviour
+        dragImageTranslateOverride: MobileDragDrop.scrollBehaviourDragImageTranslateOverride
+    });
+</script>
+{% endblock %}
+{% block VueComponent %}
+<div id="app">
+    <div id="course">XX Class Schedule (tentative)</div>
+    <div class="main">
+        <div>
+            <div class="time" draggable="false">Week 1</div>
+            <div class="list" draggable="true" contenteditable="true"> Overview of data structures and algorithms</div>
+            <div class="list" draggable="true" contenteditable="true">Linked-lists</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+
+        <div>
+            <div class="time" draggable="false">Week 2</div>
+            <div class="list" draggable="true" contenteditable="true">Stacks</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 3</div>
+            <div class="list" draggable="true" contenteditable="true">Queues</div>
+            <div class="list" draggable="true" contenteditable="true">binary trees</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 4</div>
+            <div class="list" draggable="true" contenteditable="true">tree traversals</div>
+            <div class="list" draggable="true" contenteditable="true">Binary search trees</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+
+        <div>
+            <div class="time" draggable="false">Week 5</div>
+            <div class="list" draggable="true" contenteditable="true">Priority queues</div>
+            <div class="list" draggable="true" contenteditable="true">heaps</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 6</div>
+            <div class="list" draggable="true" contenteditable="true">Hash tables</div>
+            <div class="list" draggable="true" contenteditable="true">Searching algorithms</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 7</div>
+            <div class="list" draggable="true" contenteditable="true">Selection sort</div>
+            <div class="list" draggable="true" contenteditable="true">Sorting algorithm</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+
+        <div>
+            <div class="time" draggable="false">Week 8</div>
+            <div class="list" draggable="true" contenteditable="true">Intro to database</div>
+            <div class="list" draggable="true" contenteditable="true">Intro to relational model</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 9</div>
+            <div class="list" draggable="true" contenteditable="true">Intro to relational model</div>
+            <div class="list" draggable="true" contenteditable="true">Intro to SQL</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 10</div>
+            <div class="list" draggable="true" contenteditable="true">Intermediate SQL</div>
+            <div class="list" draggable="true" contenteditable="true">Advanced SQL</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+
+        <div>
+            <div class="time" draggable="false">Week 11</div>
+            <div class="list" draggable="true" contenteditable="true">Entity-relationship model</div>
+            <div class="list" draggable="true" contenteditable="true">abc</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 12</div>
+            <div class="list" draggable="true" contenteditable="true">Oracle lab</div>
+            <div class="list" draggable="true" contenteditable="true">Normalization algorithms</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+        <div>
+            <div class="time" draggable="false">Week 13</div>
+            <div class="list" draggable="true" contenteditable="true">Final exam</div>
+            <div class="list" draggable="true" contenteditable="true">Holidays</div>
+            <div class="list" draggable="true" contenteditable="true"></div>
+        </div>
+
+    </div>
+    <div id="recycle">Trash</div>
+
+    <div class="buttonContainer">
+        <button class="btn" id="docRaptor">function 1</button>
+        <button class="btn" id="pdfmake">function 2</button>
+        <!--<button class="btn" id="jsPDF">Export PDF with jsPDF</button>-->
+        <button class="btn" id="upJS">Upload Form</button>
+        <button class="btn" id="browserPrint">Export PDF with browser print</button>
+    </div>
+
+
+</div>
+{% endblock %}
+
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+
+        }),
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}
