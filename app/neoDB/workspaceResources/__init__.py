@@ -280,7 +280,18 @@ class workspaceResources:
                 userId=userId,
             )
             try:
-                return True
+                return [
+                    dict(
+                        {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["workspace"].items()
+                        }.items()
+                        | record["course"].items()
+                    )
+                    for record in result
+                ][0]
             except Exception as exception:
                 raise exception
 

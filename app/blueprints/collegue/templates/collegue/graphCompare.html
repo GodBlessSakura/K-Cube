@@ -341,9 +341,9 @@
             overwriterLabels: [],
             tag: '',
             tagRules: [v => !!v || 'Tag is required',
-                v => v.length > 3 && v.length < 101 ||
+                v => (v && v.length > 3 && v.length < 101) ||
                 'Tag should be anything between 4 and 100 charactors',
-                v => /^[a-zA-Z0-9\s.]+$/.test(v) ||
+                v => (v && /^[a-zA-Z0-9\s.]+$/.test(v)) ||
                 'Tag can only contains alphanumeric characters, dot(.) and space.'
             ],
             options: [],

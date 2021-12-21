@@ -27,7 +27,7 @@ class courseResources:
                 userId=userId,
             )
             try:
-                return True
+                return [dict(record["course"].items()) for record in result][0]
             except Exception as exception:
                 raise exception
 
@@ -81,7 +81,7 @@ class courseResources:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:
-                return
+                return [dict(record["course"].items()) for record in result][0]
             except Exception as exception:
                 raise exception
 
@@ -95,7 +95,7 @@ class courseResources:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:
-                return
+                return [dict(record["course"].items()) for record in result][0]
             except Exception as exception:
                 raise exception
 
@@ -164,7 +164,7 @@ class courseResources:
                 imageURL=imageURL,
             )
             try:
-                return True
+                return [dict(record["course"].items()) for record in result][0]
             except Exception as exception:
                 raise exception
 
@@ -182,7 +182,7 @@ class courseResources:
                 isInternal=isInternal,
             )
             try:
-                return True
+                return [dict(record["course"].items()) for record in result][0]
             except Exception as exception:
                 raise exception
 

@@ -2,6 +2,11 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
+    <div
+        style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 500; background-color: rgba(255,255,255,0.75);">
+        <v-autocomplete label="bring me to ..." clearable :items="items" item-text="text" item-value="value"
+            @change="focus($event)"></v-autocomplete>
+    </div>
     <div id="cy" style="height: 100%; width: 100%;"></div>
 </v-card>
 {% endblock %}
@@ -65,8 +70,12 @@
         return output
 
     }
+    var focusedNode = null
+    var animation = null
     Vue.component('app-content', {
-        data: () => ({}),
+        data: () => ({
+            items: []
+        }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
@@ -89,8 +98,17 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
+                        this.items = []
                         if (body.courses) {
                             body.courses.forEach(c => {
+                                this.items.push({
+                                    text: c.concept.name,
+                                    value: c.concept.name
+                                })
+                                this.items.push({
+                                    text: c.course.courseName,
+                                    value: c.course.courseName
+                                })
                                 cy.add(nodeFactory({
                                     id: c.concept.name,
                                     tag: c.course.courseName
@@ -100,7 +118,7 @@
                                 )
 
                             })
-                            for (let i = cy.nodes().length; i < 20; i++) {
+                            for (let i = cy.nodes().length; i < 80; i++) {
                                 cy.add(nodeFactory({
                                     id: i,
                                     tag: ''
@@ -109,6 +127,7 @@
                             }
                             cy.nodes().forEach((a, index) => {
                                 cy.nodes().slice(index + 1).forEach(b => {
+                                    if (Math.random() > 0.1) return
                                     cy.add(edgeFactory({
                                         start: a.data('id'),
                                         end: b.data('id'),
@@ -118,8 +137,8 @@
                             cy.layout({
                                 name: 'circle',
                                 fit: true,
-                                sweep: Math.PI,
-                                startAngle: Math.PI,
+                                sweep: undefined,
+                                startAngle: 1.5 * Math.PI,
                                 padding: document.documentElement.clientHeight * 0.15
                             }).run()
                         } else {
@@ -130,6 +149,30 @@
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
+            },
+            focus(id, duration = 1000) {
+                cy.stop()
+                cy.clearQueue()
+                if (id) {
+                    let node = cy.getElementById(id)
+                    focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
+                    animation = cy.animation({
+                        fit: {
+                            eles: focusedNode,
+                            padding: document.documentElement.clientHeight * 0.35
+                        },
+                        duration: duration
+                    })
+                } else {
+                    focusedNode = null
+                    animation = cy.animation({
+                        fit: {
+                            padding: document.documentElement.clientHeight * 0.15
+                        },
+                        duration: duration
+                    })
+                }
+                animation.play()
             }
         },
         mounted: function () {
@@ -142,7 +185,35 @@
                         'id'))
                 }
             })
+            cy.on('tap', 'edge', (event) => {
+                if (event.target == event.cy || event.target.length < 1) return
+
+                if (focusedNode) {
+                    let edge = event.target[0]
+                    let node = edge.connectedNodes().difference(focusedNode)
+                    this.focus(node.data("id"), 1000)
+                }
+            })
             this.loadData()
+            window.addEventListener('wheel', (event) => {
+                if (!focusedNode)
+                    this.focus(cy.nodes()[0].data("id"))
+                if (cy.animated()) {
+                    animation.progress(animation.progress() + 0.25)
+                    return
+                }
+                let delta = event.deltaY < 0 ? -1 : 1
+                let index = undefined
+                cy.nodes().forEach((node, i) => {
+                    if (node.data("id") == focusedNode.data("id")) index = i
+                })
+
+                console.log(((index + delta) % cy.nodes().length + cy.nodes().length) % cy.nodes()
+                    .length)
+                this.focus(cy.nodes()[((index + delta) % cy.nodes().length + cy.nodes().length) % cy
+                    .nodes().length].data("id"), 150)
+
+            });
         },
         template: '#content',
         delimiters: ['${', '}'],

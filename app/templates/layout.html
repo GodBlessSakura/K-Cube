@@ -388,27 +388,27 @@
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 101 ||
-                        'UserId should be anything between 4 and 100 charactors', v =>
-                        /^[a-zA-Z0-9]{4,100}$/.test(v) ||
+                        v => (v && v.length > 3 && v.length < 101) ||
+                        'UserId should be anything between 4 and 100 charactors',
+                        v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
                         'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) ||
+                        v => (v && /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v)) ||
                         'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
-                        v => v.length > 3 && v.length < 101 ||
-                        'Name should be anything between 4 and 100 charactors', v =>
-                        /^[a-zA-Z0-9\s]{4,100}$/.test(v) ||
+                        v => (v && v.length > 3 && v.length < 101) ||
+                        'Name should be anything between 4 and 100 charactors',
+                        v => (v && /^[a-zA-Z0-9\s]{4,100}$/.test(v)) ||
                         'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
                         v => !!v || 'E-mail is required',
-                        v => v.length < 320 || 'A valid email should have less then 320 characters',
-                        v =>
-                        /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v) ||
+                        v => (v && v.length < 320) ||
+                        'A valid email should have less then 320 characters',
+                        v => (v && /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v)) ||
                         'E-mail must be in valid format',
                     ],
                     password: '',
@@ -418,18 +418,18 @@
                     password2: '',
                     password2Rules: [
                         v => !!v || 'Password is required',
-                        v => v == app._data.registerForm.password || 'Two password are different'
+                        v => (v && v == app._data.registerForm.password) || 'Two password are different'
                     ],
                 },
                 loginForm: {
                     id: '',
                     idRules: [
                         v => !!v || 'UserId is required',
-                        v => v.length > 3 && v.length < 101 ||
-                        'UserId should be anything between 4 and 100 charactors', v =>
-                        /^[a-zA-Z0-9]{4,100}$/.test(v) ||
+                        v => (v && v.length > 3 && v.length < 101) ||
+                        'UserId should be anything between 4 and 100 charactors',
+                        v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
                         'UserId can only contains alphanumeric characters.',
-                        v => /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v) ||
+                        v => (v && /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v)) ||
                         'UserId must start with alphabetic characters.'
                     ],
                     password: '',

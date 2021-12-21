@@ -3,3 +3,4 @@ MATCH
     (course)-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode}),
     (instructor)-[assignment:USER_TEACH]->(course)
 DELETE assignment
+RETURN course
