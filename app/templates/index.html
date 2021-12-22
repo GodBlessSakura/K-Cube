@@ -43,36 +43,48 @@
 <script>
     cy = cytoscape({
         style: [{
-            selector: 'node',
-            style: {
-                'background-color': 'white',
-                'border-width': 1,
-                'border-color': 'grey'
+                selector: 'node',
+                style: {
+                    'background-color': 'white',
+                    'border-width': 1,
+                    'border-color': 'grey'
 
-            }
-        }, {
-            selector: 'node:selected',
-            style: {
-                'background-color': 'white',
-                'border-width': 3,
+                }
+            }, {
+                selector: 'node:selected',
+                style: {
+                    'background-color': 'white',
+                    'border-width': 3,
 
-            }
-        }, {
-            selector: 'node.course',
-            style: {
-                'label': 'data(tag)',
-                'text-outline-color': 'white',
-                'text-outline-width': 3,
-                'font-size': 8,
-                'background-image': 'data(imageURL)',
-                'background-fit': 'cover'
-            }
-        }, {
-            selector: 'edge',
-            style: {
-                'width': 1,
-            }
-        }, ],
+                }
+            }, {
+                selector: 'node.course',
+                style: {
+                    'label': 'data(tag)',
+                    'text-outline-color': 'white',
+                    'text-outline-width': 3,
+                    'font-size': 8,
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
+                }
+            }, {
+                selector: 'edge',
+                style: {
+                    'width': 1,
+                }
+            },
+            {
+                selector: 'edge.irrelevant',
+                style: {
+                    'opacity': 0.25
+                }
+            }, {
+                selector: 'edge.relevant',
+                style: {
+                    'width': 3 ,
+                }
+            },
+        ],
         userZoomingEnabled: false,
         userPanningEnabled: false,
         boxSelectionEnabled: false,
@@ -209,6 +221,9 @@
                     focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
                     this.focusingNode = true
                     focusedNode.select()
+                    cy.edges().addClass('irrelevant')
+                    focusedNode.connectedEdges().removeClass('irrelevant')
+                    focusedNode.connectedEdges().addClass('relevant')
                     animation = cy.animation({
                         fit: {
                             eles: focusedNode,
