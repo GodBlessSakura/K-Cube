@@ -11,7 +11,7 @@
                     @change="focus($event)"></v-autocomplete>
             </v-col>
             <v-col cols="auto">
-                <v-icon @click="focus($refs.searchBar.$data.selectedItems[0].text)">search</v-icon>
+                <v-icon @click="focus($refs.searchBar.$data.selectedItems[0].text)">loupe</v-icon>
             </v-col>
             <v-col cols="auto">
                 <v-icon @click="focus('')">home</v-icon>
@@ -81,7 +81,7 @@
             }, {
                 selector: 'edge.relevant',
                 style: {
-                    'width': 3 ,
+                    'width': 3,
                 }
             },
         ],
@@ -178,16 +178,27 @@
                                 )
 
                             })
-                            for (let i = cy.nodes().length; i < 80; i++) {
+                            for (let i = cy.nodes().length; i < 81; i++) {
                                 cy.add(nodeFactory({
                                     id: i,
                                     tag: ''
                                 }, ))
 
                             }
-                            cy.nodes().forEach((a, index) => {
-                                cy.nodes().slice(index + 1).forEach(b => {
-                                    if (Math.random() > 0.1) return
+                            let numberOfNode = cy.nodes().length
+                            let space = parseInt(numberOfNode / 5)
+                            let padding = parseInt(numberOfNode * 0.2)
+                            cy.nodes().forEach((a, i) => {
+                                [...cy.nodes().slice(i + 1), ...cy.nodes().slice(0, i)].forEach((b,
+                                    j) => {
+                                    if (j % space != 0) return
+                                    if (j < padding || j > numberOfNode - padding) return
+                                    if (cy.edges().filter(edge => {
+                                            return edge.source().data("id") == b.data(
+                                                    "id") && edge.target().data("id") ==
+                                                a
+                                                .data("id")
+                                        }).length > 0) return
                                     cy.add(edgeFactory({
                                         start: a.data('id'),
                                         end: b.data('id'),
