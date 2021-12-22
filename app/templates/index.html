@@ -2,12 +2,40 @@
 {% import 'layout.html' as layout %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
-    <div
-        style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 500; background-color: rgba(255,255,255,0.75);">
-        <v-autocomplete label="bring me to ..." clearable :items="items" item-text="text" item-value="value"
-            @change="focus($event)"></v-autocomplete>
-    </div>
+    <v-container no-gutters
+        style="position: absolute; top: 2.5%; margin-left: 10%; margin-right: 10%;z-index: 500; background-color: rgba(255,255,255,0.75);">
+        <v-row no-gutters>
+            <v-col>
+                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
+                    label="bring me to ..." clearable :items="items" item-text="text" item-value="value"
+                    @change="focus($event)"></v-autocomplete>
+            </v-col>
+            <v-col cols="auto">
+                <v-icon @click="focus($refs.searchBar.$data.selectedItems[0].text)">search</v-icon>
+            </v-col>
+            <v-col cols="auto">
+                <v-icon @click="focus('')">home</v-icon>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-subheader>Recent visit</v-subheader>
+            <v-chip-group>
+                <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
+                    ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
+                    'department':name.split("_").slice(1).join('_'))}
+                </v-chip>
+            </v-chip-group>
+        </v-row>
+    </v-container>
     <div id="cy" style="height: 100%; width: 100%;"></div>
+    <v-snackbar v-model="neverScrolled" timeout="-1">
+        <v-icon>mouse</v-icon> scroll or click to roam around available courseces and career. <v-icon>
+            attractions</v-icon>
+    </v-snackbar>
+    <v-snackbar v-model="focusingNode">
+        <v-icon>mouse</v-icon> click focused node <v-icon>radio_button_unchecked</v-icon> to open info page in new tab.
+        </v-icon>
+    </v-snackbar>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
@@ -20,6 +48,13 @@
                 'background-color': 'white',
                 'border-width': 1,
                 'border-color': 'grey'
+
+            }
+        }, {
+            selector: 'node:selected',
+            style: {
+                'background-color': 'white',
+                'border-width': 3,
 
             }
         }, {
@@ -41,7 +76,7 @@
         userZoomingEnabled: false,
         userPanningEnabled: false,
         boxSelectionEnabled: false,
-        autounselectify: true,
+
 
     })
 
@@ -65,16 +100,21 @@
             data: {
                 source: edge.start,
                 target: edge.end,
-            }
+            },
+            selectable: false
         }
         return output
 
     }
     var focusedNode = null
     var animation = null
+    var duration = null
     Vue.component('app-content', {
         data: () => ({
-            items: []
+            neverScrolled: true,
+            focusingNode: false,
+            items: [],
+            visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
         methods: {
             loadData() {
@@ -100,7 +140,15 @@
                         this.$root.progress.show = false
                         this.items = []
                         if (body.courses) {
-                            body.courses.forEach(c => {
+                            body.courses.sort((a, b) => {
+                                if (a.concept.name < b.concept.name) {
+                                    return -1;
+                                }
+                                if (a.concept.name > b.concept.name) {
+                                    return 1;
+                                }
+                                return 0;
+                            }).forEach(c => {
                                 this.items.push({
                                     text: c.concept.name,
                                     value: c.concept.name
@@ -150,16 +198,21 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            focus(id, duration = 1000) {
+            focus(id, d = 1000) {
                 cy.stop()
                 cy.clearQueue()
+                cy.nodes().unselect()
+                cy.edges().unselect()
+                duration = d
                 if (id) {
                     let node = cy.getElementById(id)
                     focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
+                    this.focusingNode = true
+                    focusedNode.select()
                     animation = cy.animation({
                         fit: {
                             eles: focusedNode,
-                            padding: document.documentElement.clientHeight * 0.35
+                            padding: document.documentElement.clientHeight * 0.39
                         },
                         duration: duration
                     })
@@ -172,6 +225,7 @@
                         duration: duration
                     })
                 }
+
                 animation.play()
             }
         },
@@ -180,26 +234,37 @@
             self = this
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
-                if (event.target.classes().includes("course")) {
-                    this.newTab("{{ url_for('course')}}" + event.target[0].data(
-                        'id'))
+                if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
+                    this.focus(event.target[0].data('id'), 500)
+                } else {
+                    if (event.target.classes().includes("course")) {
+                        this.newTab("{{ url_for('course')}}" + event.target[0].data(
+                            'id'))
+                    }
                 }
             })
             cy.on('tap', 'edge', (event) => {
-                if (event.target == event.cy || event.target.length < 1) return
+                if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
 
-                if (focusedNode) {
-                    let edge = event.target[0]
-                    let node = edge.connectedNodes().difference(focusedNode)
-                    this.focus(node.data("id"), 1000)
+
+                let edge = event.target[0]
+                let node = edge.connectedNodes().difference(focusedNode)
+                if (node.length == 1) {
+                    this.focus(node.data("id"))
+                    node.select()
+                } else {
+                    this.focus(edge.source().data("id"))
+                    edge.source().select()
                 }
+
             })
             this.loadData()
             window.addEventListener('wheel', (event) => {
+                this.neverScrolled = false
                 if (!focusedNode)
-                    this.focus(cy.nodes()[0].data("id"))
+                    this.focus(cy.nodes()[0].data("id"), 500)
                 if (cy.animated()) {
-                    animation.progress(animation.progress() + 0.25)
+                    if (duration == 150) animation.progress(animation.progress() + 0.25)
                     return
                 }
                 let delta = event.deltaY < 0 ? -1 : 1
@@ -207,9 +272,6 @@
                 cy.nodes().forEach((node, i) => {
                     if (node.data("id") == focusedNode.data("id")) index = i
                 })
-
-                console.log(((index + delta) % cy.nodes().length + cy.nodes().length) % cy.nodes()
-                    .length)
                 this.focus(cy.nodes()[((index + delta) % cy.nodes().length + cy.nodes().length) % cy
                     .nodes().length].data("id"), 150)
 

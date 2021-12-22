@@ -184,5 +184,15 @@
         template: '#content',
         delimiters: ['${', '}'],
     })
+    let visited = JSON.parse(localStorage.getItem('visitedCourseGraph'))
+    console.log(JSON.parse(localStorage.getItem('visitedCourseGraph')))
+    console.log(JSON.stringify(visited))
+    if (!visited) {
+        visited = {}
+    }
+    console.log(JSON.stringify(visited))
+    visited["{{courseCode}}" + "_" + "{{userId}}"] = location.href
+    console.log(JSON.stringify(visited))
+    localStorage.setItem('visitedCourseGraph', JSON.stringify(visited))
 </script>
 {% endblock %}
