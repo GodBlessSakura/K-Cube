@@ -318,6 +318,7 @@
                 if (event.target == event.cy) {
                     cy.edges().removeClass('irrelevant')
                     focusedNode = null
+                    this.focusingEdge = false
 
                 }
             })
@@ -326,7 +327,7 @@
                 this.focusingEdge = false
             })
             this.loadData()
-            window.addEventListener('wheel', (event) => {
+            scroll = (delta) => {
                 this.neverScrolled = false
                 if (!focusedNode) {
                     if (cy.nodes(':selected').length > 0) {
@@ -340,7 +341,6 @@
                     if (duration == 150) animation.progress(animation.progress() + 0.25)
                     return
                 }
-                let delta = event.deltaY < 0 ? -1 : 1
                 let index = undefined
                 cy.nodes().forEach((node, i) => {
                     if (node.data("id") == focusedNode.data("id")) index = i
@@ -348,7 +348,19 @@
                 this.focus(cy.nodes()[((index + delta) % cy.nodes().length + cy.nodes().length) % cy
                     .nodes().length].data("id"), 150)
 
+            }
+            window.addEventListener('wheel', (event) => {
+                let delta = event.deltaY < 0 ? -1 : 1
+                scroll(delta)
             });
+            window.addEventListener('keydown', (event) => {
+                let delta = event.key == "ArrowLeft" || event.key == "ArrowUp" ? -1 : event.key ==
+                    "ArrowRight" ||
+                    event.key == "ArrowDown" ? 1 : null;
+                console.log(event.key)
+                console.log(delta)
+                if (delta) scroll(delta)
+            })
         },
         template: '#content',
         delimiters: ['${', '}'],
