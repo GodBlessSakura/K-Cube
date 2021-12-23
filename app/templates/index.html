@@ -36,7 +36,8 @@
             attractions</v-icon>
     </v-snackbar>
     <v-snackbar color="success" outlined style="text-align: center;" :value="url" timeout="-1">
-        <v-btn color="success" block :href="url">Proceed to ${url?.split('/')[url?.split('/').length-1]} page</v-btn>
+        <v-btn color="success" style="text-transform: none;" block :href="url">Proceed to
+            ${url?.split('/').reverse()[0]}'s page</v-btn>
     </v-snackbar>
     <v-snackbar center right :color="edgeColor" v-model="focusingEdge" timeout="-1">
         <v-row no-gutters>
@@ -300,6 +301,7 @@
                 if (event.target == event.cy) return
                 if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
                     this.focus(event.target[0].data('id'), 500)
+                    this.focusingEdge = false
                 }
             })
             cy.on('select', 'edge', (event) => {
