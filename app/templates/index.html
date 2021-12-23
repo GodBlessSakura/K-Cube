@@ -11,10 +11,13 @@
                     @change="focus($event)"></v-autocomplete>
             </v-col>
             <v-col cols="auto">
-                <v-icon @click="focus($refs.searchBar.$data.selectedItems[0].text)">loupe</v-icon>
+                <v-icon @click="focus($refs.searchBar.$data.selectedItems[0].text)">search</v-icon>
             </v-col>
             <v-col cols="auto">
                 <v-icon @click="focus('')">home</v-icon>
+            </v-col>
+            <v-col cols="auto">
+                <v-icon @click="backToSelectedNode()">loupe</v-icon>
             </v-col>
         </v-row>
         <v-row>
@@ -28,13 +31,24 @@
         </v-row>
     </v-container>
     <div id="cy" style="height: 100%; width: 100%;"></div>
-    <v-snackbar v-model="neverScrolled" timeout="-1">
+    <v-snackbar :value="neverScrolled && !focusingNode && !focusingEdge" timeout="-1">
         <v-icon>mouse</v-icon> scroll or click to roam around available courseces and career. <v-icon>
             attractions</v-icon>
     </v-snackbar>
-    <v-snackbar v-model="focusingNode">
-        <v-icon>mouse</v-icon> click focused node <v-icon>radio_button_unchecked</v-icon> to open info page in new tab.
-        </v-icon>
+    <v-snackbar color="success" outlined style="text-align: center;" :value="url" timeout="-1">
+        <v-btn color="success" block :href="url">Proceed to ${url?.split('/')[url?.split('/').length-1]} page</v-btn>
+    </v-snackbar>
+    <v-snackbar center right :color="edgeColor" v-model="focusingEdge" timeout="-1">
+        <v-row no-gutters>
+            <v-col cols="auto">
+                <v-btn color="primary" style="text-transform: none;" @click="focus(edgeSource)">${edgeSource}</v-btn>
+            </v-col>
+            <v-col style="text-align: center">${edgeTag}
+            </v-col>
+            <v-col cols="auto">
+                <v-btn color="primary" style="text-transform: none;" @click="focus(edgeEnd)">${edgeEnd}</v-btn>
+            </v-col>
+        </v-row>
     </v-snackbar>
 </v-card>
 {% endblock %}
@@ -71,6 +85,7 @@
                 selector: 'edge',
                 style: {
                     'width': 1,
+                    'line-color': 'grey',
                 }
             },
             {
@@ -80,8 +95,12 @@
                 }
             }, {
                 selector: 'edge.relevant',
+                style: {}
+            }, {
+                selector: 'edge:selected',
                 style: {
                     'width': 3,
+                    'opacity': 1,
                 }
             },
         ],
@@ -112,8 +131,9 @@
             data: {
                 source: edge.start,
                 target: edge.end,
+                color: edge.color,
             },
-            selectable: false
+            classes: edge.classes,
         }
         return output
 
@@ -123,15 +143,21 @@
     var duration = null
     Vue.component('app-content', {
         data: () => ({
+            url: null,
             neverScrolled: true,
             focusingNode: false,
+            focusingEdge: false,
+            edgeSource: "",
+            edgeTag: "",
+            edgeEnd: "",
+            edgeColor: "",
             items: [],
             visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch(
+                let coursePromise = fetch(
                         "{{ url_for('RESTful.course.query', list=True) }}", {
                             method: 'GET',
                             cache: 'no-store',
@@ -175,48 +201,55 @@
                                 }, ["course"])).data(
                                     'imageURL',
                                     c.course.imageURL,
-                                )
+                                ).data("url", "{{ url_for('course')}}" + c.concept.name)
 
                             })
-                            for (let i = cy.nodes().length; i < 80; i++) {
-                                cy.add(nodeFactory({
-                                    id: i,
-                                    tag: ''
-                                }, ))
-
-                            }
-                            let numberOfNode = cy.nodes().length
-                            let space = parseInt(numberOfNode / 5)
-                            let padding = parseInt(numberOfNode * 0.2)
-                            cy.nodes().forEach((a, i) => {
-                                [...cy.nodes().slice(i + 1), ...cy.nodes().slice(0, i)].forEach((b,
-                                    j) => {
-                                    if (j % space != 0) return
-                                    if (j < padding || j > numberOfNode - padding) return
-                                    if (cy.edges().filter(edge => {
-                                            return edge.source().data("id") == b.data(
-                                                    "id") && edge.target().data("id") ==
-                                                a
-                                                .data("id")
-                                        }).length > 0) return
-                                    cy.add(edgeFactory({
-                                        start: a.data('id'),
-                                        end: b.data('id'),
-                                    }))
-                                })
-                            })
-                            cy.layout({
-                                name: 'circle',
-                                fit: true,
-                                sweep: undefined,
-                                startAngle: 1.5 * Math.PI,
-                                padding: document.documentElement.clientHeight * 0.15
-                            }).run()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
                         }
                     })
+
+                Promise.all([coursePromise]).then(bodies => {
+                    for (let i = cy.nodes().length; i < 80; i++) {
+                        cy.add(nodeFactory({
+                            id: i,
+                            tag: ''
+                        }, ))
+
+                    }
+                    let numberOfNode = cy.nodes().length
+                    let space = parseInt(numberOfNode / 5)
+                    let padding = parseInt(numberOfNode * 0.2)
+                    cy.nodes().forEach((a, i) => {
+                        [...cy.nodes().slice(i + 1), ...cy.nodes().slice(0, i)].forEach((b,
+                            j) => {
+                            if (j % space != 0) return
+                            if (j < padding || j > numberOfNode - padding) return
+                            if (cy.edges().filter(edge => {
+                                    return edge.source().data("id") == b.data(
+                                            "id") && edge.target().data("id") ==
+                                        a
+                                        .data("id")
+                                }).length > 0) return
+                            cy.add(edgeFactory({
+                                start: a.data('id'),
+                                end: b.data('id'),
+                                color: "grey",
+                                classes: []
+                            }))
+                        })
+                    })
+                    cy.layout({
+                        name: 'circle',
+                        fit: true,
+                        sweep: undefined,
+                        startAngle: 1.5 * Math.PI,
+                        padding: document.documentElement.clientHeight * 0.15
+                    }).run()
+
+                    this.$root.progress.show = false
+                })
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
@@ -224,10 +257,9 @@
             focus(id, d = 1000) {
                 cy.stop()
                 cy.clearQueue()
-                cy.nodes().unselect()
-                cy.edges().unselect()
                 duration = d
                 if (id) {
+                    cy.nodes().unselect()
                     let node = cy.getElementById(id)
                     focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
                     this.focusingNode = true
@@ -242,8 +274,10 @@
                         },
                         duration: duration
                     })
+                    this.url = focusedNode.data("url")
                 } else {
                     focusedNode = null
+                    this.url = null
                     animation = cy.animation({
                         fit: {
                             padding: document.documentElement.clientHeight * 0.15
@@ -253,6 +287,10 @@
                 }
 
                 animation.play()
+            },
+            backToSelectedNode() {
+                if (cy.nodes(':selected').length > 0) this.focus(cy.nodes(':selected').data("id"), 500)
+
             }
         },
         mounted: function () {
@@ -262,33 +300,40 @@
                 if (event.target == event.cy) return
                 if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
                     this.focus(event.target[0].data('id'), 500)
-                } else {
-                    if (event.target.classes().includes("course")) {
-                        this.newTab("{{ url_for('course')}}" + event.target[0].data(
-                            'id'))
-                    }
                 }
             })
-            cy.on('tap', 'edge', (event) => {
+            cy.on('select', 'edge', (event) => {
                 if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
-
-
                 let edge = event.target[0]
-                let node = edge.connectedNodes().difference(focusedNode)
-                if (node.length == 1) {
-                    this.focus(node.data("id"))
-                    node.select()
-                } else {
-                    this.focus(edge.source().data("id"))
-                    edge.source().select()
-                }
+                this.edgeSource = edge.source().data("id")
+                this.edgeEnd = edge.target().data("id")
+                this.edgeTag = edge.data("tag")
+                this.edgeColor = edge.data("color")
+                this.focusingEdge = true
+            })
 
+            cy.on('tap', (event) => {
+                if (event.target == event.cy) {
+                    cy.edges().removeClass('irrelevant')
+                    focusedNode = null
+
+                }
+            })
+            cy.on('unselect', 'edge', (event) => {
+                if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
+                this.focusingEdge = false
             })
             this.loadData()
             window.addEventListener('wheel', (event) => {
                 this.neverScrolled = false
-                if (!focusedNode)
-                    this.focus(cy.nodes()[0].data("id"), 500)
+                if (!focusedNode) {
+                    if (cy.nodes(':selected').length > 0) {
+                        this.focus(cy.nodes(':selected').data("id"), 500)
+                    } else {
+                        this.focus(cy.nodes()[0].data("id"), 500)
+                    }
+                    return
+                }
                 if (cy.animated()) {
                     if (duration == 150) animation.progress(animation.progress() + 0.25)
                     return
