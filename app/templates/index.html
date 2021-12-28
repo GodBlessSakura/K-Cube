@@ -5,21 +5,21 @@
     <v-container no-gutters
         style="position: absolute; top: 2.5%; margin-left: 10%; margin-right: 10%;z-index: 100; background-color: rgba(255,255,255,0.75);">
         <v-row no-gutters>
-            <v-col>
-                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
-                    :menu-props="{value: (!search || search == ''?false:true)}" :search-input.sync="search"
-                    label="bring me to ..." clearable :items="items" item-text="text" item-value="value"
-                    @change="focus($event)">
-                </v-autocomplete>
-            </v-col>
             <v-col cols="auto">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on" @click="focus($refs.searchBar.$data.selectedItems[0].text)">
-                            zoom_in</v-icon>
+                        <v-icon v-bind="attrs" v-on="on"
+                            @click="if($refs.searchBar.$data.selectedItems.length>0)focus($refs.searchBar.$data.selectedItems[0].text)">
+                            manage_search</v-icon>
                     </template>
-                    bring me to selected item
+                    bring me to
                 </v-tooltip>
+            </v-col>
+            <v-col>
+                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
+                    :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search" label="bring me to ..."
+                    clearable :items="items" item-text="text" item-value="value" @change="focus($event)">
+                </v-autocomplete>
             </v-col>
             <v-col cols="auto">
                 <v-tooltip bottom>
@@ -324,7 +324,7 @@
             self = this
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
-                if (event.target.classes().includes("pad")) return
+                // if (event.target.classes().includes("pad")) return
                 if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
                     this.focus(event.target[0].data('id'), 500)
                     this.focusingEdge = false
