@@ -39,28 +39,30 @@
                         <v-col>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces?.length==1"
-                                        :href="'{{ url_for('instructor.workspace')}}' + item.workspaces[0].deltaGraphId">
-                                        <v-icon>
-                                            work
-                                        </v-icon>
-                                    </v-btn>
-                                    <v-autocomplete dense append-outer-icon="work" v-bind="attrs" v-on="on"
-                                        item-text="tag" item-value="deltaGraphId" v-if="item.workspaces?.length>1"
-                                        :items="item.workspaces"
-                                        @change="this.window.open('{{ url_for('instructor.workspace')}}' + $event, '_blank')">
-                                        <template v-slot:item="data">
-                                            <v-list-item-content>
-                                                ${data.item.tag!=''?data.item.tag:'(unnamed)'}
-                                            </v-list-item-content>
-                                        </template>
-                                    </v-autocomplete>
-                                    <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces.length == 0"
-                                        @click="createWorkspaceDialogue(item.deltaGraphId)">
-                                        <v-icon>
-                                            work_outline
-                                        </v-icon>
-                                    </v-btn>
+                                    <span>
+                                        <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces?.length==1"
+                                            :href="'{{ url_for('instructor.workspace')}}' + item.workspaces[0].deltaGraphId">
+                                            <v-icon>
+                                                work
+                                            </v-icon>
+                                        </v-btn>
+                                        <v-autocomplete dense append-outer-icon="work" v-bind="attrs" v-on="on"
+                                            item-text="tag" item-value="deltaGraphId" v-if="item.workspaces?.length>1"
+                                            :items="item.workspaces"
+                                            @change="this.window.open('{{ url_for('instructor.workspace')}}' + $event, '_blank')">
+                                            <template v-slot:item="data">
+                                                <v-list-item-content>
+                                                    ${data.item.tag!=''?data.item.tag:'(unnamed)'}
+                                                </v-list-item-content>
+                                            </template>
+                                        </v-autocomplete>
+                                        <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces.length == 0"
+                                            @click="createWorkspaceDialogue(item.deltaGraphId)">
+                                            <v-icon>
+                                                work_outline
+                                            </v-icon>
+                                        </v-btn>
+                                    </span>
                                 </template>
                                 ${item.workspaces?'workspace' + (item.workspaces.length==1?'':'s') +' for latest'+
                                 ' version':'create workspace for latest version'}
