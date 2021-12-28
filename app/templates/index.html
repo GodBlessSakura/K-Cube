@@ -18,7 +18,7 @@
                 </v-tooltip>
             </v-col>
             <v-col>
-                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
+                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
                     :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search" label="bring me to ..."
                     clearable :items="items" item-text="text" item-value="value" @change="focus($event)">
                 </v-autocomplete>
