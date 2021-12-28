@@ -59,7 +59,10 @@
                 {% else %}
                 <v-dialog v-model="shouldShowLoginForm" persistent max-width="600px">
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn text v-bind="attrs" v-on="on">
+                        <v-btn text v-bind="attrs" v-on="on" @click="tab=1">
+                            Sign up
+                        </v-btn>
+                        <v-btn text v-bind="attrs" v-on="on" @click="tab=2">
                             Login
                         </v-btn>
                     </template>
@@ -418,7 +421,8 @@
                     password2: '',
                     password2Rules: [
                         v => !!v || 'Password is required',
-                        v => (v && v == app._data.registerForm.password) || 'Two password are different'
+                        v => (v && v == app._data.registerForm.password) ||
+                        'Two password are different'
                     ],
                 },
                 loginForm: {
@@ -434,7 +438,7 @@
                     ],
                     password: '',
                     passwordRules: [
-                        v => !!v || 'UserId is required',
+                        v => !!v || 'Password is required',
                     ],
                 }
             }),

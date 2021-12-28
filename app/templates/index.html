@@ -3,21 +3,39 @@
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
     <v-container no-gutters
-        style="position: absolute; top: 2.5%; margin-left: 10%; margin-right: 10%;z-index: 500; background-color: rgba(255,255,255,0.75);">
+        style="position: absolute; top: 2.5%; margin-left: 10%; margin-right: 10%;z-index: 100; background-color: rgba(255,255,255,0.75);">
         <v-row no-gutters>
             <v-col>
                 <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
+                    :menu-props="{value: (!search || search == ''?false:true)}" :search-input.sync="search"
                     label="bring me to ..." clearable :items="items" item-text="text" item-value="value"
-                    @change="focus($event)"></v-autocomplete>
+                    @change="focus($event)">
+                </v-autocomplete>
             </v-col>
             <v-col cols="auto">
-                <v-icon @click="focus($refs.searchBar.$data.selectedItems[0].text)">search</v-icon>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" @click="focus($refs.searchBar.$data.selectedItems[0].text)">
+                            zoom_in</v-icon>
+                    </template>
+                    bring me to selected item
+                </v-tooltip>
             </v-col>
             <v-col cols="auto">
-                <v-icon @click="focus('')">home</v-icon>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" @click="focus('')">zoom_out_map</v-icon>
+                    </template>
+                    zoom out
+                </v-tooltip>
             </v-col>
             <v-col cols="auto">
-                <v-icon @click="backToSelectedNode()">loupe</v-icon>
+                <v-tooltip bottom>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-icon v-bind="attrs" v-on="on" @click="backToSelectedNode()">loupe</v-icon>
+                    </template>
+                    back to selected
+                </v-tooltip>
             </v-col>
         </v-row>
         <v-row>
@@ -30,7 +48,7 @@
             </v-chip-group>
         </v-row>
     </v-container>
-    <div id="cy" style="height: 100%; width: 100%;"></div>
+    <div id="cy" style="height: 99%; width: 99%;"></div>
     <v-snackbar :value="neverScrolled && !focusingNode && !focusingEdge" timeout="-1">
         <v-icon>mouse</v-icon> scroll or click to roam around available courseces and career. <v-icon>
             attractions</v-icon>
@@ -58,6 +76,12 @@
 <script>
     cy = cytoscape({
         style: [{
+                selector: 'core',
+                style: {
+                    "active-bg-size": 0
+                }
+            },
+            {
                 selector: 'node',
                 style: {
                     'background-color': 'white',
@@ -152,6 +176,7 @@
             edgeTag: "",
             edgeEnd: "",
             edgeColor: "",
+            search: "",
             items: [],
             visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
@@ -216,7 +241,7 @@
                         cy.add(nodeFactory({
                             id: i,
                             tag: ''
-                        }, ))
+                        }, ["pad"]))
 
                     }
                     let numberOfNode = cy.nodes().length
@@ -299,6 +324,7 @@
             self = this
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
+                if (event.target.classes().includes("pad")) return
                 if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
                     this.focus(event.target[0].data('id'), 500)
                     this.focusingEdge = false
@@ -357,8 +383,6 @@
                 let delta = event.key == "ArrowLeft" || event.key == "ArrowUp" ? -1 : event.key ==
                     "ArrowRight" ||
                     event.key == "ArrowDown" ? 1 : null;
-                console.log(event.key)
-                console.log(delta)
                 if (delta) scroll(delta)
             })
         },
