@@ -8,9 +8,11 @@
             <v-col cols="auto">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on"
-                            @click="if($refs.searchBar.$data.selectedItems.length>0)focus($refs.searchBar.$data.selectedItems[0].text)">
-                            manage_search</v-icon>
+                        <v-btn icon color="primary" v-bind="attrs" v-on="on"
+                            :disabled="$refs?.searchBar?.$data.selectedItems.length==0"
+                            @click="focus($refs.searchBar.$data.selectedItems[0].text)">
+                            <v-icon>manage_search</v-icon>
+                        </v-btn>
                     </template>
                     bring me to
                 </v-tooltip>
@@ -24,7 +26,9 @@
             <v-col cols="auto">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on" @click="focus('')">zoom_out_map</v-icon>
+                        <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')">
+                            <v-icon>zoom_out_map</v-icon>
+                        </v-btn>
                     </template>
                     zoom out
                 </v-tooltip>
@@ -32,7 +36,9 @@
             <v-col cols="auto">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on" @click="backToSelectedNode()">loupe</v-icon>
+                        <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToSelectedNode()">
+                            <v-icon>loupe</v-icon>
+                        </v-btn>
                     </template>
                     back to selected
                 </v-tooltip>

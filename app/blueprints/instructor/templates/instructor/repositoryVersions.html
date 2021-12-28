@@ -195,7 +195,7 @@
                                     deltaGraphId: branch.property.deltaGraphId,
                                     parent: parent,
                                     workspaces: workspaces,
-                                    pullRequest: branch.property.canPull
+                                    pullRequest: branch.property.canPull? true: false
                                 })
                                 candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
                                     e.end == cursor)
