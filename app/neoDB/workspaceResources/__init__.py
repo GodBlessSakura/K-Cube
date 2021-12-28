@@ -288,7 +288,6 @@ class workspaceResources:
                             else str(value.iso_format())
                             for key, value in record["workspace"].items()
                         }.items()
-                        | record["course"].items()
                     )
                     for record in result
                 ][0]

@@ -55,8 +55,8 @@
                                             </v-list-item-content>
                                         </template>
                                     </v-autocomplete>
-                                    <v-btn icon v-bind="attrs" v-on="on" v-if="!item.workspaces"
-                                        @click="createWorkspaceDialogue(item.deltaGraphIds[item.deltaGraphIds.length-1])">
+                                    <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces.length == 0"
+                                        @click="createWorkspaceDialogue(item.deltaGraphId)">
                                         <v-icon>
                                             work_outline
                                         </v-icon>
@@ -70,6 +70,11 @@
                 </template>
                 <template v-slot:item.creationDate="{ item }">
                     ${item.creationDate | formatDate}
+                </template>
+
+                <template v-slot:item.pullRequest="{ item }">
+                    <v-simple-checkbox :value="item.pullRequest" readonly color="info"
+                        @click="readyToPush(item.deltaGraphId,!item.pullRequest)"></v-simple-checkbox>
                 </template>
             </v-data-table>
         </v-row>
@@ -120,6 +125,10 @@
                     text: '',
                     value: 'info',
                     groupable: false,
+                },
+                {
+                    text: 'pull request made',
+                    value: 'pullRequest'
                 },
                 {
                     text: '',
@@ -184,6 +193,7 @@
                                     deltaGraphId: branch.property.deltaGraphId,
                                     parent: parent,
                                     workspaces: workspaces,
+                                    pullRequest: branch.property.canPull
                                 })
                                 candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
                                     e.end == cursor)
@@ -202,7 +212,71 @@
             newTab(id) {
                 let w = window.open("{{ url_for('instructor.repositoryVersions', courseCode=courseCode) }}/" +
                     id, '_blank')
-            }
+            },
+            readyToPush(id, value) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.branch.patch') }}" + id, {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            canPull: value
+                        })
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Creation failed for unknown reason.',
+                            () => {
+                                this.loadData()
+                            })
+                    })
+            },
+            createWorkspaceDialogue(deltaGraphId) {
+                this.workspaceCreateDialog = true
+                this.deltaGraphId = deltaGraphId
+            },
+            createWorkspace() {
+                if (this.$refs.createWorkspaceControl.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.workspace.post') }}" + this.deltaGraphId, {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                tag: this.tag,
+                            })
+                        })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'Creation failed for unknown reason.',
+                                () => {
+                                    this.workspaceCreateDialog = false
+                                    this.$refs.createWorkspaceControl.reset()
+                                    this.loadData()
+                                })
+                        })
+                }
+            },
         },
         mounted: function () {
             this.loadData()

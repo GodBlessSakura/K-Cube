@@ -76,8 +76,9 @@
                                                 <v-list-item-content>
                                                     ${data.item.tag!=''?data.item.tag:'(unnamed)'}
                                                 </v-list-item-content>
+                                            </template>
                                         </v-autocomplete>
-                                        <v-btn icon v-bind="attrs" v-on="on" v-if="!item.workspaces"
+                                        <v-btn icon v-bind="attrs" v-on="on" v-if="item.workspaces.length == 0"
                                             @click="createWorkspaceDialogue(item.deltaGraphIds[item.deltaGraphIds.length-1])">
                                             <v-icon>
                                                 work_outline
@@ -205,6 +206,11 @@
                     groupable: false,
                 },
                 {
+                    text: '# of pull requests',
+                    value: 'pullRequests',
+                    groupable: false,
+                },
+                {
                     text: '',
                     value: 'actions',
                     groupable: false,
@@ -287,6 +293,7 @@
                                 let versions = 1
                                 let cursor = edge.start
                                 let exposedOffset = branch.isExposed ? versions : null
+                                let pendingToBePulled = 0
                                 let deltaGraphIds = [parent.property.deltaGraphId, branch.property
                                     .deltaGraphId
                                 ]
@@ -299,6 +306,7 @@
                                     child = body.branch_nodes.filter(b => b.id == cursor)[0]
                                     deltaGraphIds.push(child.property.deltaGraphId)
                                     exposedOffset = child.isExposed ? versions : exposedOffset
+                                    if (child.property.canPull) pendingToBePulled++
                                     candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
                                         e.end == cursor)
                                 }
@@ -319,6 +327,7 @@
                                     deltaGraphIds: deltaGraphIds,
                                     owned: branch.isOwner,
                                     exposedOffset: exposedOffset,
+                                    pullRequests: pendingToBePulled,
                                     creationDate: branch.property.creationDate,
                                     lastModifiedDate: child.property.creationDate
                                 })
