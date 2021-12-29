@@ -93,7 +93,16 @@
                 style: {
                     'background-color': 'white',
                     'border-width': 1,
-                    'border-color': 'grey'
+                    'border-color': 'grey',
+                    'text-wrap': 'wrap',
+                    'text-max-width': 45,
+                    'line-height': 1.5,
+                    'label': 'data(tag)',
+                    'text-outline-color': 'white',
+                    'text-outline-width': 2,
+                    'font-size': 7,
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
 
                 }
             }, {
@@ -105,14 +114,7 @@
                 }
             }, {
                 selector: 'node.course',
-                style: {
-                    'label': 'data(tag)',
-                    'text-outline-color': 'white',
-                    'text-outline-width': 2,
-                    'font-size': 5,
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover'
-                }
+                style: {}
             }, {
                 selector: 'edge',
                 style: {
