@@ -7,6 +7,7 @@ CREATE CONSTRAINT GraphConcept_uid_constraint IF NOT EXISTS ON (n:GraphConcept) 
 CREATE CONSTRAINT GraphRelationship_uid_constraint IF NOT EXISTS ON (n:GraphRelationship) ASSERT n.name IS UNIQUE;
 CREATE CONSTRAINT job_uid_constraint IF NOT EXISTS ON (n:Job) ASSERT n.jobId IS UNIQUE;
 CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.studentId IS UNIQUE;
+CREATE CONSTRAINT MetaConcept_uid_constraint IF NOT EXISTS ON (n:MetaConcept) ASSERT n.name IS UNIQUE;
 MERGE (p:Permission {role: "admin"})
 SET
     p = {
@@ -30,8 +31,8 @@ SET
         canProposeRelationship : true,
         canCreateGraphConcept : true,
         canJoinCourse : false,
-        canWriteTeachingCourseBranch : false,
-        canReadTeachingCourseBranch : false,
+        canWriteTeachingCourseBranch : true,
+        canReadTeachingCourseBranch : true,
         canWriteTeachingCourseMaterial : false,
         canGiveFeedback : true,
         canReplyFeedback : true

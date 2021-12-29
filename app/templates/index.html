@@ -5,6 +5,12 @@
     <v-container no-gutters
         style="position: absolute; top: 2.5%; margin-left: 10%; margin-right: 10%;z-index: 100; background-color: rgba(255,255,255,0.75);">
         <v-row no-gutters>
+            <v-col>
+                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
+                    :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search" label="bring me to ..."
+                    clearable :items="items" item-text="text" item-value="value" @change="focus($event)">
+                </v-autocomplete>
+            </v-col>
             <v-col cols="auto">
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
@@ -16,12 +22,6 @@
                     </template>
                     bring me to
                 </v-tooltip>
-            </v-col>
-            <v-col>
-                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
-                    :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search" label="bring me to ..."
-                    clearable :items="items" item-text="text" item-value="value" @change="focus($event)">
-                </v-autocomplete>
             </v-col>
             <v-col cols="auto">
                 <v-tooltip bottom>
@@ -68,7 +68,8 @@
             <v-col cols="auto">
                 <v-btn color="primary" style="text-transform: none;" @click="focus(edgeSource)">${edgeSource}</v-btn>
             </v-col>
-            <v-col style="text-align: center">${edgeTag}
+            <v-col style="text-align: center">
+                <v-btn style="pointer-events: none" text>${edgeTag}</v-btn>
             </v-col>
             <v-col cols="auto">
                 <v-btn color="primary" style="text-transform: none;" @click="focus(edgeEnd)">${edgeEnd}</v-btn>
@@ -107,16 +108,18 @@
                 style: {
                     'label': 'data(tag)',
                     'text-outline-color': 'white',
-                    'text-outline-width': 3,
-                    'font-size': 8,
+                    'text-outline-width': 2,
+                    'font-size': 5,
                     'background-image': 'data(imageURL)',
                     'background-fit': 'cover'
                 }
             }, {
                 selector: 'edge',
                 style: {
-                    'width': 1,
+                    'width': 3,
                     'line-color': 'grey',
+                    'curve-style': 'bezier',
+                    'z-index': 100,
                 }
             },
             {
@@ -130,8 +133,21 @@
             }, {
                 selector: 'edge:selected',
                 style: {
-                    'width': 3,
+                    'underlay-color': "data(color)",
+                    'underlay-padding': 2.75,
+                    'underlay-opacity': 1,
                     'opacity': 1,
+                }
+            },
+            {
+                selector: 'edge.pad',
+                style: {
+                    'width': 1,
+                    'opacity': 0.25,
+                    'z-index': 0,
+                    'overlay-opacity': 0,
+                    'underlay-padding': 0,
+                    'underlay-opacity': 0,
                 }
             },
         ],
@@ -241,13 +257,60 @@
                                 'Unexpected error on getting courses information.')
                         }
                     })
-
-                Promise.all([coursePromise]).then(bodies => {
+                let relationshipPromise = fetch("{{ url_for('RESTful.metagraph.query', triples=True) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        if (body.triples) {
+                            return body
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+                        }
+                    })
+                Promise.all([coursePromise, relationshipPromise]).then(bodies => {
+                    let relationship = [...new Set(bodies[1].triples.map(t => t.r_name))]
+                    let colorMap = [
+                        [0.1216, 0.4667, 0.5059],
+                        [1.0, 0.498, 0.0549],
+                        [0.1725, 0.6275, 0.1725],
+                        [0.8392, 0.1529, 0.1569],
+                        [0.5804, 0.4039, 0.7412],
+                        [0.549, 0.3373, 0.2941],
+                        [0.8902, 0.4667, 0.7608],
+                        [0.498, 0.498, 0.498],
+                        [0.7373, 0.7412, 0.1333],
+                        [0.0902, 0.7451, 0.8118]
+                    ].map(rgb => rgb.map(c => Math.floor(c * 255))).map(rgb => "rgb(" + rgb.join(
+                        ',') + ")")
+                    console.log(colorMap)
+                    bodies[1].triples.forEach(triple => {
+                        [triple.h_name, triple.t_name].forEach(name => {
+                            if (cy.getElementById(name).length == 0) {
+                                cy.add(nodeFactory(name))
+                            }
+                        })
+                        let color = colorMap[relationship.indexOf(triple.r_name) % colorMap
+                            .length]
+                        cy.add(edgeFactory({
+                            start: triple.h_name,
+                            end: triple.t_name,
+                            color: color,
+                            classes: [triple.r_name]
+                        })).data("tag", triple.r_name).style("line-color", color)
+                    })
                     for (let i = cy.nodes().length; i < 80; i++) {
                         cy.add(nodeFactory({
                             id: i,
                             tag: ''
-                        }, ["pad"]))
+                        }, ["pad"])).style("overlay-opacity", 0)
 
                     }
                     let numberOfNode = cy.nodes().length
@@ -268,7 +331,7 @@
                                 start: a.data('id'),
                                 end: b.data('id'),
                                 color: "grey",
-                                classes: []
+                                classes: ["pad"]
                             }))
                         })
                     })
@@ -339,6 +402,7 @@
             cy.on('select', 'edge', (event) => {
                 if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
                 let edge = event.target[0]
+                if (edge.classes().includes("pad")) return
                 this.edgeSource = edge.source().data("id")
                 this.edgeEnd = edge.target().data("id")
                 this.edgeTag = edge.data("tag")

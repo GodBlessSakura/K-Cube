@@ -72,6 +72,10 @@ class APIDriver:
 
         self.feedback = feedbackResources(driver=self.driver)
 
+        from .metagraphResources import metagraphResources
+
+        self.metagraph = metagraphResources(driver=self.driver)
+
     def close(self):
         self.driver.close()
 

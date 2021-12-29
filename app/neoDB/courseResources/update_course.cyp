@@ -13,6 +13,6 @@ UNION
 }
 WITH DISTINCT courseConcept
 MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept)
-SET courseConcept.name = $name
+SET courseConcept.name = $name, course.name = $name
 SET course.imageURL = $imageURL, course.courseName = $courseName
 RETURN course

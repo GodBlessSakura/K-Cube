@@ -53,3 +53,7 @@ RESTful.register_blueprint(material)
 from .feedbackAPI import feedback
 
 RESTful.register_blueprint(feedback)
+
+from .metagraphAPI import metagraph
+
+RESTful.register_blueprint(metagraph)

@@ -180,3 +180,8 @@ def repositoryVersions(courseCode, id):
     return render_template(
         "instructor/repositoryVersions.html", courseCode=courseCode, id=id
     )
+
+
+@instructor.route("/metagraph")
+def metagraph():
+    return render_template("instructor/metagraph.html")
