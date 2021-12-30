@@ -95,7 +95,7 @@
                     'border-width': 1,
                     'border-color': 'grey',
                     'text-wrap': 'wrap',
-                    'text-max-width': 45,
+                    'text-max-width': 60,
                     'line-height': 1.5,
                     'label': 'data(tag)',
                     'text-outline-color': 'white',
@@ -144,7 +144,7 @@
             {
                 selector: 'edge.pad',
                 style: {
-                    'width': 1,
+                    'width': 2,
                     'opacity': 0.25,
                     'z-index': 0,
                     'overlay-opacity': 0,
@@ -342,7 +342,9 @@
                         fit: true,
                         sweep: undefined,
                         startAngle: 1.5 * Math.PI,
-                        padding: document.documentElement.clientHeight * 0.15
+                        padding: document.documentElement.clientHeight * 0.15,
+                        radius: 800,
+                        
                     }).run()
 
                     this.$root.progress.show = false

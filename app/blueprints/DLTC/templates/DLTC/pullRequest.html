@@ -4,23 +4,38 @@
 <v-card>
     <v-container>
         <v-row>
-            <v-col>
-                <v-btn :href="selectedNode.link">
-                    Active version
-                    <v-icon>
+            <v-col cols="auto">
+                <v-btn :href="activeTrunk?.link" style="text-transform: none;">
+                    Active version: ${activeTrunk?.tag}
+                    <v-icon right>
                         open_in_new
                     </v-icon>
                 </v-btn>
             </v-col>
-            <v-col v-if="changeAtiveTrunk">
+            <v-divider vertical></v-divider>
+            <v-col cols="auto" v-if="changeAtiveTrunk">
+                <v-btn :href="selectedNode?.link" :disabled="!selectedNode">
+                    view option with it's first predecessor
+                    <v-icon right>
+                        open_in_new
+                    </v-icon>
+                </v-btn>
+            </v-col>
+            <!-- <v-col cols="auto" v-if="changeAtiveTrunk">
+                <v-btn :disabled="!selectedNode || !activeTrunk"
+                    :href="'{{ url_for('collegue.compare')}}' + selectedNode?.deltaGraphId + '/' + activeTrunk?.deltaGraphId">
+                    preview changes
+                    <v-icon right>
+                        open_in_new
+                    </v-icon>
+                </v-btn>
+            </v-col> -->
+            <v-col cols="auto" v-if="changeAtiveTrunk">
                 <v-autocomplete dense return-object :items="trunk" item-text="tag" item-value="deltaGraphId"
                     v-model="selectedNode">
                 </v-autocomplete>
             </v-col>
-            <v-col v-if="!changeAtiveTrunk">
-                ${selectedNode.tag}
-            </v-col>
-            <v-col>
+            <v-col cols="auto">
                 <v-btn @click="changeAtiveTrunk = !changeAtiveTrunk" v-if="!changeAtiveTrunk">
                     change active version
                 </v-btn>
@@ -54,7 +69,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn icon v-bind="attrs" v-on="on"
-                                :href="'{{ url_for('DLTC.trunk')}}' + item.deltaGraphId + '/' + selectedNode.deltaGraphId">
+                                :href="'{{ url_for('DLTC.trunk')}}' + item.deltaGraphId + '/' + activeTrunk.deltaGraphId">
                                 <v-icon>
                                     compare
                                 </v-icon>
@@ -96,6 +111,7 @@
                     groupable: false,
                 },
             ],
+            activeTrunk: undefined,
             selectedNode: undefined,
             trunk: undefined,
             changeAtiveTrunk: false,
@@ -129,26 +145,24 @@
                                 return new Date(b.creationDate) - new Date(a
                                     .creationDate);
                             }).forEach(node => {
-                                this.trunk.push({
+
+                                let parent = body.trunk_nodes.filter(t => {
+                                    return body.edges.filter(e => e.start == node.id &&
+                                            e.end == t.id).length >
+                                        0
+                                })[0]
+                                let trunkVersion = {
                                     tag: node.property.tag,
-                                    deltaGraphId: node.property.deltaGraphId
-                                })
-                                if (node.isActive) {
-                                    let parent = body.trunk_nodes.filter(t => {
-                                        return body.edges.filter(e => e.start == node.id &&
-                                                e.end == t.id).length >
-                                            0
-                                    })[0]
-                                    this.selectedNode = {
-                                        tag: node.property.tag,
-                                        deltaGraphId: node.property.deltaGraphId,
-                                        link: parent ? "{{ url_for('collegue.compare')}}" + node
-                                            .property.deltaGraphId + '/' + parent.property
-                                            .deltaGraphId :
-                                            "{{ url_for('collegue.graphView')}}" + node.property
-                                            .deltaGraphId
-                                    }
+                                    deltaGraphId: node.property.deltaGraphId,
+                                    link: parent ? "{{ url_for('collegue.compare')}}" + node
+                                        .property.deltaGraphId + '/' + parent.property
+                                        .deltaGraphId : "{{ url_for('collegue.graphView')}}" +
+                                        node.property
+                                        .deltaGraphId
                                 }
+                                this.trunk.push(trunkVersion)
+                                if (node.isActive) this.activeTrunk = trunkVersion
+
                             })
                             body.branch_nodes.forEach(node => {
                                 if (node.property.canPull) {
