@@ -10,7 +10,7 @@ cypher = {
 
 
 @for_all_methods(reject_invalid)
-class tripleResources:
+class tripleDAO:
     def __init__(self, driver):
         self.driver = driver
 

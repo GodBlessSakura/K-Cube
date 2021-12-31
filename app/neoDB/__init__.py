@@ -20,61 +20,57 @@ class APIDriver:
                 uri, auth=(user, password), encrypted=False
             )
 
-        from .userResources import userResources
+        from .userResources import userDAO
 
-        self.user = userResources(driver=self.driver)
+        self.user = userDAO(driver=self.driver)
 
-        from .courseResources import courseResources
+        from .courseResources import courseDAO
 
-        self.course = courseResources(driver=self.driver)
+        self.course = courseDAO(driver=self.driver)
 
-        from .adminResources import adminResources
+        from .adminResources import adminDAO
 
-        self.admin = adminResources(driver=self.driver)
+        self.admin = adminDAO(driver=self.driver)
 
-        from .relationshipResources import relationshipResources
+        from .relationshipResources import relationshipDAO
 
-        self.relationship = relationshipResources(driver=self.driver)
+        self.relationship = relationshipDAO(driver=self.driver)
 
-        from .tripleResources import tripleResources
+        from .tripleResources import tripleDAO
 
-        self.triple = tripleResources(driver=self.driver)
+        self.triple = tripleDAO(driver=self.driver)
 
-        from .graphResources import graphResources
+        from .graphResources import graphDAO
 
-        self.graph = graphResources(driver=self.driver)
+        self.graph = graphDAO(driver=self.driver)
 
-        from .entityResources import entityResources
+        from .entityResources import entityDAO
 
-        self.entity = entityResources(driver=self.driver)
+        self.entity = entityDAO(driver=self.driver)
 
-        from .trunkResources import trunkResources
+        from .trunkResources import trunkDAO
 
-        self.trunk = trunkResources(driver=self.driver)
+        self.trunk = trunkDAO(driver=self.driver)
 
-        from .branchResources import branchResources
+        from .branchResources import branchDAO
 
-        self.branch = branchResources(driver=self.driver)
+        self.branch = branchDAO(driver=self.driver)
 
-        from .workspaceResources import workspaceResources
+        from .workspaceResources import workspaceDAO
 
-        self.workspace = workspaceResources(driver=self.driver)
+        self.workspace = workspaceDAO(driver=self.driver)
 
-        from .materialResources import materialResources
+        from .materialResources import materialDAO
 
-        self.material = materialResources(driver=self.driver)
+        self.material = materialDAO(driver=self.driver)
 
-        from .feedbackResources import feedbackResources
+        from .feedbackResources import feedbackDAO
 
-        self.feedback = feedbackResources(driver=self.driver)
+        self.feedback = feedbackDAO(driver=self.driver)
 
-        from .feedbackResources import feedbackResources
+        from .metagraphResources import metagraphDAO
 
-        self.feedback = feedbackResources(driver=self.driver)
-
-        from .metagraphResources import metagraphResources
-
-        self.metagraph = metagraphResources(driver=self.driver)
+        self.metagraph = metagraphDAO(driver=self.driver)
 
     def close(self):
         self.driver.close()

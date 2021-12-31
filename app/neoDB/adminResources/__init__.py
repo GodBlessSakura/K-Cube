@@ -8,7 +8,7 @@ cypher = {
 }
 
 
-class adminResources:
+class adminDAO:
     def __init__(self, driver):
         self.driver = driver
 

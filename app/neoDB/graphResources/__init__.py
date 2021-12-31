@@ -11,7 +11,7 @@ cypher = {
 
 
 @for_all_methods(reject_invalid)
-class graphResources:
+class graphDAO:
     def __init__(self, driver):
         self.driver = driver
 

@@ -10,7 +10,7 @@ cypher = {
 
 
 @for_all_methods(reject_invalid)
-class relationshipResources:
+class relationshipDAO:
     def __init__(self, driver):
         self.driver = driver
 
