@@ -15,6 +15,16 @@
         </template>
         centrality metrics
     </v-tooltip>
+    {% if session['permission'] and session['permission'].canAccessInstructorPanel %}
+    <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn absolute style="bottom:3vh;left:12vh" fab v-on="on" href="{{ url_for('instructor.repositories', courseCode = courseCode) }}">
+                <v-icon>table_view</v-icon>
+            </v-btn>
+        </template>
+        repositories
+    </v-tooltip>
+    {% endif %}
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
