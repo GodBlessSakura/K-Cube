@@ -72,6 +72,10 @@ class APIDriver:
 
         self.metagraph = metagraphDAO(driver=self.driver)
 
+        from .activityResources import activityDAO
+
+        self.activity = activityDAO(driver=self.driver)
+
     def close(self):
         self.driver.close()
 

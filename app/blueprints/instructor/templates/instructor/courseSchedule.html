@@ -152,86 +152,45 @@
 <div id="app">
     <div id="course">XX Class Schedule (tentative)</div>
     <div class="main">
-        <div>
+        <div id="week1">
             <div class="time" draggable="false">Week 1</div>
-            <div class="list" draggable="true" contenteditable="true"> Overview of data structures and algorithms</div>
-            <div class="list" draggable="true" contenteditable="true">Linked-lists</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-
-        <div>
+        <div id="week2">
             <div class="time" draggable="false">Week 2</div>
-            <div class="list" draggable="true" contenteditable="true">Stacks</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week3">
             <div class="time" draggable="false">Week 3</div>
-            <div class="list" draggable="true" contenteditable="true">Queues</div>
-            <div class="list" draggable="true" contenteditable="true">binary trees</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week4">
             <div class="time" draggable="false">Week 4</div>
-            <div class="list" draggable="true" contenteditable="true">tree traversals</div>
-            <div class="list" draggable="true" contenteditable="true">Binary search trees</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-
-        <div>
+        <div id="week5">
             <div class="time" draggable="false">Week 5</div>
-            <div class="list" draggable="true" contenteditable="true">Priority queues</div>
-            <div class="list" draggable="true" contenteditable="true">heaps</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week6">
             <div class="time" draggable="false">Week 6</div>
-            <div class="list" draggable="true" contenteditable="true">Hash tables</div>
-            <div class="list" draggable="true" contenteditable="true">Searching algorithms</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week7">
             <div class="time" draggable="false">Week 7</div>
-            <div class="list" draggable="true" contenteditable="true">Selection sort</div>
-            <div class="list" draggable="true" contenteditable="true">Sorting algorithm</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-
-        <div>
+        <div id="week8">
             <div class="time" draggable="false">Week 8</div>
-            <div class="list" draggable="true" contenteditable="true">Intro to database</div>
-            <div class="list" draggable="true" contenteditable="true">Intro to relational model</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week9">
             <div class="time" draggable="false">Week 9</div>
-            <div class="list" draggable="true" contenteditable="true">Intro to relational model</div>
-            <div class="list" draggable="true" contenteditable="true">Intro to SQL</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week10">
             <div class="time" draggable="false">Week 10</div>
-            <div class="list" draggable="true" contenteditable="true">Intermediate SQL</div>
-            <div class="list" draggable="true" contenteditable="true">Advanced SQL</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
 
-        <div>
+        <div id="week11">
             <div class="time" draggable="false">Week 11</div>
-            <div class="list" draggable="true" contenteditable="true">Entity-relationship model</div>
-            <div class="list" draggable="true" contenteditable="true">abc</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week12">
             <div class="time" draggable="false">Week 12</div>
-            <div class="list" draggable="true" contenteditable="true">Oracle lab</div>
-            <div class="list" draggable="true" contenteditable="true">Normalization algorithms</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
-        <div>
+        <div id="week13">
             <div class="time" draggable="false">Week 13</div>
-            <div class="list" draggable="true" contenteditable="true">Final exam</div>
-            <div class="list" draggable="true" contenteditable="true">Holidays</div>
-            <div class="list" draggable="true" contenteditable="true"></div>
         </div>
 
     </div>
@@ -255,6 +214,87 @@
         data: () => ({
 
         }),
+
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                let activityPromise = fetch(
+                        "{{ url_for('RESTful.activity.query', ofUser=True, courseCode = courseCode) | safe}}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.activities) {
+                            return body.activities
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses schedule information.')
+                        }
+                    })
+                let graphPromise = fetch(
+                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = session['user']['userId']) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.course && body.triples) {
+                            return body.triples
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+                Promise.all([graphPromise, activityPromise]).then(data => {
+                    let newData = []
+                    let oldData = {}
+                    let triples = data[0]
+                    let activities = data[1]
+                    triples.forEach(triple => {
+                        [triple.h_name, triple.t_name].forEach(entity => {
+                            let candidate = activities.filter(a => a.desc == entity)
+                            if (candidate.length == 0) {
+                                newData.push(entity)
+                            } else {
+                                let activity = candidate[0]
+                                oldData[entity] = activity.week
+                            }
+                        })
+
+                    })
+                    constructTimetable(oldData, newData)
+
+                })
+            },
+        },
+        mounted: function () {
+            this.loadData()
+        },
         template: '#content',
         delimiters: ['${', '}'],
     })

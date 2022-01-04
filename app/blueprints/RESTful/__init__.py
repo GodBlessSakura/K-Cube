@@ -57,3 +57,7 @@ RESTful.register_blueprint(feedback)
 from .metagraphAPI import metagraph
 
 RESTful.register_blueprint(metagraph)
+
+from .activityAPI import activity
+
+RESTful.register_blueprint(activity)
