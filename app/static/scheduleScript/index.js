@@ -6,34 +6,53 @@ var olddata = {
 var newdata = ["new1", "new2"];
 
 
-function createDiv(content) {
+function createDiv(content, uri) {
     var createDiv = document.createElement("div");
     createDiv.className = "list";
     createDiv.draggable = "true";
     createDiv.contentEditable = "true";
     createDiv.innerHTML = content;
+    createDiv.dataset.uri = uri;
     return createDiv;
 }
 
 function constructTimetable(olddata, newdata) {
-    for (var key in olddata) {
-        var timeSlot = document.getElementById('week' + olddata[key]);
-        var entity = createDiv(key);
+    var timeSlot = null,
+        entity = null;
+    for (var uri in olddata) {
+        //console.log(uri);
+        for (var key in olddata[uri]) {
+            if (key == "week") {
+                timeSlot = document.getElementById('week' + olddata[uri][key]);
+            } else {
+                entity = createDiv(olddata[uri][key], uri);
+            }
+        }
         timeSlot.appendChild(entity);
     }
 
-    for (var key in newdata) {
-        var timeSlot = document.getElementById('week13');
-        var entity = createDiv(newdata[key]);
+    for (var id of newdata) {
+        let uri = null,
+            content = null;
+        for (var key in id) {
+            if (key == "uri") {
+                uri = id[key];
+            } else {
+                content = id[key];
+            }
+        }
+        timeSlot = document.getElementById('week13');
+        entity = createDiv(content, uri);
         timeSlot.appendChild(entity);
     }
 
     /* blank for add */
     for (var i = 1; i <= 13; i++) {
-        var timeSlot = document.getElementById('week' + i);
-        var entity = createDiv("");
+        timeSlot = document.getElementById('week' + i);
+        entity = createDiv("", "");
         timeSlot.appendChild(entity);
     }
+
     var iosDragDropShim = {
         enableEnterLeave: true
     };
@@ -45,11 +64,13 @@ function constructTimetable(olddata, newdata) {
     for (var i = 0; i < source.length; i++) {
         source[i].addEventListener('dragstart', function (ev) {
             dragElement = this;
-            this.style.backgroundColor = '#f8f8f8';
+            ev.target.style = ev.target.style?ev.target.style:{}
+            ev.target.style["back-groundColor"] = '#f8f8f8';
         }, false);
 
         source[i].addEventListener('dragend', function (ev) {
-            ev.target.style.backgroundColor = '#fff';
+            ev.target.style = ev.target.style?ev.target.style:{}
+            ev.target.style["back-groundColor"] = '#fff';
             ev.preventDefault();
         }, false)
 
@@ -71,7 +92,6 @@ function constructTimetable(olddata, newdata) {
             }
         }, false)
     };
-
     recycle.addEventListener('drop', function (ev) {
         dragElement.parentNode.removeChild(dragElement);
     }, false)
@@ -81,5 +101,36 @@ function constructTimetable(olddata, newdata) {
     }
     document.ondrop = function (e) {
         e.preventDefault();
+    }
+
+
+    document.querySelector('#upJS').addEventListener('click', uploadTeachplan)
+
+}
+
+
+function createItem(div, day) {
+    var item = {
+        "name": "",
+        "desc": "",
+        "week": 0,
+    };
+    item["name"] = div.dataset.uri;
+    item["desc"] = div.innerHTML;
+    item["week"] = day;
+    return item;
+}
+
+function uploadTeachplan() {
+    for (var day = 1; day <= 13; day++) {
+        var weeklyDivlist = document.getElementById('week' + day).querySelectorAll('.list');
+        var item = null;
+        for (let i = 0; i < weeklyDivlist.length; i++) {
+            if (weeklyDivlist[i].innerHTML) {
+                item = createItem(weeklyDivlist[i], day);
+                updateItem(item); 
+            }
+
+        }
     }
 }

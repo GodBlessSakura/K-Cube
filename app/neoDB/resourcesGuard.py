@@ -110,15 +110,15 @@ def reject_invalid(function):
             raise InvalidRequest("Invalid text pattern.")
         if (
             "desc" in kwargs
-            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["desc"]) == None
+            and re.search("^[a-zA-Z][a-zA-Z0-9\s]{3,500}$", kwargs["desc"]) == None
         ):
             raise InvalidRequest("Invalid text pattern.")
         if (
             "title" in kwargs
-            and re.search("^[a-zA-Z][a-zA-Z0-9]{3,500}$", kwargs["title"]) == None
+            and re.search("^[a-zA-Z][a-zA-Z0-9\s]{3,500}$", kwargs["title"]) == None
         ):
             raise InvalidRequest("Invalid text pattern.")
-        if "week" in kwargs and (kwargs["text"] < 1 or kwargs["text"] > 13):
+        if "week" in kwargs and (kwargs["week"] < 1 or kwargs["week"] > 13):
             raise InvalidRequest("Invalid week value.")
         if (
             "tag" in kwargs

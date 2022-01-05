@@ -279,10 +279,17 @@
                         [triple.h_name, triple.t_name].forEach(entity => {
                             let candidate = activities.filter(a => a.desc == entity)
                             if (candidate.length == 0) {
-                                newData.push(entity)
+                                newData.push({
+                                    uri: entity,
+                                    desc: entity
+                                })
                             } else {
                                 let activity = candidate[0]
-                                oldData[entity] = activity.week
+                                oldData[candidate[0].name] = {
+                                    uri: candidate[0].name,
+                                    week: candidate[0].week,
+                                    desc: candidate[0].desc
+                                }
                             }
                         })
 
@@ -296,15 +303,46 @@
             this.loadData()
 
             this.$root.$on('post-activity', function (activity) {
-                console.log(activity)
-                this.progress.show = true
+                fetch(
+                        "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
+                        activity.name, {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                desc: activity.desc,
+                                week: activity.week
+                            })
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.activity) {} else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on setting courses schedule information.')
+                        }
+                    })
             })
             this.$root.$on('post-activities', function (activities) {
-                this.progress.show = true
+
             })
         },
         template: '#content',
         delimiters: ['${', '}'],
     })
+
+    function updateItem(item) {
+        app.$emit('post-activity', item)
+    }
 </script>
 {% endblock %}
