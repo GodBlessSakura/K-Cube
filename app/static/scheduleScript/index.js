@@ -25,7 +25,7 @@ function constructTimetable(olddata, newdata) {
             if (key == "week") {
                 timeSlot = document.getElementById('week' + olddata[uri][key]);
             } else {
-                entity = createDiv(olddata[uri][key], uri);
+                entity = createDiv(olddata[uri]["desc"], uri);
             }
         }
         timeSlot.appendChild(entity);
@@ -64,12 +64,12 @@ function constructTimetable(olddata, newdata) {
     for (var i = 0; i < source.length; i++) {
         source[i].addEventListener('dragstart', function (ev) {
             dragElement = this;
-            ev.target.style = ev.target.style?ev.target.style:{}
+            ev.target.style = ev.target.style ? ev.target.style : {}
             ev.target.style["back-groundColor"] = '#f8f8f8';
         }, false);
 
         source[i].addEventListener('dragend', function (ev) {
-            ev.target.style = ev.target.style?ev.target.style:{}
+            ev.target.style = ev.target.style ? ev.target.style : {}
             ev.target.style["back-groundColor"] = '#fff';
             ev.preventDefault();
         }, false)
@@ -128,7 +128,7 @@ function uploadTeachplan() {
         for (let i = 0; i < weeklyDivlist.length; i++) {
             if (weeklyDivlist[i].innerHTML) {
                 item = createItem(weeklyDivlist[i], day);
-                updateItem(item); 
+                updateItem(item);
             }
 
         }

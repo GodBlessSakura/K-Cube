@@ -277,7 +277,7 @@
                     let activities = data[1]
                     triples.forEach(triple => {
                         [triple.h_name, triple.t_name].forEach(entity => {
-                            let candidate = activities.filter(a => a.desc == entity)
+                            let candidate = activities.filter(a => a.name == entity)
                             if (candidate.length == 0) {
                                 newData.push({
                                     uri: entity,
@@ -312,7 +312,7 @@
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                desc: activity.desc,
+                                desc: activity.desc.replaceAll("<br>","").replaceAll("<div>","").replaceAll("</div>",""),
                                 week: activity.week
                             })
                         })
