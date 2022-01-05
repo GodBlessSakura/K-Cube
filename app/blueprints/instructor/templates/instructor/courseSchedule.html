@@ -294,6 +294,14 @@
         },
         mounted: function () {
             this.loadData()
+
+            this.$root.$on('post-activity', function (activity) {
+                console.log(activity)
+                this.progress.show = true
+            })
+            this.$root.$on('post-activities', function (activities) {
+                this.progress.show = true
+            })
         },
         template: '#content',
         delimiters: ['${', '}'],
