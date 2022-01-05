@@ -291,7 +291,15 @@
                         this.$root.progress.show = false
                         let colPerRow = 3
                         if (body.courses) {
-                            body.courses.forEach(c => {
+                            body.courses.sort((a, b) => {
+                                if (a.concept.name < b.concept.name) {
+                                    return -1;
+                                }
+                                if (a.concept.name > b.concept.name) {
+                                    return 1;
+                                }
+                                return 0;
+                            }).forEach(c => {
                                 let lastRow = this.rows[this.rows.length - 1]
                                 if (lastRow.length == colPerRow) {
                                     this.rows.push([])
