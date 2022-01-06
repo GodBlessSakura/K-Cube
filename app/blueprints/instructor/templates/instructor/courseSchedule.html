@@ -273,27 +273,47 @@
                 Promise.all([graphPromise, activityPromise]).then(data => {
                     let newData = []
                     let oldData = {}
-                    let triples = data[0]
+                    let triples = data[0].filter(triple => triple.r_name == "Subtopic in")
                     let activities = data[1]
-                    triples.forEach(triple => {
-                        [triple.h_name, triple.t_name].forEach(entity => {
-                            let candidate = activities.filter(a => a.name == entity)
-                            if (candidate.length == 0) {
-                                newData.push({
-                                    uri: entity,
-                                    desc: entity
-                                })
-                            } else {
-                                let activity = candidate[0]
-                                oldData[candidate[0].name] = {
-                                    uri: candidate[0].name,
-                                    week: candidate[0].week,
-                                    desc: candidate[0].desc
-                                }
-                            }
-                        })
+                    let cursor = ["{{courseCode}}"]
+                    let hop = []
 
+                    while (cursor.length != 0) {
+                        triples.forEach(triple => {
+                            [triple.h_name, triple.t_name].forEach(entity => {
+                                if (cursor.includes(entity)) {
+                                    let theOther = [triple.h_name, triple.t_name]
+                                        .filter(
+                                            e => e != entity)[0]
+                                    if (!hop.includes(theOther) && !newData.includes(
+                                            theOther))
+                                        hop.push(theOther)
+                                }
+                            })
+                        })
+                        console.log("hop")
+                        console.log(hop)
+                        newData = [...newData, ...cursor]
+                        cursor = hop
+                        hop = []
+                    }
+                    console.log(newData)
+                    newData = newData.filter(entity => {
+                        let candidate = activities.filter(a => a.name == entity)
+                        if (candidate.length == 0) {
+                            return true
+                        } else {
+                            let activity = candidate[0]
+                            oldData[candidate[0].name] = {
+                                uri: candidate[0].name,
+                                week: candidate[0].week,
+                                desc: candidate[0].desc
+                            }
+                            return false
+                        }
                     })
+                    console.log(newData)
+                    console.log(oldData)
                     constructTimetable(oldData, newData)
 
                 })
@@ -312,7 +332,8 @@
                                 'Content-Type': 'application/json'
                             },
                             body: JSON.stringify({
-                                desc: activity.desc.replaceAll("<br>","").replaceAll("<div>","").replaceAll("</div>",""),
+                                desc: activity.desc.replaceAll("<br>", "").replaceAll(
+                                    "<div>", "").replaceAll("</div>", ""),
                                 week: activity.week
                             })
                         })
