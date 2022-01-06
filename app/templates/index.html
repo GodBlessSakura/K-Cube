@@ -97,7 +97,7 @@
                     'text-wrap': 'wrap',
                     'text-max-width': 60,
                     'line-height': 1.5,
-                    'label': 'data(tag)',
+                    'label': 'data(label)',
                     'text-outline-color': 'white',
                     'text-outline-width': 2,
                     'font-size': 7,
@@ -246,12 +246,13 @@
                                     value: c.course.courseName
                                 })
                                 cy.add(nodeFactory({
-                                    id: c.concept.name,
-                                    tag: c.course.courseName
-                                }, ["course"])).data(
-                                    'imageURL',
-                                    c.course.imageURL,
-                                ).data("url", "{{ url_for('course')}}" + c.concept.name)
+                                        id: c.concept.name,
+                                        tag: c.course.courseName
+                                    }, ["course"])).data(
+                                        'imageURL',
+                                        c.course.imageURL,
+                                    ).data("url", "{{ url_for('course')}}" + c.concept.name)
+                                    .data("label", c.concept.name)
 
                             })
                         } else {
@@ -308,7 +309,7 @@
                             classes: [triple.r_name]
                         })).data("tag", triple.r_name).style("line-color", color)
                     })
-                    for (let i = cy.nodes().length; i < 80; i++) {
+                    for (let i = cy.nodes().length; i < 20; i++) {
                         cy.add(nodeFactory({
                             id: i,
                             tag: ''
@@ -344,7 +345,7 @@
                         startAngle: 1.5 * Math.PI,
                         padding: document.documentElement.clientHeight * 0.15,
                         radius: 800,
-                        
+
                     }).run()
 
                     this.$root.progress.show = false
