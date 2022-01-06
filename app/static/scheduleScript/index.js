@@ -30,18 +30,16 @@ function constructTimetable(olddata, newdata) {
         }
         timeSlot.appendChild(entity);
     }
+    let timeslots = {}
+    for (let i = 0; i < 14; i++) {
 
-    for (var id of newdata) {
-        let uri = null,
-            content = null;
-        for (var key in id) {
-            if (key == "uri") {
-                uri = id[key];
-            } else {
-                content = id[key];
-            }
-        }
-        timeSlot = document.getElementById('week13');
+        timeslots[i] = document.getElementById('week' + i);
+    }
+    for (let i = 0; i < newdata.length; i++) {
+        let uri = newdata[i],
+            content = newdata[i];
+        let slot = Math.floor(i / (newdata.length / 13))
+        let timeSlot = timeslots[slot + 1];
         entity = createDiv(content, uri);
         timeSlot.appendChild(entity);
     }
