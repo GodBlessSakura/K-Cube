@@ -405,138 +405,10 @@
         background-color: lightblue;
     }
 </style>
+<script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
-    basicStyle = [{
-            selector: ':selected',
-            style: {
-                'color': 'DarkMagenta'
-            }
-        },
-        {
-            selector: 'node',
-            style: {
-                'label': 'data(name)',
-                'font-size': 8,
-                'background-color': 'grey',
-            }
-        },
-        {
-            selector: 'node.tempory',
-            style: {
-                'opacity': 0.25,
-            }
-        },
-        {
-            selector: 'edge',
-            style: {
-                'label': 'data(name)',
-                'target-arrow-shape': 'triangle',
-                'curve-style': 'bezier',
-                'font-size': 8,
-                'text-rotation': 'autorotate',
-                'display': 'none',
-                'line-color': 'grey',
-                'target-arrow-color': 'grey',
-            }
-        }, {
-            selector: 'edge[subject_value = "true"][workspace_value != "false"],[workspace_value = "true"]',
-            style: {
-                'line-style': 'solid',
-                'width': 3,
-                'display': 'element',
-            }
-        }
-    ]
-    diffStyle = [{
-            selector: ':selected',
-            style: {
-                'color': 'DarkMagenta'
-            }
-        }, {
-            selector: 'node',
-            style: {
-                'label': 'data(name)',
-                'font-size': 8,
-                'background-color': 'grey',
-            }
-        }, {
-            selector: 'edge.suppress',
-            style: {
-                'opacity': 0.15,
-            }
-        },
-        {
-            selector: 'node.tempory',
-            style: {
-                'opacity': 0.25,
-            }
-        },
-        {
-            selector: 'edge',
-            style: {
-                'label': 'data(name)',
-                'target-arrow-shape': 'triangle',
-                'curve-style': 'bezier',
-                'font-size': 8,
-                'text-rotation': 'autorotate',
-                'width': 3,
-                'line-color': 'grey',
-                'target-arrow-color': 'grey',
-            }
-        }, {
-            selector: 'edge[workspace_value = "true"][subject_value != "true"]',
-            style: {
-                'line-style': 'solid',
-                'font-weight': 'bold',
-            }
-        }, {
-            selector: 'edge[workspace_value = "false"][subject_value = "true"]',
-            style: {
-                'line-gradient-stop-colors': 'grey white white grey',
-                'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
-                'line-fill': 'linear-gradient ',
-                'font-weight': 'bold',
-            }
-        }, {
-            selector: 'edge[workspace_value = "true"][subject_value = "true"]',
-            style: {
-                'line-style': 'solid',
-                'text-outline-color': 'black',
-                'text-outline-width': 0.25,
-                'color': 'white',
-            }
-        }, {
-            selector: 'edge[workspace_value = "false"][subject_value != "true"]',
-            style: {
-                'line-gradient-stop-colors': 'grey white white grey',
-                'line-gradient-stop-positions': '10% 10% 77.5% 77.5%',
-                'line-fill': 'linear-gradient ',
-                'text-outline-color': 'black',
-                'text-outline-width': 0.25,
-                'color': 'white',
-
-            }
-        }, {
-            selector: 'edge[workspace_value = "false"][subject_value != "true"]:selected',
-            style: {
-                'text-outline-color': 'DarkMagenta',
-
-            }
-        }, {
-            selector: 'edge[workspace_value = "undefined"][subject_value = "true"]',
-            style: {
-                'line-style': 'solid',
-            }
-        }, {
-            selector: 'edge[workspace_value = "undefined"][subject_value = "false"]',
-            style: {
-                'line-style': 'dashed',
-                'line-dash-pattern': '10%, 80%',
-            }
-        }
-    ]
     cy = cytoscape({
-        style: basicStyle,
+        style: cyStyles.basicEditStyle,
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     });
@@ -787,10 +659,10 @@
             switchStyle() {
                 cy.style().resetToDefault()
                 if (this.diffMode) {
-                    cy.style(diffStyle)
+                    cy.style(cyStyles.diffEditStyle)
                 } else {
                     cy.edges(".suppress").removeClass('suppress')
-                    cy.style(basicStyle)
+                    cy.style(cyStyles.basicEditStyle)
                 }
             },
             edgeStatistic() {

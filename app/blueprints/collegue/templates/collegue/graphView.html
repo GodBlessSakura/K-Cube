@@ -21,30 +21,10 @@
 {{ layout.cytoscapeCDN() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
+<script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
     cy = cytoscape({
-        style: [{
-                selector: 'node',
-                style: {
-                    'label': 'data(name)',
-                    'font-size': 8,
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'label': 'data(name)',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier',
-                    'font-size': 8,
-                    'text-rotation': 'autorotate',
-                    'line-style': 'solid',
-                    'width': 2,
-                }
-            },
-        ],
+        style: cyStyles.simpleStyle,
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     })
