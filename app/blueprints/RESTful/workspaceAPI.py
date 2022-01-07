@@ -54,6 +54,25 @@ def post(deltaGraphId):
 # @authorize_RESTful_with(["canWriteTeachingCourseBranch"])
 # def query():
 #     return jsonify({"success": False, "message": "incomplete request"})
+@workspace.get("/")
+def query():
+    if request.args.get("lastModified") and request.args.get("courseCode"):
+        return lastModifiedWorkspace(request.args.get("courseCode"))
+
+
+@authorize_RESTful_with(["canWriteTeachingCourseBranch"])
+def lastModifiedWorkspace(courseCode):
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "deltaGraphIds": get_api_driver().workspace.get_user_course_lastModified(
+                    courseCode=courseCode, userId=session["user"]["userId"]
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
 
 
 @workspace.get("<deltaGraphId>")

@@ -296,3 +296,17 @@ class workspaceDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def get_user_course_lastModified(self, courseCode, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode, userId=userId)
+            try:
+                return [record["workspace"]["deltaGraphId"] for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
