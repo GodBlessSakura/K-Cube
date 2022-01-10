@@ -40,7 +40,7 @@ class InvalidRequest(Exception):
 
 import re
 
-special_charactor = "\*\+\-\[\]\(\)\\\\"
+special_charactor = "\*\+\-\[\]\(\)\\\\/"
 regExpRules = {
     "courseCode": "^[a-zA-Z0-9\s]{4,100}$",
     "courseName": "^[a-zA-Z][a-zA-Z0-9\s" + special_charactor + "]{3,99}$",
