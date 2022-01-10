@@ -44,7 +44,7 @@ def materialOfCourse(courseCode):
 
 
 @material.post("<courseCode>/", defaults={"name": None})
-@material.post("<courseCode>/<name>")
+@material.post("<courseCode>/<path:name>")
 @authorize_RESTful_with(
     [["canWriteTeachingCourseMaterial", "canWriteAllCourseMaterial"]]
 )

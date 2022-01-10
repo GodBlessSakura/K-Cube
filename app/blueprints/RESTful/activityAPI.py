@@ -33,7 +33,7 @@ def activityOfUser(userId, courseCode):
 
 
 @activity.post("<courseCode>/", defaults={"name": None})
-@activity.post("<courseCode>/<name>")
+@activity.post("<courseCode>/<path:name>")
 @authorize_RESTful_with(
     [["canWriteTeachingCourseMaterial", "canWriteAllCourseMaterial"]]
 )
