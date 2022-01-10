@@ -51,12 +51,12 @@ regExpRules = {
     + special_charactor
     + "][a-zA-Z0-9\s"
     + special_charactor
-    + "]{3,99}$",
+    + "]{1,99}$",
     "desc": "^[a-zA-Z"
     + special_charactor
     + "][a-zA-Z0-9\s"
     + special_charactor
-    + "]{3,500}$",
+    + "]{1,500}$",
     "title": "^[a-zA-Z"
     + special_charactor
     + "][a-zA-Z0-9\s"
