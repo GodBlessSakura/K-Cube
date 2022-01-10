@@ -6,10 +6,6 @@ from .courseAPI import course
 
 RESTful.register_blueprint(course)
 
-from .draftAPI import draft
-
-RESTful.register_blueprint(draft)
-
 from .graphAPI import graph
 
 RESTful.register_blueprint(graph)
