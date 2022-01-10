@@ -401,7 +401,7 @@
                         'UserId should be anything between 4 and 100 charactors',
                         v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
                         'UserId can only contains alphanumeric characters.',
-                        v => (v && /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v)) ||
+                        v => (v && /{{regExpRules["userId"]}}/.test(v)) ||
                         'UserId must start with alphabetic characters.'
                     ],
                     name: '',
@@ -409,7 +409,7 @@
                         v => !!v || 'Name is required',
                         v => (v && v.length > 3 && v.length < 101) ||
                         'Name should be anything between 4 and 100 charactors',
-                        v => (v && /^[a-zA-Z0-9\s]{4,100}$/.test(v)) ||
+                        v => (v && /{{regExpRules["userName"]}}/.test(v)) ||
                         'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
@@ -417,7 +417,7 @@
                         v => !!v || 'E-mail is required',
                         v => (v && v.length < 320) ||
                         'A valid email should have less then 320 characters',
-                        v => (v && /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/.test(v)) ||
+                        v => (v && /{{regExpRules["email"]}}/.test(v)) ||
                         'E-mail must be in valid format',
                     ],
                     password: '',
@@ -439,7 +439,7 @@
                         'UserId should be anything between 4 and 100 charactors',
                         v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
                         'UserId can only contains alphanumeric characters.',
-                        v => (v && /^[a-zA-Z][a-zA-Z0-9]{3,100}$/.test(v)) ||
+                        v => (v && /{{regExpRules["userId"]}}/.test(v)) ||
                         'UserId must start with alphabetic characters.'
                     ],
                     password: '',

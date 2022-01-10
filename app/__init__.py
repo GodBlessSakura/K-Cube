@@ -146,4 +146,10 @@ def create_app(config_string):
     def init_neo4j():
         api_driver.get_api_driver().init_neo4j()
 
+    from .neoDB.resourcesGuard import regExpRules
+
+    @app.context_processor
+    def inject_regExpRules():
+        return dict(regExpRules=regExpRules)
+
     return app

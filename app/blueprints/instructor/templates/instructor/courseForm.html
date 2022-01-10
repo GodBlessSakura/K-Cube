@@ -44,14 +44,14 @@
             courseCodeRules: [v => !!v || 'Course code is required',
                 v => (v && v.length > 3 && v.length < 101) ||
                 'Course code should be anything between 4 and 100 charactors',
-                v => (v && /^[a-zA-Z0-9\s]+$/.test(v)) ||
+                v => (v && /{{regExpRules["courseCode"]}}/.test(v)) ||
                 'Course code can only contains alphanumeric characters and space.'
             ],
             courseName: '',
             courseNameRules: [v => !!v || 'Course name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
                 'Course name should be anything between 4 and 100 charactors',
-                v => (v && /^[a-zA-Z0-9\s]+$/.test(v)) ||
+                v => (v && /{{regExpRules["courseName"]}}/.test(v)) ||
                 'Course name can only contains alphanumeric characters and space.'
             ],
             imageURL: '',

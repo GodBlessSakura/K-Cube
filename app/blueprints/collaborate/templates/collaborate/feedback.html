@@ -82,7 +82,7 @@
             feedbackTitleRules: [v => !!v || 'Title is required',
                 v => (v && v.length > 3 && v.length < 501) ||
                 'Title should be anything between 4 and 500 charactors',
-                v => (v && /^[a-zA-Z0-9\s]+$/.test(v)) ||
+                v => (v && /{{regExpRules["title"]}}/.test(v)) ||
                 'Title can only contains alphanumeric characters and space.'
             ],
             feedbackText: '',

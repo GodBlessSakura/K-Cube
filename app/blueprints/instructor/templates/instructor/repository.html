@@ -225,20 +225,20 @@
             tagRules: [v => !!v || 'Tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
-                v => (v && /^[a-zA-Z0-9\s.]+$/.test(v)) ||
+                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
                 'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
-            repoTagRules: [v => !!v || 'Tag name is required',
+            repoTagRules: [v => !!v || 'Repository tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
-                'Tag name should be anything between 4 and 100 charactors',
-                v => (v && /^[a-zA-Z0-9\s.]+$/.test(v)) ||
-                'Tag name can only contains alphanumeric characters, dot(.) and space.'
+                'Repository tag name should be anything between 4 and 100 charactors',
+                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
+                'Repository tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
             w_tag: '',
             wTagRules: [v => !!v || 'Tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
-                v => (v && /^[a-zA-Z0-9\s.]+$/.test(v)) ||
+                v => (v && /{{regExpRules["w_tag"]}}/.test(v)) ||
                 'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
         }),

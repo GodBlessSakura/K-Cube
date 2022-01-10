@@ -143,7 +143,7 @@
             tagRules: [v => !!v || 'Tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
-                v => (v && /^[a-zA-Z0-9\s.]+$/.test(v)) ||
+                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
                 'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
         }),
