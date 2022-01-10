@@ -139,8 +139,9 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.feedback.post', courseCode = courseCode) }}" + this
-                            .feedbackConcept, {
+                    fetch("{{ url_for('RESTful.feedback.post', courseCode = courseCode) }}" +
+                            encodeURIComponent(this
+                                .feedbackConcept), {
                                 method: 'POST',
                                 cache: 'no-store',
                                 headers: {

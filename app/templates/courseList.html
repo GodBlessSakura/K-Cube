@@ -339,19 +339,19 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.course.patch') }}" + this.course
-                            .courseCode, {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    courseName: this.courseName,
-                                    imageURL: this.imageURL,
-                                    name: this.courseCode,
-                                })
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.course
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                courseName: this.courseName,
+                                imageURL: this.imageURL,
+                                name: this.courseCode,
                             })
+                        })
                         .then(response => {
                             try {
                                 return response.json()
@@ -414,17 +414,17 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.course.patch') }}" + course
-                            .courseCode, {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    join: true
-                                })
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(course
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: true
                             })
+                        })
                         .then(response => {
                             try {
                                 return response.json()
@@ -452,17 +452,17 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.course.patch') }}" + course
-                            .courseCode, {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    join: false
-                                })
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(course
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: false
                             })
+                        })
                         .then(response => {
                             try {
                                 return response.json()
@@ -494,17 +494,17 @@
                             return
                         }
                         this.$root.progress.show = true
-                        fetch("{{ url_for('RESTful.course.patch') }}" + this.course
-                                .courseCode, {
-                                    method: 'PATCH',
-                                    cache: 'no-store',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({
-                                        isInternal: this.course.isInternal === false ? true : false
-                                    })
+                        fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.course
+                                .courseCode), {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    isInternal: this.course.isInternal === false ? true : false
                                 })
+                            })
                             .then(response => {
                                 try {
                                     return response.json()

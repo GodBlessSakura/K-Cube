@@ -325,7 +325,8 @@
             this.$root.$on('post-activity', function (activity) {
                 fetch(
                         "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
-                        activity.name, {
+                        encodeURIComponent(
+                            activity.name), {
                             method: 'POST',
                             cache: 'no-store',
                             headers: {

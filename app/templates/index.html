@@ -251,7 +251,7 @@
                                     }, ["course"])).data(
                                         'imageURL',
                                         c.course.imageURL,
-                                    ).data("url", "{{ url_for('course')}}" + c.concept.name)
+                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c.concept.name))
                                     .data("label", c.concept.name)
 
                             })

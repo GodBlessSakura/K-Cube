@@ -150,7 +150,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.role.put') }}" + userId, {
+                fetch("{{ url_for('RESTful.role.put') }}" + encodeURIComponent(userId), {
                         method: value ? "DELETE" : "PUT",
                         cache: 'no-store',
                         headers: {

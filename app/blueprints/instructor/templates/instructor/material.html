@@ -156,8 +156,9 @@
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.material.post', courseCode = courseCode) }}" + this
-                            .materialConcept, {
+                    fetch("{{ url_for('RESTful.material.post', courseCode = courseCode) }}" +
+                            encodeURIComponent(this
+                                .materialConcept), {
                                 method: 'POST',
                                 cache: 'no-store',
                                 headers: {
@@ -191,7 +192,7 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.material.delete') }}" + id, {
+                fetch("{{ url_for('RESTful.material.delete') }}" + encodeURIComponent(id), {
                         method: 'DELETE',
                         cache: 'no-store',
                         headers: {

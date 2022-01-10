@@ -40,15 +40,28 @@ class InvalidRequest(Exception):
 
 import re
 
+special_charactor = "\*\+\-\[\]\(\)\\\\"
 regExpRules = {
     "courseCode": "^[a-zA-Z0-9\s]{4,100}$",
-    "courseName": "^[a-zA-Z0-9\s\*\+\-\[\]\(\)]{4,100}$",
+    "courseName": "^[a-zA-Z][a-zA-Z0-9\s" + special_charactor + "]{3,99}$",
     "userName": "^[a-zA-Z0-9\s]{4,100}$",
     "userId": "^[a-zA-Z][a-zA-Z0-9]{3,99}$",
     "email": "^[-\w\.]+@([\w-]+\.)+[\w-]{2,4}$",
-    "name": "^[a-zA-Z0-9\s\*\+\-\[\]\(\)]{4,100}$",
-    "desc": "^[a-zA-Z][a-zA-Z0-9\s\*\+\-\[\]\(\)]{3,500}$",
-    "title": "^[a-zA-Z][a-zA-Z0-9\s]{3,500}$",
+    "name": "^[a-zA-Z"
+    + special_charactor
+    + "][a-zA-Z0-9\s"
+    + special_charactor
+    + "]{3,99}$",
+    "desc": "^[a-zA-Z"
+    + special_charactor
+    + "][a-zA-Z0-9\s"
+    + special_charactor
+    + "]{3,500}$",
+    "title": "^[a-zA-Z"
+    + special_charactor
+    + "][a-zA-Z0-9\s"
+    + special_charactor
+    + "]{3,500}$",
     "tag": "^[a-zA-Z0-9\s.]{4,100}$",
 }
 regExpRules["ownerId"] = regExpRules["userId"]
@@ -99,10 +112,7 @@ def reject_invalid(function):
             and re.search(regExpRules["email"], kwargs["email"]) == None
         ):
             raise InvalidRequest("E-mail must be in valid format")
-        if (
-            "name" in kwargs
-            and re.search(regExpRules["name"], kwargs["name"]) == None
-        ):
+        if "name" in kwargs and re.search(regExpRules["name"], kwargs["name"]) == None:
             raise InvalidRequest("Invalid name pattern.")
         if (
             "h_name" in kwargs
@@ -129,10 +139,7 @@ def reject_invalid(function):
             )
         if "text" in kwargs and (len(kwargs["text"]) < 4 or len(kwargs["text"]) > 500):
             raise InvalidRequest("Invalid text pattern.")
-        if (
-            "desc" in kwargs
-            and re.search(regExpRules["desc"], kwargs["desc"]) == None
-        ):
+        if "desc" in kwargs and re.search(regExpRules["desc"], kwargs["desc"]) == None:
             raise InvalidRequest("Invalid text pattern.")
         if (
             "title" in kwargs
@@ -141,10 +148,7 @@ def reject_invalid(function):
             raise InvalidRequest("Invalid text pattern.")
         if "week" in kwargs and (kwargs["week"] < 1 or kwargs["week"] > 13):
             raise InvalidRequest("Invalid week value.")
-        if (
-            "tag" in kwargs
-            and re.search(regExpRules["tag"], kwargs["tag"]) == None
-        ):
+        if "tag" in kwargs and re.search(regExpRules["tag"], kwargs["tag"]) == None:
             raise InvalidRequest("Invalid tag pattern.")
         if "r_value" in kwargs and not isinstance(kwargs["r_value"], bool):
             raise InvalidRequest("Invalid r_value.")
