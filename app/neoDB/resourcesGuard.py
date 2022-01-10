@@ -42,11 +42,11 @@ import re
 
 regExpRules = {
     "courseCode": "^[a-zA-Z0-9\s]{4,100}$",
-    "courseName": "^[a-zA-Z0-9\s]{4,100}$",
+    "courseName": "^[a-zA-Z0-9\s\*\+\-\[\]\(\)]{4,100}$",
     "userName": "^[a-zA-Z0-9\s]{4,100}$",
     "userId": "^[a-zA-Z][a-zA-Z0-9]{3,99}$",
     "email": "^[-\w\.]+@([\w-]+\.)+[\w-]{2,4}$",
-    "name": "^[a-zA-Z0-9\s]{4,100}$",
+    "name": "^[a-zA-Z0-9\s\*\+\-\[\]\(\)]{4,100}$",
     "desc": "^[a-zA-Z][a-zA-Z0-9\s]{3,500}$",
     "title": "^[a-zA-Z][a-zA-Z0-9\s]{3,500}$",
     "tag": "^[a-zA-Z0-9\s.]{4,100}$",
