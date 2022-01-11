@@ -14,5 +14,5 @@ MATCH (h)-[r:DELTA_GRAPH_RELATIONSHIP{deltaGraphId : workspace.deltaGraphId}]->(
 WHERE NOT id(r) IN reachable_id
 WITH collect(h.name) AS h_name, collect(r.name) AS r_name, collect(t.name) AS t_name, r, workspace
 DELETE r
-SET workspace.lAStModified = datetime.transaction()
+SET workspace.lastModified = datetime.transaction()
 RETURN h_name, r_name, t_name;
