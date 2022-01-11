@@ -68,159 +68,180 @@
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-menu top offset-y v-if="col.courseCode" open-on-hover>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-card v-bind="attrs" v-on="on">
-                        <v-list-item three-line>
-                            <v-list-item-content>
-                                <v-list-item-title>
-                                    ${col.courseCode}
-                                </v-list-item-title>
-                                <v-list-item-subtitle>
-                                    ${col.courseName}</v-list-item-subtitle>
-                            </v-list-item-content>
-                            <v-list-item-avatar tile size="96">
-                                <img :src="col.imageURL">
-                            </v-list-item-avatar>
-                        </v-list-item>
-                        <v-card-actions>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn :color="col.isInternal === false?'success':'grey'"
-                                        @click="courseIsInternal(col)" v-bind="attrs" v-on="on" {% if isInstructor %}
-                                        text style="pointer-events: none;" {% else %} outlined {% endif %}>
-                                        <v-icon left>public</v-icon>
-                                        public
-                                    </v-btn>
-                                </template>
-                                ${'click to '+(col.isInternal === false?'set internal':'set public')}
-                            </v-tooltip>
+            <v-card v-if="col.courseCode">
+                <v-list-item three-line>
+                    <v-list-item-content>
+                        <v-list-item-title>
+                            ${col.courseCode}
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                            ${col.courseName}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-avatar tile size="96">
+                        <img :src="col.imageURL">
+                    </v-list-item-avatar>
+                    <v-menu bottom offset-y>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item-icon v-bind="attrs" v-on="on">
+                                <v-icon>more_vert</v-icon>
+                            </v-list-item-icon>
+                        </template>
+                        <v-list class="no-padding-list">
+                            <v-subheader style="height: auto; font-size: small;">page</v-subheader>
                             {% if isInstructor %}
-                            <v-spacer></v-spacer>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn :outlined="!col.isTeaching" :color="col.isTeaching?'info':'grey'"
-                                        v-bind="attrs" v-on="on" @click="col.isTeaching?quit(col):join(col)">
-                                        <v-icon v-if="col.isTeaching" left>check</v-icon>
-                                        ${col.isTeaching?'joined':'join'}
-                                    </v-btn>
-                                </template>
-                                ${'click to '+(col.isTeaching?'unjoin':'join')}
-                            </v-tooltip>
-                            {% endif%}
-                        </v-card-actions>
-                    </v-card>
-                </template>
-                <v-container pa-0 style="background-color: white;">
-                    <v-row no-gutters>
-                        <v-subheader style="height: auto; font-size: small;">page</v-subheader>
-                        {% if isInstructor %}
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on"
-                                        :href="'{{ url_for('instructor.repositories') }}/' + col.courseCode" icon>
-                                        <v-icon>table_view</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Repository</span>
-                            </v-tooltip>
-                        </v-col>
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on"
-                                        :href="'{{ url_for('instructor.courseSchedule') }}/' + col.courseCode" icon>
-                                        <v-icon>edit_calendar</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Course Schedules</span>
-                            </v-tooltip>
-                        </v-col>
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on"
-                                        :href="'{{ url_for('instructor.material') }}/' + col.courseCode" icon>
-                                        <v-icon>add_link</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Course Resources</span>
-                            </v-tooltip>
-                        </v-col>
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on"
-                                        :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
-                                        <v-icon>account_tree</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Versions</span>
-                            </v-tooltip>
-                        </v-col>
-                        {% elif isDLTC %}
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on"
-                                        :href="'{{ url_for('DLTC.pullRequest') }}/' + col.courseCode" icon>
-                                        <v-icon>library_add_check</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Update Request</span>
-                            </v-tooltip>
-                        </v-col>
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on"
-                                        :href="'{{ url_for('DLTC.versionTree') }}/' + col.courseCode" icon>
-                                        <v-icon>account_tree</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Versions</span>
-                            </v-tooltip>
-                        </v-col>
-                        {% endif %}
-                        <v-divider vertical></v-divider>
-                        <v-subheader style="height: auto; font-size: small;">action</v-subheader>
-                        {% if isInstructor %}
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
-                                        <v-icon>assignment_ind</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>List Instructor</span>
-                            </v-tooltip>
-                        </v-col>
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on" @click="courseInfo(col)" icon>
-                                        <v-icon>edit</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>Edit info</span>
-                            </v-tooltip>
-                        </v-col>
-                        {% elif isDLTC %}
-                        <v-col cols="auto">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(col)" icon>
-                                        <v-icon>${col.isInternal === false?'public_off':'public'}</v-icon>
-                                    </v-btn>
-                                </template>
-                                <span>${col.isInternal === false?'set internal':'set public'}</span>
-                            </v-tooltip>
-                        </v-col>
-                        {% endif %}
-                    </v-row>
-                </v-container>
-            </v-menu>
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
+                                            <v-icon>account_tree</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Versions</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            {% elif isDLTC %}
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('DLTC.versionTree') }}/' + col.courseCode" icon>
+                                            <v-icon>account_tree</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Versions</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            {% endif %}
+                            <v-divider></v-divider>
+                            <v-subheader style="height: auto; font-size: small;">action</v-subheader>
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
+                                            <v-icon>assignment_ind</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>List Instructor</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            {% if isInstructor %}
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on" @click="courseInfo(col)" icon>
+                                            <v-icon>edit</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Edit info</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            {% elif isDLTC %}
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(col)" icon>
+                                            <v-icon>${col.isInternal === false?'public_off':'public'}
+                                            </v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>${col.isInternal === false?'set internal':'set public'}</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            {% endif %}
+                        </v-list>
+                    </v-menu>
+                </v-list-item>
+                <v-card-actions>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn :color="col.isInternal === false?'success':'grey'" @click="courseIsInternal(col)"
+                                v-bind="attrs" v-on="on" {% if isInstructor %} text style="pointer-events: none;"
+                                {% else %} outlined {% endif %}>
+                                <v-icon left>public</v-icon>
+                                public
+                            </v-btn>
+                        </template>
+                        ${'click to '+(col.isInternal === false?'set internal':'set public')}
+                    </v-tooltip>
+                    {% if isInstructor %}
+                    <v-spacer></v-spacer>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn :outlined="!col.isTeaching" :color="col.isTeaching?'info':'grey'" v-bind="attrs"
+                                v-on="on" @click="col.isTeaching?quit(col):join(col)">
+                                <v-icon v-if="col.isTeaching" left>check</v-icon>
+                                ${col.isTeaching?'joined':'join'}
+                            </v-btn>
+                        </template>
+                        ${'click to '+(col.isTeaching?'unjoin':'join')}
+                    </v-tooltip>
+                    {% endif%}
+                </v-card-actions>
+                <v-expansion-panels>
+                    <v-expansion-panel>
+                        <v-expansion-panel-header>
+                            Pages
+                        </v-expansion-panel-header>
+                        <v-expansion-panel-content>
+                            <v-container style="padding: unset">
+                                <v-row no-gutters>
+                                    {% if isInstructor %}
+                                    <v-col cols="auto">
+                                        <v-tooltip bottom>
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <v-btn v-bind="attrs" v-on="on"
+                                                    :href="'{{ url_for('instructor.repositories') }}/' + col.courseCode"
+                                                    icon>
+                                                    <v-icon>table_view</v-icon>
+                                                </v-btn>
+                                            </template>
+                                            <span>Repository</span>
+                                        </v-tooltip>
+                                    </v-col>
+                                    <v-col cols="auto">
+                                        <v-tooltip bottom>
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <v-btn v-bind="attrs" v-on="on"
+                                                    :href="'{{ url_for('instructor.courseSchedule') }}/' + col.courseCode"
+                                                    icon>
+                                                    <v-icon>edit_calendar</v-icon>
+                                                </v-btn>
+                                            </template>
+                                            <span>Course Schedules</span>
+                                        </v-tooltip>
+                                    </v-col>
+                                    <v-col cols="auto">
+                                        <v-tooltip bottom>
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <v-btn v-bind="attrs" v-on="on"
+                                                    :href="'{{ url_for('instructor.material') }}/' + col.courseCode"
+                                                    icon>
+                                                    <v-icon>add_link</v-icon>
+                                                </v-btn>
+                                            </template>
+                                            <span>Course Resources</span>
+                                        </v-tooltip>
+                                    </v-col>
+                                    {% elif isDLTC %}
+                                    <v-col cols="auto">
+                                        <v-tooltip bottom>
+                                            <template v-slot:activator="{ on, attrs }">
+                                                <v-btn v-bind="attrs" v-on="on"
+                                                    :href="'{{ url_for('DLTC.pullRequest') }}/' + col.courseCode" icon>
+                                                    <v-icon>library_add_check</v-icon>
+                                                </v-btn>
+                                            </template>
+                                            <span>Update Request</span>
+                                        </v-tooltip>
+                                    </v-col>
+                                    {% endif %}
+                                </v-row>
+                            </v-container>
+                        </v-expansion-panel-content>
+                    </v-expansion-panel>
+                </v-expansion-panels>
+            </v-card>
             {% endif %}
         </v-col>
     </v-row>
@@ -228,6 +249,11 @@
 
 {% endblock %}
 {% block VueComponentScript %}
+<style>
+    .no-padding-list>* {
+        padding: unset
+    }
+</style>
 <script>
     Vue.component('app-content', {
         data: () => ({
