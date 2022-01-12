@@ -174,7 +174,9 @@
         mounted: function () {
             cy.mount(document.getElementById("cy"))
             self = this
-            this.materialDialogue = false
+            this.$nextTick(function () {
+                this.materialDialogue = false
+            })
             cy.on('tap', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
