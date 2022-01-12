@@ -112,7 +112,7 @@
     }
     Vue.component('app-content', {
         data: () => ({
-            metricsBottomSheet: false,
+            metricsBottomSheet: true,
             materialDialogue: false,
         }),
         methods: {
@@ -186,6 +186,7 @@
         mounted: function () {
             cy.mount(document.getElementById("cy"))
             self = this
+            this.materialDialogue = false
             cy.on('tap', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
