@@ -27,8 +27,9 @@
     </v-tooltip>
     {% endif %}
     <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
-        hide-overlay scrollable="false">
-        <iframe style="height: 100%; width:100%" frameBorder="0" :src="materialLink"></iframe>
+        hide-overlay persistent no-click-animation>
+        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
+            src="{{ url_for('material', courseCode = courseCode)}}"></iframe>
     </v-dialog>
 </v-card>
 {% endblock %}
@@ -46,6 +47,7 @@
         position: absolute;
         right: 0px;
         margin: unset;
+        overflow: clip;
     }
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
@@ -112,7 +114,6 @@
         data: () => ({
             metricsBottomSheet: false,
             materialDialogue: false,
-            materialLink: ""
         }),
         methods: {
             loadData() {
@@ -174,9 +175,11 @@
                         }
                     })
             },
-            newTab(url) {
-                this.materialLink = url
+            newTab(keyword) {
                 this.materialDialogue = true
+                this.$nextTick(function () {
+                    this.$refs.iframe.contentWindow.postMessage(keyword, '*')
+                })
                 //let w = window.open(url, '_blank')
             }
         },
@@ -186,9 +189,12 @@
             cy.on('tap', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
-                this.newTab("{{ url_for('material', courseCode = courseCode)}}?concept=" + event
-                    .target[0].data(
-                        'id'))
+                this.newTab(event.target[0].data('id'))
+            })
+            cy.on('tap', (event) => {
+                if (event.target == event.cy || event.target.isEdge()) {
+                    this.materialDialogue = false
+                }
             })
             this.loadData()
         },

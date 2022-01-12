@@ -188,9 +188,13 @@
                 },
                 newTab(url) {
                     let w = window.open(url, '_blank')
-                }
+                },
             },
             mounted: function () {
+                self = this
+                window.onmessage = function (e) {
+                    self.search = e.data
+                };
                 this.loadData()
             },
             template: '#content',
