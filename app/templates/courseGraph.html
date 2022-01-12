@@ -26,12 +26,28 @@
         repositories
     </v-tooltip>
     {% endif %}
+    <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
+        hide-overlay scrollable="false">
+        <iframe style="height: 100%; width:100%" frameBorder="0" :src="materialLink"></iframe>
+    </v-dialog>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
+<style>
+    .materialPage {
+        height: 100vh;
+        padding: unset;
+        right: 0px;
+        width: 30vw;
+        max-height: unset !important;
+        position: absolute;
+        right: 0px;
+        margin: unset;
+    }
+</style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
     cy = cytoscape({
@@ -95,6 +111,8 @@
     Vue.component('app-content', {
         data: () => ({
             metricsBottomSheet: false,
+            materialDialogue: false,
+            materialLink: ""
         }),
         methods: {
             loadData() {
@@ -157,7 +175,9 @@
                     })
             },
             newTab(url) {
-                let w = window.open(url, '_blank')
+                this.materialLink = url
+                this.materialDialogue = true
+                //let w = window.open(url, '_blank')
             }
         },
         mounted: function () {
