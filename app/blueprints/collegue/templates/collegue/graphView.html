@@ -185,10 +185,9 @@
                     this.newTab(event.target[0].data('id'))
                 }
             })
-            cy.on('tap', (event) => {
-                if (event.target == event.cy || event.target.isEdge()) {
-                    this.materialDialogue = false
-                }
+            document.body.addEventListener("mouseup", (event) => {
+                console.log("click")
+                self.materialDialogue = false
             })
             this.loadData()
         },
