@@ -310,3 +310,71 @@ class workspaceDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def commit_workspace_as_patch_n_expose(self, deltaGraphId, userId, tag):
+        def _query(tx):
+            commit_query = cypher["commit_workspace_as_patch.cyp"]
+            from ..branchResources import cypher as branch_cypher
+
+            expose_query = branch_cypher["set_isExposed.cyp"]
+            result = tx.run(
+                commit_query, deltaGraphId=deltaGraphId, userId=userId, tag=tag
+            )
+            try:
+                branch = [record["branch"] for record in result][0]
+            except Exception as exception:
+                from ..resourcesGuard import InvalidRequest
+                raise InvalidRequest("no meaningful edge update was found")
+            result = tx.run(
+                expose_query, deltaGraphId=branch["deltaGraphId"], userId=userId
+            )
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["branch"].items()
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            branch = session.write_transaction(_query)
+            return branch
+
+    def commit_workspace_as_fork_n_expose(self, deltaGraphId, userId, tag):
+        def _query(tx):
+            commit_query = cypher["commit_workspace_as_fork.cyp"]
+            from ..branchResources import cypher as branch_cypher
+
+            expose_query = branch_cypher["set_isExposed.cyp"]
+            result = tx.run(
+                commit_query, deltaGraphId=deltaGraphId, userId=userId, tag=tag
+            )
+            try:
+                branch = [record["branch"] for record in result][0]
+            except Exception as exception:
+                from ..resourcesGuard import InvalidRequest
+                raise InvalidRequest("no meaningful edge update was found")
+            result = tx.run(
+                expose_query, deltaGraphId=branch["deltaGraphId"], userId=userId
+            )
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["branch"].items()
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            branch = session.write_transaction(_query)
+            return branch

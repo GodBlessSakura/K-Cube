@@ -14,18 +14,42 @@ def post(overwriterId, overwriteeId):
         if "tag" in request.json and "action" in request.json:
             if overwriterId is not None and overwriteeId is None:
                 if request.json["action"] == "fork":
-                    return jsonify(
-                        {
-                            "success": True,
-                            "branch": get_api_driver().workspace.commit_workspace_as_fork(
-                                deltaGraphId=overwriterId,
-                                tag=request.json["tag"],
-                                userId=session["user"]["userId"],
-                            ),
-                        }
-                    )
+                    if request.json["expose"]:
+                        return jsonify(
+                            {
+                                "success": True,
+                                "branch": get_api_driver().workspace.commit_workspace_as_fork_n_expose(
+                                    deltaGraphId=overwriterId,
+                                    tag=request.json["tag"],
+                                    userId=session["user"]["userId"],
+                                ),
+                            }
+                        )
+                    else:
+                        return jsonify(
+                            {
+                                "success": True,
+                                "branch": get_api_driver().workspace.commit_workspace_as_fork(
+                                    deltaGraphId=overwriterId,
+                                    tag=request.json["tag"],
+                                    userId=session["user"]["userId"],
+                                ),
+                            }
+                        )
                 if request.json["action"] == "patch":
-                    return jsonify(
+                    if request.json["expose"]:
+                        return jsonify(
+                            {
+                                "success": True,
+                                "branch": get_api_driver().workspace.commit_workspace_as_patch_n_expose(
+                                    deltaGraphId=overwriterId,
+                                    tag=request.json["tag"],
+                                    userId=session["user"]["userId"],
+                                ),
+                            }
+                        )
+                    else:
+                        return jsonify(
                         {
                             "success": True,
                             "branch": get_api_driver().workspace.commit_workspace_as_patch(
