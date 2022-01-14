@@ -99,14 +99,19 @@ class tripleDAO:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             try:
-                return [
+                triples = [
                     {
                         "h_name": record["h_name"],
                         "r_name": record["r_name"],
                         "t_name": record["t_name"],
+                        "r_value": record["r_value"],
                     }
                     for record in result
                 ]
+                # if len(triples) == 0:
+                #     from ..resourcesGuard import InvalidRequest
+                #     raise InvalidRequest("no unreachable edge was found")
+                return triples
             except Exception as exception:
                 raise exception
 

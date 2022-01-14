@@ -930,15 +930,25 @@
                                     triple
                                     .r_name,
                                     triple.t_name))[0]
-                                edge.data({
-                                    workspace_value: "undefined"
-                                })
-                                cy.edges(
-                                    '[workspace_value = "undefined"][subject_value = "undefined"]'
-                                ).remove()
-                                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]')
-                                    .remove()
+                                if (edge) {
+                                    if (triple.r_value === null)
+                                        edge.data({
+                                            workspace_value: "undefined"
+                                        })
+                                    else if (triple.r_value === false)
+                                        edge.data({
+                                            workspace_value: "false"
+                                        })
+                                } else {
+                                    if (triple.r_value === false)
+                                        cy.add(workspaceEdgeFactory(triple))
+                                }
                             })
+                            cy.edges(
+                                '[workspace_value = "undefined"][subject_value = "undefined"]'
+                            ).remove()
+                            cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]')
+                                .remove()
                             this.edgeStatistic()
                             this.determineTripleOptions()
                         } else {
@@ -958,7 +968,8 @@
                 this.h_name = ''
                 this.r_name = ''
                 this.t_name = ''
-                this.$refs.tripleForm.resetValidation()
+                if (this.$refs.tripleForm)
+                    this.$refs.tripleForm.resetValidation()
             },
             nodeFieldFocus(event) {
                 this.focusing = event
