@@ -603,7 +603,7 @@
                                     cy.add(subjectEdgeFactory(triple))
                                 }
                             })
-                            this.rootName = body.workspace.courseCode
+                            this.rootName = body.workspace.name
                             let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
