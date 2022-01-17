@@ -101,15 +101,6 @@
                         settings
                     </v-btn>
                 </template>
-            </v-menu>
-        </v-col>
-        <v-col cols="auto" dense>
-            <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                        settings
-                    </v-btn>
-                </template>
                 <v-list>
                     <v-dialog max-width="700px">
                         <template v-slot:activator="{ on, attrs }">
@@ -140,7 +131,7 @@
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
-                        <div id="preview" style="height: 100%; width: 100%;"></div>
+                        <div id="subject" style="height: 100%; width: 100%;"></div>
                     </v-row>
                 </v-container>
             </v-card>
@@ -158,7 +149,7 @@
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
-                        <div id="subject" style="height: 100%; width: 100%;"></div>
+                        <div id="preview" style="height: 100%; width: 100%;"></div>
                     </v-row>
                 </v-container>
             </v-card>
@@ -528,8 +519,8 @@
             }
         },
         mounted: function () {
-            previewCy.mount(document.getElementById("subject"))
-            subjectCy.mount(document.getElementById("preview"))
+            previewCy.mount(document.getElementById("preview"))
+            subjectCy.mount(document.getElementById("subject"))
             cytoscapeInstance.forEach(instance => {
                 instance.cy.container().style.background = cyStyles[instance.options].filter(
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]

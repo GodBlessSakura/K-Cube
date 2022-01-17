@@ -560,10 +560,6 @@
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
-            cytoscapeInstance.forEach(instance => {
-                instance.cy.container().style.background = cyStyles[instance.options].filter(
-                    sheet => sheet.selector == 'background-color')[0].style["background-color"]
-            })
             window.onresize = () => {
                 cy.fit()
             }

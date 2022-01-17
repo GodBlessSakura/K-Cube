@@ -99,7 +99,7 @@
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
-                        <div id="preview" style="height: 100%; width: 100%;"></div>
+                        <div id="subject" style="height: 100%; width: 100%;"></div>
                     </v-row>
                 </v-container>
             </v-card>
@@ -113,7 +113,7 @@
                         </v-col>
                     </v-row>
                     <v-row dense style="height: 100%; width: 100%;">
-                        <div id="subject" style="height: 100%; width: 100%;"></div>
+                        <div id="preview" style="height: 100%; width: 100%;"></div>
                     </v-row>
                 </v-container>
             </v-card>
@@ -496,8 +496,8 @@
             }
         },
         mounted: function () {
-            previewCy.mount(document.getElementById("subject"))
-            subjectCy.mount(document.getElementById("preview"))
+            previewCy.mount(document.getElementById("preview"))
+            subjectCy.mount(document.getElementById("subject"))
             cytoscapeInstance.forEach(instance => {
                 instance.cy.container().style.background = cyStyles[instance.options].filter(
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]
