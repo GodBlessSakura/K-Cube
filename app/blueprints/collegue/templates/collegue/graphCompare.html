@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
 {% import 'cyMetricsVisualize.html' as cyMetricsVisualize %}
+{% import 'cyOption.html' as cyOption %}
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     {% if readOnly %}
@@ -93,6 +94,37 @@
                 </v-list>
             </v-menu>
         </v-col>
+        <v-col cols="auto" dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        settings
+                    </v-btn>
+                </template>
+            </v-menu>
+        </v-col>
+        <v-col cols="auto" dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        settings
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-dialog max-width="700px">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on">
+                                <v-list-item-title>graph<br>display<br>options</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>palette</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <v-cy-options-dialog></v-cy-options-dialog>
+                    </v-dialog>
+                </v-list>
+            </v-menu>
+        </v-col>
     </v-row>
     <v-row dense style="height: 90%; width: 100%;">
         <v-col dense style="height: 100%">
@@ -133,8 +165,7 @@
         </v-col>
     </v-row>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
-        <v-cy-metrics-visualize-bottom-sheet>
-        </v-cy-metrics-visualize-bottom-sheet>
+        <v-cy-metrics-visualize-bottom-sheet></v-cy-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
 </v-container>
 {% endblock %}
@@ -142,6 +173,8 @@
 {{ layout.cytoscapeCDN() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
+{{ cyOption.component()}}
+{{ cyOption.script()}}
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
     previewCyOption = {
@@ -158,12 +191,14 @@
     }
     previewCy = cytoscape(previewCyOption)
     subjectCy = cytoscape(subjectCyOption)
-    metricOptions = [{
+    cytoscapeInstance = [{
         cy: previewCy,
-        edgeSelector: "[original_value= 'true'][preview_value != 'false'],[preview_value = 'true']"
+        edgeSelector: "[original_value= 'true'][preview_value != 'false'],[preview_value = 'true']",
+        options: "previewStyle"
     }, {
         cy: subjectCy,
-        edgeSelector: "[original_value= 'true']"
+        edgeSelector: "[original_value= 'true']",
+        options: "subjectStyle"
     }]
     concentricLayoutOptions = {
         name: 'concentric',
@@ -495,6 +530,10 @@
         mounted: function () {
             previewCy.mount(document.getElementById("subject"))
             subjectCy.mount(document.getElementById("preview"))
+            cytoscapeInstance.forEach(instance => {
+                instance.cy.container().style.background = cyStyles[instance.options].filter(
+                    sheet => sheet.selector == 'background-color')[0].style["background-color"]
+            })
             previewCy.on('dragpan', (event) => {
                 subjectCy.pan(previewCy.pan())
             })

@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
 {% import 'cyMetricsVisualize.html' as cyMetricsVisualize %}
+{% import 'cyOption.html' as cyOption %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
     <div id="cy" style="height: 100%; width: 100%;"></div>
@@ -15,6 +16,19 @@
         </template>
         centrality metrics
     </v-tooltip>
+    <v-dialog max-width="700px">
+        <template v-slot:activator="{ on: menu, attrs }">
+            <v-tooltip top>
+                <template v-slot:activator="{ on: tooltip }">
+                    <v-btn absolute style="bottom:3vh;left:12vh" fab v-bind="attrs" v-on="{ ...tooltip, ...menu }">
+                        <v-icon>palette</v-icon>
+                    </v-btn>
+                </template>
+                graph<br>display<br>options
+            </v-tooltip>
+        </template>
+        <v-cy-options-dialog></v-cy-options-dialog>
+    </v-dialog>
     <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
         hide-overlay persistent no-click-animation>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
@@ -26,6 +40,8 @@
 {{ layout.cytoscapeCDN() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
+{{ cyOption.component()}}
+{{ cyOption.script()}}
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <style>
     .materialPage {
@@ -46,9 +62,10 @@
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     })
-    metricOptions = [{
+    cytoscapeInstance = [{
         cy: cy,
-        edgeSelector: "[value = 'true']"
+        edgeSelector: "[value = 'true']",
+        options: "simpleStyle"
     }]
     concentricLayoutOptions = {
         name: 'concentric',
@@ -173,6 +190,10 @@
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
+            cytoscapeInstance.forEach(instance => {
+                instance.cy.container().style.background = cyStyles[instance.options].filter(
+                    sheet => sheet.selector == 'background-color')[0].style["background-color"]
+            })
             self = this
             this.$nextTick(function () {
                 this.materialDialogue = false

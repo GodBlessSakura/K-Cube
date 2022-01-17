@@ -1,0 +1,111 @@
+{% macro componentContent() %}
+<v-card>
+    <v-container>
+        <v-row>
+            <v-col cols="2">
+            </v-col>
+            <v-col v-for="field in fields">
+                ${field}
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="2">
+                node-color
+            </v-col>
+            <v-col v-for="field in fields">
+                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                    v-model="cyStylesOptions[field]['node-color']" hide-mode-switch>
+                </v-color-picker>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="2">
+                line-color
+            </v-col>
+            <v-col v-for="field in fields">
+                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                    v-model="cyStylesOptions[field]['line-color']" hide-mode-switch>
+                </v-color-picker>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="2">
+                selected-color
+            </v-col>
+            <v-col v-for="field in fields">
+                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                    v-model="cyStylesOptions[field]['selected-color']" hide-mode-switch>
+                </v-color-picker>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="2">
+                background-color
+            </v-col>
+            <v-col v-for="field in fields">
+                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                    v-model="cyStylesOptions[field]['background-color']" hide-mode-switch>
+                </v-color-picker>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="2">
+                show "Subtopic in" relationship label
+            </v-col>
+            <v-col v-for="field in fields">
+                <v-checkbox @change="optionChanged()" v-model="cyStylesOptions[field]['showDefaultRelationLabel']">
+                </v-checkbox>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-col cols="2">
+                show node label
+            </v-col>
+            <v-col v-for="field in fields">
+                <v-checkbox @change="optionChanged()" v-model="cyStylesOptions[field]['showNodeLabel']">
+                </v-checkbox>
+            </v-col>
+        </v-row>
+        <v-row>
+            <v-btn @click="reset()">reset</v-btn>
+        </v-row>
+    </v-container>
+</v-card>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="cyOptionsContent">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<script>
+    Vue.component('v-cy-options-dialog', {
+        data: () => ({
+            cyStylesOptions: cyStylesOptions
+        }),
+        props: {
+            fields: {
+                default: () => (['editor', 'viewer'])
+            }
+        },
+        methods: {
+            optionChanged() {
+                cyStylesOptions = this.cyStylesOptions
+                cyStylesUtil.setLocal()
+                cytoscapeInstance.forEach(instance => {
+                    instance.cy.style(cyStyles[instance.options])
+                    instance.cy.container().style.background = cyStyles[instance.options].filter(
+                        sheet => sheet.selector == 'background-color')[0].style["background-color"]
+                })
+            },
+            reset() {
+                cyStylesUtil.setDefault()
+                this.cyStylesOptions = cyStylesOptions
+                cyStylesUtil.setLocal()
+            }
+        },
+        template: '#cyOptionsContent',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endmacro %}

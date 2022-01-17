@@ -75,7 +75,7 @@
         }),
         methods: {
             metricsVisualize() {
-                metricOptions.forEach(option => {
+                cytoscapeInstance.forEach(option => {
                     let cy = option.cy
                     let edgeSelector = option.edgeSelector
                     if (this.metricsVisualization.metric == undefined) {

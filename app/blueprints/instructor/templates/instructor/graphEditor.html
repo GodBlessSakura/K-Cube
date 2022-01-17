@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
 {% import 'cyMetricsVisualize.html' as cyMetricsVisualize %}
+{% import 'cyOption.html' as cyOption %}
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     <v-row dense style="width: 100%;">
@@ -100,6 +101,28 @@
                             <v-icon>cleaning_services</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col cols="auto" dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        settings
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-dialog max-width="700px">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on">
+                                <v-list-item-title>graph<br>display<br>options</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>palette</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <v-cy-options-dialog></v-cy-options-dialog>
+                    </v-dialog>
                 </v-list>
             </v-menu>
         </v-col>
@@ -420,6 +443,8 @@
 {{ layout.cytoscapeCDN() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
+{{ cyOption.component()}}
+{{ cyOption.script()}}
 <style>
     .v-chip--active {
         background-color: lightblue;
@@ -432,8 +457,9 @@
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     });
-    metricOptions = [{
-        cy: cy
+    cytoscapeInstance = [{
+        cy: cy,
+        options: "basicEditStyle"
     }]
     concentricLayoutOptions = {
         name: 'concentric',
@@ -688,9 +714,11 @@
                 cy.style().resetToDefault()
                 if (this.diffMode) {
                     cy.style(cyStyles.diffEditStyle)
+                    cytoscapeInstance[0].options = "diffEditStyle"
                 } else {
                     cy.edges(".suppress").removeClass('suppress')
                     cy.style(cyStyles.basicEditStyle)
+                    cytoscapeInstance[0].options = "basicEditStyle"
                 }
             },
             edgeStatistic() {
@@ -1154,6 +1182,10 @@
         },
         mounted: function () {
             cy.mount(document.getElementById("editor"))
+            cytoscapeInstance.forEach(instance => {
+                instance.cy.container().style.background = cyStyles[instance.options].filter(
+                    sheet => sheet.selector == 'background-color')[0].style["background-color"]
+            })
             self = this
             cy.on('tap', 'node', (event) => {
                 if (self.canUpdateEdge) {
