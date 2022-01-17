@@ -48,6 +48,8 @@ var cyStyles = {
                 selector: 'node',
                 style: {
                     'label': options.showNodeLabel ? 'data(name)' : '',
+                    'text-max-width': 70,
+                    'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
                     'background-image': 'data(imageURL)',
@@ -95,8 +97,12 @@ var cyStyles = {
                 selector: 'node',
                 style: {
                     'label': options.showNodeLabel ? 'data(name)' : '',
+                    'text-max-width': 70,
+                    'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
                 }
             },
             {
@@ -152,8 +158,12 @@ var cyStyles = {
                 selector: 'node',
                 style: {
                     'label': options.showNodeLabel ? 'data(name)' : '',
+                    'text-max-width': 70,
+                    'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
                 }
             }, {
                 selector: 'edge.suppress',
@@ -268,10 +278,12 @@ var cyStyles = {
                 selector: 'node',
                 style: {
                     'label': options.showNodeLabel ? 'data(name)' : '',
+                    'text-max-width': 70,
+                    'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover',
                     'background-color': options["node-color"],
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
                 }
             },
             {
@@ -336,7 +348,6 @@ var cyStyles = {
                     'opacity': 1
                 }
             },
-            options.defaultRelationshipStyle
         ].concat(!options.showDefaultRelationLabel ? {
             selector: 'edge[name = "Subtopic in"]',
             style: {
@@ -355,7 +366,10 @@ var cyStyles = {
                 selector: 'node',
                 style: {
                     'label': options.showNodeLabel ? 'data(name)' : '',
+                    'text-max-width': 70,
+                    'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
+                    'background-color': options["node-color"],
                     'background-image': 'data(imageURL)',
                     'background-fit': 'cover'
                 }
