@@ -1,7 +1,17 @@
-from flask import Blueprint, render_template, abort, redirect, request, jsonify, session
+from flask import (
+    Blueprint,
+    render_template,
+    abort,
+    redirect,
+    request,
+    jsonify,
+    session,
+    g,
+)
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
 from app.authorizer import authorize_RESTful_with
+from app.cache_driver import cache, user_permission, user_info
 
 user = Blueprint("user", __name__, template_folder="templates")
 
@@ -15,9 +25,7 @@ def back():
 @authorize_RESTful_with([], require_userId=True)
 def refreshPermission():
     try:
-        session["permission"] = get_api_driver().user.get_user_permission(
-            userId=session["user"]["userId"]
-        )
+        cache.delete_memoized(user_permission, session["user"]["userId"])
     finally:
         return redirect("/")
 
@@ -53,12 +61,7 @@ def register():
 
         if user:
             session["user"] = user
-            try:
-                session["permission"] = get_api_driver().user.get_user_permission(
-                    userId=user["userId"]
-                )
-            finally:
-                return jsonify({"success": True})
+            return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete register request"})
 
 
@@ -79,9 +82,6 @@ def login():
             )
             if user is not None:
                 session["user"] = user
-                session["permission"] = get_api_driver().user.get_user_permission(
-                    userId=user["userId"]
-                )
                 return jsonify({"success": True})
             return jsonify({"success": False})
         except Exception as e:
@@ -107,7 +107,7 @@ def patch():
         )
 
         if user is not None:
-            session["user"] = user
+            cache.delete_memoized(user_info, session["user"]["userId"])
             try:
                 verify()
             except:
@@ -117,9 +117,10 @@ def patch():
 
 
 @user.post("/verify")
+@authorize_RESTful_with([], require_userId=True)
 def verify():
     if "user" in session:
-        if "verified" not in session["user"] or not session["user"]["verified"]:
+        if not g.user.verified:
             from ...sender import send_email
 
             # send_email(session["user"]["email"],

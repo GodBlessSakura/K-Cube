@@ -29,7 +29,7 @@
         </template>
         <v-cy-options-dialog></v-cy-options-dialog>
     </v-dialog>
-    {% if session['permission'] and session['permission'].canAccessInstructorPanel %}
+    {% if PERMISSION and PERMISSION.canAccessInstructorPanel %}
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
             <v-btn absolute style="bottom:3vh;left:21vh" fab v-on="on"

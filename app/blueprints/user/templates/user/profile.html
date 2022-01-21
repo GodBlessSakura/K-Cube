@@ -27,8 +27,8 @@
                     Verified
                 </v-col>
                 <v-col>
-                    <v-checkbox readonly @click="tryVerification()" value="{{session['user'].verified}}"
-                        :label="{{ 'true' if session['user'].verified else 'false'}}?'':'send verification mail'">
+                    <v-checkbox readonly @click="tryVerification()" value="{{USER.verified}}"
+                        :label="{{ 'true' if USER.verified else 'false'}}?'':'send verification mail'">
                     </v-checkbox>
                 </v-col>
             </v-row>
@@ -49,10 +49,10 @@
                                 <v-list-item>
                                     <v-btn href="{{ url_for('user.refreshPermission') }}">renew permission</v-btn>
                                 </v-list-item>
-                                {% if session['permission'] and session['permission'].canAccessDLTCPanel %}
-                                {% for permission in session['permission'] %}
+                                {% if PERMISSION and PERMISSION.canAccessDLTCPanel %}
+                                {% for permission in PERMISSION %}
                                 <v-list-item>
-                                    {{ permission }} : {{ session['permission'][permission] }}
+                                    {{ permission }} : {{ PERMISSION[permission] }}
                                 </v-list-item>
                                 {% endfor %}
                                 {% endif %}
@@ -69,8 +69,8 @@
 <script>
     Vue.component('app-content', {
         data: () => ({
-            userName: "{{session['user'].userName}}",
-            email: "{{session['user'].email}}",
+            userName: "{{USER.userName}}",
+            email: "{{USER.email}}",
             userNameRules: [
                 v => !!v || 'Name is required',
                 v => (v && v.length > 3 && v.length < 101) ||

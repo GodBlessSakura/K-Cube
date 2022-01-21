@@ -2,6 +2,8 @@ from flask import Flask, render_template, jsonify, session, g, abort
 
 from flask_mail import Mail
 from app.config import config
+from app.cache_driver import cache
+
 from app.blueprints.admin import admin
 from app.blueprints.collaborate import collaborate
 from app.blueprints.job import job
@@ -38,7 +40,7 @@ def create_app(config_string):
     app.secret_key = "super secret key"
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["upload_image_directory"] = os.path.join("uploads", "image")
-
+    cache.init_app(app)
     app.config.from_object(config_object)
     if "FLASK_SETTING" in os.environ:
         print("using config file:" + os.environ["FLASK_SETTING"])
@@ -151,5 +153,20 @@ def create_app(config_string):
     @app.context_processor
     def inject_regExpRules():
         return dict(regExpRules=regExpRules)
+
+    @app.before_request
+    def load_info_from_cache():
+        from app.cache_driver import user_permission, user_info
+
+        if "user" in session and "userId" in session["user"]:
+            g.permission = user_permission(session["user"]["userId"])
+            g.user = user_info(session["user"]["userId"])
+        else:
+            g.permission = None
+            g.user = None
+
+    @app.context_processor
+    def inject_permission():
+        return dict(PERMISSION=g.permission, USER=g.user)
 
     return app

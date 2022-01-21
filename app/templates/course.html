@@ -43,7 +43,7 @@
                 []
             ],
             course: null,
-            //{% if session['permission'] and session['permission'].canAccessInstructorPanel %}
+            //{% if PERMISSION and PERMISSION.canAccessInstructorPanel %}
             workspaceURL: undefined,
             //{% endif %}
         }),
@@ -97,7 +97,7 @@
                                 'Unexpected error on getting courses information.')
                         }
                     })
-                //{% if session['permission'] and session['permission'].canAccessInstructorPanel %}
+                //{% if PERMISSION and PERMISSION.canAccessInstructorPanel %}
                 fetch(
                         "{{ url_for('RESTful.workspace.query', lastModified=True, courseCode = courseCode) | safe }}", {
                             method: 'GET',

@@ -169,3 +169,18 @@ class userDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def get_user(self, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, userId=userId)
+            try:
+                rows = [record for record in result]
+                return dict(rows[0]["user"].items())
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

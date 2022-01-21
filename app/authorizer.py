@@ -8,7 +8,7 @@ class UnauthorizedRESTfulRequest(Exception):
 
 
 from typing import Iterable
-from flask import session
+from flask import g
 from functools import wraps
 
 
@@ -58,16 +58,16 @@ def permission_check(
     for permission in permissions:
         if isinstance(permission, str):
             if (
-                permission not in session["permission"]
-                or not session["permission"][permission]
+                permission not in g.permission
+                or not g.permission[permission]
             ):
                 raise errorRespond("unauthorized operation")
         elif isinstance(permission, Iterable):
             at_least_one_fullfiled = False
             for or_permission in permission:
                 if (
-                    or_permission in session["permission"]
-                    and session["permission"][or_permission]
+                    or_permission in g.permission
+                    and g.permission[or_permission]
                 ):
                     at_least_one_fullfiled = True
             if not at_least_one_fullfiled:
