@@ -2,6 +2,7 @@ from flask import jsonify, session, request
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
+from app.cache_driver import cache, user_permission
 
 role = Blueprint("role", __name__, url_prefix="role")
 
@@ -46,6 +47,7 @@ def put(userId):
             get_api_driver().user.assign_user_role(
                 userId=userId, role=request.json["role"]
             )
+            cache.delete_memoized(user_permission, userId)
             return jsonify({"success": True, "message": "assign done"})
         except Exception as e:
             raise e
@@ -61,6 +63,7 @@ def delete(userId):
             result = get_api_driver().user.remove_user_role(
                 userId=userId, role=request.json["role"]
             )
+            cache.delete_memoized(user_permission, userId)
             return jsonify({"success": True, "message": "remove done"})
         except Exception as e:
             raise e
