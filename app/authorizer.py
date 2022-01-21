@@ -53,7 +53,8 @@ def authorize_with(permissions=[], require_userId=False):
 def permission_check(
     permissions=[], require_userId=False, errorRespond=UnauthorizedRequest
 ):
-    if len(permissions) > 0 and "permission" not in session:
+    print(g.permission)
+    if len(permissions) > 0 and "permission" not in g:
         raise errorRespond("unauthenticated user")
     for permission in permissions:
         if isinstance(permission, str):
@@ -61,6 +62,7 @@ def permission_check(
                 permission not in g.permission
                 or not g.permission[permission]
             ):
+
                 raise errorRespond("unauthorized operation")
         elif isinstance(permission, Iterable):
             at_least_one_fullfiled = False
