@@ -1,3 +1,4 @@
+from xmlrpc.client import Boolean
 from argon2 import PasswordHasher
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
@@ -163,8 +164,14 @@ class userDAO:
                     if key not in permission:
                         permission[key] = value
                     else:
-                        if not permission[key]:
-                            permission[key] = value
+                        if isinstance(value, bool):
+                            if not permission[key]:
+                                permission[key] = value
+                        else:
+                            l = []
+                            l.append(permission[key])
+                            l.append(value)
+                            permission[key] = l
             return permission
 
         with self.driver.session() as session:
