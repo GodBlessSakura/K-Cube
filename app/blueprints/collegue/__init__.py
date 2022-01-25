@@ -14,7 +14,7 @@ collegue = Blueprint("collegue", __name__, template_folder="templates")
 
 
 @collegue.before_request
-@authorize_with([["canAccessDLTCPanel", "canAccessInstructorPanel"]])
+@authorize_with([], True, ["instructor", "DLTC", "admin"])
 def middleware():
     pass
 

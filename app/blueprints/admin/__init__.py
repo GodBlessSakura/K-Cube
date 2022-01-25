@@ -14,7 +14,7 @@ admin = Blueprint("admin", __name__, template_folder="templates")
 
 
 @admin.before_request
-@authorize_with(["canAccessAdminPanel"])
+@authorize_with([], True, ["admin"])
 def middleware():
     pass
 

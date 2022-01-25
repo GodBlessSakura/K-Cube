@@ -49,7 +49,7 @@
                                 <v-list-item>
                                     <v-btn href="{{ url_for('user.refreshPermission') }}">renew permission</v-btn>
                                 </v-list-item>
-                                {% if PERMISSION and PERMISSION.canAccessDLTCPanel %}
+                                {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
                                 {% for permission in PERMISSION %}
                                 <v-list-item>
                                     {{ permission }} : {{ PERMISSION[permission] }}

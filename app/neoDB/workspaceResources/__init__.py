@@ -250,7 +250,6 @@ class workspaceDAO:
 
     def create_from_import(self, deltaGraphId, triples, userId, tag):
         fname = sys._getframe().f_code.co_name
-        print(triples)
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
@@ -324,6 +323,7 @@ class workspaceDAO:
                 branch = [record["branch"] for record in result][0]
             except Exception as exception:
                 from ..resourcesGuard import InvalidRequest
+
                 raise InvalidRequest("no meaningful edge update was found")
             result = tx.run(
                 expose_query, deltaGraphId=branch["deltaGraphId"], userId=userId
@@ -358,6 +358,7 @@ class workspaceDAO:
                 branch = [record["branch"] for record in result][0]
             except Exception as exception:
                 from ..resourcesGuard import InvalidRequest
+
                 raise InvalidRequest("no meaningful edge update was found")
             result = tx.run(
                 expose_query, deltaGraphId=branch["deltaGraphId"], userId=userId

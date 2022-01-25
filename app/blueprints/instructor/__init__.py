@@ -17,7 +17,7 @@ def dashboard():
     return render_template("admin/dashboard.html")
 
 @instructor.before_request
-@authorize_with(["canAccessInstructorPanel"])
+@authorize_with([], True, ["instructor", "admin"])
 def middleware():
     pass
 

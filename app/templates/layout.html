@@ -256,7 +256,7 @@
                         </v-list-item>
                         {% endif %}
                     </v-list-group>
-                    {% if PERMISSION and PERMISSION.canAccessDLTCPanel %}
+                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
                     <v-divider></v-divider>
                     <v-list-group :value="DLTCListGroup" prepend-icon="groups">
                         <template v-slot:activator>
@@ -270,7 +270,7 @@
                         </v-list-item>
                     </v-list-group>
                     {% endif %}
-                    {% if PERMISSION and PERMISSION.canAccessInstructorPanel %}
+                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                     <v-divider></v-divider>
                     <v-list-group :value="instructorListGroup" prepend-icon="co_present">
                         <template v-slot:activator>
@@ -308,7 +308,7 @@
                         </v-list-item>
                     </v-list-group>
                     {% endif %}
-                    {% if PERMISSION and PERMISSION.canAccessAdminPanel %}
+                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role) %}
                     <v-divider></v-divider>
                     <v-list-group :value="adminListGroup" prepend-icon="admin_panel_settings">
                         <template v-slot:activator>
