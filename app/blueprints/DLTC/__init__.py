@@ -14,6 +14,9 @@ from .blueprints.uploads import uploads
 DLTC = Blueprint("DLTC", __name__, template_folder="templates")
 DLTC.register_blueprint(uploads, url_prefix="/uploads")
 
+@DLTC.route("/dashboard")
+def dashboard():
+    return render_template("admin/dashboard.html")
 
 @DLTC.before_request
 @authorize_with(["canAccessDLTCPanel"])

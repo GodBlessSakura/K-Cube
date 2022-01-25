@@ -4,10 +4,10 @@ collaborate = Blueprint("collaborate", __name__, template_folder="templates")
 from app.authorizer import authorize_with
 
 
-@collaborate.route("/relationships")
+@collaborate.route("/graphEditing")
 @authorize_with(["canProposeRelationship"])
-def relationships():
-    return render_template("collaborate/index.html")
+def graphEditing():
+    return render_template("collaborate/graphEditing.html")
 
 
 @collaborate.route("/feedbacks")

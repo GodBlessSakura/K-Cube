@@ -33,7 +33,7 @@
             </v-progress-linear>
             <v-app-bar app>
                 <template v-if="tabs" v-slot:extension>
-                    <v-tabs v-model="tabIndex" :optional="tabIndex<0" center-active centered icons-and-text>
+                    <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" center-active centered icons-and-text>
                         {% for i in [0,1,2,3,4,5,6] %}
                         <v-tab v-if="tabs[{{i}}]" style="pointer-events: none;">
                             ${tabs[{{i}}].title}
@@ -45,8 +45,9 @@
                         </v-tab>
                         {% endfor %}
                     </v-tabs>
-                    <v-select style="position: absolute" dense solo background-color="transparent" flat label="view"
-                        value="{{ request.blueprint }}" :items="roles" item-text="name" item-value="name">
+                    <v-select @change="switchRole" style="width: 200px; position: absolute" dense solo
+                        background-color="transparent" flat label="view" value="{{ request.blueprint }}" :items="roles"
+                        item-text="name" item-value="name">
                         <template v-slot:item="{ item, on, attrs }">
                             <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-icon>
@@ -247,7 +248,7 @@
                             <v-list-item-title>Others' Work</v-list-item-title>
                         </v-list-item> -->
                         {% if PERMISSION and (PERMISSION.canProposeRelationship or PERMISSION.canApproveRelationship) %}
-                        <v-list-item link href="{{ url_for('collaborate.relationships') }}">
+                        <v-list-item link href="{{ url_for('collaborate.graphEditing') }}">
                             <v-list-item-icon>
                                 <v-icon>linear_scale</v-icon>
                             </v-list-item-icon>
@@ -313,7 +314,7 @@
                         <template v-slot:activator>
                             <v-list-item-title>Admin</v-list-item-title>
                         </template>
-                        <v-list-item link href="{{ url_for('admin.panel') }}">
+                        <v-list-item link href="{{ url_for('admin.dashboard') }}">
                             <v-list-item-icon>
                                 <v-icon>dashboard</v-icon>
                             </v-list-item-icon>
@@ -393,11 +394,11 @@
                     tabs: [{
                         title: "dashboard",
                         icon: "dashboard",
-                        url: "http://127.0.0.1:5000/instructor/dashboard",
+                        url: "{{ url_for('instructor.dashboard') }}",
                     }, {
                         title: "course list",
                         icon: "grid_view",
-                        url: "http://127.0.0.1:5000/instructor/courseList",
+                        url: "{{ url_for('instructor.courseList') }}",
                     }]
                 },
                 {
@@ -406,25 +407,17 @@
                     tabs: [{
                         title: "dashboard",
                         icon: "dashboard",
-                        url: "/",
+                        url: "{{ url_for('DLTC.dashboard') }}",
                     }, {
                         title: "course list",
                         icon: "grid_view",
-                        url: "/",
+                        url: "{{ url_for('DLTC.courseList') }}",
                     }]
                 },
                 {
                     icon: "school",
                     name: "student",
-                    tabs: [{
-                        title: "dashboard",
-                        icon: "dashboard",
-                        url: "/",
-                    }, {
-                        title: "course list",
-                        icon: "grid_view",
-                        url: "/",
-                    }]
+                    tabs: []
                 },
                 {
                     icon: "admin_panel_settings",
@@ -432,25 +425,13 @@
                     tabs: [{
                         title: "dashboard",
                         icon: "dashboard",
-                        url: "/",
-                    }, {
-                        title: "course list",
-                        icon: "grid_view",
-                        url: "/",
+                        url: "{{ url_for('admin.dashboard') }}",
                     }]
                 },
                 {
                     icon: "support_agent",
                     name: "operator",
-                    tabs: [{
-                        title: "dashboard",
-                        icon: "dashboard",
-                        url: "/",
-                    }, {
-                        title: "course list",
-                        icon: "grid_view",
-                        url: "/",
-                    }]
+                    tabs: []
                 },
             ]
         }
@@ -468,7 +449,10 @@
             data: () => ({
                 roles: KCube.roles,
                 tabs: KCube.tabs,
-                tabIndex: 1,
+                tabIndex: KCube.tabs ? KCube.tabs.map((_, i) => i).filter(
+                        i => KCube.tabs[i].url == window.location.pathname)[0] :
+                    // undefined if the filter returns an empty array  (caused by current url not in KCube.tabs)
+                    undefined, // or if KCube.tabs is null (caused by blueprint name not in KCube.roles)
                 adminListGroup: false,
                 collaborateListGroup: false,
                 DLTCListGroup: false,
@@ -676,8 +660,13 @@
 
                 },
                 goto(url, event) {
-                    window.location.href = url
                     event.stopPropagation()
+                    window.location.href = url
+                },
+                switchRole(role) {
+                    role = KCube.roles.filter(r => r.name == role)[0]
+                    tab = role.tabs[this.tabIndex]
+                    window.location.href = tab ? tab.url : role.tabs[0].url
                 }
             },
             delimiters: ['${', '}'],

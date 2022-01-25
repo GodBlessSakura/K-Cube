@@ -19,9 +19,9 @@ def middleware():
     pass
 
 
-@admin.route("/panel")
-def panel():
-    return render_template("admin/panel.html")
+@admin.route("/dashboard")
+def dashboard():
+    return render_template("admin/dashboard.html")
 
 
 @admin.route("/user")

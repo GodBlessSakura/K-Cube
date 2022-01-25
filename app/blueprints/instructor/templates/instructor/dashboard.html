@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout with context %}
+{% block VueComponent %}
+<v-card>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({}),
+        methods: {},
+        template: '#content',
+    })
+</script>
+{% endblock %}

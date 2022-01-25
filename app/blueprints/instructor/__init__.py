@@ -12,6 +12,9 @@ from app.authorizer import authorize_with
 
 instructor = Blueprint("instructor", __name__, template_folder="templates")
 
+@instructor.route("/dashboard")
+def dashboard():
+    return render_template("admin/dashboard.html")
 
 @instructor.before_request
 @authorize_with(["canAccessInstructorPanel"])
