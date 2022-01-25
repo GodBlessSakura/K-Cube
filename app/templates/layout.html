@@ -32,7 +32,7 @@
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
             <v-app-bar app>
-                <template v-if="tabs" v-slot:extension>
+                <template v-if="tabs && tabs.length > 0" v-slot:extension>
                     <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" center-active centered icons-and-text>
                         {% for i in [0,1,2,3,4,5,6] %}
                         <v-tab v-if="tabs[{{i}}]" style="pointer-events: none;">
@@ -45,8 +45,8 @@
                         </v-tab>
                         {% endfor %}
                     </v-tabs>
-                    <v-select @change="switchRole" style="width: 200px; position: absolute" dense solo
-                        background-color="transparent" flat label="view" value="{{ request.blueprint }}" :items="roles"
+                    <v-select @change="switchRole" style="width: 200px; position: absolute" solo
+                        background-color="transparent" flat label="view as" value="{{ request.blueprint }}" :items="roles"
                         item-text="name" item-value="name">
                         <template v-slot:item="{ item, on, attrs }">
                             <v-list-item dense v-bind="attrs" v-on="on">
@@ -388,7 +388,9 @@
         KCube = {
             visibility: ["private", "collaborator", "instructor", "colleague", "public"],
             currentBlueprint: "{{ request.blueprint }}",
-            roles: [{
+            roles: [
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                {
                     icon: "co_present",
                     name: "instructor",
                     tabs: [{
@@ -401,6 +403,8 @@
                         url: "{{ url_for('instructor.courseList') }}",
                     }]
                 },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
                 {
                     icon: "groups",
                     name: "DLTC",
@@ -414,11 +418,15 @@
                         url: "{{ url_for('DLTC.courseList') }}",
                     }]
                 },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "student" in PERMISSION.role) %}
                 {
                     icon: "school",
                     name: "student",
                     tabs: []
                 },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and "admin" in PERMISSION.role %}
                 {
                     icon: "admin_panel_settings",
                     name: "admin",
@@ -428,15 +436,28 @@
                         url: "{{ url_for('admin.dashboard') }}",
                     }]
                 },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "operator" in PERMISSION.role) %}
                 {
                     icon: "support_agent",
                     name: "operator",
                     tabs: []
                 },
+                //{% endif %}
             ]
         }
-        KCube.tabs = KCube.roles.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roles
-            .filter(r => r.name == KCube.currentBlueprint)[0].tabs : null
+        KCube_initialize = () => {
+            if (KCube.roles.length < 1) return
+            KCube.tabs = KCube.roles.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roles
+                .filter(r => r.name == KCube.currentBlueprint)[0].tabs : KCube.roles[0].tabs;
+            KCube.currentTabIndex = KCube.tabs.map((_, i) => i).filter(
+                i => KCube.tabs[i].url == window.location.pathname)[0]
+            if (KCube.currentTabIndex == undefined) return
+            KCube.currentTabName = KCube.currentTabIndex != undefined ? KCube.tabs[KCube.currentTabIndex].title :
+                undefined
+            KCube.roles = KCube.roles.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName).length > 0)
+        }
+        KCube_initialize()
         Vue.use(Vuetify)
     </script>
     <script type="text/x-template" id="content">
@@ -449,10 +470,7 @@
             data: () => ({
                 roles: KCube.roles,
                 tabs: KCube.tabs,
-                tabIndex: KCube.tabs ? KCube.tabs.map((_, i) => i).filter(
-                        i => KCube.tabs[i].url == window.location.pathname)[0] :
-                    // undefined if the filter returns an empty array  (caused by current url not in KCube.tabs)
-                    undefined, // or if KCube.tabs is null (caused by blueprint name not in KCube.roles)
+                tabIndex: KCube.currentTabIndex,
                 adminListGroup: false,
                 collaborateListGroup: false,
                 DLTCListGroup: false,
