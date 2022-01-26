@@ -7,8 +7,9 @@
         <v-row no-gutters>
             <v-col>
                 <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
-                    :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search" label="bring me to ...(course code / course name)"
-                    clearable :items="items" item-text="text" item-value="value" @change="focus($event)">
+                    :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search"
+                    label="bring me to ...(course code / course name)" clearable :items="items" item-text="text"
+                    item-value="value" @change="focus($event)">
                 </v-autocomplete>
             </v-col>
             <v-col cols="auto">
@@ -55,15 +56,16 @@
         </v-row>
     </v-container>
     <div id="cy" style="height: 99%; width: 99%;"></div>
-    <v-snackbar :value="neverScrolled && !focusingNode && !focusingEdge" timeout="-1">
-        <v-icon>mouse</v-icon> scroll, <v-icon>ads_click</v-icon> click or <v-icon>open_with</v-icon> use arrow key to roam around available courseces and career. <v-icon>
+    <v-snackbar style="z-index:0" :value="neverScrolled && !focusingNode && !focusingEdge" timeout="-1">
+        <v-icon>mouse</v-icon> scroll, <v-icon>ads_click</v-icon> click or <v-icon>open_with</v-icon> use arrow key to
+        roam around available courseces and career. <v-icon>
             attractions</v-icon>
     </v-snackbar>
-    <v-snackbar color="success" outlined style="text-align: center;" :value="url" timeout="-1">
+    <v-snackbar style="z-index:0" color="success" outlined style="text-align: center;" :value="url" timeout="-1">
         <v-btn color="success" style="text-transform: none;" block :href="url">Proceed to
             ${url?.split('/').reverse()[0]}'s page</v-btn>
     </v-snackbar>
-    <v-snackbar center right :color="edgeColor" v-model="focusingEdge" timeout="-1">
+    <v-snackbar style="z-index:0" center right :color="edgeColor" v-model="focusingEdge" timeout="-1">
         <v-row no-gutters>
             <v-col cols="auto">
                 <v-btn color="primary" style="text-transform: none;" @click="focus(edgeSource)">${edgeSource}</v-btn>
@@ -251,7 +253,8 @@
                                     }, ["course"])).data(
                                         'imageURL',
                                         c.course.imageURL,
-                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c.concept.name))
+                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
+                                        .concept.name))
                                     .data("label", c.concept.name)
 
                             })
