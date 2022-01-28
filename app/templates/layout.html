@@ -32,22 +32,22 @@
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
             <v-app-bar app>
-                <template v-if="tabs && tabs.length > 0" v-slot:extension>
+                <template v-if="KCube.tabs && KCube.tabs.length > 0" v-slot:extension>
                     <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" center-active centered icons-and-text>
                         {% for i in [0,1,2,3,4,5,6] %}
-                        <v-tab v-if="tabs[{{i}}]" style="pointer-events: none;">
-                            ${tabs[{{i}}].title}
+                        <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">
+                            ${KCube.tabs[{{i}}].title}
                             <v-icon>
-                                ${tabs[{{i}}].icon}
+                                ${KCube.tabs[{{i}}].icon}
                             </v-icon>
                             <div style="position: absolute; width: 100%; height: 100%; pointer-events: auto;"
-                                @click="goto(tabs[{{i}}].url,$event)"></div>
+                                @click="goto(KCube.tabs[{{i}}].url,$event)"></div>
                         </v-tab>
                         {% endfor %}
                     </v-tabs>
                     <v-select @change="switchRole" style="width: 200px; position: absolute" solo
-                        background-color="transparent" flat label="view as" value="{{ request.blueprint }}" :items="roles"
-                        item-text="name" item-value="name">
+                        background-color="transparent" flat label="view as" value="{{ request.blueprint }}"
+                        :items="KCube.roleTab" item-text="name" item-value="name">
                         <template v-slot:item="{ item, on, attrs }">
                             <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-icon>
@@ -241,12 +241,6 @@
                             <v-list-item-title>Course Feedback</v-list-item-title>
                         </v-list-item>
                         {% endif %}
-                        <!-- <v-list-item>
-                            <v-list-item-icon>
-                                <v-icon>travel_explore</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Others' Work</v-list-item-title>
-                        </v-list-item> -->
                         {% if PERMISSION and (PERMISSION.canProposeRelationship or PERMISSION.canApproveRelationship) %}
                         <v-list-item link href="{{ url_for('collaborate.graphEditing') }}">
                             <v-list-item-icon>
@@ -256,7 +250,8 @@
                         </v-list-item>
                         {% endif %}
                     </v-list-group>
-                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
+                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role)
+                    %}
                     <v-divider></v-divider>
                     <v-list-group :value="DLTCListGroup" prepend-icon="groups">
                         <template v-slot:activator>
@@ -270,7 +265,8 @@
                         </v-list-item>
                     </v-list-group>
                     {% endif %}
-                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in
+                    PERMISSION.role) %}
                     <v-divider></v-divider>
                     <v-list-group :value="instructorListGroup" prepend-icon="co_present">
                         <template v-slot:activator>
@@ -388,7 +384,7 @@
         KCube = {
             visibility: ["private", "collaborator", "instructor", "colleague", "public"],
             currentBlueprint: "{{ request.blueprint }}",
-            roles: [
+            roleTab: [
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
                     icon: "co_present",
@@ -444,18 +440,118 @@
                     tabs: []
                 },
                 //{% endif %}
+            ],
+            navigationListGroup: [
+                {
+                    icon: "connect_without_contact",
+                    name: "collaborate",
+                    title: "Collaborate",
+                    list: [
+                        //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
+                        {
+                            title: "Course Feedback",
+                            icon: "forum",
+                            url: "{{ url_for('collaborate.feedbacks') }}",
+                        },
+                        //{% endif %}
+                        //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
+                        {
+                            title: "Graph Editing",
+                            icon: "linear_scale",
+                            url: "{{ url_for('collaborate.graphEditing') }}",
+                        },
+                        //{% endif %}
+                    ]
+                },
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role)
+                {
+                    icon: "groups",
+                    name: "DLTC",
+                    title: "DLTC",
+                    list: [
+                        {
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('DLTC.dashboard') }}",
+                        },
+                        {
+                            title: "Manage Courses",
+                            icon: "grid_view",
+                            url: "{{ url_for('DLTC.courseList') }}",
+                        },
+                    ]
+                },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role)
+                {
+                    icon: "co_present",
+                    name: "instructor",
+                    title: "Instructor's space",
+                    list: [
+                        {
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('instructor.dashboard') }}",
+                        },
+                        {
+                            title: "Courses",
+                            icon: "grid_view",
+                            url: "{{ url_for('instructor.courseList') }}",
+                        },
+                        // {
+                        //     title: "Schedules",
+                        //     icon: "event_note",
+                        //     url: "{{ url_for('instructor.schedule') }}",
+                        // },
+                        {
+                            title: "Create New Course",
+                            icon: "library_add",
+                            url: "{{ url_for('instructor.courseForm') }}",
+                        },
+                        {
+                            title: "Upload Course Icon",
+                            icon: "upload",
+                            url: "{{ url_for('instructor.uploadImage') }}",
+                        },
+                        {
+                            title: "Catalogue Navigation",
+                            icon: "polyline",
+                            url: "{{ url_for('instructor.metagraph') }}",
+                        },
+                    ]
+                },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role) %}
+                {
+                    icon: "admin_panel_settings",
+                    name: "admin",
+                    title: "Admin",
+                    list: [
+                        {
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('admin.dashboard') }}",
+                        },
+                        {
+                            title: "User & Role",
+                            icon: "manage_accounts",
+                            url: "{{ url_for('admin.user_n_role') }}",
+                        },
+                    ]
+                },
+                //{% endif %}
             ]
         }
         KCube_initialize = () => {
-            if (KCube.roles.length < 1) return
-            KCube.tabs = KCube.roles.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roles
-                .filter(r => r.name == KCube.currentBlueprint)[0].tabs : KCube.roles[0].tabs;
+            if (KCube.roleTab.length < 1) return
+            KCube.tabs = KCube.roleTab.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roleTab
+                .filter(r => r.name == KCube.currentBlueprint)[0].tabs : KCube.roleTab[0].tabs;
             KCube.currentTabIndex = KCube.tabs.map((_, i) => i).filter(
                 i => KCube.tabs[i].url == window.location.pathname)[0]
             if (KCube.currentTabIndex == undefined) return
             KCube.currentTabName = KCube.currentTabIndex != undefined ? KCube.tabs[KCube.currentTabIndex].title :
                 undefined
-            KCube.roles = KCube.roles.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName).length > 0)
+            KCube.roleTab = KCube.roleTab.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName).length > 0)
         }
         KCube_initialize()
         Vue.use(Vuetify)
@@ -468,8 +564,7 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
-                roles: KCube.roles,
-                tabs: KCube.tabs,
+                KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
                 adminListGroup: false,
                 collaborateListGroup: false,
@@ -488,7 +583,7 @@
                     show: false,
                     message: '',
                     actionName: '',
-                    action: () => {}
+                    action: () => { }
                 },
                 bePatientSnackBar: {
                     show: false
@@ -508,27 +603,27 @@
                     idRules: [
                         v => !!v || 'UserId is required',
                         v => (v && v.length > 3 && v.length < 101) ||
-                        'UserId should be anything between 4 and 100 charactors',
+                            'UserId should be anything between 4 and 100 charactors',
                         v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
-                        'UserId can only contains alphanumeric characters.',
+                            'UserId can only contains alphanumeric characters.',
                         v => (v && /{{regExpRules["userId"]}}/.test(v)) ||
-                        'UserId must start with alphabetic characters.'
+                            'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
                         v => (v && v.length > 3 && v.length < 101) ||
-                        'Name should be anything between 4 and 100 charactors',
+                            'Name should be anything between 4 and 100 charactors',
                         v => (v && /{{regExpRules["userName"]}}/.test(v)) ||
-                        'Name can only contains alphanumeric characters and space.'
+                            'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
                         v => !!v || 'E-mail is required',
                         v => (v && v.length < 320) ||
-                        'A valid email should have less then 320 characters',
+                            'A valid email should have less then 320 characters',
                         v => (v && /{{regExpRules["email"]}}/.test(v)) ||
-                        'E-mail must be in valid format',
+                            'E-mail must be in valid format',
                     ],
                     password: '',
                     passwordRules: [
@@ -538,7 +633,7 @@
                     password2Rules: [
                         v => !!v || 'Password is required',
                         v => (v && v == app._data.registerForm.password) ||
-                        'Two password are different'
+                            'Two password are different'
                     ],
                 },
                 loginForm: {
@@ -546,11 +641,11 @@
                     idRules: [
                         v => !!v || 'UserId is required',
                         v => (v && v.length > 3 && v.length < 101) ||
-                        'UserId should be anything between 4 and 100 charactors',
+                            'UserId should be anything between 4 and 100 charactors',
                         v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
-                        'UserId can only contains alphanumeric characters.',
+                            'UserId can only contains alphanumeric characters.',
                         v => (v && /{{regExpRules["userId"]}}/.test(v)) ||
-                        'UserId must start with alphabetic characters.'
+                            'UserId must start with alphabetic characters.'
                     ],
                     password: '',
                     passwordRules: [
@@ -564,10 +659,10 @@
                     this.userIdAvaliableChecking = true
                     if (this.$refs.registerFormUserIdControl.valid) {
                         fetch("{{ url_for('user.isUserIdAvaliable') }}?userId=" +
-                                this.$refs.registerFormUserIdControl.value, {
-                                    method: 'GET',
-                                    cache: 'no-store',
-                                })
+                            this.$refs.registerFormUserIdControl.value, {
+                            method: 'GET',
+                            cache: 'no-store',
+                        })
                             .then(response => response.json())
                             .then(body => {
                                 this.registerForm.isUserIdAvaliable = body.avaliable
@@ -584,18 +679,18 @@
                     if (this.$refs.registerFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.register') }}", {
-                                method: 'POST',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    userId: this.registerForm.id,
-                                    password: this.registerForm.password,
-                                    email: this.registerForm.email,
-                                    userName: this.registerForm.name
-                                })
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userId: this.registerForm.id,
+                                password: this.registerForm.password,
+                                email: this.registerForm.email,
+                                userName: this.registerForm.name
                             })
+                        })
                             .then(response => {
                                 try {
                                     return response.json()
@@ -617,17 +712,17 @@
                     if (this.$refs.loginFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.login') }}", {
-                                method: 'POST',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    userId: this.loginForm.id,
-                                    password: this.loginForm.password
-                                })
-
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userId: this.loginForm.id,
+                                password: this.loginForm.password
                             })
+
+                        })
                             .then(response => {
                                 try {
                                     return response.json()
@@ -644,7 +739,7 @@
                             })
                     }
                 },
-                responseSnackBar(body, defaultMessage, onSuccess = () => {}) {
+                responseSnackBar(body, defaultMessage, onSuccess = () => { }) {
                     if (body.success) {
                         if (body.message) {
                             this.completeSnackBar.message = body.message
@@ -682,7 +777,7 @@
                     window.location.href = url
                 },
                 switchRole(role) {
-                    role = KCube.roles.filter(r => r.name == role)[0]
+                    role = KCube.roleTab.filter(r => r.name == role)[0]
                     tab = role.tabs[this.tabIndex]
                     window.location.href = tab ? tab.url : role.tabs[0].url
                 }
