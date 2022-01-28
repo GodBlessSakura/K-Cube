@@ -25,7 +25,7 @@ def query():
 
 
 @metagraph.put("/")
-@authorize_RESTful_with(["canCreateCourse"])
+@authorize_RESTful_with([], True, roles=["DLTC", "instructor", "admin", "operator"])
 def put():
     if (
         "h_name" in request.json
@@ -45,7 +45,7 @@ def put():
 
 
 @metagraph.delete("/")
-@authorize_RESTful_with(["canCreateCourse"])
+@authorize_RESTful_with([], True, roles=["DLTC", "instructor", "admin", "operator"])
 def delete():
     if (
         "h_name" in request.json

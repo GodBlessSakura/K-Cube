@@ -33,3 +33,9 @@ def courseFeedbacks(courseCode):
 def post(id):
     if id is not None:
         return render_template("collaborate/post.html", id=id)
+
+
+@collaborate.route("/metagraph")
+@authorize_with([], True, roles=["DLTC", "instructor", "admin", "operator"])
+def metagraph():
+    return render_template("collaborate/metagraph.html")

@@ -12,9 +12,11 @@ from app.authorizer import authorize_with
 
 instructor = Blueprint("instructor", __name__, template_folder="templates")
 
+
 @instructor.route("/dashboard")
 def dashboard():
     return render_template("admin/dashboard.html")
+
 
 @instructor.before_request
 @authorize_with([], True, ["instructor", "admin"])
@@ -183,8 +185,3 @@ def repositoryVersions(courseCode, id):
     return render_template(
         "instructor/repositoryVersions.html", courseCode=courseCode, id=id
     )
-
-
-@instructor.route("/metagraph")
-def metagraph():
-    return render_template("instructor/metagraph.html")
