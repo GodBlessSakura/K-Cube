@@ -50,7 +50,7 @@
 </v-card>
 {% endmacro %}
 {% macro component() %}
-<script type="text/x-template" id="cyMetricsVisualizeContent">
+<script type="text/x-template" id="kcube-metrics-visualize-bottom-sheet">
     {{ componentContent()}}
 </script>
 {% endmacro %}
@@ -126,7 +126,7 @@
                 })
             },
         },
-        template: '#cyMetricsVisualizeContent',
+        template: '#kcube-metrics-visualize-bottom-sheet',
         delimiters: ['${', '}'],
     })
 </script>
