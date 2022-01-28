@@ -19,8 +19,7 @@
 </head>
 
 <body>
-    <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js">
-    </script>
+    <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
     <style>
         [v-cloak] {
@@ -228,102 +227,21 @@
                         </v-list-item-icon>
                         <v-list-item-title>Jobs</v-list-item-title>
                     </v-list-item>
-                    <v-divider></v-divider>
-                    <v-list-group :value="collaborateListGroup" prepend-icon="connect_without_contact">
-                        <template v-slot:activator>
-                            <v-list-item-title>Collaborate</v-list-item-title>
-                        </template>
-                        {% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
-                        <v-list-item link href="{{ url_for('collaborate.feedbacks') }}">
-                            <v-list-item-icon>
-                                <v-icon>forum</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Course Feedback</v-list-item-title>
-                        </v-list-item>
-                        {% endif %}
-                        {% if PERMISSION and (PERMISSION.canProposeRelationship or PERMISSION.canApproveRelationship) %}
-                        <v-list-item link href="{{ url_for('collaborate.graphEditing') }}">
-                            <v-list-item-icon>
-                                <v-icon>linear_scale</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Graph Editing</v-list-item-title>
-                        </v-list-item>
-                        {% endif %}
-                    </v-list-group>
-                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role)
-                    %}
-                    <v-divider></v-divider>
-                    <v-list-group :value="DLTCListGroup" prepend-icon="groups">
-                        <template v-slot:activator>
-                            <v-list-item-title>DLTC</v-list-item-title>
-                        </template>
-                        <v-list-item link href="{{ url_for('DLTC.courseList') }}">
-                            <v-list-item-icon>
-                                <v-icon>grid_view</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Manage Courses</v-list-item-title>
-                        </v-list-item>
-                    </v-list-group>
-                    {% endif %}
-                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in
-                    PERMISSION.role) %}
-                    <v-divider></v-divider>
-                    <v-list-group :value="instructorListGroup" prepend-icon="co_present">
-                        <template v-slot:activator>
-                            <v-list-item-title>Instructor's space</v-list-item-title>
-                        </template>
-                        <v-list-item link href="{{ url_for('instructor.courseList') }}">
-                            <v-list-item-icon>
-                                <v-icon>grid_view</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Courses</v-list-item-title>
-                        </v-list-item>
-                        <!-- <v-list-item link href="{{ url_for('instructor.schedule') }}">
-                            <v-list-item-icon>
-                                <v-icon>event_note</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Schedules</v-list-item-title>
-                        </v-list-item> -->
-                        <v-list-item link href="{{ url_for('instructor.courseForm') }}">
-                            <v-list-item-icon>
-                                <v-icon>library_add</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Create New Course</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item link href="{{ url_for('instructor.uploadImage') }}">
-                            <v-list-item-icon>
-                                <v-icon>upload</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Upload Image</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item link href="{{ url_for('instructor.metagraph') }}">
-                            <v-list-item-icon>
-                                <v-icon>polyline</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Catalogue Navigation</v-list-item-title>
-                        </v-list-item>
-                    </v-list-group>
-                    {% endif %}
-                    {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role) %}
-                    <v-divider></v-divider>
-                    <v-list-group :value="adminListGroup" prepend-icon="admin_panel_settings">
-                        <template v-slot:activator>
-                            <v-list-item-title>Admin</v-list-item-title>
-                        </template>
-                        <v-list-item link href="{{ url_for('admin.dashboard') }}">
-                            <v-list-item-icon>
-                                <v-icon>dashboard</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>Dashboard</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item link href="{{ url_for('admin.user_n_role') }}">
-                            <v-list-item-icon>
-                                <v-icon>manage_accounts</v-icon>
-                            </v-list-item-icon>
-                            <v-list-item-title>User & Role</v-list-item-title>
-                        </v-list-item>
-                    </v-list-group>
-                    {% endif %}
+                    <div v-for="LG in KCube.navigationListGroup">
+                        <v-divider></v-divider>
+                        <v-list-group :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
+                            <template v-slot:activator>
+                                <v-list-item-title>${LG.title}</v-list-item-title>
+                            </template>
+                            <v-list-item v-for="L in LG.list" link :href="L.url">
+                                <v-list-item-icon>
+                                    <v-icon>${L.icon}</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>${L.title}</v-list-item-title>
+                            </v-list-item>
+                        </v-list-group>
+
+                    </div>
                 </v-list>
                 <template v-slot:append>
                     <v-list-item link
@@ -460,10 +378,15 @@
                             icon: "linear_scale",
                             url: "{{ url_for('collaborate.graphEditing') }}",
                         },
+                        {
+                            title: "Catalogue Navigation",
+                            icon: "polyline",
+                            url: "{{ url_for('collaborate.metagraph') }}",
+                        },
                         //{% endif %}
                     ]
                 },
-                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role)
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
                 {
                     icon: "groups",
                     name: "DLTC",
@@ -482,7 +405,7 @@
                     ]
                 },
                 //{% endif %}
-                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role)
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
                     icon: "co_present",
                     name: "instructor",
@@ -512,11 +435,6 @@
                             title: "Upload Course Icon",
                             icon: "upload",
                             url: "{{ url_for('instructor.uploadImage') }}",
-                        },
-                        {
-                            title: "Catalogue Navigation",
-                            icon: "polyline",
-                            url: "{{ url_for('instructor.metagraph') }}",
                         },
                     ]
                 },
@@ -566,10 +484,6 @@
             data: () => ({
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
-                adminListGroup: false,
-                collaborateListGroup: false,
-                DLTCListGroup: false,
-                instructorListGroup: false,
                 miniSync: true,
                 errorSnackBar: {
                     show: false,
@@ -785,16 +699,6 @@
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
             mounted() {
-                let group = window.location.href.split(window.location.origin + '/')[1].split('/')[0]
-                if (group == "admin") {
-                    this.adminListGroup = true
-                } else if (group == "collaborate") {
-                    this.collaborateListGroup = true
-                } else if (group == "DLTC") {
-                    this.DLTCListGroup = true
-                } else if (group == "instructor") {
-                    this.instructorListGroup = true
-                }
             }
         })
     </script>
