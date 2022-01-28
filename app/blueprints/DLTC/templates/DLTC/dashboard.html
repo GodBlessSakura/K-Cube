@@ -1,10 +1,18 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
+{% import 'component/myFavorite.html' as myFavorite %}
 {% block VueComponent %}
-<v-card>
-</v-card>
+<v-container>
+    <v-row>
+        <v-col>
+            <kcube-myFavorite></kcube-myFavorite>
+        </v-col>
+    </v-row>
+</v-container>
 {% endblock %}
 {% block VueComponentScript %}
+{{ myFavorite.component()}}
+{{ myFavorite.script()}}
 <script>
     Vue.component('app-content', {
         data: () => ({}),

@@ -1,0 +1,121 @@
+{% macro componentContent() %}
+<v-card>
+    <v-container style="padding: 0;">
+        <v-row no-gutters>
+            <v-col cols="auto">
+                <v-card-subtitle>
+                    <v-icon>star</v-icon> My favorite
+                </v-card-subtitle>
+            </v-col>
+            <v-col>
+                <v-card-subtitle>
+                    <v-slide-group>
+                        <v-slide-item v-for="fav in favorite">
+                            <v-btn class="mx-2" depressed :href="fav.url">
+                                ${fav.title}
+                                <v-icon right>${fav.icon}</v-icon>
+                            </v-btn>
+                        </v-slide-item>
+                    </v-slide-group>
+                </v-card-subtitle>
+            </v-col>
+        </v-row>
+    </v-container>
+    <v-expansion-panels>
+        <v-expansion-panel>
+            <v-expansion-panel-header disable-icon-rotate style="padding: 0px 24px;">
+                <template v-slot:actions>
+                    <v-icon>add</v-icon>
+                </template>
+            </v-expansion-panel-header>
+            <v-expansion-panel-content>
+                <v-container style="padding: 0;">
+                    <v-row no-gutters>
+                        <v-col>
+                            <v-card-subtitle>
+                                <v-icon>star</v-icon> Added
+                            </v-card-subtitle>
+                        </v-col>
+                        <v-col>
+                            <v-card-subtitle>Pages</v-card-subtitle>
+                        </v-col>
+                    </v-row>
+                    <v-row no-gutters>
+                        <v-col>
+                            <draggable v-model="favorite" group="url" @end="setLocal()"
+                                style="height: 40vh; overflow-y: scroll;">
+                                <v-list-item v-for="fav in favorite">
+                                    <v-list-item-icon>
+                                        <v-icon>${fav.icon}</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                        ${fav.title}</v-list-item-content>
+                                </v-list-item>
+                            </draggable>
+                        </v-col>
+                        <v-col>
+                            <draggable v-model="pages" group="url" @end="setLocal()"
+                                style="height: 40vh; overflow-y: scroll;">
+                                <v-list-item v-for="fav in pages">
+                                    <v-list-item-icon>
+                                        <v-icon>${fav.icon}</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-content>
+                                        ${fav.title}</v-list-item-content>
+                                </v-list-item>
+                            </draggable>
+                        </v-col>
+                    </v-row>
+                </v-container>
+            </v-expansion-panel-content>
+        </v-expansion-panel>
+    </v-expansion-panels>
+</v-card>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="kcube-myFavorite">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+<script>
+    Vue.component('kcube-myFavorite', {
+        data: () => ({
+            favorite: [],
+            pages: []
+        }),
+        methods: {
+            getLocal() {
+                let option = localStorage.getItem('favorite')
+                if (option != null) this.favorite = JSON.parse(option)
+            },
+            setLocal() {
+                let option = JSON.stringify(this.favorite)
+                localStorage.setItem('favorite', option)
+            },
+        },
+        mounted() {
+            this.getLocal()
+            console.log(this.$root.KCube)
+            let savedURL = this.favorite.map(f => f.url)
+            savedURL = savedURL.concat(this.$root.KCube.roleTab.map(g => g.tabs).flat().map(t => t.url))
+            this.$root.KCube.navigationListGroup.map(g => g.list).flat().forEach(item => {
+                if (!savedURL.includes(item.url)) {
+                    this.pages.push({
+                        url: item.url,
+                        title: item.title,
+                        icon: item.icon
+                    })
+                }
+            })
+            console.log(this.pages)
+        },
+        template: '#kcube-myFavorite',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endmacro %}
