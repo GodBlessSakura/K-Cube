@@ -15,7 +15,7 @@ instructor = Blueprint("instructor", __name__, template_folder="templates")
 
 @instructor.route("/dashboard")
 def dashboard():
-    return render_template("admin/dashboard.html")
+    return render_template("instructor/dashboard.html")
 
 
 @instructor.before_request

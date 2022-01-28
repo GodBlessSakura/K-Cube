@@ -17,7 +17,7 @@ DLTC.register_blueprint(uploads, url_prefix="/uploads")
 
 @DLTC.route("/dashboard")
 def dashboard():
-    return render_template("admin/dashboard.html")
+    return render_template("DLTC/dashboard.html")
 
 
 @DLTC.before_request
