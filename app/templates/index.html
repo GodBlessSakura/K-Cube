@@ -298,11 +298,14 @@
                         ',') + ")")
                     console.log(colorMap)
                     bodies[1].triples.forEach(triple => {
-                        [triple.h_name, triple.t_name].forEach(name => {
+                        let bothCourseExists = true
+                        for (let name of [triple.h_name, triple.t_name]) {
                             if (cy.getElementById(name).length == 0) {
-                                cy.add(nodeFactory(name))
+                                bothCourseExists = false
+                                break
                             }
-                        })
+                        }
+                        if (!bothCourseExists) return
                         let color = colorMap[relationship.indexOf(triple.r_name) % colorMap
                             .length]
                         cy.add(edgeFactory({
