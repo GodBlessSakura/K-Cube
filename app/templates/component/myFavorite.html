@@ -2,22 +2,20 @@
 <v-card>
     <v-container style="padding: 0;">
         <v-row no-gutters>
-            <v-col cols="auto">
+            <v-col cols="2">
                 <v-card-subtitle>
                     <v-icon>star</v-icon> My favorite
                 </v-card-subtitle>
             </v-col>
-            <v-col>
-                <v-card-subtitle>
-                    <v-slide-group>
-                        <v-slide-item v-for="fav in favorite">
-                            <v-btn class="mx-2" depressed :href="fav.url">
-                                ${fav.title}
-                                <v-icon right>${fav.icon}</v-icon>
-                            </v-btn>
-                        </v-slide-item>
-                    </v-slide-group>
-                </v-card-subtitle>
+            <v-col cols="10">
+                <v-slide-group style="padding: 16px 0px 16px 0px;">
+                    <v-slide-item v-for="fav in favorite">
+                        <v-btn class="mx-2" depressed :href="fav.url">
+                            ${fav.title}
+                            <v-icon right>${fav.icon}</v-icon>
+                        </v-btn>
+                    </v-slide-item>
+                </v-slide-group>
             </v-col>
         </v-row>
     </v-container>
