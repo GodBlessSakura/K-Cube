@@ -61,7 +61,7 @@
         roam around available courseces and career. <v-icon>
             attractions</v-icon>
     </v-snackbar>
-    <v-snackbar style="z-index:0" color="success" outlined style="text-align: center;" :value="url" timeout="-1">
+    <v-snackbar style="z-index:0; text-align: center;" color="success" :value="url" timeout="-1">
         <v-btn color="success" style="text-transform: none;" block :href="url">Proceed to
             ${url?.split('/').reverse()[0]}'s page</v-btn>
     </v-snackbar>
@@ -85,75 +85,75 @@
 <script>
     cy = cytoscape({
         style: [{
-                selector: 'core',
-                style: {
-                    "active-bg-size": 0
-                }
-            },
-            {
-                selector: 'node',
-                style: {
-                    'background-color': 'white',
-                    'border-width': 1,
-                    'border-color': 'grey',
-                    'text-wrap': 'wrap',
-                    'text-max-width': 60,
-                    'line-height': 1.5,
-                    'label': 'data(label)',
-                    'text-outline-color': 'white',
-                    'text-outline-width': 2,
-                    'font-size': 7,
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover'
+            selector: 'core',
+            style: {
+                "active-bg-size": 0
+            }
+        },
+        {
+            selector: 'node',
+            style: {
+                'background-color': 'white',
+                'border-width': 1,
+                'border-color': 'grey',
+                'text-wrap': 'wrap',
+                'text-max-width': 60,
+                'line-height': 1.5,
+                'label': 'data(label)',
+                'text-outline-color': 'white',
+                'text-outline-width': 2,
+                'font-size': 7,
+                'background-image': 'data(imageURL)',
+                'background-fit': 'cover'
 
-                }
-            }, {
-                selector: 'node:selected',
-                style: {
-                    'background-color': 'white',
-                    'border-width': 3,
+            }
+        }, {
+            selector: 'node:selected',
+            style: {
+                'background-color': 'white',
+                'border-width': 3,
 
-                }
-            }, {
-                selector: 'node.course',
-                style: {}
-            }, {
-                selector: 'edge',
-                style: {
-                    'width': 3,
-                    'line-color': 'grey',
-                    'curve-style': 'bezier',
-                    'z-index': 100,
-                }
-            },
-            {
-                selector: 'edge.irrelevant',
-                style: {
-                    'opacity': 0.25
-                }
-            }, {
-                selector: 'edge.relevant',
-                style: {}
-            }, {
-                selector: 'edge:selected',
-                style: {
-                    'underlay-color': "data(color)",
-                    'underlay-padding': 2.75,
-                    'underlay-opacity': 1,
-                    'opacity': 1,
-                }
-            },
-            {
-                selector: 'edge.pad',
-                style: {
-                    'width': 2,
-                    'opacity': 0.25,
-                    'z-index': 0,
-                    'overlay-opacity': 0,
-                    'underlay-padding': 0,
-                    'underlay-opacity': 0,
-                }
-            },
+            }
+        }, {
+            selector: 'node.course',
+            style: {}
+        }, {
+            selector: 'edge',
+            style: {
+                'width': 3,
+                'line-color': 'grey',
+                'curve-style': 'bezier',
+                'z-index': 100,
+            }
+        },
+        {
+            selector: 'edge.irrelevant',
+            style: {
+                'opacity': 0.25
+            }
+        }, {
+            selector: 'edge.relevant',
+            style: {}
+        }, {
+            selector: 'edge:selected',
+            style: {
+                'underlay-color': "data(color)",
+                'underlay-padding': 2.75,
+                'underlay-opacity': 1,
+                'opacity': 1,
+            }
+        },
+        {
+            selector: 'edge.pad',
+            style: {
+                'width': 2,
+                'opacity': 0.25,
+                'z-index': 0,
+                'overlay-opacity': 0,
+                'underlay-padding': 0,
+                'underlay-opacity': 0,
+            }
+        },
         ],
         userZoomingEnabled: false,
         userPanningEnabled: false,
@@ -210,13 +210,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let coursePromise = fetch(
-                        "{{ url_for('RESTful.course.query', list=True) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                    "{{ url_for('RESTful.course.query', list=True) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -248,13 +248,13 @@
                                     value: c.course.courseName
                                 })
                                 cy.add(nodeFactory({
-                                        id: c.concept.name,
-                                        tag: c.course.courseName
-                                    }, ["course"])).data(
-                                        'imageURL',
-                                        c.course.imageURL,
-                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
-                                        .concept.name))
+                                    id: c.concept.name,
+                                    tag: c.course.courseName
+                                }, ["course"])).data(
+                                    'imageURL',
+                                    c.course.imageURL,
+                                ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
+                                    .concept.name))
                                     .data("label", c.concept.name)
 
                             })
@@ -264,12 +264,12 @@
                         }
                     })
                 let relationshipPromise = fetch("{{ url_for('RESTful.metagraph.query', triples=True) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         return response.json()
                     })
@@ -328,11 +328,11 @@
                             if (j % space != 0) return
                             if (j < padding || j > numberOfNode - padding) return
                             if (cy.edges().filter(edge => {
-                                    return edge.source().data("id") == b.data(
-                                            "id") && edge.target().data("id") ==
-                                        a
+                                return edge.source().data("id") == b.data(
+                                    "id") && edge.target().data("id") ==
+                                    a
                                         .data("id")
-                                }).length > 0) return
+                            }).length > 0) return
                             cy.add(edgeFactory({
                                 start: a.data('id'),
                                 end: b.data('id'),
