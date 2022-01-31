@@ -13,9 +13,9 @@
                 node-color
             </v-col>
             <v-col v-for="field in fields">
-                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                <iro-color-picker @input="optionChanged()" canvas-height="50" :width="200"
                     v-model="cyStylesOptions[field]['node-color']" hide-mode-switch>
-                </v-color-picker>
+                </iro-color-picker>
             </v-col>
         </v-row>
         <v-row>
@@ -23,9 +23,9 @@
                 line-color
             </v-col>
             <v-col v-for="field in fields">
-                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                <iro-color-picker @input="optionChanged()" canvas-height="50" :width="200"
                     v-model="cyStylesOptions[field]['line-color']" hide-mode-switch>
-                </v-color-picker>
+                </iro-color-picker>
             </v-col>
         </v-row>
         <v-row>
@@ -33,9 +33,9 @@
                 selected-color
             </v-col>
             <v-col v-for="field in fields">
-                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                <iro-color-picker @input="optionChanged()" canvas-height="50" :width="200"
                     v-model="cyStylesOptions[field]['selected-color']" hide-mode-switch>
-                </v-color-picker>
+                </iro-color-picker>
             </v-col>
         </v-row>
         <v-row>
@@ -43,9 +43,9 @@
                 background-color
             </v-col>
             <v-col v-for="field in fields">
-                <v-color-picker @input="optionChanged()" canvas-height="50" width=200
+                <iro-color-picker @input="optionChanged()" canvas-height="50" :width="200"
                     v-model="cyStylesOptions[field]['background-color']" hide-mode-switch>
-                </v-color-picker>
+                </iro-color-picker>
             </v-col>
         </v-row>
         <v-row>
@@ -78,7 +78,9 @@
 </script>
 {% endmacro %}
 {% macro script() %}
+<script src="https://unpkg.com/vue-iro-color-picker@2.0.0/dist/VueIroColorPicker.umd.min.js"></script>
 <script>
+    Vue.component('iro-color-picker', VueIroColorPicker);
     Vue.component('v-cy-options-dialog', {
         data: () => ({
             cyStylesOptions: cyStylesOptions
@@ -102,6 +104,7 @@
                 cyStylesUtil.setDefault()
                 this.cyStylesOptions = cyStylesOptions
                 cyStylesUtil.setLocal()
+                this.optionChanged()
             }
         },
         template: '#cyOptionsContent',
