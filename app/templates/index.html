@@ -2,59 +2,61 @@
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
-    <v-container no-gutters
-        style="position: absolute; top: 2.5%; margin-left: 10%; margin-right: 10%;z-index: 2; background-color: rgba(255,255,255,0.75);">
-        <v-row no-gutters>
-            <v-col>
-                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
-                    :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search"
-                    label="bring me to ...(course code / course name)" clearable :items="items" item-text="text"
-                    item-value="value" @change="focus($event)">
-                </v-autocomplete>
-            </v-col>
-            <v-col cols="auto">
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn icon color="primary" v-bind="attrs" v-on="on"
-                            :disabled="$refs?.searchBar?.$data.selectedItems.length==0"
-                            @click="focus($refs.searchBar.$data.selectedItems[0].text)">
-                            <v-icon>manage_search</v-icon>
-                        </v-btn>
-                    </template>
-                    bring me to
-                </v-tooltip>
-            </v-col>
-            <v-col cols="auto">
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')">
-                            <v-icon>zoom_out_map</v-icon>
-                        </v-btn>
-                    </template>
-                    zoom out
-                </v-tooltip>
-            </v-col>
-            <v-col cols="auto">
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToSelectedNode()">
-                            <v-icon>loupe</v-icon>
-                        </v-btn>
-                    </template>
-                    back to selected
-                </v-tooltip>
-            </v-col>
-        </v-row>
-        <v-row>
-            <v-subheader>Recent visit</v-subheader>
-            <v-chip-group>
-                <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
-                    ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
-                    'department':name.split("_").slice(1).join('_'))}
-                </v-chip>
-            </v-chip-group>
-        </v-row>
-    </v-container>
+    <v-card elevation="5"
+        style="position: absolute; top: 2.5%; left: 10%; right: 10%; z-index: 2; background-color: rgba(255,255,255,0.75);">
+        <v-container no-gutters>
+            <v-row no-gutters>
+                <v-col>
+                    <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
+                        :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search"
+                        label="bring me to ...(course code / course name)" clearable :items="items" item-text="text"
+                        item-value="value" @change="focus($event)">
+                    </v-autocomplete>
+                </v-col>
+                <v-col cols="auto">
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon color="primary" v-bind="attrs" v-on="on"
+                                :disabled="$refs?.searchBar?.$data.selectedItems.length==0"
+                                @click="focus($refs.searchBar.$data.selectedItems[0].text)">
+                                <v-icon>manage_search</v-icon>
+                            </v-btn>
+                        </template>
+                        bring me to
+                    </v-tooltip>
+                </v-col>
+                <v-col cols="auto">
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')">
+                                <v-icon>zoom_out_map</v-icon>
+                            </v-btn>
+                        </template>
+                        zoom out
+                    </v-tooltip>
+                </v-col>
+                <v-col cols="auto">
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToSelectedNode()">
+                                <v-icon>loupe</v-icon>
+                            </v-btn>
+                        </template>
+                        back to selected
+                    </v-tooltip>
+                </v-col>
+            </v-row>
+            <v-row>
+                <v-subheader>Recent visit</v-subheader>
+                <v-chip-group>
+                    <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
+                        ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
+                        'department':name.split("_").slice(1).join('_'))}
+                    </v-chip>
+                </v-chip-group>
+            </v-row>
+        </v-container>
+    </v-card>
     <div id="cy" style="height: 99%; width: 99%;"></div>
     <v-snackbar style="z-index:0" :value="neverScrolled && !focusingNode && !focusingEdge" timeout="-1">
         <v-icon>mouse</v-icon> scroll, <v-icon>ads_click</v-icon> click or <v-icon>open_with</v-icon> use arrow key to
