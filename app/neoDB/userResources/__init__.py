@@ -75,12 +75,7 @@ class userDAO:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(
-                query,
-                userId=userId,
-                userName=userName,
-                email=email,
-            )
+            result = tx.run(query, userId=userId, userName=userName, email=email,)
             try:
                 rows = [record for record in result]
                 return dict(rows[0]["user"].items())
@@ -91,9 +86,7 @@ class userDAO:
             return session.write_transaction(_query)
 
     def assign_user_role(
-        self,
-        userId,
-        role,
+        self, userId, role,
     ):
         fname = sys._getframe().f_code.co_name
 
@@ -113,9 +106,7 @@ class userDAO:
             return session.write_transaction(_query)
 
     def remove_user_role(
-        self,
-        userId,
-        role,
+        self, userId, role,
     ):
         fname = sys._getframe().f_code.co_name
 
@@ -162,16 +153,16 @@ class userDAO:
             for row in [record for record in result]:
                 for key, value in row["permissions"].items():
                     if key not in permission:
-                        permission[key] = value
+                        if isinstance(value, bool):
+                            permission[key] = value
+                        elif isinstance(value, str):
+                            permission[key] = [value]
                     else:
                         if isinstance(value, bool):
-                            if not permission[key]:
-                                permission[key] = value
-                        else:
-                            l = []
-                            l.append(permission[key])
-                            l.append(value)
-                            permission[key] = l
+                            permission[key] = value
+                        elif isinstance(value, str):
+                            l = [value]
+                            permission[key] = permission[key] + l
             return permission
 
         with self.driver.session() as session:
