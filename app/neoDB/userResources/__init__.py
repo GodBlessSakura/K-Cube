@@ -159,7 +159,8 @@ class userDAO:
                             permission[key] = [value]
                     else:
                         if isinstance(value, bool):
-                            permission[key] = value
+                            if not permission[key]:
+                                permission[key] = value
                         elif isinstance(value, str):
                             l = [value]
                             permission[key] = permission[key] + l
