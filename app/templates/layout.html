@@ -21,6 +21,10 @@
 <body>
     <script src=" https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <!-- CDNJS :: Sortable (https://cdnjs.com/) -->
+    <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
+    <!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
+    <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
     <style>
         [v-cloak] {
             display: none;
@@ -233,12 +237,14 @@
                             <template v-slot:activator>
                                 <v-list-item-title>${LG.title}</v-list-item-title>
                             </template>
-                            <v-list-item v-for="L in LG.list" link :href="L.url">
-                                <v-list-item-icon>
-                                    <v-icon>${L.icon}</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>${L.title}</v-list-item-title>
-                            </v-list-item>
+                            <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}">
+                                <v-list-item v-for="L in LG.list" link :href="L.url">
+                                    <v-list-item-icon>
+                                        <v-icon>${L.icon}</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-title>${L.title}</v-list-item-title>
+                                </v-list-item>
+                            </draggable>
                         </v-list-group>
 
                     </div>

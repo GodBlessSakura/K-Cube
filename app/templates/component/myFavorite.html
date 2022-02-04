@@ -4,7 +4,7 @@
         <v-row no-gutters>
             <v-col cols="2">
                 <v-card-subtitle>
-                    <v-icon>star</v-icon> My favorite
+                    <v-icon>bookmark</v-icon> Bookmark
                 </v-card-subtitle>
             </v-col>
             <v-col cols="10">
@@ -30,17 +30,29 @@
                 <v-container style="padding: 0;">
                     <v-row no-gutters>
                         <v-col>
-                            <v-card-subtitle>
-                                <v-icon>star</v-icon> Added
-                            </v-card-subtitle>
+                            <v-tooltip top>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-card-subtitle v-bind="attrs" v-on="on">
+                                        <v-icon>bookmark</v-icon> Bookmarked
+                                    </v-card-subtitle>
+                                </template>
+                                You can drag from side bar
+                            </v-tooltip>
                         </v-col>
                         <v-col>
-                            <v-card-subtitle>Pages</v-card-subtitle>
+                            <v-tooltip top>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-card-subtitle v-bind="attrs" v-on="on">
+                                        <v-icon>bookmark_remove</v-icon> Remove
+                                    </v-card-subtitle>
+                                </template>
+                                The trash list would be cleared when the page is refreshed
+                            </v-tooltip>
                         </v-col>
                     </v-row>
                     <v-row no-gutters>
                         <v-col>
-                            <draggable v-model="favorite" group="url" @end="setLocal()"
+                            <draggable v-model="favorite" group="url" @add="setLocal()" @remove="setLocal()"
                                 style="height: 40vh; overflow-y: scroll;">
                                 <v-list-item v-for="fav in favorite">
                                     <v-list-item-icon>
@@ -52,9 +64,8 @@
                             </draggable>
                         </v-col>
                         <v-col>
-                            <draggable v-model="pages" group="url" @end="setLocal()"
-                                style="height: 40vh; overflow-y: scroll;">
-                                <v-list-item v-for="fav in pages">
+                            <draggable v-model="remove" group="url" style="height: 40vh; overflow-y: scroll;">
+                                <v-list-item v-for="fav in remove">
                                     <v-list-item-icon>
                                         <v-icon>${fav.icon}</v-icon>
                                     </v-list-item-icon>
@@ -76,15 +87,11 @@
 </script>
 {% endmacro %}
 {% macro script() %}
-<!-- CDNJS :: Sortable (https://cdnjs.com/) -->
-<script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
-<!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
 <script>
     Vue.component('kcube-myFavorite', {
         data: () => ({
             favorite: [],
-            pages: []
+            remove: [],
         }),
         methods: {
             getLocal() {
@@ -92,25 +99,13 @@
                 if (option != null) this.favorite = JSON.parse(option)
             },
             setLocal() {
+                console.log(this.favorite)
                 let option = JSON.stringify(this.favorite)
                 localStorage.setItem('favorite', option)
             },
         },
         mounted() {
             this.getLocal()
-            console.log(this.$root.KCube)
-            let savedURL = this.favorite.map(f => f.url)
-            savedURL = savedURL.concat(this.$root.KCube.roleTab.map(g => g.tabs).flat().map(t => t.url))
-            this.$root.KCube.navigationListGroup.map(g => g.list).flat().forEach(item => {
-                if (!savedURL.includes(item.url)) {
-                    this.pages.push({
-                        url: item.url,
-                        title: item.title,
-                        icon: item.icon
-                    })
-                }
-            })
-            console.log(this.pages)
         },
         template: '#kcube-myFavorite',
         delimiters: ['${', '}'],
