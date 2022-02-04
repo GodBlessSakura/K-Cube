@@ -19,7 +19,7 @@
             </v-col>
         </v-row>
     </v-container>
-    <v-expansion-panels>
+    <v-expansion-panels v-model="expansionPannel" @change="toggleExpansionPannel">
         <v-expansion-panel>
             <v-expansion-panel-header disable-icon-rotate style="padding: 0px 24px;">
                 <template v-slot:actions>
@@ -31,9 +31,9 @@
                 <v-container style="padding: 0;">
                     <v-row no-gutters>
                         <v-col>
-                            <v-tooltip top>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-card-subtitle v-bind="attrs" v-on="on">
+                            <v-tooltip v-model="favoriteTooltip" top>
+                                <template v-slot:activator="{ attrs }">
+                                    <v-card-subtitle v-bind="attrs">
                                         <v-icon>bookmark</v-icon> Bookmarked
                                     </v-card-subtitle>
                                 </template>
@@ -42,9 +42,9 @@
                             <v-divider></v-divider>
                         </v-col>
                         <v-col>
-                            <v-tooltip top>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-card-subtitle v-bind="attrs" v-on="on">
+                            <v-tooltip v-model="removeTooltip" top>
+                                <template v-slot:activator="{ attrs }">
+                                    <v-card-subtitle v-bind="attrs">
                                         <v-icon>bookmark_remove</v-icon> Remove
                                     </v-card-subtitle>
                                 </template>
@@ -95,6 +95,9 @@
         data: () => ({
             favorite: [],
             remove: [],
+            favoriteTooltip: false,
+            removeTooltip: false,
+            expansionPannel: undefined,
         }),
         methods: {
             getLocal() {
@@ -102,10 +105,19 @@
                 if (option != null) this.favorite = JSON.parse(option)
             },
             setLocal() {
-                console.log(this.favorite)
                 let option = JSON.stringify(this.favorite)
                 localStorage.setItem('favorite', option)
             },
+            toggleExpansionPannel() {
+                if (this.expansionPannel != undefined) {
+                    setTimeout(() => { this.favoriteTooltip = true }, 100);
+                    setTimeout(() => { this.removeTooltip = true }, 100);
+                }
+                else {
+                    this.favoriteTooltip = false
+                    this.removeTooltip = false
+                }
+            }
         },
         mounted() {
             this.getLocal()
