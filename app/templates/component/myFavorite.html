@@ -23,7 +23,8 @@
         <v-expansion-panel>
             <v-expansion-panel-header disable-icon-rotate style="padding: 0px 24px;">
                 <template v-slot:actions>
-                    <v-icon>bookmark_add</v-icon><v-icon>bookmark_remove</v-icon>
+                    <v-icon>bookmark_add</v-icon>
+                    <v-icon>bookmark_remove</v-icon>
                 </template>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
@@ -38,6 +39,7 @@
                                 </template>
                                 You can drag links from side bar
                             </v-tooltip>
+                            <v-divider></v-divider>
                         </v-col>
                         <v-col>
                             <v-tooltip top>
@@ -48,6 +50,7 @@
                                 </template>
                                 The trash list would be cleared when the page is refreshed
                             </v-tooltip>
+                            <v-divider></v-divider>
                         </v-col>
                     </v-row>
                     <v-row no-gutters>
