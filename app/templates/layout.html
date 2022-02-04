@@ -243,7 +243,7 @@
                             <template v-slot:activator>
                                 <v-list-item-title>${LG.title}</v-list-item-title>
                             </template>
-                            <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}">
+                            <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}" :sort="false">
                                 <v-list-item v-for="L in LG.list" link :href="L.url">
                                     <v-list-item-icon>
                                         <v-icon>${L.icon}</v-icon>
