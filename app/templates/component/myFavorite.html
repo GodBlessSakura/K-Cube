@@ -105,6 +105,21 @@
                 if (option != null) this.favorite = JSON.parse(option)
             },
             setLocal() {
+                let oldLength = this.favorite.length
+                this.favorite = this.favorite.filter((value, index, self) =>
+                    index === self.findIndex((t) => (
+                        t.url === value.url
+                    ))
+                )
+                if (oldLength != this.favorite.length) {
+                    this.$root.errorDisplay({}, 'Page already bookmarked.')
+                }
+                oldLength = this.favorite.length
+                let tabPage = this.$root.KCube.roleTab.map(g => g.tabs).flat().map(t => t.url)
+                this.favorite = this.favorite.filter((value, index, self) => !tabPage.includes(value.url))
+                if (oldLength != this.favorite.length) {
+                    this.$root.errorDisplay({}, 'Page already in top tab bar.')
+                }
                 let option = JSON.stringify(this.favorite)
                 localStorage.setItem('favorite', option)
             },
@@ -117,7 +132,7 @@
                     this.favoriteTooltip = false
                     this.removeTooltip = false
                 }
-            }
+            },
         },
         mounted() {
             this.getLocal()
