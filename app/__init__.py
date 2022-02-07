@@ -1,3 +1,4 @@
+from ast import operator
 from flask import Flask, render_template, jsonify, session, g, abort
 
 from flask_mail import Mail
@@ -12,6 +13,8 @@ from app.blueprints.user import user
 from app.blueprints.DLTC import DLTC
 from app.blueprints.instructor import instructor
 from app.blueprints.collegue import collegue
+from app.blueprints.operator import operator
+from app.blueprints.student import student
 import click
 
 mail = Mail()
@@ -53,6 +56,8 @@ def create_app(config_string):
     app.register_blueprint(RESTful, url_prefix="/RESTful")
     app.register_blueprint(user, url_prefix="/user")
     app.register_blueprint(collegue, url_prefix="/collegue")
+    app.register_blueprint(student, url_prefix="/user")
+    app.register_blueprint(operator, url_prefix="/collegue")
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
 

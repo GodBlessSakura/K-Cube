@@ -349,7 +349,11 @@
                 {
                     icon: "school",
                     name: "student",
-                    tabs: []
+                    tabs: [{
+                        title: "dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('student.dashboard') }}",
+                    },]
                 },
                 //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and "admin" in PERMISSION.role %}
@@ -367,7 +371,11 @@
                 {
                     icon: "support_agent",
                     name: "operator",
-                    tabs: []
+                    tabs: [{
+                        title: "dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('operator.dashboard') }}",
+                    },]
                 },
                 //{% endif %}
             ],
@@ -449,6 +457,34 @@
                             title: "Upload Course Icon",
                             icon: "upload",
                             url: "{{ url_for('instructor.uploadImage') }}",
+                        },
+                    ]
+                },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "student" in PERMISSION.role) %}
+                {
+                    icon: "school",
+                    name: "student",
+                    title: "student",
+                    list: [
+                        {
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('student.dashboard') }}",
+                        },
+                    ]
+                },
+                //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "operator" in PERMISSION.role) %}
+                {
+                    icon: "support_agent",
+                    name: "operator",
+                    title: "operator",
+                    list: [
+                        {
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('operator.dashboard') }}",
                         },
                     ]
                 },
