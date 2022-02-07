@@ -50,35 +50,39 @@
         </v-card>
     </v-dialog>
     {% endif %}
-    <v-row v-for="row in rows">
-        <v-col v-for="col in row" cols="4" class="d-flex" style="flex-direction:column">
+    <v-row>
+        <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
+    </v-row>
+    <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
+        <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
             {% if request.blueprint == "collaborate" %}
-            <v-card v-if="col.courseCode" :href="'{{ url_for('collaborate.feedbacks') }}/' + col.courseCode">
+            <v-card v-if="courses[row*colPerRow + col]"
+                :href="'{{ url_for('collaborate.feedbacks') }}/' + courses[row*colPerRow + col].courseCode">
                 <v-list-item three-line>
                     <v-list-item-content>
                         <v-list-item-title>
-                            ${col.courseCode}
+                            ${courses[row*colPerRow + col].courseCode}
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                            ${col.courseName}</v-list-item-subtitle>
+                            ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
                     </v-list-item-content>
                     <v-list-item-avatar tile size="96">
-                        <img :src="col.imageURL">
+                        <img :src="courses[row*colPerRow + col].imageURL">
                     </v-list-item-avatar>
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-card v-if="col.courseCode">
+            <v-card v-if="courses[row*colPerRow + col]">
                 <v-list-item three-line>
                     <v-list-item-content>
                         <v-list-item-title>
-                            ${col.courseCode}
+                            ${courses[row*colPerRow + col].courseCode}
                         </v-list-item-title>
                         <v-list-item-subtitle>
-                            ${col.courseName}</v-list-item-subtitle>
+                            ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
                     </v-list-item-content>
                     <v-list-item-avatar tile size="96">
-                        <img :src="col.imageURL">
+                        <img :src="courses[row*colPerRow + col].imageURL">
                     </v-list-item-avatar>
                     <v-menu bottom offset-y>
                         <template v-slot:activator="{ on, attrs }">
@@ -93,7 +97,8 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
-                                            :href="'{{ url_for('instructor.versionTree') }}/' + col.courseCode" icon>
+                                            :href="'{{ url_for('instructor.versionTree') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
                                             <v-icon>account_tree</v-icon>
                                         </v-btn>
                                     </template>
@@ -105,7 +110,8 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
-                                            :href="'{{ url_for('DLTC.versionTree') }}/' + col.courseCode" icon>
+                                            :href="'{{ url_for('DLTC.versionTree') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
                                             <v-icon>account_tree</v-icon>
                                         </v-btn>
                                     </template>
@@ -141,11 +147,13 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(col)" icon>
-                                            <v-icon>${col.isInternal === false?'public_off':'public'}
+                                            <v-icon>${courses[row*colPerRow + col].isInternal ===
+                                                false?'public_off':'public'}
                                             </v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>${col.isInternal === false?'set internal':'set public'}</span>
+                                    <span>${courses[row*colPerRow + col].isInternal === false?'set internal':
+                                        'set public'}</span>
                                 </v-tooltip>
                             </v-list-item>
                             {% endif %}
@@ -155,28 +163,30 @@
                 <v-card-actions>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn :color="col.isInternal === false?'success':'grey'" @click="courseIsInternal(col)"
-                                v-bind="attrs" v-on="on" {% if request.blueprint=="instructor" %} text
-                                style="pointer-events: none;" {% else %} outlined {% endif %}>
+                            <v-btn :color="courses[row*colPerRow + col].isInternal === false?'success':'grey'"
+                                @click="courseIsInternal(col)" v-bind="attrs" v-on="on" {% if
+                                request.blueprint=="instructor" %} text style="pointer-events: none;" {% else %}
+                                outlined {% endif %}>
                                 <v-icon left>public</v-icon>
                                 public
                             </v-btn>
                         </template>
-                        ${'click to '+(col.isInternal === false?'set internal':'set public')}
+                        ${'click to '+(courses[row*colPerRow + col].isInternal === false?'set internal':'set public')}
                     </v-tooltip>
                     {% if request.blueprint == "instructor" %}
                     <v-spacer></v-spacer>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn :outlined="!col.isTeaching" :color="col.isTeaching?'info':'grey'" v-bind="attrs"
-                                v-on="on" @click="col.isTeaching?quit(col):join(col)">
-                                <v-icon v-if="col.isTeaching" left>check</v-icon>
-                                ${col.isTeaching?'joined':'join'}
+                            <v-btn :outlined="!courses[row*colPerRow + col].isTeaching"
+                                :color="courses[row*colPerRow + col].isTeaching?'info':'grey'" v-bind="attrs" v-on="on"
+                                @click="courses[row*colPerRow + col].isTeaching?quit(col):join(col)">
+                                <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
+                                ${courses[row*colPerRow + col].isTeaching?'joined':'join'}
                             </v-btn>
                         </template>
-                        ${'click to '+(col.isTeaching?'unjoin':'join')}
+                        ${'click to '+(courses[row*colPerRow + col].isTeaching?'unjoin':'join')}
                     </v-tooltip>
-                    {% endif%}
+                    {% endif %}
                 </v-card-actions>
                 <v-expansion-panels>
                     <v-expansion-panel>
@@ -191,7 +201,7 @@
                                         <v-tooltip bottom>
                                             <template v-slot:activator="{ on, attrs }">
                                                 <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('instructor.repositories') }}/' + col.courseCode"
+                                                    :href="'{{ url_for('instructor.repositories') }}/' + courses[row*colPerRow + col].courseCode"
                                                     icon>
                                                     <v-icon>table_view</v-icon>
                                                 </v-btn>
@@ -203,7 +213,7 @@
                                         <v-tooltip bottom>
                                             <template v-slot:activator="{ on, attrs }">
                                                 <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('instructor.courseSchedule') }}/' + col.courseCode"
+                                                    :href="'{{ url_for('instructor.courseSchedule') }}/' + courses[row*colPerRow + col].courseCode"
                                                     icon>
                                                     <v-icon>edit_calendar</v-icon>
                                                 </v-btn>
@@ -215,7 +225,7 @@
                                         <v-tooltip bottom>
                                             <template v-slot:activator="{ on, attrs }">
                                                 <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('instructor.material') }}/' + col.courseCode"
+                                                    :href="'{{ url_for('instructor.material') }}/' + courses[row*colPerRow + col].courseCode"
                                                     icon>
                                                     <v-icon>add_link</v-icon>
                                                 </v-btn>
@@ -228,7 +238,8 @@
                                         <v-tooltip bottom>
                                             <template v-slot:activator="{ on, attrs }">
                                                 <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('DLTC.pullRequest') }}/' + col.courseCode" icon>
+                                                    :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
+                                                    icon>
                                                     <v-icon>library_add_check</v-icon>
                                                 </v-btn>
                                             </template>
@@ -257,9 +268,10 @@
 <script>
     Vue.component('app-content', {
         data: () => ({
-            rows: [
-                []
-            ],
+            colPerRow: 3,
+            allCourses: [],
+            courses: [],
+            searchText: "",
             course: null,
             // {% if request.blueprint == "instructor" %}
             instructors: null,
@@ -315,7 +327,6 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        let colPerRow = 3
                         if (body.courses) {
                             body.courses.sort((a, b) => {
                                 if (a.concept.name < b.concept.name) {
@@ -326,24 +337,15 @@
                                 }
                                 return 0;
                             }).forEach(c => {
-                                let lastRow = this.rows[this.rows.length - 1]
-                                if (lastRow.length == colPerRow) {
-                                    this.rows.push([])
-                                    lastRow = this.rows[this.rows.length - 1]
-                                }
-                                lastRow.push({
+                                this.allCourses.push({
                                     courseCode: c.concept.name,
                                     imageURL: c.course.imageURL,
                                     courseName: c.course.courseName,
                                     isInternal: c.course.isInternal,
                                     isTeaching: c.isTeaching,
                                 })
-
                             })
-                            let lastRow = this.rows[this.rows.length - 1]
-                            while (lastRow.length < colPerRow) {
-                                lastRow.push({})
-                            }
+                            this.courses = this.allCourses.slice()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
@@ -551,6 +553,19 @@
                     })
             },
             // {% endif %}
+            search() {
+                if (this.searchText == "") {
+                    this.courses = this.allCourses
+                }
+                else {
+                    this.courses = this.allCourses.filter(c =>
+                        c.courseCode.toLowerCase().includes(this.searchText.toLowerCase()) ||
+                        c.courseName.toLowerCase().includes(this.searchText.toLowerCase())
+                    )
+                }
+                console.log(this.searchText)
+                console.log(this.courses)
+            }
         },
         mounted: function () {
             this.loadData()
