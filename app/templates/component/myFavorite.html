@@ -125,8 +125,9 @@
             },
             toggleExpansionPannel() {
                 if (this.expansionPannel != undefined) {
-                    setTimeout(() => { this.favoriteTooltip = true }, 100);
-                    setTimeout(() => { this.removeTooltip = true }, 100);
+                    setTimeout(() => { this.$root.miniSync = false }, 155);
+                    setTimeout(() => { this.favoriteTooltip = true }, 150);
+                    setTimeout(() => { this.removeTooltip = true }, 150);
                 }
                 else {
                     this.favoriteTooltip = false
