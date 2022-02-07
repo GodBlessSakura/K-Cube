@@ -3,7 +3,7 @@
 {% block VueComponent %}
 
 <v-container>
-    {% if isInstructor %}
+    {% if request.blueprint == "instructor" %}
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
         <v-card v-if="course">
             <v-card-title>${course.courseName}</v-card-title>
@@ -52,7 +52,7 @@
     {% endif %}
     <v-row v-for="row in rows">
         <v-col v-for="col in row" cols="4" class="d-flex" style="flex-direction:column">
-            {% if isFeedback %}
+            {% if request.blueprint == "collaborate" %}
             <v-card v-if="col.courseCode" :href="'{{ url_for('collaborate.feedbacks') }}/' + col.courseCode">
                 <v-list-item three-line>
                     <v-list-item-content>
@@ -88,7 +88,7 @@
                         </template>
                         <v-list class="no-padding-list">
                             <v-subheader style="height: auto; font-size: small;">page</v-subheader>
-                            {% if isInstructor %}
+                            {% if request.blueprint == "instructor" %}
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
@@ -100,7 +100,7 @@
                                     <span>Versions</span>
                                 </v-tooltip>
                             </v-list-item>
-                            {% elif isDLTC %}
+                            {% elif request.blueprint == "DLTC" %}
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
@@ -125,7 +125,7 @@
                                     <span>List Instructor</span>
                                 </v-tooltip>
                             </v-list-item>
-                            {% if isInstructor %}
+                            {% if request.blueprint == "instructor" %}
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
@@ -136,7 +136,7 @@
                                     <span>Edit info</span>
                                 </v-tooltip>
                             </v-list-item>
-                            {% elif isDLTC %}
+                            {% elif request.blueprint == "DLTC" %}
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
@@ -156,7 +156,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :color="col.isInternal === false?'success':'grey'" @click="courseIsInternal(col)"
-                                v-bind="attrs" v-on="on" {% if isInstructor %} text style="pointer-events: none;"
+                                v-bind="attrs" v-on="on" {% if request.blueprint == "instructor" %} text style="pointer-events: none;"
                                 {% else %} outlined {% endif %}>
                                 <v-icon left>public</v-icon>
                                 public
@@ -164,7 +164,7 @@
                         </template>
                         ${'click to '+(col.isInternal === false?'set internal':'set public')}
                     </v-tooltip>
-                    {% if isInstructor %}
+                    {% if request.blueprint == "instructor" %}
                     <v-spacer></v-spacer>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
@@ -186,7 +186,7 @@
                         <v-expansion-panel-content>
                             <v-container style="padding: unset">
                                 <v-row no-gutters>
-                                    {% if isInstructor %}
+                                    {% if request.blueprint == "instructor" %}
                                     <v-col cols="auto">
                                         <v-tooltip bottom>
                                             <template v-slot:activator="{ on, attrs }">
@@ -223,7 +223,7 @@
                                             <span>Course Resources</span>
                                         </v-tooltip>
                                     </v-col>
-                                    {% elif isDLTC %}
+                                    {% elif request.blueprint == "DLTC" %}
                                     <v-col cols="auto">
                                         <v-tooltip bottom>
                                             <template v-slot:activator="{ on, attrs }">
@@ -261,7 +261,7 @@
                 []
             ],
             course: null,
-            // {% if isInstructor %}
+            // {% if request.blueprint == "instructor" %}
             instructors: null,
             instructorDialogue: false,
             courseInfoDialogue: false,
@@ -292,7 +292,7 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        // {% if isInstructor %}
+                        // {% if request.blueprint == "instructor" %}
                         "{{ url_for('RESTful.course.query', user=True) }}",
                         // {% else %}
                         "{{ url_for('RESTful.course.query', user=True) }}",
@@ -350,7 +350,7 @@
                         }
                     })
             },
-            // {% if isInstructor %}
+            // {% if request.blueprint == "instructor" %}
             courseInfo(course) {
                 this.course = course
                 this.courseInfoDialogue = true
@@ -509,7 +509,7 @@
                 })
             },
             // {% endif %}
-            // {% if isDLTC %}
+            // {% if request.blueprint == "DLTC" %}
             courseIsInternal(course) {
                 this.course = course
                 this.$root.actionDisplay("This set " + course.courseCode + " " + (this.course.isInternal ===

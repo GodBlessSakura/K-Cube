@@ -27,9 +27,7 @@ def middleware():
 @instructor.route("/courseList")
 def courseList():
     return render_template(
-        "courseList.html",
-        isInstructor=True,
-        isDLTC=False,
+        "shared/courseList.html",
         imagesUrl=[
             url_for(
                 "static",
@@ -87,7 +85,7 @@ def material(courseCode):
 
 @instructor.route("/schedule")
 def schedule():
-    return render_template("courseList.html", isInstructor=True, isDLTC=False)
+    return "not implemented"
 
 
 @instructor.route("/workspace/", defaults={"deltaGraphId": None})

@@ -13,12 +13,7 @@ def graphEditing():
 @collaborate.route("/feedbacks")
 @authorize_with(["canProposeRelationship"])
 def feedbacks():
-    return render_template(
-        "courseList.html",
-        isInstructor=False,
-        isDLTC=False,
-        isFeedback=True,
-    )
+    return render_template("shared/courseList.html")
 
 
 @collaborate.route("/feedbacks/<courseCode>")
