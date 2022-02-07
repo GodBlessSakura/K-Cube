@@ -384,12 +384,14 @@
                             url: "{{ url_for('collaborate.feedbacks') }}",
                         },
                         //{% endif %}
-                        //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
+                        //{% if PERMISSION and PERMISSION.canProposeRelationship %}
                         {
                             title: "Graph Editing",
                             icon: "linear_scale",
                             url: "{{ url_for('collaborate.graphEditing') }}",
                         },
+                        //{% endif %}
+                        //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role or "operator" in PERMISSION.role) %}
                         {
                             title: "Catalogue Navigation",
                             icon: "polyline",

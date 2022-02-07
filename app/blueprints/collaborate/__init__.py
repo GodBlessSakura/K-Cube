@@ -11,20 +11,20 @@ def graphEditing():
 
 
 @collaborate.route("/feedbacks")
-@authorize_with(["canProposeRelationship"])
+@authorize_with([["canGiveFeedback", "canReplyFeedback"]])
 def feedbacks():
     return render_template("shared/courseList.html")
 
 
 @collaborate.route("/feedbacks/<courseCode>")
-@authorize_with(["canProposeRelationship"])
+@authorize_with([["canGiveFeedback", "canReplyFeedback"]])
 def courseFeedbacks(courseCode):
     return render_template("collaborate/feedback.html", courseCode=courseCode)
 
 
 @collaborate.route("/post", defaults={"id": None})
 @collaborate.route("/post/<id>")
-@authorize_with(["canProposeRelationship"])
+@authorize_with([["canGiveFeedback", "canReplyFeedback"]])
 def post(id):
     if id is not None:
         return render_template("collaborate/post.html", id=id)
