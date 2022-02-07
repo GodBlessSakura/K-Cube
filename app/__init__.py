@@ -56,8 +56,8 @@ def create_app(config_string):
     app.register_blueprint(RESTful, url_prefix="/RESTful")
     app.register_blueprint(user, url_prefix="/user")
     app.register_blueprint(collegue, url_prefix="/collegue")
-    app.register_blueprint(student, url_prefix="/user")
-    app.register_blueprint(operator, url_prefix="/collegue")
+    app.register_blueprint(student, url_prefix="/student")
+    app.register_blueprint(operator, url_prefix="/operator")
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
 
