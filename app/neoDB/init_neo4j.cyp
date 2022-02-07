@@ -65,7 +65,7 @@ SET
 MERGE (p:Permission {role: "operator"})
 SET
     p = {
-        role: "DLTC",
+        role: "operator",
         canAssignRole : false,
         canCreateJob : false,
         canApproveRelationship : false,
