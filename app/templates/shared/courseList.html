@@ -156,8 +156,8 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :color="col.isInternal === false?'success':'grey'" @click="courseIsInternal(col)"
-                                v-bind="attrs" v-on="on" {% if request.blueprint == "instructor" %} text style="pointer-events: none;"
-                                {% else %} outlined {% endif %}>
+                                v-bind="attrs" v-on="on" {% if request.blueprint=="instructor" %} text
+                                style="pointer-events: none;" {% else %} outlined {% endif %}>
                                 <v-icon left>public</v-icon>
                                 public
                             </v-btn>
@@ -272,16 +272,16 @@
             ],
             courseCode: '',
             courseCodeRules: [v => !!v || 'Course code is required',
-                v => (v && v.length > 3 && v.length < 101) ||
+            v => (v && v.length > 3 && v.length < 101) ||
                 'Course code should be anything between 4 and 100 charactors',
-                v => (v && /{{regExpRules["courseCode"]}}/.test(v)) ||
+            v => (v && /{{regExpRules["courseCode"]}}/.test(v)) ||
                 'Course code can only contains alphanumeric characters and space.'
             ],
             courseName: '',
             courseNameRules: [v => !!v || 'Course name is required',
-                v => (v && v.length > 3 && v.length < 101) ||
+            v => (v && v.length > 3 && v.length < 101) ||
                 'Course name should be anything between 4 and 100 charactors',
-                v => (v && /{{regExpRules["courseName"]}}/.test(v)) ||
+            v => (v && /{{regExpRules["courseName"]}}/.test(v)) ||
                 'Course name can only contains alphanumeric characters and space.'
             ],
             imageURL: '',
@@ -292,18 +292,18 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        // {% if request.blueprint == "instructor" %}
-                        "{{ url_for('RESTful.course.query', user=True) }}",
-                        // {% else %}
-                        "{{ url_for('RESTful.course.query', user=True) }}",
-                        // {% endif %}
-                        {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                        })
+                    // {% if PERMISSION and PERMISSION.canViewInternalCourse %}
+                    "{{ url_for('RESTful.course.query', user=True) }}",
+                    // {% else %}
+                    "{{ url_for('RESTful.course.query', list=True) }}",
+                    // {% endif %}
+                    {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -366,18 +366,18 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.course
-                            .courseCode), {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                courseName: this.courseName,
-                                imageURL: this.imageURL,
-                                name: this.courseCode,
-                            })
+                        .courseCode), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            courseName: this.courseName,
+                            imageURL: this.imageURL,
+                            name: this.courseCode,
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -405,12 +405,12 @@
                 this.$root.progress.show = true
                 this.course = course
                 fetch("{{ url_for('RESTful.course.query') }}/" + course.courseCode + "/instructors", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -441,16 +441,16 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(course
-                            .courseCode), {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                join: true
-                            })
+                        .courseCode), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            join: true
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -479,16 +479,16 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(course
-                            .courseCode), {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                join: false
-                            })
+                        .courseCode), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            join: false
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -513,7 +513,7 @@
             courseIsInternal(course) {
                 this.course = course
                 this.$root.actionDisplay("This set " + course.courseCode + " " + (this.course.isInternal ===
-                        false ? "internal" : "public"),
+                    false ? "internal" : "public"),
                     "proceed", () => {
                         if (this.$root.progress.show == true) {
                             this.$root.bePatientSnackBar.show = true
@@ -521,16 +521,16 @@
                         }
                         this.$root.progress.show = true
                         fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.course
-                                .courseCode), {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    isInternal: this.course.isInternal === false ? true : false
-                                })
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                isInternal: this.course.isInternal === false ? true : false
                             })
+                        })
                             .then(response => {
                                 try {
                                     return response.json()
