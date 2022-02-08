@@ -17,7 +17,7 @@
         <v-list>
             <v-subheader>${_selectedNode?.data('tag')}</v-subheader>
             <v-divider> </v-divider>
-            {% if isInstructor %}
+            {% if request.blueprint == "instructor" %}
             <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">status
             </v-subheader>
             <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="toggleExposure()">
@@ -51,7 +51,7 @@
                 <v-list-item-title>Checkout different graph</v-list-item-title>
             </v-list-item>
             {% endif %}
-            {% if isDLTC %}
+            {% if request.blueprint == "DLTC" %}
             <v-list-item v-if="selectedNodeClasses.includes('trunk') && !selectedNodeClasses.includes('isActive')"
                 @click="setActive()">
                 <v-list-item-title>Set as active</v-list-item-title>
@@ -62,7 +62,7 @@
             {% endif %}
         </v-list>
     </v-menu>
-    {% if isInstructor %}
+    {% if request.blueprint == "instructor" %}
     <v-dialog v-model="workspaceCreateDialog">
         <v-card>
             <v-card-title class="text-h5 grey lighten-2">
@@ -216,7 +216,7 @@
             snackbarMethod: '',
             _selectedNode: undefined, // this makes the vuetify not observing the object
             selectedNodeClasses: [],
-            //{% if isInstructor %}
+            //{% if request.blueprint == "instructor" %}
             workspaceCreateDialog: false,
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
@@ -393,7 +393,7 @@
                         }
                     })
             },
-            // {% if isInstructor %}
+            // {% if request.blueprint == "instructor" %}
             readyToPush() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
@@ -503,7 +503,7 @@
                 this.newTab("{{ url_for('instructor.commit')}}" + this._selectedNode.data("deltaGraphId"))
             },
             // {% endif %}
-            // {% if isDLTC %}
+            // {% if request.blueprint == "DLTC" %}
             setActive() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
@@ -580,7 +580,7 @@
                 console.log(event)
                 if (event.target == event.cy) return
                 if (this.showSelectBar) {
-                    // {% if isInstructor %}
+                    // {% if request.blueprint == "instructor" %}
                     if (this.snackbarMethod == 'branch') {
                         if (this.selectableNodes.contains(event.target[0])) {
                             this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
@@ -623,7 +623,7 @@
                         }
                     }
                     // {% endif %}
-                    // {% if isDLTC %}
+                    // {% if request.blueprint == "DLTC" %}
                     if (this.snackbarMethod == 'trunk') {
                         if (this.selectableNodes.contains(event.target[0])) {
                             this.newTab("{{ url_for('DLTC.trunk')}}" + event.target[0].data(
@@ -660,13 +660,13 @@
                             'deltaGraphId') + '/' + parent.data('deltaGraphId'))
                     }
                 }
-                // {% if isInstructor %}
+                // {% if request.blueprint == "instructor" %}
                 if (event.target.classes().includes("workspace")) {
                     this.newTab("{{ url_for('instructor.workspace')}}" + event.target.data(
                         "deltaGraphId"))
                 }
                 // {% endif %}
-                // {% if isDLTC %}
+                // {% if request.blueprint == "DLTC" %}
                 // {% endif %}
             })
             this.loadData()

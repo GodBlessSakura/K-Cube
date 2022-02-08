@@ -53,8 +53,6 @@ def versionTree(courseCode):
         return render_template(
             "collegue/versionTree.html",
             courseCode=courseCode,
-            isDLTC=False,
-            isDLTC=True,
         )
     abort(404)
 
@@ -73,8 +71,6 @@ def trunk(overwriterId, overwriteeId):
             "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
-            isDLTC=False,
-            isDLTC=True,
         )
     abort(404)
 

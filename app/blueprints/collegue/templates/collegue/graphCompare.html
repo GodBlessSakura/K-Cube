@@ -319,7 +319,7 @@
                             }
 
                             //{% endif %}
-                            //{% if isInstructor %}
+                            //{% if request.blueprint == "instructor" %}
                             if (body.overwritee.labels.includes('Branch') && body.overwritee.isOwner &&
                                 body.overwritee.isPatchLeaf) {
                                 this.options = ['patch', 'fork']
@@ -329,7 +329,7 @@
                                 this.action = 'fork'
                             }
                             //{% endif %}
-                            //{% if isDLTC %}
+                            //{% if request.blueprint == "DLTC" %}
                             if (body.overwritee.labels.includes('Trunk')) {
                                 if (body.overwritee.isPatchLeaf) {
                                     this.options = ['patch', 'fork']
@@ -425,11 +425,11 @@
                 }
 
                 this.$root.progress.show = true
-                //{% if isInstructor %}
+                //{% if request.blueprint == "instructor" %}
                 let url =
                     '{{ url_for("RESTful.branch.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
                 //{% endif %}
-                //{% if isDLTC %}
+                //{% if request.blueprint == "DLTC" %}
                 let url =
                     '{{ url_for("RESTful.trunk.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
                 //{% endif %}

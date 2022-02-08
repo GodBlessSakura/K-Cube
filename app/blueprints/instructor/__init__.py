@@ -83,8 +83,6 @@ def versionTree(courseCode):
         return render_template(
             "collegue/versionTree.html",
             courseCode=courseCode,
-            isInstructor=True,
-            isDLTC=False,
         )
     abort(404)
 
@@ -129,8 +127,6 @@ def commit(overwriterId, overwriteeId):
             "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
-            isInstructor=True,
-            isDLTC=False,
         )
     abort(404)
 
@@ -144,8 +140,6 @@ def branch(overwriterId, overwriteeId):
             "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
-            isInstructor=True,
-            isDLTC=False,
         )
     abort(404)
 
