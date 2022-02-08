@@ -1,0 +1,34 @@
+{% macro componentContent() %}
+<div style="height: 100%; width: 100%;">
+    demo2
+    <v-btn>useless button</v-btn>
+</div>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="kcube-instructor-demo2">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<script src="https://unpkg.com/vue-iro-color-picker@2.0.0/dist/VueIroColorPicker.umd.min.js"></script>
+<script>
+    (() => {
+        widgetName = 'demo2'
+        widgetComponentName = 'kcube-instructor-demo2'
+        KCube.widgetName.push(widgetName)
+        KCube.widgetOptions[widgetName] = {
+            component: widgetComponentName
+        }
+    })();
+    Vue.component(widgetComponentName, {
+        data: () => ({
+        }),
+        methods: {
+        },
+        template: '#' + widgetComponentName,
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endmacro %}
+{{ component() }}
+{{ script() }}
