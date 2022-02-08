@@ -73,7 +73,7 @@
 </v-card>
 {% endmacro %}
 {% macro component() %}
-<script type="text/x-template" id="cyOptionsContent">
+<script type="text/x-template" id="kcube-cy-options-dialog">
     {{ componentContent()}}
 </script>
 {% endmacro %}
@@ -81,7 +81,7 @@
 <script src="https://unpkg.com/vue-iro-color-picker@2.0.0/dist/VueIroColorPicker.umd.min.js"></script>
 <script>
     Vue.component('iro-color-picker', VueIroColorPicker);
-    Vue.component('v-cy-options-dialog', {
+    Vue.component('kcube-cy-options-dialog', {
         data: () => ({
             cyStylesOptions: cyStylesOptions
         }),
@@ -107,7 +107,7 @@
                 this.optionChanged()
             }
         },
-        template: '#cyOptionsContent',
+        template: '#kcube-cy-options-dialog',
         delimiters: ['${', '}'],
     })
 </script>
