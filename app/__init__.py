@@ -115,7 +115,7 @@ def create_app(config_string):
     @app.route("/course/<courseCode>")
     def course(courseCode):
         if courseCode is not None:
-            return render_template("course.html", courseCode=courseCode)
+            return render_template("coursePage.html", courseCode=courseCode)
         abort(404)
 
     @app.route("/courseGraph/", defaults={"courseCode": None, "userId": None})
@@ -132,7 +132,7 @@ def create_app(config_string):
     @app.route("/material/<courseCode>")
     def material(courseCode):
         if courseCode is not None:
-            return render_template("material.html", courseCode=courseCode)
+            return render_template("courseMaterial.html", courseCode=courseCode)
         abort(404)
 
     from . import api_driver
