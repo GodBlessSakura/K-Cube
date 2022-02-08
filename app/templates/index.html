@@ -260,6 +260,7 @@
                                     .data("label", c.concept.name)
 
                             })
+                            cy.elements().style('visibility', 'hidden')
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
@@ -346,7 +347,8 @@
                             }))
                         })
                     })
-                    cy.layout({
+                    cy.elements().style('visibility', 'hidden')
+                    let cyLayout = cy.layout({
                         name: 'circle',
                         fit: true,
                         sweep: undefined,
@@ -354,8 +356,11 @@
                         padding: document.documentElement.clientHeight * 0.15,
                         radius: 800,
 
-                    }).run()
-
+                    })
+                    cyLayout.one('layoutstop', () => {
+                        cy.elements().style('visibility', 'visible')
+                    })
+                    cyLayout.run()
                     this.$root.progress.show = false
                 })
             },
