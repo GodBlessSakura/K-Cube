@@ -32,8 +32,9 @@
                         <v-icon right @click="removeWidget(component2name(item.i))">close
                         </v-icon>
                     </v-app-bar>
-
-                    <component class="no-drag" v-bind:is="item.i"></component>
+                    <v-card-text>
+                        <component class="no-drag" v-bind:is="item.i"></component>
+                    </v-card-text>
                 </v-card>
             </grid-item>
         </grid-layout>
