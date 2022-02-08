@@ -15,7 +15,29 @@ instructor = Blueprint("instructor", __name__, template_folder="templates")
 
 @instructor.route("/dashboard")
 def dashboard():
-    return render_template("instructor/dashboard.html")
+    return render_template(
+        "instructor/dashboard.html",
+        components=[
+            "/".join([instructor.name, "component", f])
+            for f in os.listdir(
+                os.path.join(
+                    instructor.root_path,
+                    instructor.template_folder,
+                    instructor.name,
+                    "component",
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    instructor.root_path,
+                    instructor.template_folder,
+                    instructor.name,
+                    "component",
+                    f,
+                )
+            )
+        ],
+    )
 
 
 @instructor.before_request

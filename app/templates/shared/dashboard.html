@@ -1,0 +1,106 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout with context %}
+{% import 'component/myFavorite.html' as myFavorite %}
+{% block VueComponent %}
+<v-container>
+    <v-row>
+        <v-col>
+            <kcube-myFavorite></kcube-myFavorite>
+        </v-col>
+    </v-row>
+    <v-row>
+        <v-select v-model="chosenWidget" :items="$root.KCube.widgetName" label="widget" multiple
+            @change="updageWidget()" hint="Choose your widget" persistent-hint>
+            <template v-slot:selection="{ attrs, item, select, selected }">
+                <v-chip v-bind="attrs" :input-value="selected" close @click="select" @click:close="removeWidget(item)">
+                    <strong>${ item }</strong>
+                </v-chip>
+            </template>
+        </v-select>
+    </v-row>
+    <v-row>
+        <grid-layout style="width:100%" :layout.sync="layout" :col-num="3" :row-height="300" :is-draggable="true"
+            :is-resizable="true" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
+            @layout-updated="setLocal">
+            <grid-item drag-allow-from=".vue-draggable-handle" drag-ignore-from=".no-drag" v-for="item in layout"
+                :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i">
+                <v-card style="height:100%;width:100%">
+                    <v-app-bar flat>
+                        <v-icon class="vue-draggable-handle">drag_indicator
+                        </v-icon>
+                        <v-spacer></v-spacer>
+                        <v-icon right @click="removeWidget(component2name(item.i))">close
+                        </v-icon>
+                    </v-app-bar>
+
+                    <component class="no-drag" v-bind:is="item.i"></component>
+                </v-card>
+            </grid-item>
+        </grid-layout>
+    </v-row>
+</v-container>
+{% endblock %}
+{% block VueComponentScript %}
+{{ myFavorite.component()}}
+{{ myFavorite.script()}}
+{% block widget %} {% endblock %}
+<style>
+    .vue-grid-item.vue-grid-placeholder {
+        background: grey !important;
+    }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/vue-grid-layout@2.3.12/dist/vue-grid-layout.umd.min.js"></script>
+<script>
+    var layoutName = "{{request.blueprint}}" + '-dashboard-layout'
+    Vue.component('app-content', {
+        data: () => ({
+            layout: [],
+            chosenWidget: []
+        }),
+        methods: {
+            getLocal() {
+                let option = localStorage.getItem(layoutName)
+                if (option != null) this.layout = JSON.parse(option)
+            },
+            setLocal() {
+                let option = JSON.stringify(this.layout)
+                localStorage.setItem(layoutName, option)
+            },
+            removeWidget(name) {
+                this.chosenWidget.splice(this.chosenWidget.indexOf(name), 1)
+                this.chosenWidget = [...this.chosenWidget]
+                this.updageWidget()
+            },
+            updageWidget() {
+                //remove widget from layoute that is not in chosenWidget
+                KCube.widgetName.filter(name => !this.chosenWidget.includes(name)).forEach(name => {
+                    this.layout = this.layout.filter(widget => widget.i != KCube.widgetOptions[name].component)
+                })
+                //add widget to layout that is in chosenWidget but not in layout
+                this.chosenWidget.filter(name => this.layout.filter(widget => widget.i ==
+                    KCube.widgetOptions[name].component).length == 0).forEach(name => {
+                        this.layout.push({
+                            x: 0,
+                            y: 0,
+                            w: 1,
+                            h: 1,
+                            i: KCube.widgetOptions[name].component
+                        })
+                    })
+                this.setLocal()
+            },
+            component2name(component) {
+                return Object.keys(KCube.widgetOptions).filter(name => KCube.widgetOptions[name].component == component)[0]
+            }
+        },
+        mounted() {
+            this.getLocal()
+            this.chosenWidget = this.layout.map(widget => widget.i).map(component =>
+                this.component2name(component)
+            )
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

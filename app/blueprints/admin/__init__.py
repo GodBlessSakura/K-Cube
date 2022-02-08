@@ -21,7 +21,30 @@ def middleware():
 
 @admin.route("/dashboard")
 def dashboard():
-    return render_template("admin/dashboard.html")
+    print()
+    return render_template(
+        "admin/dashboard.html",
+        components=[
+            "/".join([admin.name, "component", f])
+            for f in os.listdir(
+                os.path.join(
+                    admin.root_path,
+                    admin.template_folder,
+                    admin.name,
+                    "component",
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    admin.root_path,
+                    admin.template_folder,
+                    admin.name,
+                    "component",
+                    f,
+                )
+            )
+        ],
+    )
 
 
 @admin.route("/user")

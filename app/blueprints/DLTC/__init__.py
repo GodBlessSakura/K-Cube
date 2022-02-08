@@ -17,7 +17,27 @@ DLTC.register_blueprint(uploads, url_prefix="/uploads")
 
 @DLTC.route("/dashboard")
 def dashboard():
-    return render_template("DLTC/dashboard.html")
+    return render_template("DLTC/dashboard.html",
+        components=[
+            "/".join([DLTC.name, "component", f])
+            for f in os.listdir(
+                os.path.join(
+                    DLTC.root_path,
+                    DLTC.template_folder,
+                    DLTC.name,
+                    "component",
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    DLTC.root_path,
+                    DLTC.template_folder,
+                    DLTC.name,
+                    "component",
+                    f,
+                )
+            )
+        ],)
 
 
 @DLTC.before_request
@@ -33,7 +53,7 @@ def versionTree(courseCode):
         return render_template(
             "collegue/versionTree.html",
             courseCode=courseCode,
-            isInstructor=False,
+            isDLTC=False,
             isDLTC=True,
         )
     abort(404)
@@ -53,7 +73,7 @@ def trunk(overwriterId, overwriteeId):
             "collegue/graphCompare.html",
             overwriterId=overwriterId,
             overwriteeId=overwriteeId,
-            isInstructor=False,
+            isDLTC=False,
             isDLTC=True,
         )
     abort(404)

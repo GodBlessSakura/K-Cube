@@ -312,6 +312,8 @@
 
     <script>
         KCube = {
+            widgetName: [], // names of widget would be pushed into this array if the page is a dashboard
+            widgetOptions: {}, // array of object
             visibility: ["private", "collaborator", "instructor", "colleague", "public"],
             currentBlueprint: "{{ request.blueprint }}",
             roleTab: [
