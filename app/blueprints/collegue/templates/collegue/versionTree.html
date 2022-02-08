@@ -89,66 +89,66 @@
 <script>
     cy = cytoscape({
         style: [{
-                selector: 'node',
-                style: {
-                    'label': 'data(tag)'
-                }
-            }, {
-                selector: 'node.trunk',
-                style: {
-                    'shape': 'star'
-                }
-            }, {
-                selector: 'node.isExposed',
-                style: {
-                    'background-color': 'green'
-                }
-            }, {
-                selector: 'node.isActive',
-                style: {
-                    'background-color': 'red'
-                }
-            }, {
-                selector: 'node.workspace',
-                style: {
-                    'shape': 'diamond'
-                }
-            }, {
-                selector: 'node.workspace',
-                style: {
-                    'shape': 'triangle'
-                }
-            },
-            {
-                selector: 'edge',
-                style: {
-                    'label': 'data(tag)',
-                    'target-arrow-shape': 'triangle',
-                    'curve-style': 'bezier'
-                }
-            },
-            {
-                selector: 'edge[tag="WORK_ON"]',
-                style: {
-                    'text-opacity': 0
-                }
-            },
-            {
-                selector: 'node.uselectable',
-                style: {
-                    'opacity': 0.25
-                }
-            }, {
-                selector: 'node.branch',
-                style: {
-                    'shape': 'rectangle'
-                }
-            }, {
-                selector: 'node.canPull',
-                style: {
-                    'shape': 'diamond'
-                }
-            },
+            selector: 'node',
+            style: {
+                'label': 'data(tag)'
+            }
+        }, {
+            selector: 'node.trunk',
+            style: {
+                'shape': 'star'
+            }
+        }, {
+            selector: 'node.isExposed',
+            style: {
+                'background-color': 'green'
+            }
+        }, {
+            selector: 'node.isActive',
+            style: {
+                'background-color': 'red'
+            }
+        }, {
+            selector: 'node.workspace',
+            style: {
+                'shape': 'diamond'
+            }
+        }, {
+            selector: 'node.workspace',
+            style: {
+                'shape': 'triangle'
+            }
+        },
+        {
+            selector: 'edge',
+            style: {
+                'label': 'data(tag)',
+                'target-arrow-shape': 'triangle',
+                'curve-style': 'bezier'
+            }
+        },
+        {
+            selector: 'edge[tag="WORK_ON"]',
+            style: {
+                'text-opacity': 0
+            }
+        },
+        {
+            selector: 'node.uselectable',
+            style: {
+                'opacity': 0.25
+            }
+        }, {
+            selector: 'node.branch',
+            style: {
+                'shape': 'rectangle'
+            }
+        }, {
+            selector: 'node.canPull',
+            style: {
+                'shape': 'diamond'
+            }
+        },
         ],
         userZoomingEnabled: false,
         userPanningEnabled: false,
@@ -220,9 +220,9 @@
             workspaceCreateDialog: false,
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
-                v => (v && v.length > 3 && v.length < 101) ||
+            v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
-                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
+            v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
                 'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
             //{% endif %}
@@ -231,13 +231,13 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.tree.get', courseCode = courseCode, isInstructor = isInstructor, isDLTC = isDLTC) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                    "{{ url_for('RESTful.tree.get', courseCode = courseCode, isInstructor = request.blueprint == 'instructor', isDLTC = request.blueprint == 'DLTC') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -339,11 +339,11 @@
                                     )
                                     if (pulling.length > 0) {
                                         pulling.map(edge => edge.source()).forEach(puller => {
-                                                puller.position({
-                                                    y: child.position().y + stepY,
-                                                })
-                                                locatePredecessorsY(puller)
-                                            }
+                                            puller.position({
+                                                y: child.position().y + stepY,
+                                            })
+                                            locatePredecessorsY(puller)
+                                        }
 
                                         )
                                     }
@@ -401,15 +401,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.branch.patch') }}" + this._selectedNode.data("deltaGraphId"), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            canPull: !this._selectedNode.classes().includes("canPull")
-                        })
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        canPull: !this._selectedNode.classes().includes("canPull")
                     })
+                })
                     .then(response => {
                         return response.json()
                     })
@@ -430,15 +430,15 @@
                 this.$root.progress.show = true
                 let isExposed = this._selectedNode.classes().includes("isExposed") ? false : true
                 fetch("{{ url_for('RESTful.branch.patch') }}" + this._selectedNode.data("deltaGraphId"), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            isExposed: isExposed,
-                        })
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        isExposed: isExposed,
                     })
+                })
                     .then(response => {
                         return response.json()
                     })
@@ -475,15 +475,15 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.workspace.post') }}" + this._selectedNode.data("deltaGraphId"), {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                tag: this.tag,
-                            })
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tag: this.tag,
                         })
+                    })
                         .then(response => {
                             return response.json()
                         })
@@ -511,15 +511,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.trunk.patch') }}" + this._selectedNode.data("deltaGraphId"), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            active: true,
-                        })
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        active: true,
                     })
+                })
                     .then(response => {
                         return response.json()
                     })
@@ -584,25 +584,25 @@
                     if (this.snackbarMethod == 'branch') {
                         if (this.selectableNodes.contains(event.target[0])) {
                             this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
-                                    'deltaGraphId') + '/' + this
-                                ._selectedNode.data("deltaGraphId"))
+                                'deltaGraphId') + '/' + this
+                                    ._selectedNode.data("deltaGraphId"))
                         }
                     }
                     if (this.snackbarMethod == 'workspace') {
                         if (this.selectableNodes.contains(event.target[0])) {
                             fetch("{{ url_for('RESTful.workspace.patch') }}" + this
-                                    ._selectedNode.data("deltaGraphId"), {
-                                        method: 'PATCH',
-                                        cache: 'no-store',
-                                        headers: {
-                                            'Content-Type': 'application/json'
-                                        },
-                                        body: JSON.stringify({
-                                            checkout: true,
-                                            deltaGraphId: event.target[0].data(
-                                                'deltaGraphId')
-                                        })
-                                    })
+                                ._selectedNode.data("deltaGraphId"), {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    checkout: true,
+                                    deltaGraphId: event.target[0].data(
+                                        'deltaGraphId')
+                                })
+                            })
                                 .then(response => {
                                     try {
                                         return response.json()
@@ -627,8 +627,8 @@
                     if (this.snackbarMethod == 'trunk') {
                         if (this.selectableNodes.contains(event.target[0])) {
                             this.newTab("{{ url_for('DLTC.trunk')}}" + event.target[0].data(
-                                    'deltaGraphId') + '/' + this
-                                ._selectedNode.data("deltaGraphId"))
+                                'deltaGraphId') + '/' + this
+                                    ._selectedNode.data("deltaGraphId"))
                         }
                     }
                     // {% endif %}
@@ -638,7 +638,7 @@
                     let parent = event.target[0].connectedEdges(
                         '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
                             0]
-                        .data('id') + '"]')
+                            .data('id') + '"]')
                     if (parent.length == 0) {
                         this.newTab("{{ url_for('collegue.graphView')}}" + event.target[0].data(
                             'deltaGraphId'))
@@ -651,7 +651,7 @@
                     let parent = event.target[0].connectedEdges(
                         '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
                             0]
-                        .data('id') + '"]')
+                            .data('id') + '"]')
                     if (parent.length == 0) {
                         this.newTab("{{ url_for('collegue.graphView')}}" + event.target[0].data(
                             'deltaGraphId'))
