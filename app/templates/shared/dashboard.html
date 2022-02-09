@@ -68,11 +68,15 @@
                 localStorage.setItem(layoutName, option)
             },
             removeWidget(name) {
+                if (!name || name === '') return
                 this.chosenWidget.splice(this.chosenWidget.indexOf(name), 1)
                 this.chosenWidget = [...this.chosenWidget]
                 this.updageWidget()
             },
             updageWidget() {
+                //remove obsolete widget
+                let validComponent = Object.keys(KCube.widgetOptions).map(name => KCube.widgetOptions[name].component)
+                this.layout = this.layout.filter(widget => validComponent.includes(widget.i))
                 //remove widget from layoute that is not in chosenWidget
                 KCube.widgetName.filter(name => !this.chosenWidget.includes(name)).forEach(name => {
                     this.layout = this.layout.filter(widget => widget.i != KCube.widgetOptions[name].component)
@@ -96,6 +100,9 @@
         },
         mounted() {
             this.getLocal()
+            //remove obsolete widget
+            let validComponent = Object.keys(KCube.widgetOptions).map(name => KCube.widgetOptions[name].component)
+            this.layout = this.layout.filter(widget => validComponent.includes(widget.i))
             this.chosenWidget = this.layout.map(widget => widget.i).map(component =>
                 this.component2name(component)
             )
