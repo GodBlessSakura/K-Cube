@@ -1,31 +1,29 @@
 {% macro componentContent() %}
 <v-card>
-    <v-container style="padding: 0;">
-        <v-row no-gutters>
-            <v-col cols="2">
-                <v-card-subtitle>
-                    <v-icon>bookmark</v-icon> Bookmark
-                </v-card-subtitle>
-            </v-col>
-            <v-col cols="10">
-                <v-slide-group style="padding: 16px 0px 16px 0px;">
-                    <v-slide-item v-for="fav in favorite">
-                        <v-btn class="mx-2" depressed :href="fav.url">
-                            ${fav.title}
-                            <v-icon right>${fav.icon}</v-icon>
-                        </v-btn>
-                    </v-slide-item>
-                </v-slide-group>
-            </v-col>
-        </v-row>
-    </v-container>
     <v-expansion-panels v-model="expansionPannel" @change="toggleExpansionPannel">
         <v-expansion-panel>
-            <v-expansion-panel-header disable-icon-rotate style="padding: 0px 24px;">
-                <template v-slot:actions>
-                    <v-icon>bookmark_add</v-icon>
-                    <v-icon>bookmark_remove</v-icon>
-                </template>
+            <v-expansion-panel-header class="no-before" hide-actions style="padding: 0px 24px; min-height: 30px;" dense>
+                <v-container style="padding: 0;">
+                    <v-row no-gutters>
+                        <v-col cols="2">
+                            <v-card-title style="padding: 16px 0 16px 0; font-size:.875rem">
+                                <v-icon>bookmark_add</v-icon>
+                                <v-icon>bookmark_remove</v-icon> Bookmark
+                            </v-card-title>
+                        </v-col>
+                        <v-divider vertical></v-divider>
+                        <v-col cols="10">
+                            <v-slide-group @click.native.stop style="padding: 16px 0 16px 0;">
+                                <v-slide-item v-for="fav in favorite">
+                                    <v-btn class="mx-2" style="text-transform: none;" depressed :href="fav.url">
+                                        ${fav.title}
+                                        <v-icon right>${fav.icon}</v-icon>
+                                    </v-btn>
+                                </v-slide-item>
+                            </v-slide-group>
+                        </v-col>
+                    </v-row>
+                </v-container>
             </v-expansion-panel-header>
             <v-expansion-panel-content>
                 <v-container style="padding: 0;">
@@ -85,6 +83,11 @@
 </v-card>
 {% endmacro %}
 {% macro component() %}
+<style>
+    .no-before::before {
+        content: none
+    }
+</style>
 <script type="text/x-template" id="kcube-myFavorite">
     {{ componentContent()}}
 </script>
