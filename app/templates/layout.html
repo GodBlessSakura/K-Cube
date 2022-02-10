@@ -35,20 +35,14 @@
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
             <v-app-bar app>
-                <template v-if="KCube.tabs && KCube.tabs.length > 0" v-slot:extension>
-                    <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" center-active centered icons-and-text>
-                        {% for i in [0,1,2,3,4,5,6] %}
-                        <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">
-                            ${KCube.tabs[{{i}}].title}
-                            <v-icon>
-                                ${KCube.tabs[{{i}}].icon}
-                            </v-icon>
-                            <div style="position: absolute; width: 100%; height: 100%; pointer-events: auto;"
-                                @click="goto(KCube.tabs[{{i}}].url,$event)"></div>
-                        </v-tab>
-                        {% endfor %}
-                    </v-tabs>
-                    <v-select @change="switchRole" style="width: 200px; position: absolute" solo
+                <a href="{{ url_for('index') }}">
+                    <v-img src="{{ url_for('static', filename='images/logo.png') }}" link max-height="35"
+                        max-width="35">
+                    </v-img>
+                </a>
+                <v-btn text href="{{ url_for('index') }}">KG-Cube</v-btn>
+                <template v-if="KCube.tabs && KCube.tabs.length > 0">
+                    <v-select @change="switchRole" style="max-width: 200px;" solo hide-details
                         background-color="transparent" flat label="view as" value="{{ request.blueprint }}"
                         :items="KCube.roleTab" item-text="name" item-value="name">
                         <template v-slot:item="{ item, on, attrs }">
@@ -72,13 +66,20 @@
                             </v-list-item>
                         </template>
                     </v-select>
+                    <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" icons-and-text
+                        style="position: absolute; left: 50%; transform: translateX(-50%); width: unset;">
+                        {% for i in [0,1,2,3,4,5,6] %}
+                        <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">
+                            ${KCube.tabs[{{i}}].title}
+                            <v-icon>
+                                ${KCube.tabs[{{i}}].icon}
+                            </v-icon>
+                            <div style="position: absolute; width: 100%; height: 100%; pointer-events: auto;"
+                                @click="goto(KCube.tabs[{{i}}].url,$event)"></div>
+                        </v-tab>
+                        {% endfor %}
+                    </v-tabs>
                 </template>
-                <a href="{{ url_for('index') }}">
-                    <v-img src="{{ url_for('static', filename='images/logo.png') }}" link max-height="35"
-                        max-width="35">
-                    </v-img>
-                </a>
-                <v-btn text href="{{ url_for('index') }}">KG-Cube</v-btn>
                 <v-spacer></v-spacer>
                 {% if session['user'] %}
                 <v-menu offset-y>
