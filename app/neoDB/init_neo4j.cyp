@@ -62,32 +62,8 @@ SET
         canReplyFeedback : true
     };
 
-MERGE (p:Permission {role: "operator"})
-SET
-    p = {
-        role: "operator",
-        canAssignRole : false,
-        canCreateJob : false,
-        canApproveRelationship : false,
-        canWriteAllCourseBranch : false,
-        canReadAllCourseBranch : false,
-        canWriteAllCourseMaterial : false,
-        canViewInternalCourse : true,
-        canSetInternalCourse : true,
-        canCreateCourse : false,
-        canUploadPhoto : false,
-        canWriteTrunk : true,
-        canReadTrunk : true,
-        canUpdateTrunk : true,
-        canProposeRelationship : false,
-        canCreateGraphConcept : false,
-        canJoinCourse : false,
-        canWriteTeachingCourseBranch : false,
-        canReadTeachingCourseBranch : false,
-        canWriteTeachingCourseMaterial : false,
-        canGiveFeedback : true,
-        canReplyFeedback : true
-    };
+MATCH (p:Permission {role: "operator"})
+DETACH DELETE p;
 
 MERGE (p:Permission {role: "instructor"})
 SET

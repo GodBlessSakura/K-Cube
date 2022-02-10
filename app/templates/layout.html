@@ -369,17 +369,6 @@
                     }]
                 },
                 //{% endif %}
-                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "operator" in PERMISSION.role) %}
-                {
-                    icon: "support_agent",
-                    name: "operator",
-                    tabs: [{
-                        title: "dashboard",
-                        icon: "dashboard",
-                        url: "{{ url_for('operator.dashboard') }}",
-                    },]
-                },
-                //{% endif %}
             ],
             navigationListGroup: [
                 {
@@ -410,25 +399,6 @@
                         //{% endif %}
                     ]
                 },
-                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
-                {
-                    icon: "groups",
-                    name: "DLTC",
-                    title: "DLTC",
-                    list: [
-                        {
-                            title: "Dashboard",
-                            icon: "dashboard",
-                            url: "{{ url_for('DLTC.dashboard') }}",
-                        },
-                        {
-                            title: "Manage Courses",
-                            icon: "grid_view",
-                            url: "{{ url_for('DLTC.courseList') }}",
-                        },
-                    ]
-                },
-                //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
                     icon: "co_present",
@@ -463,30 +433,35 @@
                     ]
                 },
                 //{% endif %}
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
+                {
+                    icon: "groups",
+                    name: "DLTC",
+                    title: "DLTC",
+                    list: [
+                        {
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('DLTC.dashboard') }}",
+                        },
+                        {
+                            title: "Manage Courses",
+                            icon: "grid_view",
+                            url: "{{ url_for('DLTC.courseList') }}",
+                        },
+                    ]
+                },
+                //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "student" in PERMISSION.role) %}
                 {
                     icon: "school",
                     name: "student",
-                    title: "student",
+                    title: "Student",
                     list: [
                         {
                             title: "Dashboard",
                             icon: "dashboard",
                             url: "{{ url_for('student.dashboard') }}",
-                        },
-                    ]
-                },
-                //{% endif %}
-                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "operator" in PERMISSION.role) %}
-                {
-                    icon: "support_agent",
-                    name: "operator",
-                    title: "operator",
-                    list: [
-                        {
-                            title: "Dashboard",
-                            icon: "dashboard",
-                            url: "{{ url_for('operator.dashboard') }}",
                         },
                     ]
                 },
