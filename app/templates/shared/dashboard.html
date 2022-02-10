@@ -14,10 +14,15 @@
         </v-col>
         <v-col cols="auto">
             <v-bottom-sheet inset>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn icon v-bind="attrs" v-on="on">
-                        <v-icon>settings</v-icon>
-                    </v-btn>
+                <template v-slot:activator="{ on: sheet, attrs }">
+                    <v-tooltip top>
+                        <template v-slot:activator="{ on: tooltip }">
+                            <v-btn icon v-bind="attrs" v-on="{...sheet,...tooltip}">
+                                <v-icon>settings</v-icon>
+                            </v-btn>
+                        </template>
+                        Add widget to the dashboard
+                    </v-tooltip>
                 </template>
                 <v-sheet>
                     <v-select v-model="chosenWidget" :items="$root.KCube.widgetName" label="widget" multiple
