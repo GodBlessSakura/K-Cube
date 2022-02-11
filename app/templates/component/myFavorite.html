@@ -6,10 +6,16 @@
                 <v-container style="padding: 0;">
                     <v-row no-gutters>
                         <v-col cols="2">
-                            <v-card-title style="padding: 16px 0 16px 0; font-size:.875rem">
-                                <v-icon>bookmark_add</v-icon>
-                                <v-icon>bookmark_remove</v-icon> Bookmark
-                            </v-card-title>
+                            <v-tooltip top>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-card-title v-on="on" v-bind="attrs"
+                                        style="padding: 16px 0 16px 0; font-size:.875rem">
+                                        <v-icon>bookmark_add</v-icon>
+                                        <v-icon>bookmark_remove</v-icon> Bookmark
+                                    </v-card-title>
+                                </template>
+                                click to edit bookmark
+                            </v-tooltip>
                         </v-col>
                         <v-divider vertical></v-divider>
                         <v-col cols="10">
@@ -53,27 +59,31 @@
                     </v-row>
                     <v-row no-gutters>
                         <v-col>
-                            <draggable v-model="favorite" group="url" @add="setLocal()" @remove="setLocal()"
-                                style="height: 40vh; overflow-y: scroll;">
-                                <v-list-item v-for="fav in favorite">
-                                    <v-list-item-icon>
-                                        <v-icon>${fav.icon}</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                        ${fav.title}</v-list-item-content>
-                                </v-list-item>
-                            </draggable>
+                            <v-list nav dense>
+                                <draggable v-model="favorite" group="url" @add="setLocal()" @remove="setLocal()"
+                                    style="height: 40vh; overflow-y: scroll;">
+                                    <v-list-item link v-for="fav in favorite">
+                                        <v-list-item-icon>
+                                            <v-icon>${fav.icon}</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            ${fav.title}</v-list-item-content>
+                                    </v-list-item>
+                                </draggable>
+                            </v-list>
                         </v-col>
                         <v-col>
-                            <draggable v-model="remove" group="url" style="height: 40vh; overflow-y: scroll;">
-                                <v-list-item v-for="fav in remove">
-                                    <v-list-item-icon>
-                                        <v-icon>${fav.icon}</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-content>
-                                        ${fav.title}</v-list-item-content>
-                                </v-list-item>
-                            </draggable>
+                            <v-list nav dense>
+                                <draggable v-model="remove" group="url" style="height: 40vh; overflow-y: scroll;">
+                                    <v-list-item link v-for="fav in remove">
+                                        <v-list-item-icon>
+                                            <v-icon>${fav.icon}</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-content>
+                                            ${fav.title}</v-list-item-content>
+                                    </v-list-item>
+                                </draggable>
+                            </v-list>
                         </v-col>
                     </v-row>
                 </v-container>
@@ -88,13 +98,13 @@
         content: none
     }
 </style>
-<script type="text/x-template" id="kcube-myFavorite">
+<script type="text/x-template" id="kcube-bookmark">
     {{ componentContent()}}
 </script>
 {% endmacro %}
 {% macro script() %}
 <script>
-    Vue.component('kcube-myFavorite', {
+    Vue.component('kcube-bookmark', {
         data: () => ({
             favorite: [],
             remove: [],
@@ -141,8 +151,9 @@
         mounted() {
             this.getLocal()
         },
-        template: '#kcube-myFavorite',
+        template: '#kcube-bookmark',
         delimiters: ['${', '}'],
     })
+
 </script>
 {% endmacro %}

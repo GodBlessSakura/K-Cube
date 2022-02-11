@@ -1,11 +1,10 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
-{% import 'component/myFavorite.html' as myFavorite %}
 {% block VueComponent %}
 <v-container>
     <v-row>
         <v-col>
-            <kcube-myFavorite></kcube-myFavorite>
+            <kcube-bookmark></kcube-bookmark>
         </v-col>
     </v-row>
     <v-row>
@@ -60,9 +59,10 @@
 </v-container>
 {% endblock %}
 {% block VueComponentScript %}
+{% block widget %} {% endblock %}
+{% import 'component/myFavorite.html' as myFavorite %}
 {{ myFavorite.component()}}
 {{ myFavorite.script()}}
-{% block widget %} {% endblock %}
 <style>
     .vue-grid-item.vue-grid-placeholder {
         background: grey !important;
