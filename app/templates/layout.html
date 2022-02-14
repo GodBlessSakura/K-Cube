@@ -714,10 +714,6 @@
                     this.actionSnackBar.show = true
 
                 },
-                goto(url, event) {
-                    event.stopPropagation()
-                    window.location.href = url
-                },
                 switchRole(role) {
                     role = KCube.roleTab.filter(r => r.name == role)[0]
                     tab = role.tabs[this.tabIndex]
