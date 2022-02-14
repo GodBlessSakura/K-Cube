@@ -2,7 +2,8 @@
 <v-card>
     <v-expansion-panels v-model="expansionPannel" @change="toggleExpansionPannel">
         <v-expansion-panel>
-            <v-expansion-panel-header class="no-before" hide-actions style="padding: 0px 0px 0px 24px; min-height: 30px;" dense>
+            <v-expansion-panel-header class="no-before" hide-actions
+                style="padding: 0px 0px 0px 24px; min-height: 30px;" dense>
                 <v-container style="padding: 0;">
                     <v-row no-gutters>
                         <v-col cols="2">
@@ -35,6 +36,7 @@
                 <v-container style="padding: 0;">
                     <v-row no-gutters>
                         <v-col>
+                            <v-divider></v-divider>
                             <v-tooltip v-model="favoriteTooltip" top>
                                 <template v-slot:activator="{ attrs }">
                                     <v-card-subtitle v-bind="attrs">
@@ -46,6 +48,7 @@
                             <v-divider></v-divider>
                         </v-col>
                         <v-col>
+                            <v-divider></v-divider>
                             <v-tooltip v-model="removeTooltip" top>
                                 <template v-slot:activator="{ attrs }">
                                     <v-card-subtitle v-bind="attrs">
