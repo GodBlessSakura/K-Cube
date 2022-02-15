@@ -10,6 +10,7 @@ from flask import (
 import os
 from app.authorizer import authorize_with
 from .blueprints.uploads import uploads
+from app.blueprints.collaborate import collaborate
 
 DLTC = Blueprint("DLTC", __name__, template_folder="templates")
 DLTC.register_blueprint(uploads, url_prefix="/uploads")
@@ -17,7 +18,8 @@ DLTC.register_blueprint(uploads, url_prefix="/uploads")
 
 @DLTC.route("/dashboard")
 def dashboard():
-    return render_template("DLTC/dashboard.html",
+    return render_template(
+        "DLTC/dashboard.html",
         components=[
             "/".join([DLTC.name, "component", f])
             for f in os.listdir(
@@ -37,7 +39,28 @@ def dashboard():
                     f,
                 )
             )
-        ],)
+        ]
+        + [
+            "/".join([collaborate.name, "component", f])
+            for f in os.listdir(
+                os.path.join(
+                    collaborate.root_path,
+                    collaborate.template_folder,
+                    collaborate.name,
+                    "component",
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    collaborate.root_path,
+                    collaborate.template_folder,
+                    collaborate.name,
+                    "component",
+                    f,
+                )
+            )
+        ],
+    )
 
 
 @DLTC.before_request

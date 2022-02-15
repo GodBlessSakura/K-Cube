@@ -9,6 +9,7 @@ from flask import (
 )
 import os
 from app.authorizer import authorize_with
+from app.blueprints.collaborate import collaborate
 
 admin = Blueprint("admin", __name__, template_folder="templates")
 
@@ -39,6 +40,26 @@ def dashboard():
                     admin.root_path,
                     admin.template_folder,
                     admin.name,
+                    "component",
+                    f,
+                )
+            )
+        ]
+        + [
+            "/".join([collaborate.name, "component", f])
+            for f in os.listdir(
+                os.path.join(
+                    collaborate.root_path,
+                    collaborate.template_folder,
+                    collaborate.name,
+                    "component",
+                )
+            )
+            if os.path.isfile(
+                os.path.join(
+                    collaborate.root_path,
+                    collaborate.template_folder,
+                    collaborate.name,
                     "component",
                     f,
                 )
