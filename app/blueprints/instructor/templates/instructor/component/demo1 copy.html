@@ -17,7 +17,10 @@
         widgetComponentName = 'kcube-instructor-demo2'
         KCube.widgetName.push(widgetName)
         KCube.widgetOptions[widgetName] = {
-            component: widgetComponentName
+            component: widgetComponentName,
+            minH: 2,
+            minW: 1,
+            h: 2, w: 3
         }
     })();
     Vue.component(widgetComponentName, {

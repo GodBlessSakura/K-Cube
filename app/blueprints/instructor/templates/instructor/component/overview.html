@@ -1,6 +1,6 @@
 {% macro componentContent() %}
-<div style="height: 100%; width: 100%;">
-    overview
+<div style="height: 100%; width: 100%;" @resize="resize()">
+    overview: ${el?.offsetWidth} X ${el?.offsetHeight}
 </div>
 {% endmacro %}
 {% macro component() %}
@@ -15,12 +15,23 @@
     widgetComponentName = 'kcube-instructor-overview'
     KCube.widgetName.push(widgetName)
     KCube.widgetOptions[widgetName] = {
-        component: widgetComponentName
+        component: widgetComponentName,
+        minH: 2,
+        minW: 3,
     }
     Vue.component(widgetComponentName, {
         data: () => ({
+            el: { offsetHeight: 0, offsetWidth: 0 }
         }),
         methods: {
+            resize() {
+                console.log("resize")
+                this.el.offsetHeight = this.$el.offsetHeight
+                this.el.offsetWidth = this.$el.offsetWidth
+            }
+        },
+        mounted() {
+            new ResizeObserver(this.resize).observe(this.$el)
         },
         template: '#' + widgetComponentName,
         delimiters: ['${', '}'],
