@@ -219,13 +219,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let activityPromise = fetch(
-                        "{{ url_for('RESTful.activity.query', ofUser=True, courseCode = courseCode) | safe}}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                    "{{ url_for('RESTful.activity.query', ofUser=True, courseCode = courseCode) | safe}}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -245,13 +245,13 @@
                         }
                     })
                 let graphPromise = fetch(
-                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = session['user']['userId']) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                    "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = session['user']['userId']) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -286,7 +286,7 @@
                                         .filter(
                                             e => e != entity)[0]
                                     if (!hop.includes(theOther) && !newData.includes(
-                                            theOther))
+                                        theOther))
                                         hop.push(theOther)
                                 }
                             })
@@ -312,6 +312,18 @@
                             return false
                         }
                     })
+                    newData = newData.filter(entity => entity != "{{courseCode}}")
+                    if (oldData["{{courseCode}}"]) {
+                        oldData["{{courseCode}}"].week = -1
+                    }
+                    else {
+                        oldData["{{courseCode}}"] = {
+                            uri: "{{courseCode}}",
+                            week: -1,
+                            desc: "{{courseCode}}"
+
+                        }
+                    }
                     console.log(newData)
                     console.log(oldData)
                     constructTimetable(oldData, newData)
@@ -324,20 +336,20 @@
 
             this.$root.$on('post-activity', function (activity) {
                 fetch(
-                        "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
-                        encodeURIComponent(
-                            activity.name), {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                desc: activity.desc.replaceAll("<br>", "").replaceAll(
-                                    "<div>", "").replaceAll("</div>", ""),
-                                week: activity.week
-                            })
-                        })
+                    "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
+                    encodeURIComponent(
+                        activity.name), {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        desc: activity.desc.replaceAll("<br>", "").replaceAll(
+                            "<div>", "").replaceAll("</div>", ""),
+                        week: activity.week
+                    })
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -349,7 +361,7 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        if (body.activity) {} else {
+                        if (body.activity) { } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on setting courses schedule information.')
                         }

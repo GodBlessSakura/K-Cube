@@ -17,17 +17,11 @@ function createDiv(content, uri) {
 }
 
 function constructTimetable(olddata, newdata) {
-    var timeSlot = null,
-        entity = null;
     for (var uri in olddata) {
         //console.log(uri);
-        for (var key in olddata[uri]) {
-            if (key == "week") {
-                timeSlot = document.getElementById('week' + olddata[uri][key]);
-            } else {
-                entity = createDiv(olddata[uri]["desc"], uri);
-            }
-        }
+        if (olddata[uri].week < 0) continue;
+        let timeSlot = document.getElementById('week' + olddata[uri].week);
+        let entity = createDiv(olddata[uri]["desc"], uri);
         timeSlot.appendChild(entity);
     }
     let timeslots = {}
