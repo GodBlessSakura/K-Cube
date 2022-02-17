@@ -9,7 +9,7 @@
     {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
     <v-row no-gutters>
         <v-col cols="auto">
-            <v-subheader no-paddings>filters:</v-subheader>
+            <span class="mr-4">filters:</span>
         </v-col>
         <v-col cols="auto">
             <v-chip filter v-model="filter.public" @click="filter.public = !filter.public;search()" dense
