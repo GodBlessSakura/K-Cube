@@ -7,6 +7,7 @@ from flask import (
     jsonify,
     session,
     g,
+    url_for,
 )
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
@@ -81,7 +82,19 @@ def login():
                 userId=userId, password=password
             )
             if user is not None:
+                from app.cache_driver import user_permission
+
                 session["user"] = user
+                permission = user_permission(session["user"]["userId"])
+                if "role" in permission:
+                    if "instructor" in permission["role"]:
+                        return jsonify(
+                            {"success": True, "url": url_for("instructor.courseList")}
+                        )
+                    if "DLTC" in permission["role"]:
+                        return jsonify(
+                            {"success": True, "url": url_for("DLTC.courseList")}
+                        )
                 return jsonify({"success": True})
             return jsonify({"success": False})
         except Exception as e:

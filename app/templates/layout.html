@@ -676,8 +676,14 @@
                             })
                             .then(body => {
                                 this.progress.show = false
-                                this.responseSnackBar(body, 'incorrect username or password', location
-                                    .reload.bind(window.location))
+                                this.responseSnackBar(body, 'incorrect username or password', () => {
+                                    if (body.url) {
+                                        window.location.href = body.url
+                                    }
+                                    else {
+                                        window.location.reload()
+                                    }
+                                })
                             })
                     }
                 },
