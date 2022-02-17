@@ -3,56 +3,35 @@
 {% block VueComponent %}
 
 <v-container>
-    {% if request.blueprint == "instructor" %}
-    <v-dialog v-model="courseInfoDialogue" max-width="500px">
-        <v-card v-if="course">
-            <v-card-title>${course.courseName}</v-card-title>
-            <v-card-text>
-                <v-form ref="courseInfoFormControl">
-                    <v-container>
-                        <v-row>
-                            <v-text-field v-model="courseCode" :rules="courseCodeRules" label="Cource Code" required>
-                            </v-text-field>
-                        </v-row>
-                        <v-row>
-
-                            <v-text-field v-model="courseName" :rules="courseNameRules" label="Course Name" required>
-                            </v-text-field>
-
-                        </v-row>
-                        <v-row>
-                            <v-select label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl"
-                                required>
-                                <template v-slot:item="{ item }">
-                                    <v-img :src="item" height="40" contain></v-img>
-                                </template>
-                            </v-select>
-                        </v-row>
-                        <v-row>
-                            <v-btn @click="updateCourseInfo()" color="success">
-                                update
-                            </v-btn>
-                        </v-row>
-                    </v-container>
-                </v-form>
-            </v-card-text>
-        </v-card>
-    </v-dialog>
-    <v-dialog v-model="instructorDialogue" max-width="500px">
-        <v-card v-if="course">
-            <v-card-title>Instructors for ${course.courseName}</v-card-title>
-            <v-card-text>
-                <v-subheader>Joined</v-subheader>
-                <v-chip v-for="user in instructors" v-if="user.isTeaching">
-                    ${user.userId}
-                </v-chip>
-            </v-card-text>
-        </v-card>
-    </v-dialog>
-    {% endif %}
     <v-row>
         <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
     </v-row>
+    {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
+    <v-row no-gutters>
+        <v-col cols="auto">
+            <v-subheader no-paddings>filters:</v-subheader>
+        </v-col>
+        <v-col cols="auto">
+            <v-chip filter v-model="filter.public" @click="filter.public = !filter.public;search()" dense
+                hide-details>public</v-chip>
+        </v-col>
+        <v-col cols="auto">
+            <v-chip filter v-model="filter.internal" @click="filter.internal = !filter.internal;search()"
+                dense hide-details>internal</v-chip>
+        </v-col>
+        {% if request.blueprint == "instructor" %}
+        <v-col cols="auto">
+            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search()" dense
+                hide-details>joined</v-chip>
+        </v-col>
+        <v-col cols="auto">
+            <v-chip filter v-model="filter.notJoined" @click="filter.notJoined = !filter.notJoined;search()"
+                dense hide-details>not joined
+            </v-chip>
+        </v-col>
+        {% endif %}
+    </v-row>
+    {% endif %}
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
         <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
             {% if request.blueprint == "collaborate" %}
@@ -256,6 +235,51 @@
             {% endif %}
         </v-col>
     </v-row>
+    {% if request.blueprint == "instructor" %}
+    <v-dialog v-model="courseInfoDialogue" max-width="500px">
+        <v-card v-if="course">
+            <v-card-title>${course.courseName}</v-card-title>
+            <v-card-text>
+                <v-form ref="courseInfoFormControl">
+                    <v-container>
+                        <v-row>
+                            <v-text-field v-model="courseCode" :rules="courseCodeRules" label="Cource Code" required>
+                            </v-text-field>
+                        </v-row>
+                        <v-row>
+                            <v-text-field v-model="courseName" :rules="courseNameRules" label="Course Name" required>
+                            </v-text-field>
+                        </v-row>
+                        <v-row>
+                            <v-select label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl"
+                                required>
+                                <template v-slot:item="{ item }">
+                                    <v-img :src="item" height="40" contain></v-img>
+                                </template>
+                            </v-select>
+                        </v-row>
+                        <v-row>
+                            <v-btn @click="updateCourseInfo()" color="success">
+                                update
+                            </v-btn>
+                        </v-row>
+                    </v-container>
+                </v-form>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+    <v-dialog v-model="instructorDialogue" max-width="500px">
+        <v-card v-if="course">
+            <v-card-title>Instructors for ${course.courseName}</v-card-title>
+            <v-card-text>
+                <v-subheader>Joined</v-subheader>
+                <v-chip v-for="user in instructors" v-if="user.isTeaching">
+                    ${user.userId}
+                </v-chip>
+            </v-card-text>
+        </v-card>
+    </v-dialog>
+    {% endif %}
 </v-container>
 
 {% endblock %}
@@ -273,6 +297,16 @@
             courses: [],
             searchText: "",
             course: null,
+            // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
+            filter: {
+                public: false,
+                internal: false,
+                // {% if request.blueprint == "instructor" %}
+                joined: true,
+                notJoined: false,
+                // {% endif %}
+            },
+            // {% endif %}
             // {% if request.blueprint == "instructor" %}
             instructors: null,
             instructorDialogue: false,
@@ -345,7 +379,7 @@
                                     isTeaching: c.isTeaching,
                                 })
                             })
-                            this.courses = this.allCourses.slice()
+                            this.search()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
@@ -555,7 +589,7 @@
             // {% endif %}
             search() {
                 if (this.searchText == "") {
-                    this.courses = this.allCourses
+                    this.courses = this.allCourses.slice()
                 }
                 else {
                     this.courses = this.allCourses.filter(c =>
@@ -563,12 +597,19 @@
                         c.courseName.toLowerCase().includes(this.searchText.toLowerCase())
                     )
                 }
-                console.log(this.searchText)
-                console.log(this.courses)
+                // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
+                if (Object.keys(this.filter).map(key => this.filter[key]).filter(value => value).length > 0)
+                    this.courses = this.courses.filter(c =>
+                        !(this.filter.public && c.isInternal) &&
+                        !(this.filter.internal && !c.isInternal) &&
+                        !(this.filter.joined && !c.isTeaching) &&
+                        !(this.filter.notJoined && c.isTeaching)).slice()
+                // {% endif %}
             }
         },
         mounted: function () {
             this.loadData()
+            this.search()
         },
         template: '#content',
         delimiters: ['${', '}'],
