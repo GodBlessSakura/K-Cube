@@ -25,6 +25,7 @@ UNION
 CREATE (graph)<-[:WORK_ON]-(workspace:Workspace)<-[:USER_OWN]-(user)
 SET
     workspace.creationDate = datetime.transaction(),
+    workspace.lastModified = datetime.transaction(),
     workspace.deltaGraphId = split(graph.deltaGraphId,'.')[0] + '.' + id(workspace),
     workspace.tag = $tag
 RETURN workspace.deltaGraphId as deltaGraphId;

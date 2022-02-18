@@ -12,21 +12,21 @@
             <span class="mr-4">filters:</span>
         </v-col>
         <v-col cols="auto">
-            <v-chip filter v-model="filter.public" @click="filter.public = !filter.public;search()" dense
-                hide-details>public</v-chip>
+            <v-chip filter v-model="filter.public" @click="filter.public = !filter.public;search()" dense hide-details>
+                public</v-chip>
         </v-col>
         <v-col cols="auto">
-            <v-chip filter v-model="filter.internal" @click="filter.internal = !filter.internal;search()"
-                dense hide-details>internal</v-chip>
+            <v-chip filter v-model="filter.internal" @click="filter.internal = !filter.internal;search()" dense
+                hide-details>internal</v-chip>
         </v-col>
         {% if request.blueprint == "instructor" %}
         <v-col cols="auto">
-            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search()" dense
-                hide-details>joined</v-chip>
+            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search()" dense hide-details>
+                joined</v-chip>
         </v-col>
         <v-col cols="auto">
-            <v-chip filter v-model="filter.notJoined" @click="filter.notJoined = !filter.notJoined;search()"
-                dense hide-details>not joined
+            <v-chip filter v-model="filter.notJoined" @click="filter.notJoined = !filter.notJoined;search()" dense
+                hide-details>not joined
             </v-chip>
         </v-col>
         {% endif %}
@@ -51,7 +51,8 @@
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-card v-if="courses[row*colPerRow + col]">
+            <v-card v-if="courses[row*colPerRow + col]"
+                @click="courseCode = courses[row*colPerRow + col].courseCode; coursePreviewDialogue = true">
                 <v-list-item three-line>
                     <v-list-item-content>
                         <v-list-item-title>
@@ -59,6 +60,59 @@
                         </v-list-item-title>
                         <v-list-item-subtitle>
                             ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
+                        <v-slide-group>
+                            {% if request.blueprint == "instructor" %}
+                            <v-slide-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('instructor.repositories') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
+                                            <v-icon>table_view</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Repository</span>
+                                </v-tooltip>
+                            </v-slide-item>
+                            <v-slide-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('instructor.courseSchedule') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
+                                            <v-icon>edit_calendar</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Course Schedules</span>
+                                </v-tooltip>
+                            </v-slide-item>
+                            <v-slide-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('instructor.material') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
+                                            <v-icon>add_link</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Course Resources</span>
+                                </v-tooltip>
+                            </v-slide-item>
+                            {% elif request.blueprint == "DLTC" %}
+                            <v-slide-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
+                                            <v-icon>library_add_check</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Update Request</span>
+                                </v-tooltip>
+                            </v-slide-item>
+                            {% endif %}
+                        </v-slide-group>
                     </v-list-item-content>
                     <v-list-item-avatar tile size="96">
                         <img :src="courses[row*colPerRow + col].imageURL">
@@ -158,7 +212,7 @@
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :outlined="!courses[row*colPerRow + col].isTeaching"
                                 :color="courses[row*colPerRow + col].isTeaching?'info':'grey'" v-bind="attrs" v-on="on"
-                                @click="courses[row*colPerRow + col].isTeaching?quit(col):join(col)">
+                                @click="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
                                 <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
                                 ${courses[row*colPerRow + col].isTeaching?'joined':'join'}
                             </v-btn>
@@ -167,75 +221,14 @@
                     </v-tooltip>
                     {% endif %}
                 </v-card-actions>
-                <v-expansion-panels>
-                    <v-expansion-panel>
-                        <v-expansion-panel-header>
-                            Pages
-                        </v-expansion-panel-header>
-                        <v-expansion-panel-content>
-                            <v-container style="padding: unset">
-                                <v-row no-gutters>
-                                    {% if request.blueprint == "instructor" %}
-                                    <v-col cols="auto">
-                                        <v-tooltip bottom>
-                                            <template v-slot:activator="{ on, attrs }">
-                                                <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('instructor.repositories') }}/' + courses[row*colPerRow + col].courseCode"
-                                                    icon>
-                                                    <v-icon>table_view</v-icon>
-                                                </v-btn>
-                                            </template>
-                                            <span>Repository</span>
-                                        </v-tooltip>
-                                    </v-col>
-                                    <v-col cols="auto">
-                                        <v-tooltip bottom>
-                                            <template v-slot:activator="{ on, attrs }">
-                                                <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('instructor.courseSchedule') }}/' + courses[row*colPerRow + col].courseCode"
-                                                    icon>
-                                                    <v-icon>edit_calendar</v-icon>
-                                                </v-btn>
-                                            </template>
-                                            <span>Course Schedules</span>
-                                        </v-tooltip>
-                                    </v-col>
-                                    <v-col cols="auto">
-                                        <v-tooltip bottom>
-                                            <template v-slot:activator="{ on, attrs }">
-                                                <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('instructor.material') }}/' + courses[row*colPerRow + col].courseCode"
-                                                    icon>
-                                                    <v-icon>add_link</v-icon>
-                                                </v-btn>
-                                            </template>
-                                            <span>Course Resources</span>
-                                        </v-tooltip>
-                                    </v-col>
-                                    {% elif request.blueprint == "DLTC" %}
-                                    <v-col cols="auto">
-                                        <v-tooltip bottom>
-                                            <template v-slot:activator="{ on, attrs }">
-                                                <v-btn v-bind="attrs" v-on="on"
-                                                    :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
-                                                    icon>
-                                                    <v-icon>library_add_check</v-icon>
-                                                </v-btn>
-                                            </template>
-                                            <span>Update Request</span>
-                                        </v-tooltip>
-                                    </v-col>
-                                    {% endif %}
-                                </v-row>
-                            </v-container>
-                        </v-expansion-panel-content>
-                    </v-expansion-panel>
-                </v-expansion-panels>
             </v-card>
             {% endif %}
         </v-col>
     </v-row>
     {% if request.blueprint == "instructor" %}
+    <v-dialog v-model="coursePreviewDialogue" max-width="80vw">
+        <kcube-course-preview :courseCode="courseCode"></kcube-course-preview>
+    </v-dialog>
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
         <v-card v-if="course">
             <v-card-title>${course.courseName}</v-card-title>
@@ -284,6 +277,9 @@
 
 {% endblock %}
 {% block VueComponentScript %}
+{% if request.blueprint == "instructor" %}
+{% include "instructor/coursePreview.html" %}
+{% endif %}
 <style>
     .no-padding-list>* {
         padding: unset
@@ -311,6 +307,7 @@
             instructors: null,
             instructorDialogue: false,
             courseInfoDialogue: false,
+            coursePreviewDialogue: false,
             imagesUrl: [
                 //{% for url in imagesUrl %}
                 '{{ url | safe}}',

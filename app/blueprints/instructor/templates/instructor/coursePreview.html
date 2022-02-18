@@ -1,0 +1,166 @@
+{% macro componentContent() %}
+<v-card>
+    <v-container>
+        <v-row>
+            <v-card-title>
+                ${courseCode}
+            </v-card-title>
+        </v-row>
+        <v-row>
+            <v-card-title>
+                choose a graph provided by:
+            </v-card-title>
+        </v-row>
+        <v-row v-for="row in rows">
+            <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
+                <v-card v-if="col.userName" :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId !=
+            null ? '/' + col.userId : '')">
+                    <v-list-item>
+                        <v-list-item-title>
+                            ${col.userName}
+                        </v-list-item-title>
+                    </v-list-item>
+                </v-card>
+            </v-col>
+        </v-row>
+        {% if session['user'] and session['user']['userId'] %}
+        <v-row>
+            <v-col cols="auto">
+                Last-visited workspace:
+            </v-col>
+            <v-col>
+                <v-btn v-if="workspaceURL" style="height: 48px;" :href="workspaceURL">
+                    <v-icon>work</v-icon>
+                </v-btn>
+                <v-btn v-else @click="workspaceDialogue = true">create workspace</v-btn>
+            </v-col>
+        </v-row>
+        {% endif %}
+        <v-dialog v-model="workspaceDialogue" max-width="500px">
+            <kcube-workspace-form :courseCode="courseCode"></kcube-workspace-form>
+        </v-dialog>
+    </v-container>
+</v-card>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="kcube-course-preview">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<script>
+    Vue.component('kcube-course-preview', {
+        props: {
+            courseCode: ""
+        },
+        data: () => ({
+            rows: [
+                []
+            ],
+            //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+            workspaceURL: undefined,
+            //{% endif %}
+            workspaceDialogue: false
+        }),
+        watch: {
+            courseCode: function () { this.loadData() }
+        },
+        methods: {
+            loadData() {
+                this.$root.progress.show = true
+                fetch(
+                    "{{ url_for('RESTful.course.query', graphs=True) | safe }}&courseCode=" + this.courseCode, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.rows = [
+                            []
+                        ]
+                        this.$root.progress.show = false
+                        let colPerRow = 4
+                        if (body.instructors) {
+                            body.instructors.forEach(instructor => {
+                                let lastRow = this.rows[this.rows.length - 1]
+                                if (lastRow.length == colPerRow) {
+                                    this.rows.push([])
+                                    lastRow = this.rows[this.rows.length - 1]
+                                }
+                                lastRow.push(instructor)
+
+                            })
+                            let lastRow = this.rows[this.rows.length - 1]
+                            if (lastRow.length == colPerRow) {
+                                this.rows.push([])
+                                lastRow = this.rows[this.rows.length - 1]
+                            }
+                            lastRow.push({
+                                userName: 'department',
+                                userId: null
+                            })
+                            while (lastRow.length < colPerRow) {
+                                lastRow.push({})
+                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                fetch(
+                    "{{ url_for('RESTful.workspace.query', lastModified=True) | safe }}&courseCode=" + this.courseCode, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.workspaceURL = undefined
+                        this.$root.progress.show = false
+                        let colPerRow = 4
+                        if (body.deltaGraphIds) {
+                            if (body.deltaGraphIds.length > 0) {
+                                this.workspaceURL = "{{ url_for('instructor.workspace')}}" + body
+                                    .deltaGraphIds[0]
+                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting workspace information.')
+                        }
+                    })
+                //{% endif %}
+            },
+        },
+        mounted: function () {
+            this.loadData()
+        },
+        template: '#kcube-course-preview',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endmacro %}
+{% include "instructor/workspaceForm.html" %}
+{{ component() }}
+{{ script() }}

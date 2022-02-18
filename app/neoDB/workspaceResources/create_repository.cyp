@@ -32,6 +32,7 @@ SET
     branch.deltaGraphId = split(graph.deltaGraphId,'.')[0] + '.' + id(branch),
     branch.tag = $tag,
     workspace.creationDate = datetime.transaction(),
+    workspace.lastModified = datetime.transaction(),
     workspace.deltaGraphId = split(graph.deltaGraphId,'.')[0] + '.' + id(workspace),
     workspace.tag = $w_tag
 WITH branch, graph, workspace
