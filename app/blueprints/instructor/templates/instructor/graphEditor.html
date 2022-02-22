@@ -9,13 +9,17 @@
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                        ${workspace?.tag? (workspace?.tag + ' (' + subject?.tag + ')'):''}
+                        ${workspace?.tag? (workspace?.tag):''}
                         <v-icon v-if="!subject?.isPatchLeaf">
                             sync
                         </v-icon>
                     </v-btn>
                 </template>
                 <v-list>
+                    <v-list-item>
+                        <v-list-item0subtitle style="font-size: small;">patch name:<br>${subject?.tag}
+                        </v-list-item0subtitle>
+                    </v-list-item>
                     <v-list-item v-if="!subject?.isPatchLeaf" @click="sync()">
                         <v-list-item-title>sync</v-list-item-title>
                         <v-list-item-icon>
@@ -30,7 +34,7 @@
                         </v-list-item-icon>
                     </v-list-item>
                     <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
-                        <v-list-item-title>view changes</v-list-item-title>
+                        <v-list-item-title>preview changes</v-list-item-title>
                     </v-list-item>
                     <v-list-item @click="showCommitExposeDialogue()">
                         <v-list-item-title>commit and expose</v-list-item-title>
@@ -203,7 +207,8 @@
                                                 </v-list-item-title>
                                             </v-list-item-content>
                                         </v-list-item>
-                                    </template></v-combobox>
+                                    </template>
+                                </v-combobox>
                             </v-col>
                         </v-row>
                         <v-row v-if="diffMode">
@@ -377,7 +382,8 @@
                 <div style="display: flex; height: 100%; align-items: center;  background-color: white;">
                     <span style="font-weight: bold;">
                         active negation
-                    </span></div>
+                    </span>
+                </div>
             </v-chip>
             <v-chip filter label>
                 <v-avatar left>
@@ -385,7 +391,8 @@
                 </v-avatar>
                 <div style="display: flex; height: 100%; align-items: center;  background-color: white;">
                     <span style="font-weight: bold; -webkit-text-stroke: 0.75px black; color:white">inactive
-                        edge negation</span></div>
+                        edge negation</span>
+                </div>
                 </div>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
@@ -533,16 +540,16 @@
             commitExposeDialogue: false,
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
-                v => (v && v.length > 3 && v.length < 101) ||
+            v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
-                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
+            v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
                 'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
             relationships: [],
             nameRules: [v => !!v || 'Name is required',
-                v => (v && v.length > 3 && v.length) < 101 ||
+            v => (v && v.length > 3 && v.length) < 101 ||
                 'Name should be anything between 4 and 100 charactors',
-                v => (v && /{{regExpRules["name"]}}/.test(v)) ||
+            v => (v && /{{regExpRules["name"]}}/.test(v)) ||
                 'Name can only contains alphanumeric characters and space.'
             ],
             h_name: '',
@@ -580,13 +587,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let workspacePromise = fetch(
-                        "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                        })
+                    "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -664,30 +671,30 @@
                             'Content-Type': 'application/json'
                         },
                     })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
-                            this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        if (body.relationships) {
-                            this.relationships = body.relationships
-                        } else {
-                            this.$root.errorDisplay(body,
-                                'Unexpected error on getting relationship information.')
-                        }
-                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            if (body.relationships) {
+                                this.relationships = body.relationships
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error on getting relationship information.')
+                            }
+                        })
                 let entityPromise = fetch("{{ url_for('RESTful.entity.query', list=True) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -747,18 +754,18 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple.put', deltaGraphId=deltaGraphId) }}", {
-                            method: 'PUT',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                h_name: this.h_name,
-                                r_name: this.r_name,
-                                t_name: this.t_name,
-                                r_value: r_value,
-                            })
+                        method: 'PUT',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            h_name: this.h_name,
+                            r_name: this.r_name,
+                            t_name: this.t_name,
+                            r_value: r_value,
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -823,17 +830,17 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
-                            method: 'DELETE',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                h_name: this.h_name,
-                                r_name: this.r_name,
-                                t_name: this.t_name,
-                            })
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            h_name: this.h_name,
+                            r_name: this.r_name,
+                            t_name: this.t_name,
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -901,7 +908,7 @@
                     } else {
                         this.createTriple(true)
                     }
-                } else {}
+                } else { }
             },
             smartUnlink() {
                 if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
@@ -917,7 +924,7 @@
                             this.tripledelete()
                         }
                     }
-                } else {}
+                } else { }
 
             },
             disableButtons() {
@@ -931,12 +938,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.triple.deleteUnreachable', deltaGraphId=deltaGraphId) }}", {
-                        method: 'DELETE',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'DELETE',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -953,10 +960,10 @@
                             body.triples.forEach(triple => {
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple
-                                    .t_name)
+                                        .t_name)
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name,
                                     triple
-                                    .r_name,
+                                        .r_name,
                                     triple.t_name))[0]
                                 if (edge) {
                                     if (triple.r_value === null)
@@ -1030,8 +1037,8 @@
                         cy.edges().unselect()
                         edge.select()
                         this.canNontrivalLinkEdge = (edge.data("workspace_value") != "true" && edge
-                                .data(
-                                    "subject_value") != "true") || edge.data("workspace_value") ==
+                            .data(
+                                "subject_value") != "true") || edge.data("workspace_value") ==
                             "false"
                         this.canNontrivalRemoveEdge = edge.data("workspace_value") == "true" || (edge
                             .data(
@@ -1082,17 +1089,17 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.branch.post', overwriterId=deltaGraphId) }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            tag: this.tag,
-                            action: this.subject.isPatchLeaf ? "patch" : "fork",
-                            expose: true
-                        })
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tag: this.tag,
+                        action: this.subject.isPatchLeaf ? "patch" : "fork",
+                        expose: true
                     })
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1118,15 +1125,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.workspace.patch', deltaGraphId=deltaGraphId) }}", {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            sync: true
-                        })
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sync: true
                     })
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1152,12 +1159,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.workspace.delete', deltaGraphId=deltaGraphId) }}", {
-                        method: 'DELETE',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
+                    method: 'DELETE',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1207,7 +1214,7 @@
                 self.t_name = event.target.target().data("id")
                 self.determineTripleOptions()
             })
-            cy.on('tapdrag', 'node', (event) => {})
+            cy.on('tapdrag', 'node', (event) => { })
             // let size
             // cy.on('select', 'node', event => {
             //     let node = event.target[0]
