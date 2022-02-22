@@ -24,14 +24,17 @@
             </v-col>
         </v-row>
         {% if session['user'] and session['user']['userId'] %}
-        <v-row v-if="workspaceURL!=undefined">
+        <v-row>
             <v-col cols="auto">
                 <v-card-subtitle>
                     Last-visited workspace:
                 </v-card-subtitle>
             </v-col>
             <v-col>
-                <v-btn v-if="workspaceURL" style="height: 48px;" :href="workspaceURL">
+                <v-btn v-if="workspaceURL==undefined">
+                    <v-progress-circular indeterminate></v-progress-circular>
+                </v-btn>
+                <v-btn v-else-if="workspaceURL" style="height: 48px;" :href="workspaceURL">
                     <v-icon>work</v-icon>
                 </v-btn>
                 <v-btn v-else @click="workspaceDialogue = true">create workspace</v-btn>
