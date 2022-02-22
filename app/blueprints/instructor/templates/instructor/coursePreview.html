@@ -8,7 +8,7 @@
         </v-row>
         <v-row>
             <v-card-title>
-                choose a graph provided by:
+                Public graph provided by:
             </v-card-title>
         </v-row>
         <v-row v-for="row in rows">
@@ -26,7 +26,9 @@
         {% if session['user'] and session['user']['userId'] %}
         <v-row>
             <v-col cols="auto">
-                Last-visited workspace:
+                <v-card-subtitle>
+                    Last-visited workspace:
+                </v-card-subtitle>
             </v-col>
             <v-col>
                 <v-btn v-if="workspaceURL" style="height: 48px;" :href="workspaceURL">
