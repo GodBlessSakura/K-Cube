@@ -24,7 +24,7 @@
             </v-col>
         </v-row>
         {% if session['user'] and session['user']['userId'] %}
-        <v-row>
+        <v-row v-if="workspaceURL!=undefined">
             <v-col cols="auto">
                 <v-card-subtitle>
                     Last-visited workspace:
@@ -146,6 +146,9 @@
                             if (body.deltaGraphIds.length > 0) {
                                 this.workspaceURL = "{{ url_for('instructor.workspace')}}" + body
                                     .deltaGraphIds[0]
+                            }
+                            else {
+                                this.workspaceURL = null
                             }
                         } else {
                             this.$root.errorDisplay(body,
