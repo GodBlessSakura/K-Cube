@@ -21,7 +21,7 @@
         </v-col>
         {% if request.blueprint == "instructor" %}
         <v-col cols="auto">
-            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search()" dense hide-details>
+            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search();clearQueryString()" dense hide-details>
                 joined</v-chip>
         </v-col>
         <v-col cols="auto">
@@ -51,15 +51,21 @@
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-card v-if="courses[row*colPerRow + col]"
-                @click="courseCode = courses[row*colPerRow + col].courseCode; coursePreviewDialogue = true">
+            <v-card v-if="courses[row*colPerRow + col]">
                 <v-list-item three-line>
                     <v-list-item-content>
-                        <v-list-item-title>
-                            ${courses[row*colPerRow + col].courseCode}
-                        </v-list-item-title>
-                        <v-list-item-subtitle>
-                            ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
+                        <div style="cursor: pointer;"
+                            @click="courseCode = courses[row*colPerRow + col].courseCode; coursePreviewDialogue = true">
+                            <v-list-item-title>
+                                ${courses[row*colPerRow + col].courseCode}
+                                <v-icon>
+                                    launch
+                                </v-icon>
+                            </v-list-item-title>
+                            <v-list-item-subtitle>
+                                ${courses[row*colPerRow + col].courseName}
+                            </v-list-item-subtitle>
+                        </div>
                         <v-slide-group>
                             {% if request.blueprint == "instructor" %}
                             <v-slide-item>
@@ -115,7 +121,7 @@
                         </v-slide-group>
                     </v-list-item-content>
                     <v-list-item-avatar tile size="96">
-                        <img :src="courses[row*colPerRow + col].imageURL">
+                        <v-img :src="courses[row*colPerRow + col].imageURL"></v-img>
                     </v-list-item-avatar>
                     <v-menu bottom offset-y>
                         <template v-slot:activator="{ on, attrs }">
@@ -298,7 +304,8 @@
                 public: false,
                 internal: false,
                 // {% if request.blueprint == "instructor" %}
-                joined: true,
+                joined: new URLSearchParams(window.location
+                    .search).get('joined') == null,
                 notJoined: false,
                 // {% endif %}
             },
@@ -498,7 +505,7 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    location.reload()
+                                    window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
                                 })
 
                         })
@@ -536,10 +543,14 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    location.reload()
+                                    window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
                                 })
                         })
                 })
+            },
+            clearQueryString() {
+                var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname
+                window.history.pushState({ path: newurl }, '', newurl)
             },
             // {% endif %}
             // {% if request.blueprint == "DLTC" %}
