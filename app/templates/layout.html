@@ -267,7 +267,7 @@
                     </v-list-item>
                 </template>
             </v-navigation-drawer>
-            <v-snackbar style="z-index: 5;" v-model="errorSnackBar.show" timeout="-1">
+            <v-snackbar style="z-index: 300;" v-model="errorSnackBar.show" timeout="-1">
                 ${ errorSnackBar.message }
                 <template v-slot:action="{ attrs }">
                     <v-btn color="pink" text v-bind="attrs" @click="errorSnackBar.show = false">
@@ -275,7 +275,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 5;" v-model="completeSnackBar.show">
+            <v-snackbar style="z-index: 300;" v-model="completeSnackBar.show">
                 ${ completeSnackBar.message }
                 <template v-slot:action="{ attrs }">
                     <v-btn color="blue" text v-bind="attrs" @click="completeSnackBar.show = false">
@@ -283,7 +283,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 10;" v-model="bePatientSnackBar.show" :timeout="2000">
+            <v-snackbar style="z-index: 400;" v-model="bePatientSnackBar.show" :timeout="2000">
                 A http request is already submitting in progress. Thank you for your patience.
                 <template v-slot:action="{ attrs }">
                     <v-btn color="blue" text v-bind="attrs" @click="bePatientSnackBar.show = false">
@@ -291,7 +291,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 1;" v-model="actionSnackBar.show" timeout="-1">
+            <v-snackbar style="z-index: 250;" v-model="actionSnackBar.show" timeout="-1">
                 ${ actionSnackBar.message }
                 <template v-slot:action="{ attrs }">
                     <v-btn color="blue" text v-bind="attrs" @click="actionSnackBar.action()">
