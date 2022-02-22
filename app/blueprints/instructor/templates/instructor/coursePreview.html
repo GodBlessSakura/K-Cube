@@ -31,7 +31,7 @@
                 </v-card-subtitle>
             </v-col>
             <v-col>
-                <v-btn v-if="workspaceURL==undefined">
+                <v-btn v-if="workspaceURL===undefined">
                     <v-progress-circular indeterminate></v-progress-circular>
                 </v-btn>
                 <v-btn v-else-if="workspaceURL" style="height: 48px;" :href="workspaceURL">
