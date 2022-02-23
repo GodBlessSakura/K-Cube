@@ -220,6 +220,22 @@
                         <v-list-item-title></v-list-item-title>
                         <v-icon>chevron_left</v-icon>
                     </v-list-item>
+                    <div v-for="LG in KCube.navigationListGroup">
+                        <v-list-group :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
+                            <template v-slot:activator>
+                                <v-list-item-title>${LG.title}</v-list-item-title>
+                            </template>
+                            <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}" :sort="false">
+                                <v-list-item v-for="L in LG.list" link :href="L.url">
+                                    <v-list-item-icon>
+                                        <v-icon>${L.icon}</v-icon>
+                                    </v-list-item-icon>
+                                    <v-list-item-title>${L.title}</v-list-item-title>
+                                </v-list-item>
+                            </draggable>
+                        </v-list-group>
+                        <v-divider></v-divider>
+                    </div>
                     <v-list-item link href="{{ url_for('index') }}" ondragstart="return false;">
                         <v-list-item-icon>
                             <v-icon>device_hub</v-icon>
@@ -238,23 +254,6 @@
                         </v-list-item-icon>
                         <v-list-item-title>Jobs</v-list-item-title>
                     </v-list-item>
-                    <div v-for="LG in KCube.navigationListGroup">
-                        <v-divider></v-divider>
-                        <v-list-group :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
-                            <template v-slot:activator>
-                                <v-list-item-title>${LG.title}</v-list-item-title>
-                            </template>
-                            <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}" :sort="false">
-                                <v-list-item v-for="L in LG.list" link :href="L.url">
-                                    <v-list-item-icon>
-                                        <v-icon>${L.icon}</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-title>${L.title}</v-list-item-title>
-                                </v-list-item>
-                            </draggable>
-                        </v-list-group>
-
-                    </div>
                 </v-list>
                 <template v-slot:append>
                     <v-list-item link
@@ -372,6 +371,7 @@
                 //{% endif %}
             ],
             navigationListGroup: [
+                //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback or PERMISSION.canProposeRelationship) or ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role or "operator" in PERMISSION.role) %}
                 {
                     icon: "connect_without_contact",
                     name: "collaborate",
@@ -400,6 +400,7 @@
                         //{% endif %}
                     ]
                 },
+                //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
                     icon: "co_present",
