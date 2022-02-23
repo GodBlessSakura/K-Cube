@@ -163,7 +163,7 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(col)" icon>
+                                        <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(courses[row*colPerRow + col])" icon>
                                             <v-icon>assignment_ind</v-icon>
                                         </v-btn>
                                     </template>
@@ -174,7 +174,7 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click="courseInfo(col)" icon>
+                                        <v-btn v-bind="attrs" v-on="on" @click="courseInfo(courses[row*colPerRow + col])" icon>
                                             <v-icon>edit</v-icon>
                                         </v-btn>
                                     </template>
