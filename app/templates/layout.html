@@ -255,6 +255,7 @@
                         <v-list-item-title>Jobs</v-list-item-title>
                     </v-list-item>
                 </v-list>
+                {% if session['user'] %}
                 <template v-slot:append>
                     <v-list-item link
                         href="https://forms.office.com/Pages/ResponsePage.aspx?id=YPc3j4exgUm4L-Xcb1vPRNTurS9MNvJPoBO4A5M58iVUNUwzTjVSMTlZUVpQVTNQWThXVzdUQ1ZDTi4u"
@@ -265,6 +266,7 @@
                         <v-list-item-title>Website feedback or <br> bug report</v-list-item-title>
                     </v-list-item>
                 </template>
+                {% endif %}
             </v-navigation-drawer>
             <v-snackbar style="z-index: 300;" v-model="errorSnackBar.show" timeout="-1">
                 ${ errorSnackBar.message }
@@ -371,7 +373,10 @@
                 //{% endif %}
             ],
             navigationListGroup: [
-                //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback or PERMISSION.canProposeRelationship) or ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role or "operator" in PERMISSION.role) %}
+                /*{% if PERMISSION 
+                and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback or PERMISSION.canProposeRelationship)
+                 or ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                */
                 {
                     icon: "connect_without_contact",
                     name: "collaborate",
@@ -391,15 +396,21 @@
                             url: "{{ url_for('collaborate.graphEditing') }}",
                         },
                         //{% endif %}
-                        //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role or "operator" in PERMISSION.role) %}
+                        /*{% if PERMISSION and PERMISSION.role and 
+                        ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                        */
                         {
                             title: "Catalogue Navigation",
                             icon: "polyline",
                             url: "{{ url_for('collaborate.metagraph') }}",
                         },
+                        //{% else %}
+                        //*/
                         //{% endif %}
                     ]
                 },
+                //{% else %}
+                //*/
                 //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
