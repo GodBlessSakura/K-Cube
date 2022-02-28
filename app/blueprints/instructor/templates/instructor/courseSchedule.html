@@ -270,11 +270,38 @@
                                 'Unexpected error on getting courses information.')
                         }
                     })
-                Promise.all([graphPromise, activityPromise]).then(data => {
+                let departmentGraphPromise = fetch(
+                    "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = None) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.course && body.triples) {
+                            return body.triples
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+                Promise.all([graphPromise, departmentGraphPromise, activityPromise]).then(data => {
                     let newData = []
                     let oldData = {}
                     let triples = data[0].filter(triple => triple.r_name == "Subtopic in")
-                    let activities = data[1]
+                    if (triples.length == 0) triples = data[1].filter(triple => triple.r_name == "Subtopic in")
+                    let activities = data[2]
                     let cursor = ["{{courseCode}}"]
                     let hop = []
 
