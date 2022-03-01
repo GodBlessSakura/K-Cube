@@ -21,7 +21,8 @@
         </v-col>
         {% if request.blueprint == "instructor" %}
         <v-col cols="auto">
-            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search();clearQueryString()" dense hide-details>
+            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search();clearQueryString()"
+                dense hide-details>
                 joined</v-chip>
         </v-col>
         <v-col cols="auto">
@@ -32,6 +33,16 @@
         {% endif %}
     </v-row>
     {% endif %}
+    <v-row v-if="courses.length == 0">
+        <v-col v-if="searchText.length>0">No course for search text "${searchText}". <br>
+            <v-btn color="error" @click="searchText='';search()">clear search text</v-btn>
+        </v-col>
+        <v-col v-else-if="filter.joined">
+            <v-btn color="success" @click="filter.joined=false;filter.public=false;filter.internal=false;search()">
+                <v-icon left>add</v-icon>join new course
+            </v-btn>
+        </v-col>
+    </v-row>
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
         <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
             {% if request.blueprint == "collaborate" %}
@@ -163,7 +174,8 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click="courseAssignment(courses[row*colPerRow + col])" icon>
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            @click="courseAssignment(courses[row*colPerRow + col])" icon>
                                             <v-icon>assignment_ind</v-icon>
                                         </v-btn>
                                     </template>
@@ -174,7 +186,8 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click="courseInfo(courses[row*colPerRow + col])" icon>
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            @click="courseInfo(courses[row*colPerRow + col])" icon>
                                             <v-icon>edit</v-icon>
                                         </v-btn>
                                     </template>
