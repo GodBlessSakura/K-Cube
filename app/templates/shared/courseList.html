@@ -8,27 +8,27 @@
     </v-row>
     {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
     <v-row no-gutters>
-        <v-col cols="auto">
+        <v-col>
             <span class="mr-4">filters:</span>
-        </v-col>
-        <v-col cols="auto">
             <v-chip filter v-model="filter.public" @click="filter.public = !filter.public;search()" dense hide-details>
                 public</v-chip>
-        </v-col>
-        <v-col cols="auto">
             <v-chip filter v-model="filter.internal" @click="filter.internal = !filter.internal;search()" dense
                 hide-details>internal</v-chip>
-        </v-col>
-        {% if request.blueprint == "instructor" %}
-        <v-col cols="auto">
+            {% if request.blueprint == "instructor" %}
             <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search();clearQueryString()"
                 dense hide-details>
                 joined</v-chip>
-        </v-col>
-        <v-col cols="auto">
             <v-chip filter v-model="filter.notJoined" @click="filter.notJoined = !filter.notJoined;search()" dense
                 hide-details>not joined
             </v-chip>
+            {% endif %}
+        </v-col>
+        {% if request.blueprint == "instructor" %}
+        <v-divider vertical></v-divider>
+        <v-col cols="auto">
+            <v-btn color="success" @click="filter.joined=false;filter.public=false;filter.internal=false;search()">
+                <v-icon left>add</v-icon>join new course
+            </v-btn>
         </v-col>
         {% endif %}
     </v-row>
@@ -36,11 +36,6 @@
     <v-row v-if="courses.length == 0">
         <v-col v-if="searchText.length>0">No course for search text "${searchText}". <br>
             <v-btn color="error" @click="searchText='';search()">clear search text</v-btn>
-        </v-col>
-        <v-col v-else-if="filter.joined">
-            <v-btn color="success" @click="filter.joined=false;filter.public=false;filter.internal=false;search()">
-                <v-icon left>add</v-icon>join new course
-            </v-btn>
         </v-col>
     </v-row>
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
@@ -198,7 +193,7 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(col)" icon>
+                                        <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(courses[row*colPerRow + col])" icon>
                                             <v-icon>${courses[row*colPerRow + col].isInternal ===
                                                 false?'public_off':'public'}
                                             </v-icon>
@@ -216,7 +211,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :color="courses[row*colPerRow + col].isInternal === false?'success':'grey'"
-                                @click="courseIsInternal(col)" v-bind="attrs" v-on="on" {% if
+                                @click="courseIsInternal(courses[row*colPerRow + col])" v-bind="attrs" v-on="on" {% if
                                 request.blueprint=="instructor" %} text style="pointer-events: none;" {% else %}
                                 outlined {% endif %}>
                                 <v-icon left>public</v-icon>
@@ -518,7 +513,10 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
+                                    this.$root.actionSnackBar.show = false
+                                    this.allCourses[this.allCourses.map(c => c.courseCode).indexOf(course.courseCode)].isTeaching = true
+                                    this.search()
+                                    // window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
                                 })
 
                         })
@@ -556,7 +554,10 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
+                                    this.$root.actionSnackBar.show = false
+                                    this.allCourses[this.allCourses.map(c => c.courseCode).indexOf(course.courseCode)].isTeaching = false
+                                    this.search()
+                                    // window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
                                 })
                         })
                 })
@@ -602,7 +603,10 @@
                                 this.$root.responseSnackBar(body,
                                     'Update failed for unknown reason.',
                                     () => {
-                                        location.reload()
+                                        this.$root.actionSnackBar.show = false
+                                        let index = this.allCourses.map(c => c.courseCode).indexOf(course.courseCode)
+                                        this.allCourses[index].isInternal = !this.allCourses[index].isInternal;
+                                        this.search()
                                     })
                             })
                     })
