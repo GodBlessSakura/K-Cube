@@ -66,7 +66,7 @@ def lastModifiedWorkspace(courseCode):
         return jsonify(
             {
                 "success": True,
-                "deltaGraphIds": get_api_driver().workspace.get_user_course_lastModified(
+                "workspaces": get_api_driver().workspace.get_user_course_lastModified(
                     courseCode=courseCode, userId=session["user"]["userId"]
                 ),
             }
