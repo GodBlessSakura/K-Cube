@@ -6,10 +6,39 @@
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     <v-row dense style="width: 100%;">
         <v-col cols="auto" dense>
+            <v-card-subtitle>${workspace?.tag? (workspace?.tag):''}
+            </v-card-subtitle>
+        </v-col>
+        <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                        ${workspace?.tag? (workspace?.tag):''}
+                        workspace
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-list-item>
+                        <v-list-item-subtitle style="font-size: small;">
+                            workspace:<br>${workspace?.tag?(workspace?.tag):''}
+                        </v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
+                        <v-list-item-title>preview changes</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="showCommitExposeDialogue()">
+                        <v-list-item-title>commit and expose</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item @click="deleteSelectBar = true">
+                        <v-list-item-title>delete workspace</v-list-item-title>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col cols="auto" dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        patch
                         <v-icon v-if="!subject?.isPatchLeaf">
                             sync
                         </v-icon>
@@ -17,8 +46,8 @@
                 </template>
                 <v-list>
                     <v-list-item>
-                        <v-list-item0subtitle style="font-size: small;">patch name:<br>${subject?.tag}
-                        </v-list-item0subtitle>
+                        <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
+                        </v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item v-if="!subject?.isPatchLeaf" @click="sync()">
                         <v-list-item-title>sync</v-list-item-title>
@@ -33,14 +62,17 @@
                             <v-icon>sync</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
-                    <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
-                        <v-list-item-title>preview changes</v-list-item-title>
+                    <v-list-item v-if="subject?.isExposed" @click="toggleExposure()">
+                        <v-list-item-title>hide patch from student</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>visibility_off</v-icon>
+                        </v-list-item-icon>
                     </v-list-item>
-                    <v-list-item @click="showCommitExposeDialogue()">
-                        <v-list-item-title>commit and expose</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item @click="deleteSelectBar = true">
-                        <v-list-item-title>delete workspace</v-list-item-title>
+                    <v-list-item v-if="!subject?.isExposed" @click="toggleExposure()">
+                        <v-list-item-title>expose patch for student</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>visibility</v-icon>
+                        </v-list-item-icon>
                     </v-list-item>
                 </v-list>
             </v-menu>
@@ -1081,6 +1113,35 @@
             },
             showCommitExposeDialogue() {
                 this.commitExposeDialogue = true
+            },
+            toggleExposure() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        isExposed: !this.subject.isExposed,
+                    })
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Creation failed for unknown reason.',
+                            () => {
+                                this.subject.isExposed = !this.subject.isExposed
+                            })
+                    })
+
             },
             commitExpose() {
                 if (this.$root.progress.show == true) {
