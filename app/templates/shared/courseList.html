@@ -60,13 +60,14 @@
             <v-card v-if="courses[row*colPerRow + col]">
                 <v-list-item three-line>
                     <v-list-item-content>
-                        <div style="cursor: pointer;"
-                            @click="courseCode = courses[row*colPerRow + col].courseCode; coursePreviewDialogue = true">
+                        <div style="cursor: pointer;" @click="openCoursePreview(courses[row * colPerRow + col])">
                             <v-list-item-title>
                                 ${courses[row*colPerRow + col].courseCode}
+                                {% if request.blueprint == "instructor" %}
                                 <v-icon>
                                     launch
                                 </v-icon>
+                                {% endif %}
                             </v-list-item-title>
                             <v-list-item-subtitle>
                                 ${courses[row*colPerRow + col].courseName}
@@ -193,7 +194,8 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click="courseIsInternal(courses[row*colPerRow + col])" icon>
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            @click="courseIsInternal(courses[row*colPerRow + col])" icon>
                                             <v-icon>${courses[row*colPerRow + col].isInternal ===
                                                 false?'public_off':'public'}
                                             </v-icon>
@@ -240,8 +242,8 @@
         </v-col>
     </v-row>
     {% if request.blueprint == "instructor" %}
-    <v-dialog v-model="coursePreviewDialogue" max-width="80vw">
-        <kcube-course-preview :courseCode="courseCode"></kcube-course-preview>
+    <v-dialog v-model="coursePreviewDialogue" max-width="80vw" eager>
+        <kcube-course-preview ref="coursePreview"></kcube-course-preview>
     </v-dialog>
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
         <v-card v-if="course">
@@ -405,6 +407,11 @@
                 this.courseCode = course.courseCode
                 this.courseName = course.courseName
                 this.imageURL = course.imageURL
+            },
+            openCoursePreview(course) {
+                this.courseCode = course.courseCode
+                this.$refs.coursePreview.loadData(this.courseCode);
+                this.coursePreviewDialogue = true
             },
             updateCourseInfo() {
                 if (this.$refs.courseInfoFormControl.validate()) {
