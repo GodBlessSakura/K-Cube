@@ -30,14 +30,20 @@
                     Last-visited workspace:
                 </v-card-subtitle>
             </v-col>
-            <v-col>
-                <v-btn v-if="workspaceURL===undefined">
+            <v-col cols="auto">
+                <v-btn v-if="lastModifiedWorkspace===undefined">
                     <v-progress-circular indeterminate></v-progress-circular>
                 </v-btn>
-                <v-btn v-else-if="workspaceURL" style="height: 48px;" :href="workspaceURL">
+                <v-btn v-else-if="lastModifiedWorkspace" style="height: 48px;"
+                    :href="'{{ url_for('instructor.workspace')}}' + lastModifiedWorkspace.deltaGraphId">
                     <v-icon>work</v-icon>
                 </v-btn>
                 <v-btn v-else @click="workspaceDialogue = true">create workspace</v-btn>
+            </v-col>
+            <v-col v-if="lastModifiedWorkspace">
+                <v-card-subtitle>
+                    workspace tag: ${lastModifiedWorkspace.tag}
+                </v-card-subtitle>
             </v-col>
         </v-row>
         {% endif %}
@@ -55,25 +61,21 @@
 {% macro script() %}
 <script>
     Vue.component('kcube-course-preview', {
-        props: {
-            courseCode: ""
-        },
         data: () => ({
             rows: [
                 []
             ],
+            courseCode: null,
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
-            workspaceURL: undefined,
+            lastModifiedWorkspace: undefined,
             //{% endif %}
             workspaceDialogue: false
         }),
-        watch: {
-            courseCode: function () { this.loadData() }
-        },
         methods: {
-            loadData() {
+            loadData(courseCode) {
+                this.courseCode = courseCode
                 this.$root.progress.show = true
-                this.workspaceURL = undefined
+                this.lastModifiedWorkspace = undefined
                 fetch(
                     "{{ url_for('RESTful.course.query', graphs=True) | safe }}&courseCode=" + this.courseCode, {
                     method: 'GET',
@@ -145,13 +147,12 @@
                     .then(body => {
                         this.$root.progress.show = false
                         let colPerRow = 4
-                        if (body.deltaGraphIds) {
-                            if (body.deltaGraphIds.length > 0) {
-                                this.workspaceURL = "{{ url_for('instructor.workspace')}}" + body
-                                    .deltaGraphIds[0]
+                        if (body.workspaces) {
+                            if (body.workspaces.length > 0) {
+                                this.lastModifiedWorkspace = body.workspaces[0]
                             }
                             else {
-                                this.workspaceURL = null
+                                this.lastModifiedWorkspace = null
                             }
                         } else {
                             this.$root.errorDisplay(body,
@@ -160,9 +161,6 @@
                     })
                 //{% endif %}
             },
-        },
-        mounted: function () {
-            this.loadData()
         },
         template: '#kcube-course-preview',
         delimiters: ['${', '}'],
