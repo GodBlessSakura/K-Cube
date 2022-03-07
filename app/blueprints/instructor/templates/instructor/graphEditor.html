@@ -6,21 +6,33 @@
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     <v-row dense style="width: 100%;">
         <v-col cols="auto" dense>
-            <v-card-subtitle>${workspace?.tag? (workspace?.tag):''}
+            <v-card-subtitle>workspace: ${workspace?.tag? (workspace?.tag):''}
             </v-card-subtitle>
         </v-col>
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                        workspace
+                        commit changes
                     </v-btn>
                 </template>
                 <v-list>
-                    <v-list-item>
-                        <v-list-item-subtitle style="font-size: small;">
-                            workspace:<br>${workspace?.tag?(workspace?.tag):''}
-                        </v-list-item-subtitle>
+                    <v-tooltip v-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on">
+                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                                    activeNegativeEdgeCount}</v-list-item-subtitle>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size: small;">
+                            Uncommited changes are active triple proposal/removal <br>
+                            that is in the workspace but NOT in the patch. <br>
+                            Changes can be previewed in the preview page / "view diff" mode.
+                        </span>
+                    </v-tooltip>
+                    <v-list-item v-else>
+                        <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                            activeNegativeEdgeCount}</v-list-item-subtitle>
                     </v-list-item>
                     <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
                         <v-list-item-title>preview changes</v-list-item-title>
@@ -62,16 +74,67 @@
                             <v-icon>sync</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
-                    <v-list-item v-if="subject?.isExposed" @click="toggleExposure()">
-                        <v-list-item-title>hide patch from student</v-list-item-title>
+                </v-list>
+            </v-menu>
+        </v-col>
+        <v-col cols="auto" dense>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                        publish patch
+                    </v-btn>
+                </template>
+                <v-list>
+                    <v-tooltip v-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on">
+                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                                    activeNegativeEdgeCount}</v-list-item-subtitle>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size: small;">
+                            Uncommited changes are active triple proposal/removal <br>
+                            that is in the workspace but NOT in the patch. <br>
+                            They would not be refleced in any form of publishment.
+                        </span>
+                    </v-tooltip>
+                    <v-list-item v-else>
+                        <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                            activeNegativeEdgeCount}</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                        <v-list-item-subtitle>expose patch</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item @click="toggleExposure()">
+                        <v-list-item-title>exposed</v-list-item-title>
                         <v-list-item-icon>
-                            <v-icon>visibility_off</v-icon>
+                            <v-simple-checkbox :value="subject?.isExposed" @click="toggleExposure()">
+                            </v-simple-checkbox>
                         </v-list-item-icon>
                     </v-list-item>
-                    <v-list-item v-if="!subject?.isExposed" @click="toggleExposure()">
-                        <v-list-item-title>expose patch for student</v-list-item-title>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on" @click="toggleJoin()">
+                                <v-list-item-title>joined</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()">
+                                    </v-simple-checkbox>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size: small;">
+                            An exposed graph is not shown to student,<br> if instructor do not join the couse.<br>
+                        </span>
+                    </v-tooltip>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                        <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item @click="toggleCanPull()">
+                        <v-list-item-title>submitted</v-list-item-title>
                         <v-list-item-icon>
-                            <v-icon>visibility</v-icon>
+                            <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()"></v-simple-checkbox>
                         </v-list-item-icon>
                     </v-list-item>
                 </v-list>
@@ -638,6 +701,7 @@
                     .then(body => {
                         if (body.workspace && body.triples && body.subject && body.subject_triples) {
                             this.workspace = body.workspace
+                            body.subject.canPull = body.subject.canPull ? true : false
                             this.subject = body.subject
                             cy.elements().remove();
                             cy.add(nodeFactory(body.subject.courseCode)).style({
@@ -1115,33 +1179,67 @@
                 this.commitExposeDialogue = true
             },
             toggleExposure() {
-                if (this.$root.progress.show == true) {
-                    this.$root.bePatientSnackBar.show = true
-                    return
-                }
-                this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
-                    method: 'PATCH',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        isExposed: !this.subject.isExposed,
+                this.$root.actionDisplay("You are " + (this.subject.isExposed ? "hiding" : "exposing") + " patch " + this.subject.tag, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            isExposed: !this.subject.isExposed,
+                        })
                     })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.actionSnackBar.show = false
+                                    this.subject.isExposed = !this.subject.isExposed
+                                })
+                        })
                 })
-                    .then(response => {
-                        return response.json()
+            },
+            toggleCanPull() {
+                console.log(this.subject.canPull)
+                this.$root.actionDisplay("You are " + (this.subject.canPull ? "unsubmitting" : "submitting") + " patch " + this.subject.tag, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            canPull: !this.subject.canPull
+                        })
                     })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        this.$root.responseSnackBar(body,
-                            'Creation failed for unknown reason.',
-                            () => {
-                                this.subject.isExposed = !this.subject.isExposed
-                            })
-                    })
-
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.actionSnackBar.show = false
+                                    this.subject.canPull = !this.subject.canPull
+                                })
+                        })
+                })
             },
             commitExpose() {
                 if (this.$root.progress.show == true) {
@@ -1212,6 +1310,45 @@
                                 this.loadData()
                             })
                     })
+            },
+            toggleJoin() {
+                this.$root.actionDisplay("You are " + (this.subject.isTeaching ? "quiting" : "joining") + " " + this.subject.courseCode, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.subject.
+                        courseCode), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            join: !this.subject.isTeaching
+                        })
+                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.actionSnackBar.show = false
+                                    this.subject.isTeaching = !this.subject.isTeaching
+                                })
+
+                        })
+                })
             },
             workspaceDelete() {
                 if (this.$root.progress.show == true) {
