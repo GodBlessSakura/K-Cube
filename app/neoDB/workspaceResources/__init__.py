@@ -143,6 +143,7 @@ class workspaceDAO:
                     | {
                         "isPatchLeaf": record["isPatchLeaf"],
                         "isOwner": record["isOwner"],
+                        "isExposed": record["isExposed"],
                     }.items(),
                     labels=list(record["subject"].labels),
                     courseCode=record["courseCode"],
@@ -302,8 +303,19 @@ class workspaceDAO:
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
+            workspace = [
+                dict(
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["workspace"].items()
+                    }.items()
+                )
+                for record in result
+            ]
             try:
-                return [record["workspace"]["deltaGraphId"] for record in result]
+                return workspace
             except Exception as exception:
                 raise exception
 
