@@ -144,6 +144,7 @@ class workspaceDAO:
                         "isPatchLeaf": record["isPatchLeaf"],
                         "isOwner": record["isOwner"],
                         "isExposed": record["isExposed"],
+                        "isTeaching": record["isTeaching"],
                     }.items(),
                     labels=list(record["subject"].labels),
                     courseCode=record["courseCode"],
