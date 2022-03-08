@@ -3,23 +3,24 @@
 {% import 'component/cyMetricsVisualize.html' as cyMetricsVisualize %}
 {% import 'component/cyOption.html' as cyOption %}
 {% block VueComponent %}
-<v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
-    <v-row dense style="width: 100%;">
+<v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
+    <v-row no-gutters style="width: 100%;">
         <v-col cols="auto" dense>
-            <v-card-subtitle>workspace: ${workspace?.tag? (workspace?.tag):''}
-            </v-card-subtitle>
+            <v-btn small tile elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                workspace: ${workspace?.tag? (workspace?.tag):''}
+            </v-btn>
         </v-col>
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         commit changes
                     </v-btn>
                 </template>
                 <v-list>
                     <v-tooltip v-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on">
+                            <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
                                     activeNegativeEdgeCount}</v-list-item-subtitle>
                             </v-list-item>
@@ -30,17 +31,18 @@
                             Changes can be previewed in the preview page / "view diff" mode.
                         </span>
                     </v-tooltip>
-                    <v-list-item v-else>
+                    <v-list-item dense v-else>
                         <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
                             activeNegativeEdgeCount}</v-list-item-subtitle>
                     </v-list-item>
-                    <v-list-item href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
+                    <v-divider></v-divider>
+                    <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
                         <v-list-item-title>preview changes</v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="showCommitExposeDialogue()">
+                    <v-list-item dense @click="showCommitExposeDialogue()">
                         <v-list-item-title>commit and expose</v-list-item-title>
                     </v-list-item>
-                    <v-list-item @click="deleteSelectBar = true">
+                    <v-list-item dense @click="deleteSelectBar = true">
                         <v-list-item-title>delete workspace</v-list-item-title>
                     </v-list-item>
                 </v-list>
@@ -49,7 +51,7 @@
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         patch
                         <v-icon v-if="!subject?.isPatchLeaf">
                             sync
@@ -57,21 +59,21 @@
                     </v-btn>
                 </template>
                 <v-list>
-                    <v-list-item>
+                    <v-list-item dense>
                         <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
                         </v-list-item-subtitle>
                     </v-list-item>
-                    <v-list-item v-if="!subject?.isPatchLeaf" @click="sync()">
+                    <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">
                         <v-list-item-title>sync</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon>sync</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
-                    <v-list-item v-else>
+                    <v-list-item dense v-else>
                         <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch
                         </v-list-item-subtitle>
                         <v-list-item-icon>
-                            <v-icon>sync</v-icon>
+                            <v-icon>done</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
                     <v-list-item
@@ -88,14 +90,14 @@
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         publish patch
                     </v-btn>
                 </template>
                 <v-list>
                     <v-tooltip v-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on">
+                            <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
                                     activeNegativeEdgeCount}</v-list-item-subtitle>
                             </v-list-item>
@@ -106,15 +108,15 @@
                             They would not be refleced in any form of publishment.
                         </span>
                     </v-tooltip>
-                    <v-list-item v-else>
+                    <v-list-item dense v-else>
                         <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
                             activeNegativeEdgeCount}</v-list-item-subtitle>
                     </v-list-item>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item dense>
                         <v-list-item-subtitle>expose patch</v-list-item-subtitle>
                     </v-list-item>
-                    <v-list-item @click="toggleExposure()">
+                    <v-list-item dense @click="toggleExposure()">
                         <v-list-item-title>exposed</v-list-item-title>
                         <v-list-item-icon>
                             <v-simple-checkbox :value="subject?.isExposed" @click="toggleExposure()">
@@ -123,7 +125,7 @@
                     </v-list-item>
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on" @click="toggleJoin()">
+                            <v-list-item dense v-bind="attrs" v-on="on" @click="toggleJoin()">
                                 <v-list-item-title>joined</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()">
@@ -136,10 +138,10 @@
                         </span>
                     </v-tooltip>
                     <v-divider></v-divider>
-                    <v-list-item>
+                    <v-list-item dense>
                         <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
                     </v-list-item>
-                    <v-list-item @click="toggleCanPull()">
+                    <v-list-item dense @click="toggleCanPull()">
                         <v-list-item-title>submitted</v-list-item-title>
                         <v-list-item-icon>
                             <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()"></v-simple-checkbox>
@@ -151,18 +153,18 @@
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         viewport & layout
                     </v-btn>
                 </template>
                 <v-list>
-                    <v-list-item @click="editorFit()">
+                    <v-list-item dense @click="editorFit()">
                         <v-list-item-title>fit viewport</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon>fit_screen</v-icon>
                         </v-list-item-icon>
                     </v-list-item>
-                    <v-list-item @click="redoLayout()">
+                    <v-list-item dense @click="redoLayout()">
                         <v-list-item-title>tidy layout</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon></v-icon>
@@ -174,18 +176,18 @@
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         visualization
                     </v-btn>
                 </template>
                 <v-list>
-                    <!-- <v-list-item @click="edgeStyleDialogue = true">
+                    <!-- <v-list-item dense @click="edgeStyleDialogue = true">
                         <v-list-item-title>edge style<br>option</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon>settings</v-icon>
                         </v-list-item-icon>
                     </v-list-item> -->
-                    <v-list-item @click="metricsBottomSheet = true">
+                    <v-list-item dense @click="metricsBottomSheet = true">
                         <v-list-item-title>centrality<br>metrics</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon>insights</v-icon>
@@ -197,12 +199,12 @@
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         triples operation
                     </v-btn>
                 </template>
                 <v-list>
-                    <v-list-item @click="removeUnreachable">
+                    <v-list-item dense @click="removeUnreachable">
                         <v-list-item-title>remove<br>unreachable</v-list-item-title>
                         <v-list-item-icon>
                             <v-icon>cleaning_services</v-icon>
@@ -214,14 +216,14 @@
         <v-col cols="auto" dense>
             <v-menu offset-y>
                 <template v-slot:activator="{ on, attrs }">
-                    <v-btn style="text-transform: none;" v-bind="attrs" v-on="on" tile>
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs" v-on="on" tile>
                         settings
                     </v-btn>
                 </template>
                 <v-list>
                     <v-dialog max-width="700px">
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on">
+                            <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-title>graph<br>display<br>options</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-icon>palette</v-icon>
@@ -558,6 +560,18 @@
 <style>
     .v-chip--active {
         background-color: lightblue;
+    }
+
+    .v-menu__content * {
+        font-size: small !important;
+    }
+
+    .v-menu__content * .v-icon {
+        font-size: large !important;
+    }
+
+    .v-menu__content * .v-icon {
+        font-size: large !important;
     }
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
