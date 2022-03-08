@@ -145,6 +145,7 @@ class workspaceDAO:
                         "isOwner": record["isOwner"],
                         "isExposed": record["isExposed"],
                         "isTeaching": record["isTeaching"],
+                        "predecessor": record["predecessor"],
                     }.items(),
                     labels=list(record["subject"].labels),
                     courseCode=record["courseCode"],
