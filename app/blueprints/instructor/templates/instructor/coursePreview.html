@@ -38,7 +38,7 @@
                     :href="'{{ url_for('instructor.workspace')}}' + lastModifiedWorkspace.deltaGraphId">
                     <v-icon>work</v-icon>
                 </v-btn>
-                <v-btn v-else @click="workspaceDialogue = true">create workspace</v-btn>
+                <v-btn v-else @click="openWorkspaceDialogue()">create workspace</v-btn>
             </v-col>
             <v-col v-if="lastModifiedWorkspace">
                 <v-card-subtitle>
@@ -48,7 +48,7 @@
         </v-row>
         {% endif %}
         <v-dialog v-model="workspaceDialogue" max-width="500px">
-            <kcube-workspace-form :courseCode="courseCode"></kcube-workspace-form>
+            <kcube-workspace-form ref="workspaceForm"></kcube-workspace-form>
         </v-dialog>
     </v-container>
 </v-card>
@@ -161,6 +161,10 @@
                     })
                 //{% endif %}
             },
+            openWorkspaceDialogue() {
+                this.$refs.workspaceForm.loadData(this.courseCode);
+                this.workspaceDialogue = true;
+            }
         },
         template: '#kcube-course-preview',
         delimiters: ['${', '}'],

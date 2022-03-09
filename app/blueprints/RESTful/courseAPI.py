@@ -10,8 +10,10 @@ course = Blueprint("course", __name__, url_prefix="course")
 def query():
     if request.args.get("list"):
         return courseList()
-    if request.args.get("user"):
-        return userCourse()
+    if request.args.get("internal"):
+        return internalCourse()
+    if request.args.get("instructor"):
+        return instructorCourse()
     if request.args.get("graphs") and request.args.get("courseCode") is not None:
         return courseInstructorGraph(request.args.get("courseCode"))
 
@@ -19,12 +21,27 @@ def query():
 
 
 @authorize_RESTful_with(["canViewInternalCourse"], require_userId=True)
-def userCourse():
+def internalCourse():
     try:
         return jsonify(
             {
                 "success": True,
                 "courses": get_api_driver().course.list_internal_course(
+                    userId=session["user"]["userId"]
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
+
+@authorize_RESTful_with([], True, roles=["instructor", "admin"])
+def instructorCourse():
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "courses": get_api_driver().course.list_instructor_course(
                     userId=session["user"]["userId"]
                 ),
             }

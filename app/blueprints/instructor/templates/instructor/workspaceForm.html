@@ -28,10 +28,8 @@
 {% macro script() %}
 <script>
     Vue.component('kcube-workspace-form', {
-        props: {
-            courseCode: ""
-        },
         data: () => ({
+            courseCode: null,
             repositories: [],
             trunkOrBranch: undefined,
             selectedNode: undefined,
@@ -52,11 +50,9 @@
                     'Tag name can only contains alphanumeric characters, dot(.) and space.'
             ],
         }),
-        watch: {
-            courseCode: function () { this.loadData() }
-        },
         methods: {
-            loadData() {
+            loadData(courseCode) {
+                this.courseCode = courseCode
                 this.$root.progress.show = true
                 let treePromise =
                     fetch(
