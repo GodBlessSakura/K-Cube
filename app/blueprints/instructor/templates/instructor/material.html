@@ -84,10 +84,10 @@
             materialUrl: '',
             materialUrlRules: [v => !!v || 'Link is required', ],
             materialConceptRules: [v => !!v || 'Please select one concept', ],
-            cloneDiaglog: false,
-            cloneSourceMaterialId: "",
-            cloneMaterialName: "",
-            cloneCourseCode: "",
+            // cloneDiaglog: false,
+            // cloneSourceMaterialId: "",
+            // cloneMaterialName: "",
+            // cloneCourseCode: "",
         }),
         methods: {
             loadData() {
@@ -186,7 +186,6 @@
                 }
             },
             removeMaterial(id) {
-                console.log(id)
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
