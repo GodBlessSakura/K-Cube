@@ -117,7 +117,9 @@
         methods: {
             loadData(name) {
                 this.name = name
-                this.activityDesc = name
+                this.activityDesc = null
+                this.activityWeek = null
+                this.materials = []
                 this.$root.progress.show = true
                 let entityPromise =
                     fetch(
@@ -139,7 +141,7 @@
                         })
                         .then(body => {
                             if (body.data) {
-                                this.materials = []
+                                this.activityDesc = name
                                 let activity = body.data.filter(d => d.labels.includes("Activity"))
                                 if (activity.length > 0) {
                                     activity = activity[0]
