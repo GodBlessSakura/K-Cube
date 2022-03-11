@@ -76,7 +76,7 @@
             materialControl: true,
             materialDesc: '',
             materialDescRules: [v => !!v || 'Description is required',
-                v => (v && v.length > 3 && v.length) < 501 ||
+                v => (v && v.length > 3 && v.length < 501) ||
                 'Description should be anything between 4 and 500 charactors',
                 v => (v && /{{regExpRules["desc"]}}/.test(v)) ||
                 'Description can only contains alphanumeric characters and space.'
