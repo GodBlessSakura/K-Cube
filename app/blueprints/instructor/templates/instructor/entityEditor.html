@@ -1,8 +1,10 @@
 {% macro componentContent() %}
 <v-card style="width: 35vw" flat>
-    <v-card-title>${name}
-    </v-card-title>
     <v-container>
+        <v-row>
+            <v-card-title style="padding:unset">${name}
+            </v-card-title>
+        </v-row>
         <v-row dense>teaching plan:</v-row>
         <v-form ref="activityControl">
             <v-row>

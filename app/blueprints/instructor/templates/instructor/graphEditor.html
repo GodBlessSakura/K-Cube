@@ -570,7 +570,18 @@
     </v-dialog>
     <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
         persistent no-click-animation scrollable eager>
-        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode"></kcube-entity-form>
+        <v-container style="padding: unset">
+            <v-row no-gutters>
+                <v-btn block color="error" @click="entityDialogue = false" small>
+                    <v-icon>
+                        close
+                    </v-icon>
+                </v-btn>
+            </v-row>
+            <v-row no-gutters>
+                <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode"></kcube-entity-form>
+            </v-row>
+        </v-container>
     </v-dialog>
 </v-container>
 
