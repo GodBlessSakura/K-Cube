@@ -32,13 +32,21 @@ def activityOfUser(userId, courseCode):
         raise e
 
 
+@activity.post("/", defaults={"courseCode": None, "name": None})
 @activity.post("<courseCode>/", defaults={"name": None})
 @activity.post("<courseCode>/<path:name>")
 @authorize_RESTful_with(
     [["canWriteTeachingCourseMaterial", "canWriteAllCourseMaterial"]]
 )
 def post(courseCode, name):
-    if "desc" in request.json and "week" in request.json:
+    if (
+        "desc" in request.json
+        and request.json["desc"]
+        and "week" in request.json
+        and request.json["week"]
+        and courseCode
+        and name
+    ):
         return jsonify(
             {
                 "success": True,

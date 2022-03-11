@@ -7,9 +7,9 @@
     style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
     <v-row no-gutters>
         <v-col cols="auto">
-            <v-card-title>
+            <v-card-subtitle>
                 <v-icon large>work</v-icon>
-            </v-card-title>
+            </v-card-subtitle>
         </v-col>
         <v-col>
             <v-row>
@@ -568,6 +568,10 @@
             </v-row>
         </v-container>
     </v-dialog>
+    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
+        persistent no-click-animation scrollable eager>
+        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode"></kcube-entity-form>
+    </v-dialog>
 </v-container>
 
 {% endblock %}
@@ -577,9 +581,22 @@
 {{ cyMetricsVisualize.script()}}
 {{ cyOption.component()}}
 {{ cyOption.script()}}
+{% include "instructor/entityEditor.html" %}
 <style>
     .v-chip--active {
         background-color: lightblue;
+    }
+
+    .entityPage {
+        height: 50vh;
+        padding: unset;
+        right: 0px;
+        width: 30vw;
+        max-height: unset !important;
+        position: absolute;
+        right: 0px;
+        margin: unset;
+        overflow-x: clip;
     }
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
@@ -707,6 +724,7 @@
             edgeStyleDialogue: false,
             metricsBottomSheet: false,
             graphLoading: true,
+            entityDialogue: false
         }),
         methods: {
             loadData() {
@@ -1423,6 +1441,11 @@
             })
             self = this
             cy.on('tap', 'node', (event) => {
+                this.$refs.entityForm.loadData(event.target.data("id"))
+                // this.$nextTick(function () {
+                //     this.entityDialogue = true
+                // })
+                this.entityDialogue = true
                 if (self.canUpdateEdge) {
                     self.clearForm()
                 }

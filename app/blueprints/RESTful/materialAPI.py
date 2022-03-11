@@ -43,13 +43,21 @@ def materialOfCourse(courseCode):
         raise e
 
 
+@material.post("/", defaults={"courseCode": None, "name": None})
 @material.post("<courseCode>/", defaults={"name": None})
 @material.post("<courseCode>/<path:name>")
 @authorize_RESTful_with(
     [["canWriteTeachingCourseMaterial", "canWriteAllCourseMaterial"]]
 )
 def post(courseCode, name):
-    if "url" in request.json and "desc" in request.json:
+    if (
+        "url" in request.json
+        and request.json["url"]
+        and "desc" in request.json
+        and request.json["desc"]
+        and courseCode
+        and name
+    ):
         return jsonify(
             {
                 "success": True,
