@@ -123,7 +123,9 @@
                 this.$root.progress.show = true
                 let entityPromise =
                     fetch(
-                        "{{ url_for('RESTful.entity.get') }}" + this.courseCode + '/' + this.name, {
+                        "{{ url_for('RESTful.entity.get') }}" + this.courseCode + '/' +
+                        encodeURIComponent(
+                            this.name), {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
