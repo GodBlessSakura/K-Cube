@@ -255,8 +255,7 @@
             </v-row>
         </v-col>
     </v-row>
-
-    <v-row dense style="height: calc(100% - 44px); width: 100%;">
+    <v-row dense style="height: calc(100% - 80px); width: 100%;">
         <div id="editor" style="height: 100%; width: 100%;">
             <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128" v-if="graphLoading">
             </v-progress-circular>
@@ -573,7 +572,8 @@
         <v-container style="padding: unset">
             <v-row no-gutters>
                 <v-btn block color="error" @click="entityDialogue = false" small>
-                    <v-icon>
+                    dismiss
+                    <v-icon right>
                         close
                     </v-icon>
                 </v-btn>
