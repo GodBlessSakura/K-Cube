@@ -736,6 +736,22 @@
                     role = KCube.roleTab.filter(r => r.name == role)[0]
                     tab = role.tabs[this.tabIndex]
                     window.location.href = tab ? tab.url : role.tabs[0].url
+                },
+                customizedFetch(resources, options, errorHandler = () => { }) {
+                    return fetch(resources, options)
+                        .catch(error => {
+                            this.progress.show = false
+                            errorHandler(error);
+                            if (error instanceof TypeError) {
+                                this.errorDisplay({ success: false },
+                                    "Network error occured.")
+                            }
+                            else {
+                                this.errorDisplay({ success: false },
+                                    error.message)
+                            }
+                            throw error
+                        })
                 }
             },
             delimiters: ['${', '}'],
