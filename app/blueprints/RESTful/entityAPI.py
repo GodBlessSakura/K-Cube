@@ -17,7 +17,7 @@ def query():
 @entity.get("/<courseCode>/", defaults={"entityId": None})
 @entity.get("/<courseCode>/<entityId>")
 def get(courseCode, entityId):
-    if courseCode and entityId:
+    if courseCode and entityId and request.args.get("ofUser"):
         try:
             result = get_api_driver().entity.get_user_course_entity(
                 name=entityId, courseCode=courseCode, userId=session["user"]["userId"]

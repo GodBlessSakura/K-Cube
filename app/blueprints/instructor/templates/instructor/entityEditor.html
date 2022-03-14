@@ -9,13 +9,17 @@
         <v-form ref="activityControl">
             <v-row>
                 <v-col>
-                    <v-text-field label="description" v-model="activityDesc" @blur="setActivity"
+                    <v-text-field label="description" v-model="activityDesc" @change="setActivity"
                         :rules="activityDescRules"></v-text-field>
                 </v-col>
                 <v-col>
-                    <v-text-field label="week" type="number" v-model="activityWeek" @blur="setActivity"
+                    <v-text-field label="week" type="number" v-model="activityWeek" @change="setActivity"
                         :rules="activityWeekRules">
                     </v-text-field>
+                </v-col>
+                <v-col cols="auto">
+                    <v-icon v-if="syned">sync</v-icon>
+                    <v-icon v-else @click="setActivity">sync_problem</v-icon>
                 </v-col>
             </v-row>
         </v-form>
@@ -73,6 +77,7 @@
         data: () => ({
             name: null,
             search: '',
+            syned: true,
             activityDesc: null,
             activityWeek: null,
             activityDescRules: [v => !!v || 'Description is required',
@@ -125,7 +130,7 @@
                     fetch(
                         "{{ url_for('RESTful.entity.get') }}" + this.courseCode + '/' +
                         encodeURIComponent(
-                            this.name), {
+                            this.name) + "?ofUser=true", {
                         method: 'GET',
                         cache: 'no-store',
                         headers: {
@@ -228,7 +233,6 @@
             },
             setActivity(event) {
                 if (this.$refs.activityControl.validate()) {
-                    console.log("valid")
                     if (this.$root.progress.show == true) {
                         this.$root.bePatientSnackBar.show = true
                         return
@@ -249,6 +253,7 @@
                         })
                     })
                         .then(response => {
+                            console.log("before try")
                             try {
                                 return response.json()
                             } catch {
@@ -260,9 +265,17 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.activity) { } else {
+                                this.syned = false
                                 this.$root.errorDisplay(body,
                                     'Unexpected error on setting courses schedule information.')
                             }
+                        })
+                        .catch(error => {
+                            console.log(error)
+                            this.$root.progress.show = false
+                            this.syned = false
+                            this.$root.errorDisplay({ success: false },
+                                "Network error occured.")
                         })
                 }
             }
