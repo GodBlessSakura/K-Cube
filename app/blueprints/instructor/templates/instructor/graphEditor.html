@@ -27,19 +27,22 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item dense v-bind="attrs" v-on="on">
-                                        <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
-                                            activeNegativeEdgeCount}</v-list-item-subtitle>
-                                    </v-list-item>
-                                </template>
-                                <span style="font-size: small;">
-                                    Uncommited changes are active triple proposal/removal <br>
-                                    that is in the workspace but NOT in the patch. <br>
-                                    Changes can be previewed in the preview page / "view diff" mode.
-                                </span>
-                            </v-tooltip>
+                            <v-list-item dense>
+                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                                    activeNegativeEdgeCount}</v-list-item-subtitle>
+                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-list-item-icon v-bind="attrs" v-on="on">
+                                            <v-icon>error_outline</v-icon>
+                                        </v-list-item-icon>
+                                    </template>
+                                    <span style="font-size: small;">
+                                        Uncommited changes are active triple proposal/removal <br>
+                                        that is in the workspace but NOT in the patch. <br>
+                                        Changes can be previewed in the preview page / "view diff" mode.
+                                    </span>
+                                </v-tooltip>
+                            </v-list-item>
                             <v-divider></v-divider>
                             <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
                                 <v-list-item-title>preview changes</v-list-item-title>
@@ -65,19 +68,22 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item dense v-bind="attrs" v-on="on">
-                                        <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
-                                            activeNegativeEdgeCount}</v-list-item-subtitle>
-                                    </v-list-item>
-                                </template>
-                                <span style="font-size: small;">
-                                    Uncommited changes are temporary triple proposal/removal <br>
-                                    that is in the workspace but NOT in the patch. <br>
-                                    Changes can be previewed in the preview page / "view diff" mode.
-                                </span>
-                            </v-tooltip>
+                            <v-list-item dense>
+                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                                    activeNegativeEdgeCount}</v-list-item-subtitle>
+                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-list-item-icon v-bind="attrs" v-on="on">
+                                            <v-icon>error_outline</v-icon>
+                                        </v-list-item-icon>
+                                    </template>
+                                    <span style="font-size: small;">
+                                        Uncommited changes are temporary triple proposal/removal <br>
+                                        that is in the workspace but NOT in the patch. <br>
+                                        Changes can be previewed in the preview page / "view diff" mode.
+                                    </span>
+                                </v-tooltip>
+                            </v-list-item>
                             <v-divider></v-divider>
                             <v-list-item dense>
                                 <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
@@ -112,6 +118,7 @@
                                         </v-list-item-subtitle>
                                         <v-list-item-icon>
                                             <v-icon>edit_calendar</v-icon>
+                                            <v-icon>error_outline</v-icon>
                                         </v-list-item-icon>
                                     </v-list-item>
                                 </template>
@@ -129,6 +136,7 @@
                                         </v-list-item-subtitle>
                                         <v-list-item-icon>
                                             <v-icon>edit_calendar</v-icon>
+                                            <v-icon>error_outline</v-icon>
                                         </v-list-item-icon>
                                     </v-list-item>
                                 </template>
@@ -158,20 +166,23 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item dense v-bind="attrs" v-on="on">
-                                        <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
-                                            activeNegativeEdgeCount}</v-list-item-subtitle>
-                                    </v-list-item>
-                                </template>
-                                <span style="font-size: small;">
-                                    Uncommited changes are temporary triple proposal/removal <br>
-                                    that is in the workspace but NOT in the patch. <br>
-                                    As they are not in the patch, they would not be refleced<br>
-                                    in any form of patch publishment. <br>
-                                </span>
-                            </v-tooltip>
+                            <v-list-item dense>
+                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
+                                    activeNegativeEdgeCount}</v-list-item-subtitle>
+                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-list-item-icon v-bind="attrs" v-on="on">
+                                            <v-icon>error_outline</v-icon>
+                                        </v-list-item-icon>
+                                    </template>
+                                    <span style="font-size: small;">
+                                        Uncommited changes are temporary triple proposal/removal <br>
+                                        that is in the workspace but NOT in the patch. <br>
+                                        As they are not in the patch, they would not be refleced<br>
+                                        in any form of patch publishment. <br>
+                                    </span>
+                                </v-tooltip>
+                            </v-list-item>
                             <v-divider></v-divider>
                             <v-list-item dense>
                                 <v-list-item-subtitle>expose patch</v-list-item-subtitle>
