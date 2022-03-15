@@ -118,10 +118,10 @@
                     .then(body => {
                         this.$root.progress.show = false
                         let colPerRow = 4
-                        if (body.deltaGraphIds) {
-                            if (body.deltaGraphIds.length > 0) {
+                        if (body.workspaces) {
+                            if (body.workspaces.length > 0) {
                                 this.workspaceURL = "{{ url_for('instructor.workspace')}}" + body
-                                    .deltaGraphIds[0]
+                                    .workspaces[0].deltaGraphId
                             }
                         } else {
                             this.$root.errorDisplay(body,
