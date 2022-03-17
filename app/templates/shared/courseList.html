@@ -75,28 +75,10 @@
                         </div>
                         <v-slide-group>
                             {% if request.blueprint == "instructor" %}
-                            <v-slide-item v-if="courses[row*colPerRow + col].workspaces.length > 0">
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on"
-                                            :href="'{{ url_for('instructor.workspace') }}/' + courses[row*colPerRow + col].workspaces[0].deltaGraphId"
-                                            icon>
-                                            <v-icon>work</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Last modified workspace</span>
-                                </v-tooltip>
-                            </v-slide-item>
-                            <v-slide-item v-else>
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on"
-                                            @click="openWorkspaceDialogue(courses[row*colPerRow + col])" icon>
-                                            <v-icon>work_outline</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Create workspace</span>
-                                </v-tooltip>
+                            <v-slide-item v-if="courses[row*colPerRow + col].workspaces.length == 0">
+                                <v-btn x-small @click="openWorkspaceDialogue(courses[row*colPerRow + col])">
+                                    create workspace &nbsp;<v-icon x-small>work_outline</v-icon>
+                                </v-btn>
                             </v-slide-item>
                             {% elif request.blueprint == "DLTC" %}
                             <v-slide-item>
@@ -114,9 +96,20 @@
                             {% endif %}
                         </v-slide-group>
                     </v-list-item-content>
-                    <v-list-item-avatar tile size="96">
-                        <v-img :src="courses[row*colPerRow + col].imageURL"></v-img>
-                    </v-list-item-avatar>
+
+                    <v-badge bordered icon="work" offset-x="24" offset-y="24"
+                        :value="courses[row*colPerRow + col].workspaces.length > 0">
+                        <a v-if="courses[row*colPerRow + col].workspaces.length > 0"
+                            :href="'{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId">
+                            <v-list-item-avatar tile size="96">
+                                <v-img :src="courses[row*colPerRow + col].imageURL"></v-img>
+                            </v-list-item-avatar>
+                        </a>
+                        <v-list-item-avatar tile size="96" v-else
+                            @click="openWorkspaceDialogue(courses[row*colPerRow + col])">
+                            <v-img :src="courses[row*colPerRow + col].imageURL"></v-img>
+                        </v-list-item-avatar>
+                    </v-badge>
                     <v-menu bottom offset-y>
                         <template v-slot:activator="{ on, attrs }">
                             <v-list-item-icon v-bind="attrs" v-on="on">
