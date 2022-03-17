@@ -112,8 +112,7 @@
                             </v-list-item>
                             <v-tooltip v-if="!subject?.isExposed" bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item v-bind="attrs" v-on="on"
-                                        @click="this.window.open('{{ url_for('instructor.courseSchedule')}}' + subject.courseCode, '_blank')">
+                                    <v-list-item v-bind="attrs" v-on="on" @click="scheduleDialogue = true">
                                         <v-list-item-subtitle>Course schedules
                                         </v-list-item-subtitle>
                                         <v-list-item-icon>
@@ -130,8 +129,7 @@
                             </v-tooltip>
                             <v-tooltip v-else-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item v-bind="attrs" v-on="on"
-                                        @click="this.window.open('{{ url_for('instructor.courseSchedule')}}' + subject.courseCode, '_blank')">
+                                    <v-list-item v-bind="attrs" v-on="on" @click="scheduleDialogue = true">
                                         <v-list-item-subtitle>Course schedules
                                         </v-list-item-subtitle>
                                         <v-list-item-icon>
@@ -146,8 +144,7 @@
                                     the course schedule.
                                 </span>
                             </v-tooltip>
-                            <v-list-item v-else
-                                @click="this.window.open('{{ url_for('instructor.courseSchedule')}}' + subject.courseCode, '_blank')">
+                            <v-list-item v-else @click="scheduleDialogue = true">
                                 <v-list-item-subtitle>Course schedules
                                 </v-list-item-subtitle>
                                 <v-list-item-icon>
@@ -629,19 +626,25 @@
     </v-dialog>
     <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
         persistent no-click-animation scrollable eager>
-        <v-container style="padding: unset">
-            <v-row no-gutters>
-                <v-btn block color="error" @click="entityDialogue = false" small>
-                    dismiss
-                    <v-icon right>
-                        close
-                    </v-icon>
-                </v-btn>
-            </v-row>
-            <v-row no-gutters>
-                <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode"></kcube-entity-form>
-            </v-row>
-        </v-container>
+        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode">
+            <v-btn block color="error" plain @click="entityDialogue = false" small elevation="2">
+                dismiss
+                <v-icon right>
+                    close
+                </v-icon>
+            </v-btn>
+        </kcube-entity-form>
+    </v-dialog>
+    <v-dialog v-model="scheduleDialogue" content-class="schedulePage" transition="slide-x-reverse-transition"
+        hide-overlay no-click-animation>
+        <v-btn block color="error" plain @click="scheduleDialogue = false" small elevation="2">
+            dismiss
+            <v-icon right>
+                close
+            </v-icon>
+        </v-btn>
+        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
+            :src="'{{ url_for('instructor.courseSchedule')}}' + subject.courseCode + '?bar=false'"></iframe>
     </v-dialog>
 </v-container>
 
@@ -668,6 +671,18 @@
         right: 0px;
         margin: unset;
         overflow-x: clip;
+    }
+
+    .schedulePage {
+        height: 100vh;
+        padding: unset;
+        right: 0px;
+        width: 40vw;
+        max-height: unset !important;
+        position: absolute;
+        right: 0px;
+        margin: unset;
+        overflow: clip;
     }
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
@@ -795,7 +810,8 @@
             edgeStyleDialogue: false,
             metricsBottomSheet: false,
             graphLoading: true,
-            entityDialogue: false
+            entityDialogue: false,
+            scheduleDialogue: false,
         }),
         methods: {
             loadData() {

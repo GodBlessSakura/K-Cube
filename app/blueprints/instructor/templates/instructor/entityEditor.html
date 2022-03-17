@@ -2,6 +2,9 @@
 <v-card style="width: 35vw" flat>
     <v-container>
         <v-row>
+            <slot></slot>
+        </v-row>
+        <v-row>
             <v-card-title style="padding:unset">${name}
             </v-card-title>
         </v-row>
@@ -28,7 +31,7 @@
                 teaching material:
             </v-col>
             <v-col>
-                <v-dialog max-width="75vw">
+                <v-dialog v-model="materialForm" max-width="75vw">
                     <template v-slot:activator="{ on, attrs }">
                         <v-icon v-bind="attrs" v-on="on">add_link</v-icon>
                     </template>
@@ -75,6 +78,7 @@
     Vue.component('kcube-entity-form', {
         props: ["courseCode"],
         data: () => ({
+            materialForm: false,
             name: null,
             search: '',
             syned: true,
@@ -124,6 +128,7 @@
                 this.name = name
                 this.activityDesc = null
                 this.activityWeek = null
+                this.$refs.activityControl.resetValidation()
                 this.materials = []
                 this.$root.progress.show = true
                 let entityPromise =
@@ -199,7 +204,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             this.$root.responseSnackBar(body, 'Creation failed for unknown reason.',
-                                () => (this.loadData(this.name)))
+                                () => { this.loadData(this.name); this.materialForm = false })
                         })
                 }
             },

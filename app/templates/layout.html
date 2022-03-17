@@ -34,7 +34,7 @@
         <v-app>
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
-            <v-app-bar app>
+            <v-app-bar :value="appBar" app>
                 <a href="{{ url_for('index') }}">
                     <v-img src="{{ url_for('static', filename='images/logo.png') }}" link max-height="35"
                         max-width="35">
@@ -209,7 +209,8 @@
                 {% endif %}
 
             </v-app-bar>
-            <v-navigation-drawer permanent mini-variant :mini-variant.sync="miniSync" mini-variant-width="50" app>
+            <v-navigation-drawer :value="navBar" :permanent="navBar" mini-variant :mini-variant.sync="miniSync"
+                mini-variant-width="50" app>
 
                 <v-divider></v-divider>
                 <v-list nav dense>
@@ -522,6 +523,8 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
+                appBar: new URLSearchParams(window.location.search).get('bar')==="false"?false:true,
+                navBar: new URLSearchParams(window.location.search).get('bar')==="false"?false:true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
                 miniSync: true,
