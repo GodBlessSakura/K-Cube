@@ -67,7 +67,7 @@
         roam around available courseces and career. <v-icon>
             attractions</v-icon>
     </v-snackbar>
-    <v-snackbar style="z-index:0" center right :color="edgeColor" v-model="focusingEdge" timeout="-1">
+    <v-snackbar style="z-index:0; bottom:10vh" right :color="edgeColor" v-model="focusingEdge" timeout="-1">
         <v-row no-gutters>
             <v-col cols="auto">
                 <v-btn color="primary" style="text-transform: none;" @click="focus(edgeSource)">${edgeSource}</v-btn>
@@ -95,6 +95,8 @@
         {
             selector: 'node',
             style: {
+                'width': 125,
+                'height': 125,
                 'background-color': 'white',
                 'border-width': 1,
                 'border-color': 'grey',
@@ -104,7 +106,7 @@
                 'label': 'data(label)',
                 'text-outline-color': 'white',
                 'text-outline-width': 2,
-                'font-size': 7,
+                'font-size': 30,
                 'background-image': 'data(imageURL)',
                 'background-fit': 'cover'
 
@@ -122,7 +124,7 @@
         }, {
             selector: 'edge',
             style: {
-                'width': 3,
+                'width': 8,
                 'line-color': 'grey',
                 'curve-style': 'bezier',
                 'z-index': 100,
@@ -139,6 +141,7 @@
         }, {
             selector: 'edge:selected',
             style: {
+                'width': 12,
                 'underlay-color': "data(color)",
                 'underlay-padding': 2.75,
                 'underlay-opacity': 1,
@@ -383,7 +386,7 @@
                     animation = cy.animation({
                         fit: {
                             eles: focusedNode,
-                            padding: document.documentElement.clientHeight * 0.39
+                            padding: document.documentElement.clientHeight * 0.35
                         },
                         duration: duration
                     })
@@ -471,7 +474,12 @@
                 let delta = event.key == "ArrowLeft" || event.key == "ArrowUp" ? -1 : event.key ==
                     "ArrowRight" ||
                     event.key == "ArrowDown" ? 1 : null;
-                if (delta) scroll(delta)
+                if (delta) { scroll(delta) }
+                else {
+                    if (event.key == "Escape") {
+                        this.focus('')
+                    }
+                }
             })
         },
         template: '#content',
