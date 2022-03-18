@@ -914,6 +914,7 @@
                         .then(body => {
                             if (body.relationships) {
                                 this.relationships = body.relationships
+                                this.r_name = body.relationships.includes('Subtopic in') ? 'Subtopic in' : ''
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error on getting relationship information.')

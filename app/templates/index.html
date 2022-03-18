@@ -62,7 +62,7 @@
         <v-btn color="success" style="text-transform: none;" x-large block :href="url">
             ${url?'Proceed to ' + url.split('/').reverse()[0] + '\'s page':''}</v-btn>
     </v-bottom-sheet>
-    <v-snackbar style="z-index:0" :value="neverScrolled && !focusingNode && !focusingEdge" timeout="-1">
+    <v-snackbar style="z-index:0; bottom:10vh" :value="idleWheel" timeout="-1">
         <v-icon>mouse</v-icon> scroll, <v-icon>ads_click</v-icon> click or <v-icon>open_with</v-icon> use arrow key to
         roam around available courseces and career. <v-icon>
             attractions</v-icon>
@@ -200,7 +200,8 @@
     Vue.component('app-content', {
         data: () => ({
             url: null,
-            neverScrolled: true,
+            wheelInterval: null,
+            idleWheel: true,
             focusingNode: false,
             focusingEdge: false,
             edgeSource: "",
@@ -415,6 +416,9 @@
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
                 // if (event.target.classes().includes("pad")) return
+                this.idleWheel = false
+                this.wheelInterval ? clearInterval(this.wheelInterval) : null
+                this.wheelInterval = setInterval(() => { this.idleWheel = true }, 10000)
                 if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
                     this.focus(event.target[0].data('id'), 500)
                     this.focusingEdge = false
@@ -445,7 +449,9 @@
             })
             this.loadData()
             scroll = (delta) => {
-                this.neverScrolled = false
+                this.idleWheel = false
+                this.wheelInterval ? clearInterval(this.wheelInterval) : null
+                this.wheelInterval = setInterval(() => { this.idleWheel = true }, 10000)
                 if (!focusedNode) {
                     if (cy.nodes(':selected').length > 0) {
                         this.focus(cy.nodes(':selected').data("id"), 500)
