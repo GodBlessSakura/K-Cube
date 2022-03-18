@@ -277,7 +277,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 300;" v-model="completeSnackBar.show">
+            <v-snackbar style="z-index: 200;" v-model="completeSnackBar.show">
                 ${ completeSnackBar.message }
                 <template v-slot:action="{ attrs }">
                     <v-btn color="blue" text v-bind="attrs" @click="completeSnackBar.show = false">
@@ -285,7 +285,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 400;" v-model="bePatientSnackBar.show" :timeout="2000">
+            <v-snackbar style="z-index: 350;" v-model="bePatientSnackBar.show" :timeout="2000">
                 A http request is already submitting in progress. Thank you for your patience.
                 <template v-slot:action="{ attrs }">
                     <v-btn color="blue" text v-bind="attrs" @click="bePatientSnackBar.show = false">
@@ -374,45 +374,6 @@
                 //{% endif %}
             ],
             navigationListGroup: [
-                /*{% if PERMISSION 
-                and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback or PERMISSION.canProposeRelationship)
-                 or ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
-                */
-                {
-                    icon: "connect_without_contact",
-                    name: "collaborate",
-                    title: "Collaborate",
-                    list: [
-                        //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
-                        {
-                            title: "Course Feedback",
-                            icon: "forum",
-                            url: "{{ url_for('collaborate.feedbacks') }}",
-                        },
-                        //{% endif %}
-                        //{% if PERMISSION and PERMISSION.canProposeRelationship %}
-                        {
-                            title: "Graph Editing",
-                            icon: "linear_scale",
-                            url: "{{ url_for('collaborate.graphEditing') }}",
-                        },
-                        //{% endif %}
-                        /*{% if PERMISSION and PERMISSION.role and 
-                        ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
-                        */
-                        {
-                            title: "Catalogue Navigation",
-                            icon: "polyline",
-                            url: "{{ url_for('collaborate.metagraph') }}",
-                        },
-                        //{% else %}
-                        //*/
-                        //{% endif %}
-                    ]
-                },
-                //{% else %}
-                //*/
-                //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
                     icon: "co_present",
@@ -480,6 +441,45 @@
                     ]
                 },
                 //{% endif %}
+                /*{% if PERMISSION 
+                and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback or PERMISSION.canProposeRelationship)
+                 or ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                */
+                {
+                    icon: "connect_without_contact",
+                    name: "collaborate",
+                    title: "Collaborate",
+                    list: [
+                        //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
+                        {
+                            title: "Course Feedback",
+                            icon: "forum",
+                            url: "{{ url_for('collaborate.feedbacks') }}",
+                        },
+                        //{% endif %}
+                        //{% if PERMISSION and PERMISSION.canProposeRelationship %}
+                        {
+                            title: "Graph Editing",
+                            icon: "linear_scale",
+                            url: "{{ url_for('collaborate.graphEditing') }}",
+                        },
+                        //{% endif %}
+                        /*{% if PERMISSION and PERMISSION.role and 
+                        ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                        */
+                        {
+                            title: "Catalogue Navigation",
+                            icon: "polyline",
+                            url: "{{ url_for('collaborate.metagraph') }}",
+                        },
+                        //{% else %}
+                        //*/
+                        //{% endif %}
+                    ]
+                },
+                //{% else %}
+                //*/
+                //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role) %}
                 {
                     icon: "admin_panel_settings",
@@ -502,15 +502,21 @@
             ]
         }
         KCube_initialize = () => {
-            if (KCube.roleTab.length < 1) return
-            KCube.tabs = KCube.roleTab.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roleTab
-                .filter(r => r.name == KCube.currentBlueprint)[0].tabs : KCube.roleTab[0].tabs;
-            KCube.currentTabIndex = KCube.tabs.map((_, i) => i).filter(
-                i => KCube.tabs[i].url == window.location.pathname)[0]
-            if (KCube.currentTabIndex == undefined) return
-            KCube.currentTabName = KCube.currentTabIndex != undefined ? KCube.tabs[KCube.currentTabIndex].title :
-                undefined
-            KCube.roleTab = KCube.roleTab.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName).length > 0)
+            KCube.currentBlueprint = KCube.currentBlueprint == "None" ? KCube.navigationListGroup[0].name : KCube.currentBlueprint
+
+            if (KCube.roleTab.length > 0) {
+                // initialize values
+                KCube.tabs = KCube.roleTab.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roleTab
+                    .filter(r => r.name == KCube.currentBlueprint)[0].tabs : KCube.roleTab[0].tabs;
+                KCube.currentTabIndex = KCube.tabs.map((_, i) => i).filter(
+                    i => KCube.tabs[i].url == window.location.pathname)[0]
+
+                if (KCube.currentTabIndex != undefined) {
+                    // hide roleTab item if they don't have page with title same as current page
+                    KCube.currentTabName = KCube.currentTabIndex != undefined ? KCube.tabs[KCube.currentTabIndex].title : undefined
+                    KCube.roleTab = KCube.roleTab.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName).length > 0)
+                }
+            }
         }
         KCube_initialize()
         Vue.use(Vuetify)
@@ -523,11 +529,11 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
-                appBar: new URLSearchParams(window.location.search).get('bar')==="false"?false:true,
-                navBar: new URLSearchParams(window.location.search).get('bar')==="false"?false:true,
+                appBar: new URLSearchParams(window.location.search).get('bar') === "false" ? false : true,
+                navBar: new URLSearchParams(window.location.search).get('bar') === "false" ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
-                miniSync: true,
+                miniSync: false,
                 errorSnackBar: {
                     show: false,
                     message: ''

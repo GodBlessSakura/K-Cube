@@ -10,16 +10,21 @@
     <v-row no-gutters>
         <v-col>
             <span class="mr-4">filters:</span>
-            <v-chip filter v-model="filter.public" @click="filter.public = !filter.public;search()" dense hide-details>
+            <v-chip filter v-model="filter.public"
+                @click="filter.public = !filter.public; filter.internal = filter.public?false:filter.internal; search()"
+                dense hide-details>
                 public</v-chip>
-            <v-chip filter v-model="filter.internal" @click="filter.internal = !filter.internal;search()" dense
-                hide-details>internal</v-chip>
+            <v-chip filter v-model="filter.internal"
+                @click="filter.internal = !filter.internal; filter.public = filter.internal?false:filter.public; search()"
+                dense hide-details>internal</v-chip>
             {% if request.blueprint == "instructor" %}
-            <v-chip filter v-model="filter.joined" @click="filter.joined = !filter.joined;search();clearQueryString()"
+            <v-chip filter v-model="filter.joined"
+                @click="filter.joined = !filter.joined; filter.notJoined = filter.joined?false:filter.notJoined; search()"
                 dense hide-details>
                 joined</v-chip>
-            <v-chip filter v-model="filter.notJoined" @click="filter.notJoined = !filter.notJoined;search()" dense
-                hide-details>not joined
+            <v-chip filter v-model="filter.notJoined"
+                @click="filter.notJoined = !filter.notJoined; filter.joined = filter.notJoined?false:filter.joined; search();"
+                dense hide-details>not joined
             </v-chip>
             {% endif %}
         </v-col>
@@ -398,6 +403,7 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.courses) {
+                            if (body.courses.filter(c => c.isTeaching).length == 0) this.filter.joined = false
                             body.courses.sort((a, b) => {
                                 if (a.concept.name < b.concept.name) {
                                     return -1;
