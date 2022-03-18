@@ -234,7 +234,7 @@
                 v => (v && v.length > 3 && v.length) < 101 ||
                 'Tag should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
-                'Tag can only contains alphanumeric characters, dot(.) and space.'
+                'Tag can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             options: [],
             isTrival: false,

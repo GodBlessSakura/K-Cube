@@ -62,7 +62,7 @@ regExpRules = {
     + "][a-zA-Z0-9\s"
     + special_charactor
     + "]{3,500}$",
-    "tag": "^[a-zA-Z0-9\s.]{4,100}$",
+    "tag": "^[-:,a-zA-Z0-9\s.]{4,100}$",
 }
 regExpRules["ownerId"] = regExpRules["userId"]
 regExpRules["h_name"] = regExpRules["name"]

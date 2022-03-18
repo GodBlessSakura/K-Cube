@@ -223,7 +223,7 @@
             v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
             v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
-                'Tag name can only contains alphanumeric characters, dot(.) and space.'
+                'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             //{% endif %}
         }),

@@ -33,13 +33,21 @@
             repositories: [],
             trunkOrBranch: undefined,
             selectedNode: undefined,
-            repoTag: '',
+            repoTag: new Date().toLocaleString('en-US', {
+                day: '2-digit',
+                year: '2-digit',
+                month: '2-digit',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                hour12: false,
+            }).replaceAll('/', '-'),
             repoTagRules: [
                 v => !!v || 'Repository tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
                     'Repository tag name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
-                    'Repository tag name can only contains alphanumeric characters, dot(.) and space.'
+                    'Repository tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             w_tag: '',
             wTagRules: [
@@ -47,7 +55,7 @@
                 v => (v && v.length > 3 && v.length < 101) ||
                     'Tag name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["w_tag"]}}/.test(v)) ||
-                    'Tag name can only contains alphanumeric characters, dot(.) and space.'
+                    'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
         }),
         methods: {
