@@ -126,7 +126,8 @@ class branchDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
-
+    # not implemented
+    # increment produce update summary, e.g. diff in number of triple
     def increment_pull_as_fork(self, overwriterId, overwriteeId, userId, tag):
         fname = sys._getframe().f_code.co_name
 
