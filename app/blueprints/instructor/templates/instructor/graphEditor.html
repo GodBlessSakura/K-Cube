@@ -16,6 +16,67 @@
                 <v-col cols="auto">
                     <v-text-field v-model="workspace.tag" hide-details></v-text-field>
                 </v-col>
+                <v-col cols="auto">
+                    <v-list-item>
+                        <v-list-item-subtitle># of uncommited changes: ${activePositiveEdgeCount +
+                            activeNegativeEdgeCount}</v-list-item-subtitle>
+                        <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-list-item-icon v-bind="attrs" v-on="on">
+                                    <v-icon>help_outline</v-icon>
+                                </v-list-item-icon>
+                            </template>
+                            <span style="font-size: small;">
+                                Uncommited changes are active triple proposal/removal <br>
+                                that is in the workspace but NOT in the patch. <br>
+                                Changes can be previewed in the preview page / "view diff" mode.
+                            </span>
+                        </v-tooltip>
+                    </v-list-item>
+                </v-col>
+                <v-col cols="auto">
+                    <v-tooltip v-if="!subject?.isExposed" bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on" @click="scheduleDialogue = true" dense>
+                                <v-list-item-subtitle>Course schedules
+                                </v-list-item-subtitle>
+                                <v-list-item-icon>
+                                    <v-icon>open_in_new</v-icon>
+                                    <v-icon>error_outline</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size: small;">
+                            Course schedule only reflects contents on exposed graph.<br>
+                            The workspace is not editing the exposed graph.<br>
+                            You may exposed the graph through "publish patch"<br>.
+                        </span>
+                    </v-tooltip>
+                    <v-tooltip v-else-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-list-item v-bind="attrs" v-on="on" @click="scheduleDialogue = true">
+                                <v-list-item-subtitle>Course schedules
+                                </v-list-item-subtitle>
+                                <v-list-item-icon>
+                                    <v-icon>open_in_new</v-icon>
+                                    <v-icon>error_outline</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size: small;">
+                            Uncommited changes are NOT reflected on course schedule.<br>
+                            You may commit and expose to include these changes in<br>
+                            the course schedule.
+                        </span>
+                    </v-tooltip>
+                    <v-list-item v-else @click="scheduleDialogue = true">
+                        <v-list-item-subtitle>Course schedules
+                        </v-list-item-subtitle>
+                        <v-list-item-icon>
+                            <v-icon>open_in_new</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-col>
             </v-row>
             <v-row no-gutters>
                 <v-col cols="auto" dense>
@@ -27,23 +88,7 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-list-item dense>
-                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
-                                    activeNegativeEdgeCount}</v-list-item-subtitle>
-                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-list-item-icon v-bind="attrs" v-on="on">
-                                            <v-icon>error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </template>
-                                    <span style="font-size: small;">
-                                        Uncommited changes are active triple proposal/removal <br>
-                                        that is in the workspace but NOT in the patch. <br>
-                                        Changes can be previewed in the preview page / "view diff" mode.
-                                    </span>
-                                </v-tooltip>
-                            </v-list-item>
-                            <v-divider></v-divider>
+                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
                             <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
                                 <v-list-item-title>preview changes</v-list-item-title>
                             </v-list-item>
@@ -68,23 +113,7 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-list-item dense>
-                                <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
-                                    activeNegativeEdgeCount}</v-list-item-subtitle>
-                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-list-item-icon v-bind="attrs" v-on="on">
-                                            <v-icon>error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </template>
-                                    <span style="font-size: small;">
-                                        Uncommited changes are temporary triple proposal/removal <br>
-                                        that is in the workspace but NOT in the patch. <br>
-                                        Changes can be previewed in the preview page / "view diff" mode.
-                                    </span>
-                                </v-tooltip>
-                            </v-list-item>
-                            <v-divider></v-divider>
+                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
                             <v-list-item dense>
                                 <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
                                 </v-list-item-subtitle>
@@ -110,47 +139,6 @@
                                     <v-icon>open_in_new</v-icon>
                                 </v-list-item-icon>
                             </v-list-item>
-                            <v-tooltip v-if="!subject?.isExposed" bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item v-bind="attrs" v-on="on" @click="scheduleDialogue = true">
-                                        <v-list-item-subtitle>Course schedules
-                                        </v-list-item-subtitle>
-                                        <v-list-item-icon>
-                                            <v-icon>edit_calendar</v-icon>
-                                            <v-icon>error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </v-list-item>
-                                </template>
-                                <span style="font-size: small;">
-                                    Course schedule only reflects contents on exposed graph.<br>
-                                    The workspace is not editing the exposed graph.<br>
-                                    You may exposed the graph through "publish patch"<br>.
-                                </span>
-                            </v-tooltip>
-                            <v-tooltip v-else-if="activePositiveEdgeCount + activeNegativeEdgeCount" bottom>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item v-bind="attrs" v-on="on" @click="scheduleDialogue = true">
-                                        <v-list-item-subtitle>Course schedules
-                                        </v-list-item-subtitle>
-                                        <v-list-item-icon>
-                                            <v-icon>edit_calendar</v-icon>
-                                            <v-icon>error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </v-list-item>
-                                </template>
-                                <span style="font-size: small;">
-                                    Uncommited changes are NOT reflected on course schedule.<br>
-                                    You may commit and expose to include these changes in<br>
-                                    the course schedule.
-                                </span>
-                            </v-tooltip>
-                            <v-list-item v-else @click="scheduleDialogue = true">
-                                <v-list-item-subtitle>Course schedules
-                                </v-list-item-subtitle>
-                                <v-list-item-icon>
-                                    <v-icon>edit_calendar</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
                         </v-list>
                     </v-menu>
                 </v-col>
@@ -163,7 +151,7 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-list-item dense>
+                            <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>
                                 <v-list-item-subtitle># of uncommited <br> changes: ${activePositiveEdgeCount +
                                     activeNegativeEdgeCount}</v-list-item-subtitle>
                                 <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
@@ -180,7 +168,7 @@
                                     </span>
                                 </v-tooltip>
                             </v-list-item>
-                            <v-divider></v-divider>
+                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
                             <v-list-item dense>
                                 <v-list-item-subtitle>expose patch</v-list-item-subtitle>
                             </v-list-item>
