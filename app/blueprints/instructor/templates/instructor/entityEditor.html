@@ -12,11 +12,11 @@
         <v-form ref="activityControl">
             <v-row>
                 <v-col>
-                    <v-text-field label="description" v-model="activityDesc" @change="setActivity"
+                    <v-text-field label="description" v-model="activityDesc" @input="setActivity"
                         :rules="activityDescRules"></v-text-field>
                 </v-col>
                 <v-col>
-                    <v-text-field label="week" type="number" v-model="activityWeek" @change="setActivity"
+                    <v-text-field label="week" type="number" v-model="activityWeek" @input="setActivity"
                         :rules="activityWeekRules">
                     </v-text-field>
                 </v-col>
