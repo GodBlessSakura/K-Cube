@@ -97,7 +97,7 @@
                         </v-slide-group>
                     </v-list-item-content>
 
-                    <v-badge bordered icon="work" offset-x="24" offset-y="24"
+                    <v-badge bordered icon="work" offset-x="24" offset-y="24" color="info"
                         :value="courses[row*colPerRow + col].workspaces?.length > 0">
                         <v-list-item-avatar tile size="96">
                             <v-img :src="courses[row*colPerRow + col].imageURL"></v-img>
@@ -236,7 +236,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :outlined="!courses[row*colPerRow + col].isTeaching"
-                                :color="courses[row*colPerRow + col].isTeaching?'info':'grey'" v-bind="attrs" v-on="on"
+                                :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs" v-on="on"
                                 @click="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
                                 <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
                                 ${courses[row*colPerRow + col].isTeaching?'joined':'join'}
@@ -251,7 +251,7 @@
                     </v-btn>
                     <v-tooltip bottom v-else>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" v-on="on"
+                            <v-btn v-bind="attrs" v-on="on" color="info"
                                 :href="'{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId">
                                 recent visit &nbsp;<v-icon small>work</v-icon>
                             </v-btn>
