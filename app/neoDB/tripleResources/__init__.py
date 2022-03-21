@@ -188,6 +188,19 @@ class tripleDAO:
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
+            result = tx.run(
+                "MATCH (course)-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})"
+                "MATCH (user:User{userId: $userId})-[:USER_TEACH]->(course)"
+                "RETURN user.userId as userId",
+                courseCode=courseCode,
+                userId=userId,
+            )
+            try:
+                _ = [record["userId"] for record in result][0]
+            except Exception as exception:
+                from ..resourcesGuard import InvalidRequest
+
+                raise InvalidRequest("Course graph from this instructor not exists")
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:

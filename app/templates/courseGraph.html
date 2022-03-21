@@ -136,13 +136,13 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = userId) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                    "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = userId) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -155,6 +155,13 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.course && body.triples) {
+                            let visited = JSON.parse(localStorage.getItem('visitedCourseGraph'))
+                            if (!visited) {
+                                visited = {}
+                            }
+                            visited["{{courseCode}}" + "_" + "{{userId}}"] = location.href
+                            console.log(JSON.stringify(visited))
+                            localStorage.setItem('visitedCourseGraph', JSON.stringify(visited))
                             cy.add(nodeFactory('{{ courseCode }}', ["course"]))
                                 .data(
                                     'imageURL',
@@ -187,6 +194,13 @@
                             })
                             cyLayout.run()
                         } else {
+                            let visited = JSON.parse(localStorage.getItem('visitedCourseGraph'))
+                            if (!visited) {
+                                visited = {}
+                            }
+                            delete visited["{{courseCode}}" + "_" + "{{userId}}"]
+                            console.log(JSON.stringify(visited))
+                            localStorage.setItem('visitedCourseGraph', JSON.stringify(visited))
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
                         }
@@ -223,15 +237,5 @@
         template: '#content',
         delimiters: ['${', '}'],
     })
-    let visited = JSON.parse(localStorage.getItem('visitedCourseGraph'))
-    console.log(JSON.parse(localStorage.getItem('visitedCourseGraph')))
-    console.log(JSON.stringify(visited))
-    if (!visited) {
-        visited = {}
-    }
-    console.log(JSON.stringify(visited))
-    visited["{{courseCode}}" + "_" + "{{userId}}"] = location.href
-    console.log(JSON.stringify(visited))
-    localStorage.setItem('visitedCourseGraph', JSON.stringify(visited))
 </script>
 {% endblock %}
