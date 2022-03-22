@@ -58,7 +58,8 @@
         </v-container>
     </v-card>
     <div id="cy" style="height: 99%; width: 99%;"></div>
-    <v-bottom-sheet style="text-align: center;" hide-overlay persistent inset no-click-animation :value="url">
+    <v-bottom-sheet style="text-align: center;" :retain-focus="false" hide-overlay persistent inset no-click-animation
+        :value="url">
         <v-btn color="success" style="text-transform: none;" x-large block :href="url">
             ${url?'Proceed to ' + url.split('/').reverse()[0] + '\'s page':''}</v-btn>
     </v-bottom-sheet>
