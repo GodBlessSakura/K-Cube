@@ -209,17 +209,19 @@
                 {% endif %}
 
             </v-app-bar>
-            <v-navigation-drawer :value="navBar" :permanent="navBar" mini-variant :mini-variant.sync="miniSync"
-                mini-variant-width="50" app>
+            <v-navigation-drawer :value="navBar" :expand-on-hover="navHover" :permanent="navBar" mini-variant
+                :mini-variant.sync="miniSync" mini-variant-width="50" app>
 
                 <v-divider></v-divider>
                 <v-list nav dense>
-                    <v-list-item link @click="miniSync = !miniSync">
-                        <v-list-item-icon>
-                            <v-icon>menu</v-icon>
+                    <v-list-item link @click="navHover = !navHover">
+                        <v-list-item-icon v-if="!miniSync">
                         </v-list-item-icon>
-                        <v-list-item-title></v-list-item-title>
-                        <v-icon>chevron_left</v-icon>
+                        <v-list-item-title v-if="!miniSync">
+                            ${navHover?"keep menu open":"close menu"}
+                        </v-list-item-title>
+                        <v-icon v-if="navHover">menu</v-icon>
+                        <v-icon v-else>menu_open</v-icon>
                     </v-list-item>
                     <div v-for="LG in KCube.navigationListGroup">
                         <v-list-group :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
@@ -533,7 +535,8 @@
                 navBar: new URLSearchParams(window.location.search).get('bar') === "false" ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
-                miniSync: false,
+                miniSync: true,
+                navHover: true,
                 errorSnackBar: {
                     show: false,
                     message: ''
