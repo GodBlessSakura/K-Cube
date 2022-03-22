@@ -14,7 +14,7 @@
         <v-col>
             <v-row>
                 <v-col cols="auto">
-                    <v-text-field v-model="workspace.tag" hide-details></v-text-field>
+                    <v-text-field v-model="workspace.tag" hide-details @input="changeWorkspaceTag"></v-text-field>
                 </v-col>
                 <v-col cols="auto">
                     <v-list-item>
@@ -310,9 +310,11 @@
     </v-bottom-sheet>
 
     <v-card>
-        <v-bottom-sheet v-model="tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
+        <v-bottom-sheet v-model="tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay
+            no-click-animation>
             <template v-slot:activator="{ on, attrs }">
-                <v-bottom-sheet :value="!tripleBottomSheet" inset persistent :hide-overlay="true" no-click-animation>
+                <v-bottom-sheet :value="!tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay
+                    no-click-animation>
                     <v-sheet>
                         <v-btn :ripple="false" color="success" plain block @click="tripleBottomSheet = true"
                             elevation="2">
@@ -1505,6 +1507,18 @@
                             })
                     })
 
+            },
+            changeWorkspaceTag() {
+                fetch("{{ url_for('RESTful.workspace.patch', deltaGraphId=deltaGraphId) }}", {
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tag: this.workspace.tag
+                    })
+                })
             }
         },
         mounted: function () {

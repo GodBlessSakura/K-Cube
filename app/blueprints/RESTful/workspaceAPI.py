@@ -129,6 +129,17 @@ def patch(deltaGraphId):
                     ),
                 }
             )
+        if "tag" in request.json:
+            return jsonify(
+                {
+                    "success": True,
+                    "branch": get_api_driver().workspace.rename_workspace(
+                        deltaGraphId=deltaGraphId,
+                        tag=request.json["tag"],
+                        userId=session["user"]["userId"],
+                    ),
+                }
+            )
     return jsonify({"success": False, "message": "incomplete request"})
 
 

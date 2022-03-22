@@ -393,3 +393,28 @@ class workspaceDAO:
         with self.driver.session() as session:
             branch = session.write_transaction(_query)
             return branch
+
+    def rename_workspace(self, deltaGraphId, userId, tag):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId, tag=tag)
+            workspace = [
+                dict(
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["workspace"].items()
+                    }.items()
+                )
+                for record in result
+            ][0]
+            try:
+                return workspace
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
