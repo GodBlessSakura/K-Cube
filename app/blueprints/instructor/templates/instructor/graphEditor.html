@@ -88,7 +88,6 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
                             <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
                                 <v-list-item-title>preview changes</v-list-item-title>
                             </v-list-item>
@@ -113,7 +112,6 @@
                             </v-btn>
                         </template>
                         <v-list>
-                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
                             <v-list-item dense>
                                 <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
                                 </v-list-item-subtitle>
