@@ -269,9 +269,9 @@
             overwriterLabels: [],
             tag: '',
             tagRules: [v => !!v || 'Tag is required',
-                v => (v && v.length > 3 && v.length < 101) ||
+            v => (v && v.length > 3 && v.length < 101) ||
                 'Tag should be anything between 4 and 100 charactors',
-                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
+            v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
                 'Tag can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             options: [],
@@ -289,13 +289,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let graphPromise = fetch(
-                        "{{ url_for('RESTful.graph.get_compare', overwriterId=overwriterId, overwriteeId=overwriteeId) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                        })
+                    "{{ url_for('RESTful.graph.get_compare', overwriterId=overwriterId, overwriteeId=overwriteeId) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -361,7 +361,7 @@
                                 })
                                 let edge = previewCy.getElementById(edgeIdFromNames(triple.h_name,
                                     triple
-                                    .r_name,
+                                        .r_name,
                                     triple.t_name))[0]
                                 if (edge) {
                                     edge.data({
@@ -372,10 +372,10 @@
                                 }
                             })
                             if (previewCy.edges(
-                                    '[preview_value = "false"][original_value = "true"],' +
-                                    '[preview_value = "true"][original_value = "false"],' +
-                                    '[preview_value = "true"][original_value = "undefined"]'
-                                ).length == 0) {
+                                '[preview_value = "false"][original_value = "true"],' +
+                                '[preview_value = "true"][original_value = "false"],' +
+                                '[preview_value = "true"][original_value = "undefined"]'
+                            ).length == 0) {
                                 this.isTrival = true
                             }
                             this.rootName = body.overwriter.courseCode
@@ -425,12 +425,13 @@
                 }
 
                 this.$root.progress.show = true
+                let url = null
                 //{% if request.blueprint == "instructor" %}
-                let url =
+                url =
                     '{{ url_for("RESTful.branch.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
                 //{% endif %}
                 //{% if request.blueprint == "DLTC" %}
-                let url =
+                url =
                     '{{ url_for("RESTful.trunk.post", overwriterId=overwriterId,overwriteeId=overwriteeId)}}'
                 //{% endif %}
                 let body = {
@@ -438,14 +439,14 @@
                     action: this.action
                 }
                 fetch(
-                        url, {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify(body)
-                        })
+                    url, {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -473,15 +474,15 @@
             update() {
                 if (this.confirmed) {
                     fetch("{{ url_for('RESTful.branch.patch', deltaGraphId=overwriterId) }}", {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                visibility: KCube.visibility.indexOf(this.visibility)
-                            })
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            visibility: KCube.visibility.indexOf(this.visibility)
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
