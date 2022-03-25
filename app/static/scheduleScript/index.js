@@ -123,8 +123,9 @@ function constructTimetable(triples, activities, courseCode) {
                     Math.floor(counter / (totalItem / 13)),
                     Math.floor(
                         (index_of_first_item + newdata[firstHopEntity].length) /
-                        (totalItem / 13)) - 1
+                        (totalItem / 13)) - 1,
                 )
+                slot = slot < 0 ? 0 : slot
                 let timeSlot = timeslots[slot + 1];
                 entity = createDiv(content, uri);
                 timeSlot.appendChild(entity);
