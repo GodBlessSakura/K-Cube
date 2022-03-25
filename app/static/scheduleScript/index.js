@@ -108,17 +108,13 @@ function constructTimetable(triples, activities, courseCode) {
     for (firstHopEntity in newdata) {
         totalItem = totalItem + (newdata[firstHopEntity].length < 1 ? 1 : newdata[firstHopEntity].length)
     }
-    let slot_cursor = 0;
+
     let counter = 0
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
         } else if (newdata[firstHopEntity].length > 0) {
-            let uri = firstHopEntity,
-                content = firstHopEntity;
-            let timeSlot = timeslots[slot_cursor + '.5'];
-            entity = createDiv(content, uri);
-            timeSlot.appendChild(entity);
+            let slot_cursor = Math.floor(counter / (totalItem / 13))
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
                     content = depthFirstEntity;
@@ -127,10 +123,12 @@ function constructTimetable(triples, activities, courseCode) {
                 entity = createDiv(content, uri);
                 timeSlot.appendChild(entity);
                 counter++
-                if (slot != slot_cursor) {
-                    slot_cursor = slot
-                }
             }
+            let uri = firstHopEntity,
+                content = firstHopEntity;
+            let timeSlot = timeslots[slot_cursor + '.5'];
+            entity = createDiv(content, uri);
+            timeSlot.appendChild(entity);
         } else {}
     }
     for (firstHopEntity in newdata) {
@@ -144,9 +142,6 @@ function constructTimetable(triples, activities, courseCode) {
             entity = createDiv(content, uri);
             timeSlot.appendChild(entity);
             counter++
-            if (slot != slot_cursor) {
-                slot_cursor++
-            }
         }
     }
 
