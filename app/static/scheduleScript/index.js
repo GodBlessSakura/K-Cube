@@ -42,14 +42,14 @@ function assignWeekValue(triples, activities, courseCode) {
                 }
             }
         })
-        let result = []
-        for (entity of children) {
-            result = [...result, entity, ...depthFirst(children)]
+        let result = [entity]
+        for (child of children) {
+            result = [...result, ...depthFirst(child)]
         }
         return result
     }
     for (firstHopEntity of firstHop) {
-        newData[firstHopEntity] = depthFirst(firstHopEntity)
+        newData[firstHopEntity] = depthFirst(firstHopEntity).filter(e => e != firstHopEntity)
     }
     for (firstHopEntity of firstHop) {
         newData[firstHopEntity] = newData[firstHopEntity].filter(entity => {
@@ -106,11 +106,10 @@ function constructTimetable(triples, activities, courseCode) {
     // add new data
     let totalItem = 0
     for (firstHopEntity in newdata) {
-        totalItem = totalItem + newdata[firstHopEntity].length
+        totalItem = totalItem + (newdata[firstHopEntity].length < 1 ? 1 : newdata[firstHopEntity].length)
     }
     let slot_cursor = 0;
     let counter = 0
-    let itemPerRow = Math.ceil(totalItem / 13)
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
@@ -123,26 +122,24 @@ function constructTimetable(triples, activities, courseCode) {
         } else {
             let uri = firstHopEntity,
                 content = firstHopEntity;
-            let slot = slot_cursor
+            let slot = Math.floor(counter / (totalItem / 13))
             let timeSlot = timeslots[slot + 1];
             entity = createDiv(content, uri);
             timeSlot.appendChild(entity);
             counter++
-            if (counter > itemPerRow) {
-                counter = 0
+            if (slot != slot_cursor) {
                 slot_cursor++
             }
         }
         for (depthFirstEntity of newdata[firstHopEntity]) {
             let uri = depthFirstEntity,
                 content = depthFirstEntity;
-            let slot = slot_cursor
+            let slot = Math.floor(counter / (totalItem / 13))
             let timeSlot = timeslots[slot + 1];
             entity = createDiv(content, uri);
             timeSlot.appendChild(entity);
             counter++
-            if (counter > itemPerRow) {
-                counter = 0
+            if (slot != slot_cursor) {
                 slot_cursor++
             }
         }
