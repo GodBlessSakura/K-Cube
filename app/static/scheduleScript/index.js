@@ -20,6 +20,13 @@ function assignWeekValue(triples, activities, courseCode) {
             desc: courseCode
         }
     }
+    activities.forEach(activity => {
+        oldData[activity.name] = {
+            uri: activity.name,
+            week: activity.week,
+            desc: activity.desc
+        }
+    });
     let visited = [courseCode, ...firstHop]
 
     function depthFirst(entity) {
@@ -44,7 +51,6 @@ function assignWeekValue(triples, activities, courseCode) {
     for (firstHopEntity of firstHop) {
         newData[firstHopEntity] = depthFirst(firstHopEntity)
     }
-    console.log(newData)
     for (firstHopEntity of firstHop) {
         newData[firstHopEntity] = newData[firstHopEntity].filter(entity => {
             let candidate = activities.filter(a => a.name == entity)
@@ -61,8 +67,6 @@ function assignWeekValue(triples, activities, courseCode) {
             }
         })
     }
-    console.log(newData)
-    console.log(oldData)
     return [newData, oldData]
 }
 
@@ -80,12 +84,8 @@ function constructTimetable(triples, activities, courseCode) {
     let [newdata,
         olddata
     ] = assignWeekValue(triples, activities, courseCode)
-    for (var uri in olddata) {
-        if (olddata[uri].week < 0) continue;
-        let timeSlot = document.getElementById('week' + olddata[uri].week);
-        let entity = createDiv(olddata[uri]["desc"], uri);
-        timeSlot.appendChild(entity);
-    }
+    console.log(newdata)
+    console.log(olddata)
     let timeslots = {}
     for (let i = 1; i < 14; i++) {
         timeslots[i + ''] = document.getElementById('week' + i);
@@ -95,8 +95,13 @@ function constructTimetable(triples, activities, courseCode) {
         timeslots[i + '.5'] = document.getElementById('week' + i + '.5');
     }
     for (id in timeslots) {
-        console.log(typeof id)
         timeslots[id].innerHTML = id % 1 != 0 ? '' : '<div class="time" draggable="false">Week ' + id + '</div>'
+    }
+    for (uri in olddata) {
+        if (olddata[uri].week < 0) continue;
+        let timeSlot = document.getElementById('week' + olddata[uri].week);
+        let entity = createDiv(olddata[uri]["desc"], uri);
+        timeSlot.appendChild(entity);
     }
     // add new data
     let totalItem = 0
@@ -107,7 +112,9 @@ function constructTimetable(triples, activities, courseCode) {
     let counter = 0
     let itemPerRow = Math.ceil(totalItem / 13)
     for (firstHopEntity in newdata) {
-        if (newdata[firstHopEntity].length > 0) {
+        if (Object.keys(olddata).includes(firstHopEntity)) {
+
+        } else if (newdata[firstHopEntity].length > 0) {
             let uri = firstHopEntity,
                 content = firstHopEntity;
             let timeSlot = timeslots[slot_cursor + '.5'];
