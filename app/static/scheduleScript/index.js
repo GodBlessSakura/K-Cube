@@ -129,9 +129,10 @@ function constructTimetable(triples, activities, courseCode) {
             timeSlot.appendChild(entity);
             counter++
             if (slot != slot_cursor) {
-                slot_cursor++
+                slot_cursor = slot
             }
         }
+        slot_cursor++
     }
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
