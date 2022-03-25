@@ -119,9 +119,10 @@ function constructTimetable(triples, activities, courseCode) {
             let timeSlot = timeslots[slot_cursor + '.5'];
             entity = createDiv(content, uri);
             timeSlot.appendChild(entity);
-        } else {
-            let uri = firstHopEntity,
-                content = firstHopEntity;
+        } else {}
+        for (depthFirstEntity of newdata[firstHopEntity]) {
+            let uri = depthFirstEntity,
+                content = depthFirstEntity;
             let slot = Math.floor(counter / (totalItem / 13))
             let timeSlot = timeslots[slot + 1];
             entity = createDiv(content, uri);
@@ -131,9 +132,13 @@ function constructTimetable(triples, activities, courseCode) {
                 slot_cursor++
             }
         }
-        for (depthFirstEntity of newdata[firstHopEntity]) {
-            let uri = depthFirstEntity,
-                content = depthFirstEntity;
+    }
+    for (firstHopEntity in newdata) {
+        if (Object.keys(olddata).includes(firstHopEntity)) {
+
+        } else if (newdata[firstHopEntity].length > 0) {} else {
+            let uri = firstHopEntity,
+                content = firstHopEntity;
             let slot = Math.floor(counter / (totalItem / 13))
             let timeSlot = timeslots[slot + 1];
             entity = createDiv(content, uri);
