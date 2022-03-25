@@ -146,7 +146,7 @@ def reject_invalid(function):
             and re.search(regExpRules["title"], kwargs["title"]) == None
         ):
             raise InvalidRequest("Invalid text pattern.")
-        if "week" in kwargs and (kwargs["week"] < 1 or kwargs["week"] > 13):
+        if "week" in kwargs and (type(kwargs["week"]) != int or type(kwargs["week"]) != float):
             raise InvalidRequest("Invalid week value.")
         if "tag" in kwargs and re.search(regExpRules["tag"], kwargs["tag"]) == None:
             raise InvalidRequest("Invalid tag pattern.")

@@ -5,6 +5,66 @@ var olddata = {
 };
 var newdata = ["new1", "new2"];
 
+function assignWeekValue(triples, activities, courseCode) {
+    let firstHop =
+        triples.filter(triple => triple.h_name == courseCode || triple.t_name == courseCode)
+        .map(triple => {
+            let theOther = [triple.h_name, triple.t_name].filter(e => e != courseCode)[0]
+            return theOther
+        })
+    let newData = {}
+    let oldData = {
+        courseCode: {
+            uri: courseCode,
+            week: -1,
+            desc: courseCode
+        }
+    }
+    let visited = [courseCode, ...firstHop]
+
+    function depthFirst(entity) {
+        let children = []
+        triples.map(triple => {
+            let involved = [triple.h_name, triple.t_name]
+            if (involved.includes(entity)) {
+                let theOther = [triple.h_name, triple.t_name]
+                    .filter(e => e != entity)[0]
+                if (!visited.includes(theOther)) {
+                    children.push(theOther)
+                    visited.push(theOther)
+                }
+            }
+        })
+        let result = []
+        for (entity of children) {
+            result = [...result, entity, ...depthFirst(children)]
+        }
+        return result
+    }
+    for (firstHopEntity of firstHop) {
+        newData[firstHopEntity] = depthFirst(firstHopEntity)
+    }
+    console.log(newData)
+    for (firstHopEntity of firstHop) {
+        newData[firstHopEntity] = newData[firstHopEntity].filter(entity => {
+            let candidate = activities.filter(a => a.name == entity)
+            if (candidate.length == 0) {
+                return true
+            } else {
+                let activity = candidate[0]
+                oldData[candidate[0].name] = {
+                    uri: candidate[0].name,
+                    week: candidate[0].week,
+                    desc: candidate[0].desc
+                }
+                return false
+            }
+        })
+    }
+    console.log(newData)
+    console.log(oldData)
+    return [newData, oldData]
+}
 
 function createDiv(content, uri) {
     var createDiv = document.createElement("div");
@@ -16,32 +76,80 @@ function createDiv(content, uri) {
     return createDiv;
 }
 
-function constructTimetable(olddata, newdata) {
+function constructTimetable(triples, activities, courseCode) {
+    let [newdata,
+        olddata
+    ] = assignWeekValue(triples, activities, courseCode)
     for (var uri in olddata) {
-        //console.log(uri);
         if (olddata[uri].week < 0) continue;
         let timeSlot = document.getElementById('week' + olddata[uri].week);
         let entity = createDiv(olddata[uri]["desc"], uri);
         timeSlot.appendChild(entity);
     }
     let timeslots = {}
-    for (let i = 0; i < 14; i++) {
+    for (let i = 1; i < 14; i++) {
 
-        timeslots[i] = document.getElementById('week' + i);
+        timeslots[i + ''] = document.getElementById('week' + i);
     }
-    for (let i = 0; i < newdata.length; i++) {
-        let uri = newdata[i],
-            content = newdata[i];
-        let slot = Math.floor(i / (newdata.length / 13))
-        let timeSlot = timeslots[slot + 1];
-        entity = createDiv(content, uri);
-        timeSlot.appendChild(entity);
+    for (var i = 0; i <= 12; i++) {
+
+        timeslots[i + '.5'] = document.getElementById('week' + i + '.5');
+    }
+    console.log(timeslots)
+    // add new data
+    let totalItem = 0
+    for (firstHopEntity in newdata) {
+        totalItem = totalItem + newdata[firstHopEntity].length
+    }
+    let slot_cursor = 0;
+    let counter = 0
+    let itemPerRow = Math.floor(totalItem / 13)
+    for (firstHopEntity in newdata) {
+        if (newdata[firstHopEntity].length > 0) {
+            let uri = firstHopEntity,
+                content = firstHopEntity;
+            let timeSlot = timeslots[slot_cursor + '.5'];
+            entity = createDiv(content, uri);
+            timeSlot.appendChild(entity);
+        } else {
+            let uri = firstHopEntity,
+                content = firstHopEntity;
+            let slot = slot_cursor
+            let timeSlot = timeslots[slot + 1];
+            entity = createDiv(content, uri);
+            timeSlot.appendChild(entity);
+            counter++
+            if (counter > itemPerRow) {
+                counter = 0
+                slot_cursor++
+            }
+        }
+        for (depthFirstEntity of newdata[firstHopEntity]) {
+            let uri = depthFirstEntity,
+                content = depthFirstEntity;
+            let slot = slot_cursor
+            let timeSlot = timeslots[slot + 1];
+            entity = createDiv(content, uri);
+            timeSlot.appendChild(entity);
+            counter++
+            if (counter > itemPerRow) {
+                counter = 0
+                slot_cursor++
+            }
+        }
     }
 
     /* blank for add */
     for (var i = 1; i <= 13; i++) {
         timeSlot = document.getElementById('week' + i);
         entity = createDiv("", "");
+        entity.draggable = false
+        timeSlot.appendChild(entity);
+    }
+    for (var i = 0; i <= 12; i++) {
+        timeSlot = document.getElementById('week' + i + '.5');
+        entity = createDiv("", "");
+        entity.draggable = false
         timeSlot.appendChild(entity);
     }
 
@@ -75,7 +183,7 @@ function constructTimetable(olddata, newdata) {
         source[i].addEventListener('dragleave', function (ev) {
             console.log(111);
             if (dragElement != this) {
-                if (lock && (this == this.parentNode.lastElementChild || this == this.parentNode.lastChild)) {
+                if (lock && (this == this.parentNode.lastElementchildren || this == this.parentNode.lastchildren)) {
                     this.parentNode.appendChild(dragElement);
                     lock = false;
                 } else {
@@ -85,7 +193,7 @@ function constructTimetable(olddata, newdata) {
         }, false)
     };
     recycle.addEventListener('drop', function (ev) {
-        dragElement.parentNode.removeChild(dragElement);
+        dragElement.parentNode.removechildren(dragElement);
     }, false)
 
     document.ondragover = function (e) {
@@ -114,8 +222,17 @@ function createItem(div, day) {
 }
 
 function uploadTeachplan() {
-    for (var day = 1; day <= 13; day++) {
-        var weeklyDivlist = document.getElementById('week' + day).querySelectorAll('.list');
+    let timeslots = {}
+    for (let i = 0; i < 14; i++) {
+
+        timeslots[i] = document.getElementById('week' + i);
+    }
+    for (var i = 0; i <= 12; i++) {
+
+        timeslots[i] = document.getElementById('week' + i + '.5');
+    }
+    for (day in timeslots) {
+        var weeklyDivlist = timeslots[day].querySelectorAll('.list');
         var item = null;
         for (let i = 0; i < weeklyDivlist.length; i++) {
             if (weeklyDivlist[i].innerHTML) {

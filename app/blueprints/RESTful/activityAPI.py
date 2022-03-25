@@ -53,7 +53,7 @@ def post(courseCode, name):
                 "activity": get_api_driver().activity.set_user_course_activities(
                     courseCode=courseCode,
                     name=name,
-                    week=int(request.json["week"]),
+                    week=float(request.json["week"]),
                     userId=session["user"]["userId"],
                     desc=request.json["desc"],
                 ),

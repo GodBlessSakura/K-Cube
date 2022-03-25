@@ -152,42 +152,67 @@
 <div id="app">
     <div id="course">{{ courseCode }} Class Schedule (tentative)</div>
     <div class="main">
+        <div id="week0.5">
+        </div>
         <div id="week1">
             <div class="time" draggable="false">Week 1</div>
+        </div>
+        <div id="week1.5">
         </div>
         <div id="week2">
             <div class="time" draggable="false">Week 2</div>
         </div>
+        <div id="week2.5">
+        </div>
         <div id="week3">
             <div class="time" draggable="false">Week 3</div>
+        </div>
+        <div id="week3.5">
         </div>
         <div id="week4">
             <div class="time" draggable="false">Week 4</div>
         </div>
+        <div id="week4.5">
+        </div>
         <div id="week5">
             <div class="time" draggable="false">Week 5</div>
+        </div>
+        <div id="week5.5">
         </div>
         <div id="week6">
             <div class="time" draggable="false">Week 6</div>
         </div>
+        <div id="week6.5">
+        </div>
         <div id="week7">
             <div class="time" draggable="false">Week 7</div>
+        </div>
+        <div id="week7.5">
         </div>
         <div id="week8">
             <div class="time" draggable="false">Week 8</div>
         </div>
+        <div id="week8.5">
+        </div>
         <div id="week9">
             <div class="time" draggable="false">Week 9</div>
+        </div>
+        <div id="week9.5">
         </div>
         <div id="week10">
             <div class="time" draggable="false">Week 10</div>
         </div>
-
+        <div id="week10.5">
+        </div>
         <div id="week11">
             <div class="time" draggable="false">Week 11</div>
         </div>
+        <div id="week11.5">
+        </div>
         <div id="week12">
             <div class="time" draggable="false">Week 12</div>
+        </div>
+        <div id="week12.5">
         </div>
         <div id="week13">
             <div class="time" draggable="false">Week 13</div>
@@ -197,8 +222,7 @@
     <div id="recycle">Trash</div>
 
     <div class="buttonContainer">
-        <button class="btn" id="docRaptor">function 1</button>
-        <button class="btn" id="pdfmake">function 2</button>
+        <button class="btn" id="docRaptor" @click="constructTimetable(triples,[])">recompute</button>
         <!--<button class="btn" id="jsPDF">Export PDF with jsPDF</button>-->
         <button class="btn" id="upJS">Upload Form</button>
         <button class="btn" id="browserPrint">Export PDF with browser print</button>
@@ -297,69 +321,21 @@
                         }
                     })
                 Promise.all([graphPromise, departmentGraphPromise, activityPromise]).then(data => {
-                    let newData = []
-                    let oldData = {}
                     let triples = data[0].filter(triple => triple.r_name == "Subtopic in")
                     if (triples.length == 0) triples = data[1].filter(triple => triple.r_name == "Subtopic in")
                     let activities = data[2]
-                    let cursor = ["{{courseCode}}"]
-                    let hop = []
-
-                    while (cursor.length != 0) {
-                        triples.forEach(triple => {
-                            [triple.h_name, triple.t_name].forEach(entity => {
-                                if (cursor.includes(entity)) {
-                                    let theOther = [triple.h_name, triple.t_name]
-                                        .filter(
-                                            e => e != entity)[0]
-                                    if (!hop.includes(theOther) && !newData.includes(
-                                        theOther))
-                                        hop.push(theOther)
-                                }
-                            })
-                        })
-                        console.log("hop")
-                        console.log(hop)
-                        newData = [...newData, ...cursor]
-                        cursor = hop
-                        hop = []
-                    }
-                    console.log(newData)
-                    newData = newData.filter(entity => {
-                        let candidate = activities.filter(a => a.name == entity)
-                        if (candidate.length == 0) {
-                            return true
-                        } else {
-                            let activity = candidate[0]
-                            oldData[candidate[0].name] = {
-                                uri: candidate[0].name,
-                                week: candidate[0].week,
-                                desc: candidate[0].desc
-                            }
-                            return false
-                        }
-                    })
-                    newData = newData.filter(entity => entity != "{{courseCode}}")
-                    if (oldData["{{courseCode}}"]) {
-                        oldData["{{courseCode}}"].week = -1
-                    }
-                    else {
-                        oldData["{{courseCode}}"] = {
-                            uri: "{{courseCode}}",
-                            week: -1,
-                            desc: "{{courseCode}}"
-
-                        }
-                    }
-                    console.log(newData)
-                    console.log(oldData)
-                    constructTimetable(oldData, newData)
+                    this.triples = triples
+                    this.activities = activities
+                    constructTimetable(triples, activities, "{{courseCode}}")
 
                 })
             },
+            constructTimetable(triples, activities) {
+                constructTimetable(triples, activities, "{{courseCode}}")
+            }
         },
         mounted: function () {
-            
+
             this.loadData()
 
             this.$root.$on('post-activity', function (activity) {
