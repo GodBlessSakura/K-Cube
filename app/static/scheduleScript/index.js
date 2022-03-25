@@ -114,6 +114,11 @@ function constructTimetable(triples, activities, courseCode) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
         } else if (newdata[firstHopEntity].length > 0) {
+            let uri = firstHopEntity,
+                content = firstHopEntity;
+            let timeSlot = timeslots[slot_cursor + '.5'];
+            entity = createDiv(content, uri);
+            timeSlot.appendChild(entity);
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
                     content = depthFirstEntity;
@@ -126,11 +131,6 @@ function constructTimetable(triples, activities, courseCode) {
                     slot_cursor = slot
                 }
             }
-            let uri = firstHopEntity,
-                content = firstHopEntity;
-            let timeSlot = timeslots[slot_cursor + '.5'];
-            entity = createDiv(content, uri);
-            timeSlot.appendChild(entity);
         } else {}
     }
     for (firstHopEntity in newdata) {
