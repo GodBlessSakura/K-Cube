@@ -88,14 +88,16 @@ function constructTimetable(triples, activities, courseCode) {
     }
     let timeslots = {}
     for (let i = 1; i < 14; i++) {
-
         timeslots[i + ''] = document.getElementById('week' + i);
     }
     for (var i = 0; i <= 12; i++) {
 
         timeslots[i + '.5'] = document.getElementById('week' + i + '.5');
     }
-    console.log(timeslots)
+    for (id in timeslots) {
+        console.log(typeof id)
+        timeslots[id].innerHTML = id % 1 != 0 ? '' : '<div class="time" draggable="false">Week ' + id + '</div>'
+    }
     // add new data
     let totalItem = 0
     for (firstHopEntity in newdata) {
@@ -103,7 +105,7 @@ function constructTimetable(triples, activities, courseCode) {
     }
     let slot_cursor = 0;
     let counter = 0
-    let itemPerRow = Math.floor(totalItem / 13)
+    let itemPerRow = Math.ceil(totalItem / 13)
     for (firstHopEntity in newdata) {
         if (newdata[firstHopEntity].length > 0) {
             let uri = firstHopEntity,
@@ -223,14 +225,15 @@ function createItem(div, day) {
 
 function uploadTeachplan() {
     let timeslots = {}
-    for (let i = 0; i < 14; i++) {
+    for (let i = 1; i < 14; i++) {
 
         timeslots[i] = document.getElementById('week' + i);
     }
     for (var i = 0; i <= 12; i++) {
 
-        timeslots[i] = document.getElementById('week' + i + '.5');
+        timeslots[i + '.5'] = document.getElementById('week' + i + '.5');
     }
+    console.log(timeslots)
     for (day in timeslots) {
         var weeklyDivlist = timeslots[day].querySelectorAll('.list');
         var item = null;
