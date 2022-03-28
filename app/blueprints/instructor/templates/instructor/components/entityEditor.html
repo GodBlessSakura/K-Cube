@@ -20,6 +20,9 @@
                         :rules="activityWeekRules">
                     </v-text-field>
                 </v-col>
+                <v-col>
+                    <v-checkbox v-model="activityIsMetaTopic" @change="setActivity" label=""></v-checkbox>
+                </v-col>
                 <v-col cols="auto">
                     <v-icon v-if="syned">sync</v-icon>
                     <v-icon v-else @click="setActivity">sync_problem</v-icon>
@@ -84,6 +87,7 @@
             syned: true,
             activityDesc: null,
             activityWeek: null,
+            activityIsMetaTopic: null,
             activityDescRules: [v => !!v || 'Description is required',
             v => (v && v.length > 3 && v.length < 501) ||
                 'Description should be anything between 4 and 500 charactors',
@@ -158,7 +162,8 @@
                                 if (activity.length > 0) {
                                     activity = activity[0]
                                     this.activityDesc = activity.desc
-                                    this.activityWeek = activity.week
+                                    this.activityIsMetaTopic = activity.week % 1 != 0
+                                    this.activityWeek = this.activityIsMetaTopic ? activity.week + .5 : activity.week
                                 }
                                 body.data.filter(d => d.labels.includes("Material")).forEach(d => {
                                     this.materials.push(d)
@@ -254,7 +259,7 @@
                         },
                         body: JSON.stringify({
                             desc: this.activityDesc,
-                            week: this.activityWeek
+                            week: this.activityIsMetaTopic ? this.activityWeek - .5 : this.activityWeek
                         })
                     }, () => { this.syned = false })
                         .then(response => {
