@@ -35,9 +35,10 @@
                     </v-list-item>
                 </v-col>
                 <v-col cols="auto">
-                    <v-tooltip bottom>
+                    <v-tooltip :disabled="subject?.isExposed && activePositiveEdgeCount + activeNegativeEdgeCount == 0"
+                        bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on" @click="openIframe()" dense>
+                            <v-list-item v-bind="attrs" v-on="on" @click="openIframe()">
                                 <v-list-item-subtitle>Course plan
                                 </v-list-item-subtitle>
                                 <v-list-item-icon>
