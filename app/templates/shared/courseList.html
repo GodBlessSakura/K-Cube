@@ -128,12 +128,12 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
-                                            :href="'{{ url_for('instructor.courseSchedule') }}/' + courses[row*colPerRow + col].courseCode"
+                                            :href="'{{ url_for('instructor.coursePlan') }}/' + courses[row*colPerRow + col].courseCode"
                                             icon>
                                             <v-icon>edit_calendar</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Course Schedules</span>
+                                    <span>Course Plan</span>
                                 </v-tooltip>
                             </v-list-item>
                             <v-list-item>

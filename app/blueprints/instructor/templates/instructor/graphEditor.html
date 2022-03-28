@@ -38,7 +38,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-list-item v-bind="attrs" v-on="on" @click="openIframe()" dense>
-                                <v-list-item-subtitle>Course schedules
+                                <v-list-item-subtitle>Course plan
                                 </v-list-item-subtitle>
                                 <v-list-item-icon>
                                     <v-icon>open_in_new</v-icon>
@@ -49,14 +49,14 @@
                             </v-list-item>
                         </template>
                         <span style="font-size: small;" v-if="!subject?.isExposed">
-                            Course schedule only reflects contents on exposed graph.<br>
+                            Course plan only reflects contents on exposed graph.<br>
                             The workspace is not editing the exposed graph.<br>
                             You may exposed the graph through "publish patch"<br>.
                         </span>
                         <span style="font-size: small;" v-else-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                            Uncommited changes are NOT reflected on course schedule.<br>
+                            Uncommited changes are NOT reflected on course plan.<br>
                             You may commit and expose to include these changes in<br>
-                            the course schedule.
+                            the course plan.
                         </span>
                     </v-tooltip>
                 </v-col>
@@ -606,16 +606,16 @@
             </v-btn>
         </kcube-entity-form>
     </v-dialog>
-    <v-dialog v-model="scheduleDialogue" content-class="schedulePage" transition="slide-x-reverse-transition"
+    <v-dialog v-model="coursePlanDialogue" content-class="coursePlanPage" transition="slide-x-reverse-transition"
         hide-overlay no-click-animation eager>
-        <v-btn block color="error" plain @click="scheduleDialogue = false" small elevation="2">
+        <v-btn block color="error" plain @click="coursePlanDialogue = false" small elevation="2">
             dismiss
             <v-icon right>
                 close
             </v-icon>
         </v-btn>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
-            :src="subject?.courseCode?'{{ url_for('instructor.courseSchedule')}}' + subject.courseCode + '?bar=false':''"></iframe>
+            :src="subject?.courseCode?'{{ url_for('instructor.coursePlan')}}' + subject.courseCode + '?bar=false':''"></iframe>
     </v-dialog>
 </v-container>
 
@@ -644,7 +644,7 @@
         overflow-x: clip;
     }
 
-    .schedulePage {
+    .coursePlanPage {
         height: 100vh;
         padding: unset;
         right: 0px;
@@ -782,7 +782,7 @@
             metricsBottomSheet: false,
             graphLoading: true,
             entityDialogue: false,
-            scheduleDialogue: false,
+            coursePlanDialogue: false,
         }),
         methods: {
             loadData() {
@@ -1509,7 +1509,7 @@
                     return
                 }
                 this.$refs.iframe.addEventListener('load', () => {
-                    this.$root.progress.show = false; this.scheduleDialogue = true
+                    this.$root.progress.show = false; this.coursePlanDialogue = true
                 }, { once: true })
                 this.$root.progress.show = true;
                 this.$refs.iframe.contentWindow.location.reload()

@@ -107,11 +107,11 @@ def versionTree(courseCode):
     abort(404)
 
 
-@instructor.route("/courseSchedule/", defaults={"courseCode": None})
-@instructor.route("/courseSchedule/<courseCode>")
-def courseSchedule(courseCode):
+@instructor.route("/coursePlan/", defaults={"courseCode": None})
+@instructor.route("/coursePlan/<courseCode>")
+def coursePlan(courseCode):
     if courseCode is not None:
-        return render_template("instructor/courseSchedule.html", courseCode=courseCode)
+        return render_template("instructor/coursePlan.html", courseCode=courseCode)
     abort(404)
 
 

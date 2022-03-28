@@ -138,9 +138,9 @@
 </script>
 
 
-<script src="{{ url_for('static', filename='scheduleScript/index.js')}}"></script>
-<script src="{{ url_for('static', filename='scheduleScript/mobile-drag-drop/index.min.js')}}"></script>
-<script src="{{ url_for('static', filename='scheduleScript/mobile-drag-drop/scroll-behaviour.min.js')}}"></script>
+<script src="{{ url_for('static', filename='coursePlanScript/index.js')}}"></script>
+<script src="{{ url_for('static', filename='coursePlanScript/mobile-drag-drop/index.min.js')}}"></script>
+<script src="{{ url_for('static', filename='coursePlanScript/mobile-drag-drop/scroll-behaviour.min.js')}}"></script>
 <script>
     MobileDragDrop.polyfill({
         // use this to make use of the scroll behaviour
@@ -150,7 +150,7 @@
 {% endblock %}
 {% block VueComponent %}
 <div id="app">
-    <div id="course">{{ courseCode }} Class Schedule (tentative)</div>
+    <div id="course">{{ courseCode }} Class Plan (tentative)</div>
     <div class="main">
         <div id="week0.5">
         </div>
@@ -252,7 +252,7 @@
                             return body.activities
                         } else {
                             this.$root.errorDisplay(body,
-                                'Unexpected error on getting courses schedule information.')
+                                'Unexpected error on getting courses plan information.')
                         }
                     })
                 let graphPromise = fetch(
@@ -354,7 +354,7 @@
                         this.$root.progress.show = false
                         if (body.activity) { } else {
                             this.$root.errorDisplay(body,
-                                'Unexpected error on setting courses schedule information.')
+                                'Unexpected error on setting courses plan information.')
                         }
                     })
             })
