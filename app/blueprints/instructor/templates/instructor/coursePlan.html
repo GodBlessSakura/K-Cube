@@ -109,7 +109,7 @@
 
         @bottom-center {
             /* footer with counter functions to insert page counters */
-            content: "Page "counter(page) " of "counter(pages)
+            content: "Page " counter(page) " of " counter(pages)
         }
     }
 
@@ -322,7 +322,11 @@
             }
         },
         mounted: function () {
-
+            window.onmessage = (e) => {
+                if (e.data == "loadData") {
+                    this.loadData()
+                }
+            }
             this.loadData()
 
             this.$root.$on('post-activity', function (activity) {
