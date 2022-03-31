@@ -531,8 +531,8 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
-                appBar: new URLSearchParams(window.location.search).get('bar') === "false" ? false : true,
-                navBar: new URLSearchParams(window.location.search).get('bar') === "false" ? false : true,
+                appBar: new URLSearchParams(window.location.search).get('bar') === "false" || window.location !== window.parent.location ? false : true,
+                navBar: new URLSearchParams(window.location.search).get('bar') === "false" || window.location !== window.parent.location ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
                 miniSync: true,
