@@ -273,7 +273,9 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.activity) { } else {
+                            if (body.activity) { 
+                                this.$emit('activity-change')
+                            } else {
                                 throw new Error(body.message)
                             }
                         })
