@@ -7,9 +7,10 @@
     style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
     <v-row no-gutters>
         <v-col cols="auto">
-            <v-card-subtitle>
-                <v-icon large>work</v-icon>
-            </v-card-subtitle>
+            <v-avatar @click="fullScreenMode = !fullScreenMode">
+                <v-icon style="transform: rotate(90deg)" large v-if="fullScreenMode">close_fullscreen</v-icon>
+                <v-icon style="transform: rotate(90deg)" large v-else>open_in_full</v-icon>
+            </v-avatar>
         </v-col>
         <v-col>
             <v-row>
@@ -38,7 +39,7 @@
                     <v-tooltip :disabled="subject?.isExposed && activePositiveEdgeCount + activeNegativeEdgeCount == 0"
                         bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on" @click="openIframe()">
+                            <v-list-item v-bind="attrs" v-on="on" @click="coursePlanDialogue = !coursePlanDialogue">
                                 <v-list-item-subtitle>Course plan
                                 </v-list-item-subtitle>
                                 <v-list-item-icon>
@@ -598,7 +599,7 @@
     </v-dialog>
     <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
         persistent :retain-focus="false" no-click-animation scrollable eager>
-        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode">
+        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode" @activity-change="reloadCoursePlan()">
             <v-btn block color="error" plain @click="entityDialogue = false" small elevation="2">
                 dismiss
                 <v-icon right>
@@ -608,15 +609,17 @@
         </kcube-entity-form>
     </v-dialog>
     <v-dialog v-model="coursePlanDialogue" content-class="coursePlanPage" transition="slide-x-reverse-transition"
-        hide-overlay no-click-animation eager>
-        <v-btn block color="error" plain @click="coursePlanDialogue = false" small elevation="2">
-            dismiss
-            <v-icon right>
-                close
-            </v-icon>
-        </v-btn>
-        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
-            :src="subject?.courseCode?'{{ url_for('instructor.coursePlan')}}' + subject.courseCode + '?bar=false':''"></iframe>
+        hide-overlay no-click-animation persistent>
+        <v-card style="height: 100%; width:100%">
+            <v-btn block color="error" plain @click="coursePlanDialogue = false" small elevation="2">
+                dismiss
+                <v-icon right>
+                    close
+                </v-icon>
+            </v-btn>
+            <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
+                :src="subject?.courseCode?'{{ url_for('instructor.coursePlan')}}' + subject.courseCode:''"></iframe>
+        </v-card>
     </v-dialog>
 </v-container>
 
@@ -640,19 +643,17 @@
         width: 30vw;
         max-height: unset !important;
         position: absolute;
-        right: 0px;
         margin: unset;
         overflow-x: clip;
     }
 
     .coursePlanPage {
-        height: 100vh;
+        height: 70vh;
         padding: unset;
-        right: 0px;
+        left: 0px;
         width: 40vw;
         max-height: unset !important;
         position: absolute;
-        right: 0px;
         margin: unset;
         overflow: clip;
     }
@@ -785,6 +786,17 @@
             entityDialogue: false,
             coursePlanDialogue: false,
         }),
+        computed: {
+            fullScreenMode: {
+                get() {
+                    return !this.$root.appBar && !this.$root.navBar
+                },
+                set(value) {
+                    this.$root.appBar = !value
+                    this.$root.navBar = !value
+                }
+            }
+        },
         methods: {
             loadData() {
                 this.$root.progress.show = true
@@ -1504,19 +1516,12 @@
                     })
                 })
             },
-            openIframe() {
-                if (this.$root.progress.show == true) {
-                    this.$root.bePatientSnackBar.show = true
-                    return
-                }
-                this.$refs.iframe.addEventListener('load', () => {
-                    this.$root.progress.show = false; this.coursePlanDialogue = true
-                }, { once: true })
-                this.$root.progress.show = true;
-                this.$refs.iframe.contentWindow.location.reload()
+            reloadCoursePlan() {
+                this.$refs.iframe.contentWindow.postMessage("loadData", '*')
             }
         },
         mounted: function () {
+            this.fullScreenMode = true
             cy.mount(document.getElementById("editor"))
             cytoscapeInstance.forEach(instance => {
                 instance.cy.container().style.background = cyStyles[instance.options].filter(
