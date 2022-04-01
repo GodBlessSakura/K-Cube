@@ -3,27 +3,33 @@
 {% block VueComponent %}
 <v-container id="app">
     <v-row>
-        <v-spacer></v-spacer>
         <v-col>
             <v-card-title>
                 {{ courseCode }} course Plan
             </v-card-title>
-            <v-card-subtitle v-if="changes">
+        </v-col>
+        <v-col>
+            <v-card-subtitle>
                 ${changes?changes+' unsave changes':''}
-                <v-icon>sync</v-icon>
+                <v-icon v-if="changes">sync</v-icon>
+                ${details == null?'right-click on item for details' :''}
             </v-card-subtitle>
         </v-col>
-        <v-spacer></v-spacer>
     </v-row>
-    <v-row v-for="week in [...Object.keys(plan).sort()]">
-        <v-col cols="auto" v-if="week % 1 == 0">week ${week}</v-col>
+    <v-row style="outline: 1px solid black;" v-for="week in [...Object.keys(plan).sort(function(a,b) { return a - b})]"
+        no-gutters>
+        <v-col cols="auto" v-if="week % 1 == 0">
+            <v-list-item style="padding:unset" dense>week ${week}</v-list-item>
+        </v-col>
+        <v-col cols="auto" v-else-if="plan[week].length == 0" style="height: 5px;"></v-col>
         <v-col>
             <draggable style="display: flex;" handle=".handle" v-model="plan[week]" direction="horizontal"
                 group="entity" @add="dropEntity($event, week)">
-                <v-btn v-for="entity in plan[week]" small>
-                    <v-icon class="handle">drag_handle</v-icon>
-                    <v-text-field v-model="entity.desc" @change="patchEntity(entity)"></v-text-field>
-                </v-btn>
+                <v-list-item @contextmenu="showDetails($event,entity)" v-for="entity in plan[week]" dense>
+                    <v-icon small class="handle">drag_handle</v-icon>
+                    <v-text-field dense hide-details flat solo v-model="entity.desc" @change="patchEntity(entity)">
+                    </v-text-field>
+                </v-list-item>
             </draggable>
         </v-col>
     </v-row>
@@ -33,16 +39,40 @@
         </v-col>
     </v-row>
     </div>
+    <v-menu v-model="showMenu" :position-x="x" :position-y="y" absolute offset-y>
+        <v-card>
+            <v-card-title>
+                Entity ID: ${ details?.name }
+            </v-card-title>
+            <v-card-subtitle>
+                description: ${ details?.desc }
+            </v-card-subtitle>
+        </v-card>
+    </v-menu>
 </v-container>
 {% endblock %}
 
 {% block VueComponentScript %}
 <script src="{{ url_for('static', filename='coursePlanScript/index.js')}}"></script>
+<style>
+    .v-text-field input,
+    .v-list-item {
+        font-size: small;
+    }
+
+    .v-list-item {
+        padding: 0 0 0 8px;
+    }
+</style>
 <script>
     Vue.component('app-content', {
         data: () => ({
             plan: {},
-            changes: 0
+            changes: 0,
+            x: null,
+            y: null,
+            details: null,
+            showMenu: false
         }),
 
         methods: {
@@ -151,45 +181,11 @@
             },
             dropEntity(event, week) {
                 let entity = this.plan[week][event.newIndex]
-                this.changes++
-                fetch(
-                    "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
-                    encodeURIComponent(
-                        entity.name), {
-                    method: 'POST',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        desc: entity.desc,
-                        week: week
-                    })
-                })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
-                            this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        if (body.activity) {
-                            entity.week = week
-                            this.changes--
-                        } else {
-                            this.$root.errorDisplay(body,
-                                'Unexpected error on setting courses plan information.')
-                        }
-                    })
+                entity.week = week
+                this.patchEntity(entity)
             },
             patchEntity(entity) {
                 this.changes++
-                console.log(entity)
-                console.log(entity.name)
                 fetch(
                     "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
                     encodeURIComponent(
@@ -215,12 +211,30 @@
                     })
                     .then(body => {
                         this.$root.progress.show = false
-                        if (body.activity) { this.changes-- } else {
+                        if (body.activity) {
+                            this.changes--
+                            try {
+                                if (window.self !== window.top) {
+                                    throw ''
+                                }
+                            } catch (e) {
+                                window.parent.postMessage(entity, '*')
+                            }
+                        } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on setting courses plan information.')
                         }
                     })
 
+            },
+            showDetails(event, entity) {
+                event.preventDefault()
+                this.x = event.clientX
+                this.y = event.clientY
+                this.details = entity
+                this.$nextTick(() => {
+                    this.showMenu = true
+                })
             }
         },
         mounted: function () {

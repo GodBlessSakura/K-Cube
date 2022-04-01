@@ -161,9 +161,7 @@
                                 let activity = body.data.filter(d => d.labels.includes("Activity"))
                                 if (activity.length > 0) {
                                     activity = activity[0]
-                                    this.activityDesc = activity.desc
-                                    this.activityIsMetaTopic = activity.week % 1 != 0
-                                    this.activityWeek = this.activityIsMetaTopic ? activity.week + .5 : activity.week
+                                    this.getActivity(activity)
                                 }
                                 body.data.filter(d => d.labels.includes("Material")).forEach(d => {
                                     this.materials.push(d)
@@ -176,6 +174,12 @@
                 Promise.all([entityPromise]).then(_ => {
                     this.$root.progress.show = false
                 })
+            },
+            getActivity(activity) {
+                this.activityDesc = activity.desc
+                this.activityIsMetaTopic = activity.week % 1 != 0
+                this.activityWeek = this.activityIsMetaTopic ? Number(activity.week) + .5 : activity.week
+                console.log(activity.week)
             },
             submitMaterial() {
                 if (this.$refs.materialControl.validate()) {
@@ -273,12 +277,17 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            if (body.activity) { 
+                            if (body.activity) {
                                 this.$emit('activity-change')
                             } else {
                                 throw new Error(body.message)
                             }
                         })
+                }
+            },
+            updateEntity(entity) {
+                if (entity.name == this.name) {
+                    this.getActivity(entity)
                 }
             }
         },

@@ -1509,7 +1509,7 @@
             },
             reloadCoursePlan() {
                 this.$refs.iframe.contentWindow.postMessage("loadData", '*')
-            }
+            },
         },
         mounted: function () {
             this.fullScreenMode = true
@@ -1519,6 +1519,9 @@
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]
             })
             self = this
+            window.addEventListener('message', (event) => {
+                this.$refs.entityForm.updateEntity(event.data)
+            })
             cy.on('tap', 'node', (event) => {
                 this.$refs.entityForm.loadData(event.target.data("id"))
                 // this.$nextTick(function () {
