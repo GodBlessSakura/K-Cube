@@ -238,6 +238,24 @@
             }
         },
         mounted: function () {
+            window.addEventListener('beforeunload', (e) => {
+                if (this.changes) {
+                    e.preventDefault()
+                    e.returnValue = this.changes + 'changes are still uploading';
+                }
+            });
+            try {
+                if (window.self !== window.top) {
+                    throw ''
+                }
+            } catch (e) {
+                window.parent.addEventListener('beforeunload', (e) => {
+                    if (this.changes) {
+                        e.preventDefault()
+                        e.returnValue = this.changes + 'changes are still uploading';
+                    }
+                });
+            }
             window.onmessage = (e) => {
                 if (e.data == "loadData") {
                     this.loadData()
