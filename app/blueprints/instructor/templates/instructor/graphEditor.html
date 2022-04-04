@@ -600,7 +600,7 @@
         </kcube-entity-form>
     </v-dialog>
     <v-dialog v-model="coursePlanDialogue" content-class="coursePlanPage" transition="slide-x-reverse-transition"
-        hide-overlay no-click-animation persistent>
+        hide-overlay no-click-animation persistent :retain-focus="false">
         <v-card style="height: 100%; width:100%">
             <v-btn block color="error" plain @click="coursePlanDialogue = false" small elevation="2">
                 dismiss
