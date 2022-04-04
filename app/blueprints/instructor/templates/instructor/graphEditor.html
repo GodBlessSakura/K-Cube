@@ -590,7 +590,7 @@
     </v-dialog>
     <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
         persistent :retain-focus="false" no-click-animation scrollable eager>
-        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode" @activity-change="reloadCoursePlan()">
+        <kcube-entity-form ref="entityForm" :courseCode="subject.courseCode" @activity-change="reloadCoursePlan">
             <v-btn block color="error" plain @click="entityDialogue = false" small elevation="2">
                 dismiss
                 <v-icon right>
@@ -1507,8 +1507,8 @@
                     })
                 })
             },
-            reloadCoursePlan() {
-                this.$refs.iframe.contentWindow.postMessage("loadData", '*')
+            reloadCoursePlan(activity) {
+                this.$refs.iframe.contentWindow.postMessage(activity, '*')
             },
         },
         mounted: function () {

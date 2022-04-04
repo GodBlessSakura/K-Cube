@@ -278,7 +278,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.activity) {
-                                this.$emit('activity-change')
+                                this.$emit('activity-change', { name: this.name, desc: this.activityDesc, week: this.activityIsMetaTopic ? this.activityWeek - 0.5 : this.activityWeek })
                             } else {
                                 throw new Error(body.message)
                             }

@@ -257,9 +257,21 @@
                 });
             }
             window.onmessage = (e) => {
-                if (e.data == "loadData") {
-                    this.loadData()
+                if (e.data && e.data.name && e.data.desc && e.data.week) {
+                    console.log(e.data)
+                    for (week in this.plan) {
+                        for (index in this.plan[week]) {
+                            if (this.plan[week][index].name == e.data.name) {
+                                let entity = this.plan[week][index]
+                                entity.desc = e.data.desc
+                                entity.week = e.data.week
+                                this.plan[week].splice(index, 1)
+                                this.plan[entity.week].push(entity)
+                            }
+                        }
+                    }
                 }
+
             }
             this.loadData()
 
