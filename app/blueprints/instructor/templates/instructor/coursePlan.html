@@ -23,11 +23,11 @@
         </v-col>
         <v-col cols="auto" v-else-if="plan[week].length == 0" style="height: 5px;"></v-col>
         <v-col>
-            <draggable style="display: flex;" handle=".handle" v-model="plan[week]" direction="horizontal"
+            <draggable style="display: flex;" handle=".handle" v-model="plan[week]" direction="horizontal" ghost-class="ghost"
                 group="entity" @add="dropEntity($event, week)">
                 <v-list-item @contextmenu="showDetails($event,entity)" v-for="entity in plan[week]" dense>
                     <v-icon small class="handle">drag_handle</v-icon>
-                    <v-text-field dense hide-details flat solo v-model="entity.desc" @change="patchEntity(entity)">
+                    <v-text-field background-color="transparent" dense hide-details flat solo v-model="entity.desc" @change="patchEntity(entity)">
                     </v-text-field>
                 </v-list-item>
             </draggable>
@@ -62,6 +62,9 @@
 
     .v-list-item {
         padding: 0 0 0 8px;
+    }
+    .ghost{
+        background-color: lightgrey;
     }
 </style>
 <script>
