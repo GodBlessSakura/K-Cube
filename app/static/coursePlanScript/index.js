@@ -15,7 +15,7 @@ function graph_traversal(triples, activities, courseCode) {
 
     activities.forEach(activity => {
         // only reflect activity if it is shown on course graph
-        for (triple in triples) {
+        for (triple of triples) {
             let involved = [triple.h_name, triple.t_name]
             if (involved.includes(activity.name)) {
                 oldData[activity.name] = createItem(activity.desc, activity.name, activity.week)
@@ -30,7 +30,6 @@ function graph_traversal(triples, activities, courseCode) {
         triples.map(triple => {
             let involved = [triple.h_name, triple.t_name]
             if (involved.includes(entity)) {
-                console.log(involved)
                 let theOther = [triple.h_name, triple.t_name]
                     .filter(e => e != entity)[0]
                 if (!visited.includes(theOther)) {
@@ -40,7 +39,6 @@ function graph_traversal(triples, activities, courseCode) {
             }
         })
         let result = [entity]
-        console.log(children)
         for (child of children) {
             result = [...result, ...depthFirst(child)]
         }
