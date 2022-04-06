@@ -89,8 +89,8 @@
             activityWeek: null,
             activityIsMetaTopic: null,
             activityDescRules: [v => !!v || 'Description is required',
-            v => (v && v.length > 3 && v.length < 501) ||
-                'Description should be anything between 4 and 500 charactors',
+            v => (v && v.length > 1 && v.length < 99) ||
+                'Description should be anything between 1 and 99 charactors',
             v => (v && /{{regExpRules["desc"]}}/.test(v)) ||
                 'Description can only contains alphanumeric characters and space.'
             ],
@@ -120,7 +120,7 @@
             materialDesc: '',
             materialDescRules: [v => !!v || 'Description is required',
             v => (v && v.length > 3 && v.length < 501) ||
-                'Description should be anything between 4 and 500 charactors',
+                'Description should be anything between 1 and 99 charactors',
             v => (v && /{{regExpRules["desc"]}}/.test(v)) ||
                 'Description can only contains alphanumeric characters and space.'
             ],
