@@ -39,7 +39,8 @@
                     <v-tooltip :disabled="subject?.isExposed && activePositiveEdgeCount + activeNegativeEdgeCount == 0"
                         bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on" @click="coursePlanDialogue = !coursePlanDialogue">
+                            <v-list-item v-bind="attrs" v-on="on"
+                                @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
                                 <v-list-item-subtitle>Course plan
                                 </v-list-item-subtitle>
                                 <v-list-item-icon>
@@ -53,7 +54,7 @@
                         <span style="font-size: small;" v-if="!subject?.isExposed">
                             Course plan only reflects contents on exposed graph.<br>
                             The workspace is not editing the exposed graph.<br>
-                            You may exposed the graph through "publish patch"<br>.
+                            You may expose the graph through "publish patch"<br>.
                         </span>
                         <span style="font-size: small;" v-else-if="activePositiveEdgeCount + activeNegativeEdgeCount">
                             Uncommited changes are NOT reflected on course plan.<br>

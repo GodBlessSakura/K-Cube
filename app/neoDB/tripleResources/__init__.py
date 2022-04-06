@@ -219,6 +219,40 @@ class tripleDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def get_course_editing_triple(self, courseCode, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            result = tx.run(
+                "MATCH (:GraphConcept{name: $courseCode})<-[:COURSE_DESCRIBE]-(course)<-[:BRANCH_DESCRIBE{userId: $userId}]-(branch:Branch)"
+                "RETURN branch",
+                courseCode=courseCode,
+                userId=userId,
+            )
+            try:
+                _ = [record["branch"] for record in result][0]
+            except Exception as exception:
+                from ..resourcesGuard import InvalidRequest
+
+                raise InvalidRequest("You never expose any graph")
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode, userId=userId)
+            try:
+                return [
+                    {
+                        "h_name": record["h_name"],
+                        "r_name": record["r_name"],
+                        "t_name": record["t_name"],
+                        "r_value": record["r_value"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def get_aggregated_triple(self):
         fname = sys._getframe().f_code.co_name
 

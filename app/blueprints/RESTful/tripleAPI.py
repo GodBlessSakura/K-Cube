@@ -20,6 +20,11 @@ def query():
 def getCourse(courseCode, userId):
     if courseCode is not None:
         course = get_api_driver().course.get_course(courseCode=courseCode)
+        if request.args.get("editing"):
+            result = get_api_driver().triple.get_course_editing_triple(
+                courseCode=courseCode, userId=session["user"]["userId"]
+            )
+            return jsonify({"success": True, "triples": result, "course": course})
         if userId is None:
             result = get_api_driver().triple.get_course_triple(courseCode=courseCode)
             return jsonify({"success": True, "triples": result, "course": course})
@@ -28,6 +33,7 @@ def getCourse(courseCode, userId):
                 courseCode=courseCode, userId=userId
             )
             return jsonify({"success": True, "triples": result, "course": course})
+
 
     return jsonify({"success": False, "message": "incomplete request"})
 

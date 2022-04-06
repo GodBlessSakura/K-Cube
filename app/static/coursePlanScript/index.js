@@ -1,10 +1,3 @@
-/* replaced by your json data from database */
-var olddata = {
-    "old1": 1,
-    "old2": 2
-};
-var newdata = ["new1", "new2"];
-
 function graph_traversal(triples, activities, courseCode) {
     let firstHop =
         triples.filter(triple => triple.h_name == courseCode || triple.t_name == courseCode)
@@ -13,15 +6,22 @@ function graph_traversal(triples, activities, courseCode) {
             return theOther
         })
     let newData = {}
-    let oldData = {
-        courseCode: {
-            uri: courseCode,
-            week: -1,
-            desc: courseCode
-        }
+    let oldData = {}
+    oldData[courseCode] = {
+        uri: courseCode,
+        week: -1,
+        desc: courseCode
     }
+
     activities.forEach(activity => {
-        oldData[activity.name] = createItem(activity.desc, activity.name, activity.week)
+        // only reflect activity if it is shown on course graph
+        for (triple in triples) {
+            let involved = [triple.h_name, triple.t_name]
+            if (involved.includes(activity.name)) {
+                oldData[activity.name] = createItem(activity.desc, activity.name, activity.week)
+                break
+            }
+        }
     });
     let visited = [courseCode, ...firstHop]
 
@@ -30,6 +30,7 @@ function graph_traversal(triples, activities, courseCode) {
         triples.map(triple => {
             let involved = [triple.h_name, triple.t_name]
             if (involved.includes(entity)) {
+                console.log(involved)
                 let theOther = [triple.h_name, triple.t_name]
                     .filter(e => e != entity)[0]
                 if (!visited.includes(theOther)) {
@@ -39,6 +40,7 @@ function graph_traversal(triples, activities, courseCode) {
             }
         })
         let result = [entity]
+        console.log(children)
         for (child of children) {
             result = [...result, ...depthFirst(child)]
         }
