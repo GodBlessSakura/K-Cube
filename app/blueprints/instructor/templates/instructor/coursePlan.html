@@ -16,7 +16,9 @@
             </v-card-subtitle>
         </v-col>
     </v-row>
-    <v-row style="outline: 1px solid black;" v-for="week in [...Object.keys(plan).sort(function(a,b) { return a - b})]"
+    <v-row v-bind:style="{borderColor:'black',borderStyle:week % 1 == 0?'solid':(plan[week].length>0?'solid':'dashed solid dashed solid')
+    ,borderWidth: week % 1 == 0?
+        (week<13?'0 1px 0 1px':'0 1px 1px 1px'):(plan[week].length>0?'1px 1px 0 1px':'1px 1px 1px 1px')}" v-for="week in [...Object.keys(plan).sort(function(a,b) { return a - b})]"
         no-gutters>
         <v-col cols="auto" v-if="week % 1 == 0">
             <v-list-item style="padding:unset" dense>week ${week}</v-list-item>
