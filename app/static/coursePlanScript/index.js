@@ -82,24 +82,22 @@ function assign_timeslot(triples, activities, courseCode) {
     for (firstHopEntity in newdata) {
         totalItem = totalItem + (newdata[firstHopEntity].length < 1 ? 1 : newdata[firstHopEntity].length)
     }
-
+    let itemPerRow = (totalItem / 13)
     let counter = 0
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
         } else if (newdata[firstHopEntity].length > 0) {
-            let slot_cursor = Math.floor(counter / (totalItem / 13))
+            let slot_cursor = Math.floor(counter / itemPerRow)
             let index_of_first_item = counter
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
                     content = depthFirstEntity;
                 let slot = Math.min(
-                    Math.floor(counter / (totalItem / 13)),
-                    Math.floor(
-                        (index_of_first_item + newdata[firstHopEntity].length) /
-                        (totalItem / 13)) - 1,
+                    Math.floor(counter / itemPerRow),
+                    13,
                 )
-                slot = slot < 0 ? 0 : slot
+                slot = Math.max(slot, 0)
                 slot++
                 let timeSlot = timeslots[slot];
                 entity = createItem(content, uri, undefined);
@@ -120,7 +118,7 @@ function assign_timeslot(triples, activities, courseCode) {
         } else if (newdata[firstHopEntity].length > 0) {} else {
             let uri = firstHopEntity,
                 content = firstHopEntity;
-            let slot = Math.floor(counter / (totalItem / 13)) + 1
+            let slot = Math.floor(counter / itemPerRow) + 1
             let timeSlot = timeslots[slot];
             entity = createItem(content, uri, undefined);
             timeSlot.push(entity);
