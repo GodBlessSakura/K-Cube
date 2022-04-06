@@ -15,12 +15,12 @@ def query():
 
 @entity.get("/", defaults={"courseCode": None, "entityId": None})
 @entity.get("/<courseCode>/", defaults={"entityId": None})
-@entity.get("/<courseCode>/<entityId>")
-def get(courseCode, entityId):
-    if courseCode and entityId and request.args.get("ofUser"):
+@entity.get("/<courseCode>/<path:name>")
+def get(courseCode, name):
+    if courseCode and name and request.args.get("ofUser"):
         try:
             result = get_api_driver().entity.get_user_course_entity(
-                name=entityId, courseCode=courseCode, userId=session["user"]["userId"]
+                name=name, courseCode=courseCode, userId=session["user"]["userId"]
             )
             return jsonify(
                 {
