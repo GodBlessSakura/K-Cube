@@ -1521,13 +1521,16 @@
             })
             self = this
             window.addEventListener('message', (event) => {
-                this.$refs.entityForm.updateEntity(event.data)
+                if (event.data.method == "update") {
+                    this.$refs.entityForm.updateEntity(event.data.entity)
+                }
+                else if (event.data.method == "open") {
+                    this.$refs.entityForm.loadData(event.data.entity.name)
+                    this.entityDialogue = true
+                }
             })
             cy.on('tap', 'node', (event) => {
                 this.$refs.entityForm.loadData(event.target.data("id"))
-                // this.$nextTick(function () {
-                //     this.entityDialogue = true
-                // })
                 this.entityDialogue = true
                 if (self.canUpdateEdge) {
                     self.clearForm()

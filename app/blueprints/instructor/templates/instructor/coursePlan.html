@@ -51,6 +51,11 @@
             <v-card-subtitle>
                 description: ${ details?.desc }
             </v-card-subtitle>
+            <v-card-actions>
+                <v-btn text v-if="inIframe" @click="postMessage({ method: 'open', entity: details }, '*')">
+                    open entity editor
+                </v-btn>
+            </v-card-actions>
         </v-card>
     </v-menu>
 </v-container>
@@ -80,7 +85,8 @@
             x: null,
             y: null,
             details: null,
-            showMenu: false
+            showMenu: false,
+            inIframe: false,
         }),
 
         methods: {
@@ -226,7 +232,7 @@
                                     throw ''
                                 }
                             } catch (e) {
-                                window.parent.postMessage(entity, '*')
+                                window.parent.postMessage({ method: 'update', entity: entity }, '*')
                             }
                         } else {
                             this.$root.errorDisplay(body,
@@ -243,6 +249,9 @@
                 this.$nextTick(() => {
                     this.showMenu = true
                 })
+            },
+            postMessage(messageObject, domain) {
+                window.parent.postMessage(messageObject, domain)
             }
         },
         mounted: function () {
@@ -257,6 +266,7 @@
                     throw ''
                 }
             } catch (e) {
+                this.inIframe = true
                 window.parent.addEventListener('beforeunload', (e) => {
                     if (this.changes) {
                         e.preventDefault()
