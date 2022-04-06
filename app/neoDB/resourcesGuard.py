@@ -56,7 +56,7 @@ regExpRules = {
     + special_charactor
     + "][a-zA-Z0-9\s"
     + special_charactor
-    + "]{1,500}$",
+    + "]{1,99}$",
     "title": "^[a-zA-Z"
     + special_charactor
     + "][a-zA-Z0-9\s"
