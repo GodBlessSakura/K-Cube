@@ -17,13 +17,13 @@ def dashboard():
     return render_template(
         "student/dashboard.html",
         components=[
-            "/".join([student.name, "component", f])
+            "/".join([student.name, "dashboardComponents", f])
             for f in os.listdir(
                 os.path.join(
                     student.root_path,
                     student.template_folder,
                     student.name,
-                    "component",
+                    "dashboardComponents",
                 )
             )
             if os.path.isfile(
@@ -31,19 +31,19 @@ def dashboard():
                     student.root_path,
                     student.template_folder,
                     student.name,
-                    "component",
+                    "dashboardComponents",
                     f,
                 )
             )
         ]
         + [
-            "/".join([collaborate.name, "component", f])
+            "/".join([collaborate.name, "dashboardComponents", f])
             for f in os.listdir(
                 os.path.join(
                     collaborate.root_path,
                     collaborate.template_folder,
                     collaborate.name,
-                    "component",
+                    "dashboardComponents",
                 )
             )
             if os.path.isfile(
@@ -51,7 +51,7 @@ def dashboard():
                     collaborate.root_path,
                     collaborate.template_folder,
                     collaborate.name,
-                    "component",
+                    "dashboardComponents",
                     f,
                 )
             )

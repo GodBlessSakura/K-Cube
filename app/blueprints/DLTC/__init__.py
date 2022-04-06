@@ -21,13 +21,13 @@ def dashboard():
     return render_template(
         "DLTC/dashboard.html",
         components=[
-            "/".join([DLTC.name, "component", f])
+            "/".join([DLTC.name, "dashboardComponents", f])
             for f in os.listdir(
                 os.path.join(
                     DLTC.root_path,
                     DLTC.template_folder,
                     DLTC.name,
-                    "component",
+                    "dashboardComponents",
                 )
             )
             if os.path.isfile(
@@ -35,19 +35,19 @@ def dashboard():
                     DLTC.root_path,
                     DLTC.template_folder,
                     DLTC.name,
-                    "component",
+                    "dashboardComponents",
                     f,
                 )
             )
         ]
         + [
-            "/".join([collaborate.name, "component", f])
+            "/".join([collaborate.name, "dashboardComponents", f])
             for f in os.listdir(
                 os.path.join(
                     collaborate.root_path,
                     collaborate.template_folder,
                     collaborate.name,
-                    "component",
+                    "dashboardComponents",
                 )
             )
             if os.path.isfile(
@@ -55,7 +55,7 @@ def dashboard():
                     collaborate.root_path,
                     collaborate.template_folder,
                     collaborate.name,
-                    "component",
+                    "dashboardComponents",
                     f,
                 )
             )
