@@ -61,7 +61,7 @@ def post(courseCode, name):
         return jsonify(
             {
                 "success": True,
-                "feedback": get_api_driver().material.create_material(
+                "material": get_api_driver().material.create_material(
                     courseCode=courseCode,
                     name=name,
                     userId=session["user"]["userId"],
