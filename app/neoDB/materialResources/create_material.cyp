@@ -4,7 +4,8 @@ WHERE
     EXISTS((user)-[:USER_TEACH]->(course))
 WITH DISTINCT user, course
 MATCH (concept:GraphConcept{name: $name})
-CREATE (concept)<-[:CONTENT_DESCRIBE]-(material:Material{courseNodeId: id(course)})<-[:INSTRUCTOR_CREATE]-(user)
+CREATE (concept)<-[:CONTENT_DESCRIBE]-(material:Material:GraphAttribute)<-[:INSTRUCTOR_CREATE]-(user)
+MERGE (material)-[:ATTRIBUTE_FROM]->(course)
 SET
     material.url = $url,
     material.desc = $desc
