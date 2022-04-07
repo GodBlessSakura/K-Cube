@@ -52,7 +52,7 @@
                 description: ${ details?.desc }
             </v-card-subtitle>
             <v-card-actions>
-                <v-btn text v-if="inIframe" @click="postMessage({ method: 'open', entity: details }, '*')">
+                <v-btn text color="primary" v-if="inIframe" @click="postMessage({ method: 'open', entity: details }, '*')">
                     open entity editor
                 </v-btn>
             </v-card-actions>
