@@ -52,7 +52,8 @@
                 description: ${ details?.desc }
             </v-card-subtitle>
             <v-card-actions>
-                <v-btn text color="primary" v-if="inIframe" @click="postMessage({ method: 'open', entity: details }, '*')">
+                <v-btn text color="primary" v-if="inIframe"
+                    @click="postMessage({ method: 'open', entity: details }, '*')">
                     open entity editor
                 </v-btn>
             </v-card-actions>
@@ -288,7 +289,7 @@
                                 this.$nextTick(
                                     () => {
                                         let listEle = document.getElementById('entity:' + e.data.name)
-                                        listEle.scrollIntoView()
+                                        listEle.scrollIntoView({ behavior: "smooth", block: "center" })
                                         let ev = new Event("mousedown")
                                         let offset = listEle.getBoundingClientRect()
                                         ev.clientX = offset.left + offset.width / 2
