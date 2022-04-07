@@ -5,11 +5,17 @@
 {% block VueComponent %}
 <v-container dense
     style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
+    <v-btn style="position: fixed; top:0; left:0; height: 96px; width: 96px; min-width: unset; z-index: 1000; background-color: rgba(200, 200, 200, 0.5);
+    transform: translate(-50%,-50%) rotate(45deg);" @click="fullScreenMode = !fullScreenMode">
+    </v-btn>
+    <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small v-if="fullScreenMode">north_east
+    </v-icon>
+    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else>north_east</v-icon>
+
     <v-row no-gutters>
         <v-col cols="auto">
-            <v-avatar @click="fullScreenMode = !fullScreenMode">
-                <v-icon style="transform: rotate(90deg)" large v-if="fullScreenMode">close_fullscreen</v-icon>
-                <v-icon style="transform: rotate(90deg)" large v-else>open_in_full</v-icon>
+            <v-avatar>
+                <v-icon x-large>work</v-icon>
             </v-avatar>
         </v-col>
         <v-col>
