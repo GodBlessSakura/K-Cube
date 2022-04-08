@@ -4,7 +4,8 @@ WHERE
     EXISTS((user)-[:USER_TEACH]->(course))
 WITH DISTINCT user, course
 MATCH (concept:GraphConcept{name: $name})
-MERGE (concept)<-[:ACTIVITY_OF]-(activity:Activity:GraphAttribute)<-[:INSTRUCTOR_CREATE]-(user)
+MERGE (concept)<-[:ACTIVITY_OF]-(activity:Activity:GraphAttribute{courseNodeId: id(course)})<-[:INSTRUCTOR_CREATE]-(user)
+// unique id is needed for activity beacuse we are using stupid merge
 MERGE (activity)-[:ATTRIBUTE_FROM]->(course)
 SET
     activity.desc = $desc,
