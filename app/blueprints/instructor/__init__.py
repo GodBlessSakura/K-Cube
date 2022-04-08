@@ -1,3 +1,4 @@
+from tkinter.font import names
 from flask import (
     Blueprint,
     render_template,
@@ -37,7 +38,8 @@ def dashboard():
                     f,
                 )
             )
-        ] + [
+        ]
+        + [
             "/".join([collaborate.name, "dashboardComponents", f])
             for f in os.listdir(
                 os.path.join(
@@ -218,4 +220,21 @@ def repositories(courseCode):
 def repositoryVersions(courseCode, id):
     return render_template(
         "instructor/repositoryVersions.html", courseCode=courseCode, id=id
+    )
+
+@instructor.route("/disambiguation", defaults={"courseCode": None})
+@instructor.route("/disambiguation/<courseCode>")
+def disambiguation(courseCode):
+    from app.api_driver import get_api_driver
+
+    return render_template(
+        "instructor/disambiguation.html",
+        courseCode= courseCode if courseCode is not None else '',
+        courseCodes=[
+            c["concept"]["name"]
+            for c in get_api_driver().course.list_internal_course(
+                userId=session["user"]["userId"]
+            )
+        ],
+        names=[e["concept"]["name"] for e in get_api_driver().entity.list_entity()],
     )

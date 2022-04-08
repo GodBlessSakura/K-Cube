@@ -746,8 +746,8 @@
             ],
             relationships: [],
             nameRules: [v => !!v || 'Name is required',
-            v => (v && v.length > 3 && v.length) < 101 ||
-                'Name should be anything between 4 and 100 charactors',
+            v => (v && v.length > 1 && v.length) < 99 ||
+                'Name should be anything between 2 and 99 charactors',
             v => (v && /{{regExpRules["name"]}}/.test(v)) ||
                 'Name can only contains alphanumeric characters and space.'
             ],

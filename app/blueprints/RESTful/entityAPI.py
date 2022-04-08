@@ -13,8 +13,8 @@ def query():
     return jsonify({"success": False, "message": "incomplete request"})
 
 
-@entity.get("/", defaults={"courseCode": None, "entityId": None})
-@entity.get("/<courseCode>/", defaults={"entityId": None})
+@entity.get("/", defaults={"courseCode": None, "name": None})
+@entity.get("/<courseCode>/", defaults={"name": None})
 @entity.get("/<courseCode>/<path:name>")
 def get(courseCode, name):
     if courseCode and name and request.args.get("ofUser"):
@@ -45,3 +45,23 @@ def entityList():
         )
     except Exception as e:
         raise e
+
+
+@entity.patch("/", defaults={"courseCode": None, "name": None})
+@entity.patch("/<courseCode>/", defaults={"name": None})
+@entity.patch("/<courseCode>/<path:name>")
+def patch(courseCode, name):
+    if courseCode and name and request.json.get("disambiguation"):
+        try:
+            result = get_api_driver().entity.entity_disambiguation(
+                name=name, courseCode=courseCode, newName = request.json.get("disambiguation"), userId=session["user"]["userId"]
+            )
+            return jsonify(
+                {
+                    "success": True,
+                    "entity": result["concept"],
+                }
+            )
+        except Exception as e:
+            return jsonify({"success": False, "message": str(e)})
+    return jsonify({"success": False, "message": "incomplete request"})

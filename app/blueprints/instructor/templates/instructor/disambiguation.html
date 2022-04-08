@@ -1,0 +1,100 @@
+{% extends "layout.html" %}
+{% import 'layout.html' as layout with context %}
+{% block VueComponent %}
+<v-card flat>
+    <v-form ref="control">
+        <v-container>
+            <v-row>
+                <v-select v-model="courseCode" :rules="courseCodeRules" label="Cource Code" :items="listOfCourseCode"
+                    required>
+                </v-select>
+            </v-row>
+            <v-row>
+                <v-select v-model="name" :rules="nameRules" label="Entity name" :items="listOfName" required>
+                </v-select>
+            </v-row>
+            <v-row>
+                <v-text-field v-model="newName" :rules="nameRules" label="New name" required>
+                </v-text-field>
+            </v-row>
+            <v-row>
+                <v-btn @click="Submit" color="success">
+                    rename entity
+                </v-btn>
+            </v-row>
+        </v-container>
+    </v-form>
+</v-card>
+{% endblock %}
+{% block VueComponentScript %}
+<script>
+    Vue.component('app-content', {
+        data: () => ({
+            courseCode: '{{courseCode}}',
+            courseCodeRules: [v => !!v || 'Course code is required',
+            v => (v && v.length > 3 && v.length < 101) ||
+                'Course code should be anything between 4 and 100 charactors',
+            v => (v && /{{regExpRules["courseCode"]}}/.test(v)) ||
+                'Course code can only contains alphanumeric characters and space.'
+            ],
+            name: '',
+            newName: '',
+            nameRules: [v => !!v || 'Name is required',
+            v => (v && v.length > 1 && v.length) < 99 ||
+                'Name should be anything between 2 and 99 charactors',
+            v => (v && /{{regExpRules["name"]}}/.test(v)) ||
+                'Name can only contains alphanumeric characters and space.'
+            ],
+            listOfCourseCode: [
+                //{% for courseCode in courseCodes %}
+                '{{ courseCode | safe}}',
+                //{% endfor %}
+            ],
+            listOfName: [
+                //{% for name in names %}
+                '{{ name | safe}}',
+                //{% endfor %}
+            ]
+        }),
+        methods: {
+            Submit() {
+                if (this.$refs.control.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.entity.patch') }}" + this.courseCode + '/' + encodeURIComponent(this.name), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            disambiguation: this.newName
+                        })
+                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'Rename failed for unknown reason.',
+                                this.$refs.control.reset)
+                        })
+                }
+            },
+
+        },
+        template: '#content',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endblock %}

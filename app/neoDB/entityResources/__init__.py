@@ -68,3 +68,24 @@ class entityDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def entity_disambiguation(self, name, courseCode, newName, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, name=name, courseCode=courseCode, newName=newName, userId=userId
+            )
+            try:
+                return [
+                    {
+                        "concept": dict(record["concept"].items()),
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
