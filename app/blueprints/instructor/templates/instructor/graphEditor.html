@@ -8,9 +8,11 @@
     <v-btn style="position: fixed; top:0; left:0; height: 96px; width: 96px; min-width: unset; z-index: 1000; background-color: rgba(200, 200, 200, 0.5);
     transform: translate(-50%,-50%) rotate(45deg);" @click="fullScreenMode = !fullScreenMode">
     </v-btn>
-    <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small v-if="fullScreenMode">north_east
+    <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small
+        v-if="fullScreenMode">north_east
     </v-icon>
-    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else>north_east</v-icon>
+    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else>
+        north_east</v-icon>
 
     <v-row no-gutters>
         <v-col cols="auto">
@@ -206,7 +208,7 @@
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
                                 v-on="on" tile>
-                                view
+                                layout
                             </v-btn>
                         </template>
                         <v-list>
@@ -220,6 +222,13 @@
                                 <v-list-item-title>tidy layout</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-icon></v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item dense  @click="physics(!isPhysicsRunning)"
+                                <v-list-item-title>layout physics</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-simple-checkbox :value="isPhysicsRunning" @click="physics(!isPhysicsRunning)">
+                                    </v-simple-checkbox>
                                 </v-list-item-icon>
                             </v-list-item>
                             <v-dialog max-width="700px">
@@ -663,6 +672,7 @@
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     });
+    cyLayout = null
     cytoscapeInstance = [{
         cy: cy,
         options: "basicEditStyle"
@@ -671,6 +681,13 @@
         name: 'concentric',
     }
     fitPadding = document.documentElement.clientHeight * 0.10
+    colaLayoutOptions = {
+        name: 'cola',
+        padding: fitPadding,
+        maxSimulationTime: Infinity,
+        infinite: true,
+        fit: false,
+    }
     coseLayoutOptions = {
         name: 'cose',
         padding: fitPadding,
@@ -729,7 +746,6 @@
         }
         return output
     }
-
     function edgeIdFromNames(h_name, r_name, t_name) {
         return h_name +
             '.' + r_name + '.' + t_name
@@ -783,6 +799,7 @@
             graphLoading: true,
             entityDialogue: false,
             coursePlanDialogue: false,
+            isPhysicsRunning: false,
         }),
         computed: {
             fullScreenMode: {
@@ -853,23 +870,8 @@
                             let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
-                            this.graphLoading = true
-                            cy.elements().style('visibility', 'hidden')
-                            let cyLayout = cy.layout({
-                                ...concentricLayoutOptions,
-                                // concentric: function (node) {
-                                // return cyDijkstra.distanceTo(node) * -1
-                                // }
-                            })
-                            cyLayout.one('layoutstop', () => {
-                                let cyLayout = cy.layout(coseLayoutOptions)
-                                cyLayout.one('layoutstop', () => {
-                                    cy.elements().style('visibility', 'visible')
-                                    this.graphLoading = false
-                                })
-                                cyLayout.run()
-                            })
-                            cyLayout.run()
+                            this.isPhysicsRunning = true
+                            this.redoLayout()
                             this.edgeStatistic()
                         } else {
                             this.$root.errorDisplay(body,
@@ -940,6 +942,16 @@
                     cy.edges(".suppress").removeClass('suppress')
                     cy.style(cyStyles.basicEditStyle)
                     cytoscapeInstance[0].options = "basicEditStyle"
+                }
+            },
+            physics(bool) {
+                this.isPhysicsRunning = bool
+                if (bool) {
+                    cyLayout = cy.layout(colaLayoutOptions)
+                    cyLayout.run()
+                }
+                else if (cyLayout) {
+                    cyLayout.stop()
                 }
             },
             edgeStatistic() {
@@ -1015,18 +1027,7 @@
                                 let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                     .rootName +
                                     '"]')
-                                let options = {
-                                    ...coseLayoutOptions
-                                }
-                                options.fit = false
-                                options.animate = 'end'
-                                options.initialTemp = 1
-                                options.minTemp = 0.1
-                                // options.animateFilter = (node, i) => {
-                                //     return newNodes.contains(node)
-                                // }
-                                let cyLayout = cy.layout(options)
-                                cyLayout.run()
+                                this.physics(this.isPhysicsRunning)
                                 this.edgeStatistic()
                                 this.determineTripleOptions()
                             } else {
@@ -1080,6 +1081,7 @@
                                     "tempory")
                                 this.edgeStatistic()
                                 this.determineTripleOptions()
+                                this.physics(this.isPhysicsRunning)
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when deleted triple.')
@@ -1277,19 +1279,17 @@
                 cy.fit(cy, fitPadding)
             },
             redoLayout() {
-                cy.elements().style('visibility', 'hidden')
-                let cyLayout = cy.layout({
-                    ...concentricLayoutOptions,
-                    // concentric: function (node) {
-                    // return cyDijkstra.distanceTo(node) * -1
-                    // }
-                })
-                cyLayout.one('layoutstop', function () {
-                    let cyLayout = cy.layout(coseLayoutOptions)
-                    cyLayout.one('layoutstop', function () {
-                        cy.elements().style('visibility', 'visible')
-                    })
-                    cyLayout.run()
+                this.graphLoading = true
+                let initOption = { ...colaLayoutOptions }
+                initOption.maxSimulationTime = 5000
+                initOption.infinite = false
+                initOption.refresh = 5
+                initOption.animate = false
+                cyLayout = cy.layout(initOption)
+                cyLayout.one('layoutstop', () => {
+                    this.graphLoading = false
+                    this.editorFit()
+                    this.physics(this.isPhysicsRunning)
                 })
                 cyLayout.run()
             },
