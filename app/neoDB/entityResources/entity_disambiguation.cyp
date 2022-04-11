@@ -10,8 +10,11 @@ CALL{
     MATCH (concept)-[r:DELTA_GRAPH_RELATIONSHIP]->(theOther:GraphConcept)
     WHERE split(r.deltaGraphId,'.')[0] = toString(id(course))
     MERGE (newConcept)-[newR:DELTA_GRAPH_RELATIONSHIP{
-        name: r.name, deltaGraphId: r.deltaGraphId, creationDate:  r.creationDate, value: r.value
+        name: r.name, deltaGraphId: r.deltaGraphId
         }]->(theOther)
+    SET
+        newR.creationDate = CASE WHEN newR.creationDate > r.creationDate THEN newR.creationDate ELSE r.creationDate END,
+        newR.value = r.value
     DELETE r
     RETURN null
 UNION
@@ -19,18 +22,21 @@ UNION
     MATCH (concept)<-[r:DELTA_GRAPH_RELATIONSHIP]-(theOther:GraphConcept)
     WHERE split(r.deltaGraphId,'.')[0] = toString(id(course))
     MERGE (newConcept)<-[newR:DELTA_GRAPH_RELATIONSHIP{
-        name: r.name, deltaGraphId: r.deltaGraphId, creationDate:  r.creationDate, value: r.value
+        name: r.name, deltaGraphId: r.deltaGraphId
         }]-(theOther)
+    SET
+        newR.creationDate = CASE WHEN newR.creationDate > r.creationDate THEN newR.creationDate ELSE r.creationDate END,
+        newR.value = r.value
     DELETE r
     RETURN null
 UNION
     WITH concept, newConcept, course
-    MATCH (concept)<-[rs:ACTIVITY_OF]-(attr:Activity)-[:ATTRIBUTE_FROM]->(course)
-    WITH newConcept, collect(rs) as rs, attr
-    FOREACH (r in rs |
-        MERGE (newConcept)<-[:ACTIVITY_OF]-(attr)
-        DELETE r
-    )
+    MATCH (concept)<-[rs:ACTIVITY_OF]-(oldActivity:Activity)-[:ATTRIBUTE_FROM]->(course), (user:User{userId: $userId})
+    MERGE (newConcept)<-[:ACTIVITY_OF]-(newActivity:Activity:GraphAttribute{courseNodeId: id(course)})<-[:INSTRUCTOR_CREATE]-(user)
+    MERGE (newActivity)-[:ATTRIBUTE_FROM]->(course)
+    SET
+        newActivity.desc = oldActivity.desc,
+        newActivity.week = oldActivity.week
     RETURN null
 UNION
     WITH concept, newConcept, course
