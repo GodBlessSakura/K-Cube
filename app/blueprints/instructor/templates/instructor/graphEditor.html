@@ -224,8 +224,9 @@
                                     <v-icon></v-icon>
                                 </v-list-item-icon>
                             </v-list-item>
-                            <v-list-item dense  @click="physics(!isPhysicsRunning)"
-                                <v-list-item-title>layout physics</v-list-item-title>
+                            <v-list-item dense @click="physics(!isPhysicsRunning)">
+                                <v-list-item-title>layout physics
+                                </v-list-item-title>
                                 <v-list-item-icon>
                                     <v-simple-checkbox :value="isPhysicsRunning" @click="physics(!isPhysicsRunning)">
                                     </v-simple-checkbox>
@@ -680,13 +681,14 @@
     concentricLayoutOptions = {
         name: 'concentric',
     }
-    fitPadding = document.documentElement.clientHeight * 0.10
+    fitPadding = document.documentElement.clientHeight * 0.05
     colaLayoutOptions = {
         name: 'cola',
         padding: fitPadding,
         maxSimulationTime: Infinity,
         infinite: true,
         fit: false,
+        edgeLength: 55,
     }
     coseLayoutOptions = {
         name: 'cose',
@@ -1280,18 +1282,33 @@
             },
             redoLayout() {
                 this.graphLoading = true
-                let initOption = { ...colaLayoutOptions }
-                initOption.maxSimulationTime = 5000
-                initOption.infinite = false
-                initOption.refresh = 5
-                initOption.animate = false
-                cyLayout = cy.layout(initOption)
+                cyLayout = cy.layout(concentricLayoutOptions)
                 cyLayout.one('layoutstop', () => {
-                    this.graphLoading = false
-                    this.editorFit()
-                    this.physics(this.isPhysicsRunning)
+                    let initOption = { ...colaLayoutOptions }
+                    initOption.maxSimulationTime = 5000
+                    initOption.infinite = false
+                    initOption.refresh = 1000
+                    initOption.edgeLength = initOption.edgeLength * 2
+                    initOption.animate = false
+                    cyLayout = cy.layout(initOption)
+                    cyLayout.one('layoutstop', () => {
+                        let initOption = { ...colaLayoutOptions }
+                        initOption.maxSimulationTime = 2000
+                        initOption.infinite = false
+                        initOption.refresh = 1000
+                        initOption.animate = false
+                        cyLayout = cy.layout(initOption)
+                        cyLayout.one('layoutstop', () => {
+                            this.graphLoading = false
+                            this.editorFit()
+                            this.physics(this.isPhysicsRunning)
+                        })
+                        cyLayout.run()
+                    })
+                    cyLayout.run()
                 })
                 cyLayout.run()
+
             },
             showCommitExposeDialogue() {
                 this.commitExposeDialogue = true
