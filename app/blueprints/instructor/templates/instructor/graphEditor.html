@@ -1008,13 +1008,23 @@
                             if (body.triple) {
                                 let triple = body.triple;
                                 let newNodes = cy.collection();
+                                let oldNodes = cy.collection();
                                 [triple.h_name, triple.t_name].forEach(
                                     name => {
-                                        if (cy.getElementById(name).length == 0) {
-                                            newNodes.union(cy.add(nodeFactory(name)))
+                                        let eles = cy.getElementById(name)
+                                        if (eles.length == 0) {
+                                            newNodes = newNodes.union(cy.add(nodeFactory(name)))
+                                        }
+                                        else {
+                                            oldNodes = oldNodes.union(eles)
                                         }
                                         if (!this.concepts.includes(name)) this.concepts.push(name)
                                     })
+                                if (newNodes.length != 0 && oldNodes.length != 0) {
+                                    newNodes.forEach(node => {
+                                        node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
+                                    })
+                                }
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple.t_name))[0]
 
@@ -1219,7 +1229,6 @@
             },
             clearForm() {
                 this.h_name = ''
-                this.r_name = ''
                 this.t_name = ''
                 if (this.$refs.tripleForm)
                     this.$refs.tripleForm.resetValidation()
