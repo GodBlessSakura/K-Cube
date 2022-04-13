@@ -16,11 +16,11 @@
                         :rules="activityDescRules"></v-text-field>
                 </v-col>
                 <v-col>
-                    <v-text-field label="week" type="number" v-model="activityWeek" @input="setActivity"
-                        :rules="activityWeekRules">
+                    <v-text-field label="week" placeholder="no teaching activity is set" persistent-placeholder
+                        type="number" v-model="activityWeek" @input="setActivity" :rules="activityWeekRules">
                     </v-text-field>
                 </v-col>
-                <v-col>
+                <v-col cols="auto">
                     <v-checkbox v-model="activityIsMetaTopic" @change="setActivity" label="outline"></v-checkbox>
                 </v-col>
                 <v-col cols="auto">

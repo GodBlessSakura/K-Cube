@@ -101,8 +101,12 @@ var cyStyles = {
                     'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
-                    'background-image': 'data(imageURL)',
                     'background-fit': 'cover'
+                }
+            }, {
+                selector: 'node[imageURL]',
+                style: {
+                    'background-image': 'data(imageURL)',
                 }
             },
             {
