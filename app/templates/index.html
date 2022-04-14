@@ -32,13 +32,13 @@
                                 <v-icon>zoom_out_map</v-icon>
                             </v-btn>
                         </template>
-                        zoom out
+                        show all
                     </v-tooltip>
                 </v-col>
                 <v-col cols="auto">
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToSelectedNode()">
+                            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToFocusedNode()">
                                 <v-icon>loupe</v-icon>
                             </v-btn>
                         </template>
@@ -81,6 +81,34 @@
             </v-col>
         </v-row>
     </v-snackbar>
+    <v-btn @click="setZoom(0.2)"
+        style="position: absolute; left:5vw; bottom: 5vw; border-radius: 100px 100px 0px 0px; height: 50px; width:100px; transform: translate(-50%, -50%); min-width: unset;">
+        <v-icon>add</v-icon>
+    </v-btn>
+    <v-btn @click="setZoom(-0.2)"
+        style="position: absolute; left:5vw; bottom: 5vw; border-radius: 0px 0px 100px 100px; height: 50px; width:100px; transform: translate(-50%, 50%); min-width: unset;">
+        <v-icon>remove</v-icon>
+    </v-btn>
+    <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToFocusedNode()"
+                style="position: absolute; left:calc(5vw - 50px); bottom: calc(5vw + 50px); transform: translate(-50%, -50%);">
+                <v-icon>loupe</v-icon>
+            </v-btn>
+        </template>
+        back to selected
+    </v-tooltip>
+    <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')"
+                style="position: absolute; left:calc(5vw - 50px); bottom: calc(5vw - 50px); transform: translate(-50%, 50%);">
+                <v-icon>zoom_out_map</v-icon>
+            </v-btn>
+        </template>
+        show all
+    </v-tooltip>
+    <span
+        style="position: absolute; left:5vw; bottom: 5vw; transform: translate(-50%, -50%); pointer-events: none;">${zoom.toFixed(1)}</span>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
@@ -210,6 +238,7 @@
             edgeEnd: "",
             edgeColor: "",
             search: "",
+            zoom: 0,
             items: [],
             visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
@@ -388,17 +417,15 @@
                     animation = cy.animation({
                         fit: {
                             eles: focusedNode,
-                            padding: document.documentElement.clientHeight * 0.35
+                            padding: document.documentElement.clientHeight * (0.35 - this.zoom * 0.095)
                         },
                         duration: duration
                     })
                     this.url = focusedNode.data("url")
                 } else {
-                    focusedNode = null
-                    this.url = null
                     animation = cy.animation({
                         fit: {
-                            padding: document.documentElement.clientHeight * 0.15
+                            padding: document.documentElement.clientHeight * (0.15 - this.zoom * 0.225)
                         },
                         duration: duration
                     })
@@ -406,9 +433,15 @@
 
                 animation.play()
             },
-            backToSelectedNode() {
-                if (cy.nodes(':selected').length > 0) this.focus(cy.nodes(':selected').data("id"), 500)
+            backToFocusedNode() {
+                if (focusedNode) this.focus(focusedNode.data("id"), 500)
 
+            },
+            setZoom(value) {
+                this.zoom = this.zoom + value
+                this.zoom = Math.min(this.zoom, 1)
+                this.zoom = Math.max(this.zoom, -1)
+                this.focus(focusedNode ? focusedNode.data('id') : null, 200)
             }
         },
         mounted: function () {
@@ -439,7 +472,6 @@
             cy.on('tap', (event) => {
                 if (event.target == event.cy) {
                     cy.edges().removeClass('irrelevant')
-                    focusedNode = null
                     this.focusingEdge = false
 
                 }
