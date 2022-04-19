@@ -4,14 +4,15 @@
 <v-card>
     <v-container>
         <v-row>
-            <v-text-field v-model="entitySearch" append-icon="mdi-magnify" label="Search" single-line hide-details items-per-page="5">
+            <v-text-field v-model="entitySearch" append-icon="mdi-magnify" label="Search" single-line hide-details
+                items-per-page="5">
             </v-text-field>
         </v-row>
         <v-row>
             <v-data-table :headers="entityHeader" style="width:100%" :items="entities" :items-per-page="5" multi-sort
                 :search="entitySearch">
                 <template v-slot:item.courses="{ item }">
-                    <v-menu bottom offset-x>
+                    <v-menu offset-x left>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on">
                                 ${item.courses.length}
@@ -41,9 +42,9 @@
                                     </v-select>
                                 </v-row>
                                 <v-row>
-                                    <v-select v-model="name" :rules="nameRules" label="Entity name" :items="listOfName"
+                                    <v-autocomplete v-model="name" :rules="nameRules" label="Entity name" :items="listOfName"
                                         required>
-                                    </v-select>
+                                    </v-autocomplete>
                                 </v-row>
                                 <v-row>
                                     <v-text-field v-model="newName" :rules="nameRules" label="New name" required>
@@ -118,7 +119,7 @@
                 value: 'proposal.courseCode',
             },
             {
-                text: '# of proposers',
+                text: '# of proposers / instructors',
                 value: 'nOfProposers',
             },
             { text: 'commit', value: 'commit', sortable: false },
