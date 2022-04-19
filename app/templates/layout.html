@@ -334,6 +334,10 @@
                         title: "course list",
                         icon: "grid_view",
                         url: "{{ url_for('instructor.courseList') }}",
+                    }, {
+                        title: "Course Feedback",
+                        icon: "forum",
+                        url: "{{ url_for('collaborate.feedbacks') }}",
                     }]
                 },
                 //{% endif %}
@@ -349,6 +353,10 @@
                         title: "course list",
                         icon: "grid_view",
                         url: "{{ url_for('DLTC.courseList') }}",
+                    }, {
+                        title: "Course Feedback",
+                        icon: "forum",
+                        url: "{{ url_for('collaborate.feedbacks') }}",
                     }]
                 },
                 //{% endif %}
@@ -360,7 +368,11 @@
                         title: "dashboard",
                         icon: "dashboard",
                         url: "{{ url_for('student.dashboard') }}",
-                    },]
+                    }, {
+                        title: "Course Feedback",
+                        icon: "forum",
+                        url: "{{ url_for('collaborate.feedbacks') }}",
+                    }]
                 },
                 //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and "admin" in PERMISSION.role %}
