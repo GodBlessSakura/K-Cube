@@ -1,35 +1,129 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
-<v-card flat>
-    <v-form ref="control">
-        <v-container>
-            <v-row>
-                <v-select v-model="courseCode" :rules="courseCodeRules" label="Cource Code" :items="listOfCourseCode"
-                    required>
-                </v-select>
-            </v-row>
-            <v-row>
-                <v-select v-model="name" :rules="nameRules" label="Entity name" :items="listOfName" required>
-                </v-select>
-            </v-row>
-            <v-row>
-                <v-text-field v-model="newName" :rules="nameRules" label="New name" required>
-                </v-text-field>
-            </v-row>
-            <v-row>
-                <v-btn @click="Submit" color="success">
-                    rename entity
-                </v-btn>
-            </v-row>
-        </v-container>
-    </v-form>
+<v-card>
+    <v-container>
+        <v-row>
+            <v-text-field v-model="entitySearch" append-icon="mdi-magnify" label="Search" single-line hide-details>
+            </v-text-field>
+        </v-row>
+        <v-row>
+            <v-data-table :headers="entityHeader" style="width:100%" :items="entities" :items-per-page="500" multi-sort
+                :search="entitySearch">
+                <template v-slot:item.courses="{ item }">
+                    <v-menu bottom offset-x>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on">
+                                ${item.courses.length}
+                            </v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item v-for="course in item.courses" :key="course.name">
+                                <v-list-item-title>${course.courseName} (${course.name})</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </template>
+            </v-data-table>
+        </v-row>
+        <v-row>
+            <v-expansion-panels>
+                <v-expansion-panel>
+                    <v-expansion-panel-header>
+                        Suggest new disambiguation proposal
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-form ref="control">
+                            <v-container>
+                                <v-row>
+                                    <v-select v-model="courseCode" :rules="courseCodeRules" label="Cource Code"
+                                        :items="listOfCourseCode" required>
+                                    </v-select>
+                                </v-row>
+                                <v-row>
+                                    <v-select v-model="name" :rules="nameRules" label="Entity name" :items="listOfName"
+                                        required>
+                                    </v-select>
+                                </v-row>
+                                <v-row>
+                                    <v-text-field v-model="newName" :rules="nameRules" label="New name" required>
+                                    </v-text-field>
+                                </v-row>
+                                <v-row>
+                                    <v-btn @click="newProposal" color="success">
+                                        create proposal
+                                    </v-btn>
+                                </v-row>
+                            </v-container>
+                        </v-form>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
+        </v-row>
+        <v-row>
+            <v-text-field v-model="proposalSearch" append-icon="mdi-magnify" label="Search" single-line hide-details>
+            </v-text-field>
+        </v-row>
+        <v-row>
+            <v-data-table :headers="proposalHeaders" style="width:100%" :items="proposals" :items-per-page="500"
+                multi-sort :search="proposalSearch">
+                <template v-slot:item.concept.name="{ item }">
+                    ${item.concept.name} => ${item.newConcept.name}
+                </template>
+                <template v-slot:item.newConcept.name="{ item }">
+                </template>
+                <template v-slot:item.nOfProposers="{ item }">
+                    <v-btn rounded :color="item.nOfProposers>0?'primary':'blue-grey lighten-3'"
+                        @click="flipProposal(item.proposal.courseCode, item.concept.name, item.newConcept.name, item.amIProposing)">
+                        ${item.nOfProposers} / ${item.nOfTeachers}
+                        <v-simple-checkbox readonly color="white" :value="item.amIProposing"
+                            @click="flipProposal(item.proposal.courseCode, item.concept.name, item.newConcept.name, item.amIProposing)">
+                        </v-simple-checkbox>
+                    </v-btn>
+                </template>
+                <template v-slot:item.commit="{ item }">
+                    <v-btn rounded :color="item.nOfProposers>=item.nOfTeachers?'success':'blue-grey lighten-3'"
+                        @click="commit(item.proposal.courseCode, item.concept.name, item.newConcept.name)">
+                        commit
+                    </v-btn>
+                </template>
+            </v-data-table>
+        </v-row>
+    </v-container>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
 <script>
     Vue.component('app-content', {
         data: () => ({
+            entities: [],
+            entitySearch: "",
+            entityHeader: [{
+                text: 'name',
+                value: 'concept.name',
+            }, {
+                text: 'courses',
+                value: 'courses',
+            }],
+            proposalSearch: "",
+            proposalHeaders: [{
+                text: 'disambiguation',
+                value: 'concept.name',
+            }, {
+                text: 'disambiguation',
+                value: 'newConcept.name',
+                align: ' d-none'
+            }, {
+                text: 'course',
+                value: 'proposal.courseCode',
+            },
+            {
+                text: '# of proposers',
+                value: 'nOfProposers',
+            },
+            { text: 'commit', value: 'commit', sortable: false },
+            ],
+            proposals: [],
             courseCode: '{{courseCode}}',
             courseCodeRules: [v => !!v || 'Course code is required',
             v => (v && v.length > 3 && v.length < 101) ||
@@ -57,43 +151,127 @@
             ]
         }),
         methods: {
-            Submit() {
-                if (this.$refs.control.validate()) {
-                    if (this.$root.progress.show == true) {
-                        this.$root.bePatientSnackBar.show = true
-                        return
-                    }
-                    this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.entity.patch') }}" + this.courseCode + '/' + encodeURIComponent(this.name), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            disambiguation: this.newName
-                        })
+            loadData() {
+                this.$root.progress.show = true
+                let entityPromise = fetch("{{ url_for('RESTful.entity.query') }}?mutual=true", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
                     })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            this.$root.progress.show = false
-                            this.$root.responseSnackBar(body,
-                                'Rename failed for unknown reason.',
-                                this.$refs.control.reset)
-                        })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.entities) {
+                            this.entities = body.entities
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting proposals information.')
+                        }
+                    })
+                let proposalPromise = fetch("{{ url_for('RESTful.entity.disambiguationQuery') }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        return response.json()
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.proposals) {
+                            this.proposals = body.proposals
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting proposals information.')
+                        }
+                    })
+                Promise.all([entityPromise, proposalPromise]).then(_ => {
+                    this.$root.progress.show = false
+                })
+            },
+            newProposal() {
+                if (this.$refs.control.validate()) {
+                    this.flipProposal(this.courseCode, this.name, this.newName, false, this.$refs.control.reset)
                 }
             },
+            flipProposal(courseCode, name, newName, value, action) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.entity.createDisambiguation') }}" + courseCode + '/' + encodeURIComponent(name), {
+                    method: value ? "DELETE" : "PUT",
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        disambiguation: newName
+                    })
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Rename failed for unknown reason.',
+                            () => {
+                                if (action) action()
+                                this.loadData()
+                            }
+                        )
+                    })
+
+            },
+            commit(courseCode, name, newName) {
+                fetch("{{ url_for('RESTful.entity.patch') }}" + courseCode + '/' + encodeURIComponent(name), {
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        disambiguation: newName
+                    })
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Rename failed for unknown reason.',
+                            this.loadData)
+                    })
+
+            },
+
 
         },
         template: '#content',
+        mounted: function () {
+            this.loadData()
+        },
         delimiters: ['${', '}'],
     })
 </script>

@@ -54,7 +54,7 @@ def createProposal():
                     userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
-            return jsonify({"success": True, "message": "assign done"})
+            return jsonify({"success": True, "message": "creation done"})
         except Exception as e:
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
@@ -70,7 +70,7 @@ def removeProposal():
                     userId=session["user"]["userId"], name=request.json["name"]
                 )
             )
-            return jsonify({"success": True, "message": "assign done"})
+            return jsonify({"success": True, "message": "deletation done"})
         except Exception as e:
             raise e
     return jsonify({"success": False, "message": "incomplete request"})

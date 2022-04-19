@@ -37,6 +37,26 @@ class entityDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def list_mutual_entity(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {
+                        "courses": [dict(course) for course in record["courses"]],
+                        "concept": dict(record["concept"].items()),
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def get_user_course_entity(self, name, userId, courseCode):
         fname = sys._getframe().f_code.co_name
 
@@ -73,6 +93,34 @@ class entityDAO:
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
+            test = tx.run(
+                "MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode}),(concept:GraphConcept{name: $name})"
+                "MATCH (newConcept:GraphConcept{name: $newName})"
+                "MATCH"
+                "(concept)-[:CONCEPT_DISAMBIGUATION_REPLACED]->"
+                "(p:ConceptDisambiguationProposal{courseCode:$courseCode})"
+                "-[:CONCEPT_DISAMBIGUATION_REPLACING]->(newConcept)"
+                "OPTIONAL MATCH (p)<-[:USER_PROPOSE]-(proposer)"
+                "OPTIONAL MATCH (teacher)-[:USER_TEACH]->(course)"
+                "\n"
+                "WITH count(DISTINCT teacher) AS nOfTeachers, count(DISTINCT proposer) AS nOfProposers""\n"
+                "RETURN nOfTeachers, nOfProposers",
+                name=name,
+                courseCode=courseCode,
+                newName=newName,
+                userId=userId,
+            )
+            try:
+                oracle = [record for record in test][0]
+                print(oracle)
+                if oracle["nOfProposers"] < oracle["nOfTeachers"]:
+                    from ..resourcesGuard import InvalidRequest
+
+                    raise InvalidRequest(
+                        "Not all instructors of this course agree this disambiguation"
+                    )
+            except Exception as exception:
+                raise exception
             query = cypher[fname + ".cyp"]
             result = tx.run(
                 query, name=name, courseCode=courseCode, newName=newName, userId=userId
@@ -84,6 +132,67 @@ class entityDAO:
                     }
                     for record in result
                 ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def create_entity_disambiguation_proposal(self, name, courseCode, newName, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, name=name, courseCode=courseCode, newName=newName, userId=userId
+            )
+            try:
+                return [record for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def remove_entity_disambiguation_proposal(self, name, courseCode, newName, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, name=name, courseCode=courseCode, newName=newName, userId=userId
+            )
+            try:
+                return [record for record in result]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def list_entity_disambiguation_proposal(self, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, userId=userId)
+            try:
+                return [
+                    {
+                        "concept": dict(record["concept"].items()),
+                        "newConcept": dict(record["newConcept"].items()),
+                        "proposal": {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["proposal"].items()
+                        },
+                        "nOfProposers": record["nOfProposers"],
+                        "nOfTeachers": record["nOfTeachers"],
+                        "amIProposing": record["amIProposing"],
+                    }
+                    for record in result
+                ]
             except Exception as exception:
                 raise exception
 

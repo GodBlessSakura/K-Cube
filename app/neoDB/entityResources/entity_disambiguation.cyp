@@ -1,9 +1,17 @@
 MATCH (course:Course)-[:COURSE_DESCRIBE]->(courseConcept{name: $courseCode}),(concept:GraphConcept{name: $name})
-WITH course, concept
-    MERGE (newConcept:GraphConcept{name: $newName})
-    MERGE (concept)-[:DELTA_GRAPH_DISAMBIGUATION{
-        creationDate: datetime.transaction(), userId: $userId, courseCode:$courseCode
-    }]->(newConcept)
+MATCH (newConcept:GraphConcept{name: $newName})
+MATCH
+    (concept)-[:CONCEPT_DISAMBIGUATION_REPLACED]->
+    (p:ConceptDisambiguationProposal{courseCode:$courseCode})
+    -[:CONCEPT_DISAMBIGUATION_REPLACING]->(newConcept)
+OPTIONAL MATCH (p)<-[up:USER_PROPOSE]-(proposer)
+OPTIONAL MATCH (teacher)-[:USER_TEACH]->(course)
+WITH count(DISTINCT teacher) AS nOfTeachers, count(DISTINCT proposer) AS nOfProposers, course, concept, newConcept, p
+WHERE nOfProposers >= nOfTeachers
+DETACH DELETE p
+MERGE (concept)-[:DELTA_GRAPH_DISAMBIGUATION{
+    creationDate: datetime.transaction(), userId: $userId, courseCode:$courseCode
+}]->(newConcept)
 WITH course, concept, newConcept
 CALL{
     WITH course, concept, newConcept
