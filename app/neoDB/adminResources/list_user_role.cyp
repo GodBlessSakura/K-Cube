@@ -1,2 +1,3 @@
-MATCH (user:User)-[:PRIVILEGED_OF]->(permission:Permission)
+MATCH (user:User)
+OPTIONAL MATCH (user)-[:PRIVILEGED_OF]->(permission:Permission)
 RETURN user, collect(permission.role) as roles
