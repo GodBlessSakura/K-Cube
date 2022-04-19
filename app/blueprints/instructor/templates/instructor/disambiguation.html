@@ -141,12 +141,12 @@
             ],
             listOfCourseCode: [
                 //{% for courseCode in courseCodes %}
-                '{{ courseCode | safe}}',
+                '{{ courseCode.replace("\'", "\\\'") | safe}}',
                 //{% endfor %}
             ],
             listOfName: [
                 //{% for name in names %}
-                '{{ name | safe}}',
+                '{{ name.replace("\'", "\\\'") | safe}}',
                 //{% endfor %}
             ]
         }),
