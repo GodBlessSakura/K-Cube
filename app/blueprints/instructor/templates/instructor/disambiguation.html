@@ -8,7 +8,7 @@
             </v-text-field>
         </v-row>
         <v-row>
-            <v-data-table :headers="entityHeader" style="width:100%" :items="entities" :items-per-page="500" multi-sort
+            <v-data-table :headers="entityHeader" style="width:100%" :items="entities" :items-per-page="5" multi-sort
                 :search="entitySearch">
                 <template v-slot:item.courses="{ item }">
                     <v-menu bottom offset-x>
