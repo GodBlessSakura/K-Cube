@@ -405,7 +405,9 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.courses) {
+                            // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
                             if (body.courses.filter(c => c.isTeaching).length == 0) this.filter.joined = false
+                            // {% endif %}
                             body.courses.sort((a, b) => {
                                 if (a.concept.name < b.concept.name) {
                                     return -1;
