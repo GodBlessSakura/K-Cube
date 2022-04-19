@@ -43,8 +43,8 @@
                 <v-btn text href="{{ url_for('index') }}">KG-Cube</v-btn>
                 <template v-if="KCube.tabs && KCube.tabs.length > 0">
                     <v-select @change="switchRole" style="max-width: 200px;" solo hide-details
-                        background-color="transparent" flat label="view as" value="{{ request.blueprint }}"
-                        :items="KCube.roleTab" item-text="name" item-value="name">
+                        background-color="transparent" flat label="view as" v-model="KCube.view" :items="KCube.roleTab"
+                        item-text="name" item-value="name">
                         <template v-slot:item="{ item, on, attrs }">
                             <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-icon>
@@ -522,11 +522,12 @@
         }
         KCube_initialize = () => {
             KCube.currentBlueprint = KCube.currentBlueprint == "None" ? KCube.navigationListGroup[0].name : KCube.currentBlueprint
-
+            KCube.view = KCube.roleTab.map(t => t.name).includes(KCube.currentBlueprint) ? KCube.currentBlueprint : localStorage.getItem('lastView')
+            localStorage.setItem('lastView', KCube.view)
             if (KCube.roleTab.length > 0) {
                 // initialize values
-                KCube.tabs = KCube.roleTab.filter(r => r.name == KCube.currentBlueprint).length > 0 ? KCube.roleTab
-                    .filter(r => r.name == KCube.currentBlueprint)[0].tabs : KCube.roleTab[0].tabs;
+                KCube.tabs = KCube.roleTab.filter(r => r.name == KCube.view).length > 0 ? KCube.roleTab
+                    .filter(r => r.name == KCube.view)[0].tabs : KCube.roleTab[0].tabs;
                 KCube.currentTabIndex = KCube.tabs.map((_, i) => i).filter(
                     i => KCube.tabs[i].url == window.location.pathname)[0]
 
