@@ -15,7 +15,7 @@
             <v-divider vertical></v-divider>
             <v-col cols="auto" v-if="changeAtiveTrunk">
                 <v-btn :href="selectedNode?.link" :disabled="!selectedNode">
-                    view option with it's first predecessor
+                    view option
                     <v-icon right>
                         open_in_new
                     </v-icon>
@@ -33,6 +33,9 @@
             <v-col cols="auto" v-if="changeAtiveTrunk">
                 <v-autocomplete dense return-object :items="trunk" item-text="tag" item-value="deltaGraphId"
                     v-model="selectedNode">
+                    <template>
+
+                    </template>
                 </v-autocomplete>
             </v-col>
             <v-col cols="auto">
