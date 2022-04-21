@@ -78,23 +78,6 @@
                                 ${courses[row*colPerRow + col].courseName}
                             </v-list-item-subtitle>
                         </div>
-                        <v-slide-group>
-                            {% if request.blueprint == "instructor" %}
-                            {% elif request.blueprint == "DLTC" %}
-                            <v-slide-item>
-                                <v-tooltip bottom>
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on"
-                                            :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
-                                            icon>
-                                            <v-icon>library_add_check</v-icon>
-                                        </v-btn>
-                                    </template>
-                                    <span>Update Request</span>
-                                </v-tooltip>
-                            </v-slide-item>
-                            {% endif %}
-                        </v-slide-group>
                     </v-list-item-content>
 
                     <v-badge bordered icon="work" offset-x="24" offset-y="24" color="info"
@@ -184,7 +167,7 @@
                                             <v-icon>assignment_ind</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>List Instructor</span>
+                                    <span>List Course Instructor</span>
                                 </v-tooltip>
                             </v-list-item>
                             {% if request.blueprint == "instructor" %}
@@ -231,6 +214,32 @@
                         </template>
                         ${'click to '+(courses[row*colPerRow + col].isInternal === false?'set internal':'set public')}
                     </v-tooltip>
+                    <v-spacer></v-spacer>
+                    <v-slide-group style="padding: unset">
+                        <v-slide-item>
+                            <v-list>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on" color="info"
+                                            :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
+                                            <v-icon>library_add_check</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Update Request</span>
+                                </v-tooltip>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on" color="info"
+                                            @click="courseAssignment(courses[row*colPerRow + col])" icon>
+                                            <v-icon>assignment_ind</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>List Course Instructor</span>
+                                </v-tooltip>
+                            </v-list>
+                        </v-slide-item>
+                    </v-slide-group>
                     {% endif %}
                     {% if request.blueprint == "instructor" %}
                     <v-tooltip bottom>
