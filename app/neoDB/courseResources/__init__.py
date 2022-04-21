@@ -75,28 +75,60 @@ class courseDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def assign_course_instructor(self, courseCode, userId):
+    def instructor_join_course(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:
-                return [dict(record["course"].items()) for record in result][0]
+                return True
             except Exception as exception:
                 raise exception
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def unassign_course_instructor(self, courseCode, userId):
+    def instructor_quit_ccourse(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:
-                return [dict(record["course"].items()) for record in result][0]
+                return True
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def assign_course_instructor(self, courseCode, userId, operatorId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, courseCode=courseCode, userId=userId, operatorId=operatorId
+            )
+            try:
+                return True
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def unassign_course_instructor(self, courseCode, userId, operatorId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, courseCode=courseCode, userId=userId, operatorId=operatorId
+            )
+            try:
+                return True
             except Exception as exception:
                 raise exception
 

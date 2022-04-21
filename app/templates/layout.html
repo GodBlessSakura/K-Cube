@@ -443,6 +443,16 @@
                             icon: "grid_view",
                             url: "{{ url_for('DLTC.courseList') }}",
                         },
+                        {
+                            title: "Create New Course",
+                            icon: "library_add",
+                            url: "{{ url_for('DLTC.courseForm') }}",
+                        },
+                        {
+                            title: "Upload Course Icon",
+                            icon: "upload",
+                            url: "{{ url_for('DLTC.uploadImage') }}",
+                        },
                     ]
                 },
                 //{% endif %}

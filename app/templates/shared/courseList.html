@@ -236,7 +236,8 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :outlined="!courses[row*colPerRow + col].isTeaching"
-                                :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs" v-on="on"
+                                :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs"
+                                v-on="on"
                                 @click="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
                                 <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
                                 ${courses[row*colPerRow + col].isTeaching?'joined':'join'}
@@ -249,15 +250,27 @@
                         @click="openWorkspaceDialogue(courses[row*colPerRow + col])">
                         create workspace &nbsp;<v-icon small>work_outline</v-icon>
                     </v-btn>
-                    <v-tooltip bottom v-else>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" v-on="on" color="info"
-                                :href="'{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId">
-                                recent visit &nbsp;<v-icon small>work</v-icon>
-                            </v-btn>
-                        </template>
-                        ${courses[row*colPerRow + col].workspaces[0].tag}
-                    </v-tooltip>
+                    <div v-else>
+                        <v-tooltip bottom>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn v-bind="attrs" v-on="on" color="success" style="width: 36px; min-width: unset;"
+                                    @click="openWorkspaceDialogue(courses[row*colPerRow + col])">
+                                    <v-icon>
+                                        add_box</v-icon>
+                                </v-btn>
+                            </template>
+                            new workspace
+                        </v-tooltip>
+                        <v-tooltip bottom>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn v-bind="attrs" v-on="on" color="info"
+                                    :href="'{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId">
+                                    recent visit &nbsp;<v-icon small>work</v-icon>
+                                </v-btn>
+                            </template>
+                            ${courses[row*colPerRow + col].workspaces[0].tag}
+                        </v-tooltip>
+                    </div>
                     {% endif %}
                 </v-card-actions>
             </v-card>
@@ -303,7 +316,10 @@
             </v-card-text>
         </v-card>
     </v-dialog>
+    {% endif %}
+    {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
     <v-dialog v-model="instructorDialogue" max-width="500px">
+        {% if request.blueprint == "instructor" %}
         <v-card v-if="course">
             <v-card-title>Instructors for ${course.courseName}</v-card-title>
             <v-card-text>
@@ -313,6 +329,27 @@
                 </v-chip>
             </v-card-text>
         </v-card>
+        {% else %}
+        <v-card v-if="course">
+            <v-card-title>Instructors for ${course.courseName}</v-card-title>
+            <v-card-text>
+                <v-subheader>Assigned</v-subheader>
+                <v-chip @click="unassign(user.userId)" v-for="user in instructors" v-if="user.isTeaching"
+                    close-icon="file_download">
+                    ${user.userId}
+                    <v-icon right>file_download</v-icon>
+                </v-chip>
+            </v-card-text>
+            <v-card-text>
+                <v-subheader>Not assigned</v-subheader>
+                <v-chip @click="assign(user.userId)" v-for="user in instructors" v-if="!user.isTeaching"
+                    close-icon="upload">
+                    ${user.userId}
+                    <v-icon right>upload</v-icon>
+                </v-chip>
+            </v-card-text>
+        </v-card>
+        {% endif %}
     </v-dialog>
     {% endif %}
 </v-container>
@@ -345,11 +382,11 @@
                 notJoined: false,
                 // {% endif %}
             },
+            instructorDialogue: false,
+            instructors: null,
             // {% endif %}
             // {% if request.blueprint == "instructor" %}
             workspaceDialogue: false,
-            instructors: null,
-            instructorDialogue: false,
             courseInfoDialogue: false,
             coursePreviewDialogue: false,
             imagesUrl: [
@@ -613,6 +650,81 @@
             },
             // {% endif %}
             // {% if request.blueprint == "DLTC" %}
+
+            assign(userId) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.course.patch') }}" + this.course
+                    .courseCode, {
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        assignment: true
+                    })
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Assignment failed for unkown reason.',
+                            () => {
+                                this.courseAssignment(this.course)
+                            })
+
+                    })
+            },
+            unassign(userId) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                fetch("{{ url_for('RESTful.course.patch') }}" + this.course
+                    .courseCode, {
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        assignment: false
+                    })
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        this.$root.responseSnackBar(body,
+                            'Assignment failed for unkown reason.',
+                            () => {
+                                this.courseAssignment(this.course)
+                            })
+
+                    })
+            },
             courseIsInternal(course) {
                 this.course = course
                 this.$root.actionDisplay("This set " + course.courseCode + " " + (this.course.isInternal ===
@@ -654,6 +766,42 @@
                                         this.search()
                                     })
                             })
+                    })
+            },
+            courseAssignment(course) {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
+                this.course = course
+                fetch("{{ url_for('RESTful.course.query') }}" + course.courseCode + "/instructors", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.instructors) {
+                            this.instructors = body.instructors
+                            this.instructorDialogue = true
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting instructor assignment information.')
+                        }
+
                     })
             },
             // {% endif %}

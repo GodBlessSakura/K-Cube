@@ -127,6 +127,10 @@ def patch(courseCode):
     def canSetInternalCourse():
         return
 
+    @authorize_RESTful_with(["canAssignCourse"])
+    def canAssignCourse():
+        return
+
     if courseCode is not None:
         if "isInternal" in request.json:
             canSetInternalCourse()
@@ -137,13 +141,29 @@ def patch(courseCode):
         if "join" in request.json:
             canJoinCourse()
             if request.json["join"]:
-                get_api_driver().course.assign_course_instructor(
+                get_api_driver().course.instructor_join_course(
                     courseCode=courseCode, userId=session["user"]["userId"]
                 )
                 return jsonify({"success": True})
             else:
-                get_api_driver().course.unassign_course_instructor(
+                get_api_driver().course.instructor_quit_ccourse(
                     courseCode=courseCode, userId=session["user"]["userId"]
+                )
+                return jsonify({"success": True})
+        if "assignment" in request.json and "userId" in request.json:
+            canAssignCourse()
+            if request.json["assignment"]:
+                get_api_driver().course.assign_course_instructor(
+                    courseCode=courseCode,
+                    userId=request.json["userId"],
+                    operatorId=session["user"]["userId"],
+                )
+                return jsonify({"success": True})
+            else:
+                get_api_driver().course.unassign_course_instructor(
+                    courseCode=courseCode,
+                    userId=request.json["userId"],
+                    operatorId=session["user"]["userId"],
                 )
                 return jsonify({"success": True})
         if (

@@ -104,3 +104,17 @@ def pullRequest(courseCode):
     if courseCode is not None:
         return render_template("DLTC/pullRequest.html", courseCode=courseCode)
     abort(404)
+
+
+@DLTC.route("/courseCreate")
+def courseForm():
+    from ..instructor import courseForm
+
+    return courseForm()
+
+
+@DLTC.route("/upload")
+def uploadImage():
+    from ..instructor import uploadImage
+
+    return uploadImage()
