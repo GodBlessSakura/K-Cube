@@ -126,13 +126,13 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.graph.get', deltaGraphId = deltaGraphId) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            }
-                        })
+                    "{{ url_for('RESTful.graph.get', deltaGraphId = deltaGraphId) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -151,7 +151,8 @@
                                     body.graph.imageURL,
                                 )
                             body.triples.forEach(triple => {
-                                if (!triple.r_value) return [triple.h_name, triple.t_name].forEach(
+                                if (!triple.r_value) return;
+                                [triple.h_name, triple.t_name].forEach(
                                     name => {
                                         if (cy.getElementById(name).length == 0) {
                                             cy.add(nodeFactory(name))
@@ -202,7 +203,7 @@
                 console.log(event)
                 if (event.target == event.cy) return
                 console.log(event.target.classes())
-                if (event.target.classes().includes("course")) {} else {
+                if (event.target.classes().includes("course")) { } else {
                     this.newTab(event.target[0].data('id'))
                 }
             })
