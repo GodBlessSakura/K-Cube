@@ -2,7 +2,23 @@
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
-    <div id="cy" style="height: 100%; width: 100%;"></div>
+    <v-container style="height: 100%; width: 100%;">
+        <v-row style="height: 100%;">
+            <v-col>
+                <v-row style="height: 25%;">
+
+                </v-row>
+                <v-row style="height: 75%; border-top: 1px solid black">
+                    <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0" :src="url">
+
+                    </iframe>
+                </v-row>
+            </v-col>
+            <v-col style="height: 100%; border-left: 1px solid black" cols="3">
+                <div id="cy" style="height: 100%; width: 100%;"></div>
+            </v-col>
+        </v-row>
+    </v-container>
     <v-snackbar v-model="showSelectBar" timeout='-1'>
         Select a ${ (snackbarMethod == 'branch' || snackbarMethod == 'workspace')?'a branch or a trunk':'ready branch'}
         for ${
@@ -209,6 +225,7 @@
     }
     Vue.component('app-content', {
         data: () => ({
+            url: "",
             showMenu: false,
             cursor_x: undefined,
             cursor_y: undefined,
@@ -556,6 +573,10 @@
                 }
                 w.focus()
                 this.resume()
+            },
+            openFrame(url) {
+                this.url = url
+                this.resume()
             }
         },
         mounted: function () {
@@ -635,40 +656,39 @@
                     return
                 }
                 if (event.target.classes().includes("trunk")) {
-                    let parent = event.target[0].connectedEdges(
-                        '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
-                            0]
-                            .data('id') + '"]')
-                    if (parent.length == 0) {
-                        this.newTab("{{ url_for('collegue.graphView')}}" + event.target[0].data(
-                            'deltaGraphId'))
-                    } else {
-                        this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
-                            'deltaGraphId') + '/' + parent.data('deltaGraphId'))
-                    }
+                    this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
+                        'deltaGraphId'))
                 }
                 if (event.target.classes().includes("branch")) {
                     let parent = event.target[0].connectedEdges(
                         '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
                             0]
                             .data('id') + '"]')
-                    if (parent.length == 0) {
-                        this.newTab("{{ url_for('collegue.graphView')}}" + event.target[0].data(
-                            'deltaGraphId'))
-                    } else {
-                        this.newTab("{{ url_for('collegue.compare')}}" + event.target[0].data(
-                            'deltaGraphId') + '/' + parent.data('deltaGraphId'))
-                    }
+                    this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
+                        'deltaGraphId'))
                 }
-                // {% if request.blueprint == "instructor" %}
                 if (event.target.classes().includes("workspace")) {
                     this.newTab("{{ url_for('instructor.workspace')}}" + event.target.data(
                         "deltaGraphId"))
                 }
+                // {% if request.blueprint == "instructor" %}
                 // {% endif %}
                 // {% if request.blueprint == "DLTC" %}
                 // {% endif %}
             })
+            cy.on('tap', 'edge', (event) => {
+                let tag = event.target[0].data("tag")
+                if (tag == "FORK" || tag == "PATCH") {
+                    this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
+                        'deltaGraphId') + "/" + event.target[0].target().data(
+                            'deltaGraphId'))
+
+                }
+            })
+            this.$refs.iframe.addEventListener('onCloseWindow', () => {
+                this.loadData()
+            }, false);
+
             this.loadData()
         },
         template: '#content',
