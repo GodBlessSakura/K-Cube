@@ -31,7 +31,7 @@
     </v-snackbar>
     <v-menu v-model="showMenu" :position-x="cursor_x" :position-y="cursor_y" absolute>
         <v-list>
-            <v-subheader>${_selectedNode?.data('tag')}</v-subheader>
+            <v-subheader>${this._selectedNode?.data('tag')}</v-subheader>
             <v-divider> </v-divider>
             {% if request.blueprint == "instructor" %}
             <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">status
@@ -50,7 +50,7 @@
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
-                @click="newTab('{{ url_for('instructor.graphimport')}}' + _selectedNode?.data('deltaGraphId'))">
+                @click="newTab('{{ url_for('instructor.graphimport')}}' + this._selectedNode?.data('deltaGraphId'))">
                 <v-list-item-title>Import graph</v-list-item-title>
             </v-list-item>
             <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
@@ -660,10 +660,6 @@
                         'deltaGraphId'))
                 }
                 if (event.target.classes().includes("branch")) {
-                    let parent = event.target[0].connectedEdges(
-                        '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
-                            0]
-                            .data('id') + '"]')
                     this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
                         'deltaGraphId'))
                 }
@@ -681,6 +677,17 @@
                 if (tag == "FORK" || tag == "PATCH") {
                     this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
                         'deltaGraphId') + "/" + event.target[0].target().data(
+                            'deltaGraphId'))
+
+                }
+                else if (tag.includes("PULL")) {
+                    let parentOfSource = event.target[0].source().connectedEdges(
+                        '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
+                            0]
+                            .data('id') + '"]')
+                    if (parentOfSource.length < 1) return;
+                    this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
+                        'deltaGraphId') + "/" + parentOfSource[0].data(
                             'deltaGraphId'))
 
                 }
