@@ -5,21 +5,21 @@
 {% block VueComponent %}
 <v-container dense style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none;">
     {% if readOnly %}
-    <v-row dense style="width: 100%;" v-if="overwriter?.labels.includes('Branch')" v-if="this.overwriter?.isOwner">
+    <v-row dense style="width: 100%;" v-if="overwriter?.labels.includes('Branch') && overwriter?.isOwner">
         <v-col>
             <v-form dense ref="control">
-                <v-select dense v-model="visibility" :items="greaterVisibility" :disabled="!this.overwriter?.isOwner"
+                <v-select dense v-model="visibility" :items="greaterVisibility" :disabled="!overwriter?.isOwner"
                     label="Filled style">
                 </v-select>
             </v-form>
         </v-col>
         <v-col>
-            <v-btn block @click="proceeded = true" v-if="!proceeded" :disabled="!this.overwriter?.isOwner">
+            <v-btn block @click="proceeded = true" v-if="!proceeded" :disabled="!overwriter?.isOwner">
                 update
             </v-btn>
             <v-btn block v-if="proceeded">
                 this may also affect visibility of predecessor &nbsp; &nbsp;
-                <v-btn @click="update()" :disabled="!this.overwriter?.isOwner">
+                <v-btn @click="update()" :disabled="!overwriter?.isOwner">
                     ${confirmed?'update':'confirm'}
                 </v-btn>
             </v-btn>
@@ -277,8 +277,8 @@
             options: [],
             action: [],
             isTrival: false,
-            overwriter: undefined,
-            overwritee: undefined,
+            overwriter: null,
+            overwritee: null,
             visibility: '',
             greaterVisibility: [],
             proceeded: false,
