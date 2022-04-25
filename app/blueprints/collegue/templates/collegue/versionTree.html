@@ -138,15 +138,19 @@
         {
             selector: 'edge',
             style: {
-                'label': 'data(tag)',
-                'target-arrow-shape': 'triangle',
                 'curve-style': 'bezier'
+            }
+        },
+        {
+            selector: 'edge[tag*="PULL"]',
+            style: {
+                'line-style': 'dash'
             }
         },
         {
             selector: 'edge[tag="WORK_ON"]',
             style: {
-                'text-opacity': 0
+                'line-style': 'dotted'
             }
         },
         {
