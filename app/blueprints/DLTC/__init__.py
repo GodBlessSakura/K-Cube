@@ -105,6 +105,13 @@ def pullRequest(courseCode):
         return render_template("DLTC/pullRequest.html", courseCode=courseCode)
     abort(404)
 
+@DLTC.route("/versions/")
+@DLTC.route("/versions/<courseCode>")
+def trunkVersions(courseCode):
+    if courseCode is not None:
+        return render_template("DLTC/trunkVersions.html", courseCode=courseCode)
+    abort(404)
+
 
 @DLTC.route("/courseCreate")
 def courseForm():

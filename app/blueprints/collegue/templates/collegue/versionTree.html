@@ -9,7 +9,11 @@
 
                 </v-row>
                 <v-row style="height: 75%; border-top: 1px solid black">
-                    <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0" :src="url">
+                    <div v-if="url==''">
+                        click on a node to view a version<br>
+                        click on an edge to view the changes that an update has made
+                    </div>
+                    <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0" :src="url" scrolling="no">
 
                     </iframe>
                 </v-row>
