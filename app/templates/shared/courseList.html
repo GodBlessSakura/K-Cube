@@ -162,10 +162,22 @@
                                         <v-btn v-bind="attrs" v-on="on"
                                             :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
                                             icon>
+                                            <v-icon>library_add</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Approve Updates</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('DLTC.trunkVersions') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
                                             <v-icon>library_add_check</v-icon>
                                         </v-btn>
                                     </template>
-                                    <span>Manage Publication</span>
+                                    <span>Manage Versions</span>
                                 </v-tooltip>
                             </v-list-item>
                             {% endif %}
@@ -249,10 +261,22 @@
                                     <v-btn v-bind="attrs" v-on="on" color="info"
                                         :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
                                         icon>
+                                        <v-icon>library_add</v-icon>
+                                    </v-btn>
+                                </template>
+                                <span>Approve Updates</span>
+                            </v-tooltip>
+                        </v-slide-item>
+                        <v-slide-item>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn v-bind="attrs" v-on="on" color="info"
+                                        :href="'{{ url_for('DLTC.trunkVersions') }}/' + courses[row*colPerRow + col].courseCode"
+                                        icon>
                                         <v-icon>library_add_check</v-icon>
                                     </v-btn>
                                 </template>
-                                <span>Manage Publication</span>
+                                <span>Manage Versions</span>
                             </v-tooltip>
                         </v-slide-item>
                         <v-divider vertical></v-divider>
