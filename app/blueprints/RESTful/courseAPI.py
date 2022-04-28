@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -27,7 +27,7 @@ def internalCourse():
             {
                 "success": True,
                 "courses": get_api_driver().course.list_internal_course(
-                    userId=session["user"]["userId"]
+                    userId=g.user["userId"]
                 ),
             }
         )
@@ -42,7 +42,7 @@ def instructorCourse():
             {
                 "success": True,
                 "courses": get_api_driver().course.list_instructor_course(
-                    userId=session["user"]["userId"]
+                    userId=g.user["userId"]
                 ),
             }
         )
@@ -66,7 +66,7 @@ def post():
                 courseName=courseName,
                 name=name,
                 imageURL=imageURL,
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
             )
             return jsonify({"success": True})
         except Exception as e:
@@ -142,12 +142,12 @@ def patch(courseCode):
             canJoinCourse()
             if request.json["join"]:
                 get_api_driver().course.instructor_join_course(
-                    courseCode=courseCode, userId=session["user"]["userId"]
+                    courseCode=courseCode, userId=g.user["userId"]
                 )
                 return jsonify({"success": True})
             else:
                 get_api_driver().course.instructor_quit_ccourse(
-                    courseCode=courseCode, userId=session["user"]["userId"]
+                    courseCode=courseCode, userId=g.user["userId"]
                 )
                 return jsonify({"success": True})
         if "assignment" in request.json and "userId" in request.json:
@@ -156,14 +156,14 @@ def patch(courseCode):
                 get_api_driver().course.assign_course_instructor(
                     courseCode=courseCode,
                     userId=request.json["userId"],
-                    operatorId=session["user"]["userId"],
+                    operatorId=g.user["userId"],
                 )
                 return jsonify({"success": True})
             else:
                 get_api_driver().course.unassign_course_instructor(
                     courseCode=courseCode,
                     userId=request.json["userId"],
-                    operatorId=session["user"]["userId"],
+                    operatorId=g.user["userId"],
                 )
                 return jsonify({"success": True})
         if (

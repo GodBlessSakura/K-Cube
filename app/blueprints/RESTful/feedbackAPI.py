@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -47,7 +47,7 @@ def post(courseCode):
                 "success": True,
                 "material": get_api_driver().feedback.create_feedback(
                     courseCode=courseCode,
-                    userId=session["user"]["userId"],
+                    userId=g.user["userId"],
                     title=request.json["title"],
                     text=request.json["text"],
                 ),
@@ -64,7 +64,7 @@ def postReply(id):
             {
                 "success": True,
                 "reply": get_api_driver().feedback.create_reply(
-                    userId=session["user"]["userId"],
+                    userId=g.user["userId"],
                     id=id,
                     text=request.json["text"],
                 ),

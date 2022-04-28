@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -9,7 +9,7 @@ activity = Blueprint("activity", __name__, url_prefix="activity")
 @activity.get("/")
 def query():
     if request.args.get("ofUser") and request.args.get("courseCode"):
-        return activityOfUser(session["user"]["userId"], request.args.get("courseCode"))
+        return activityOfUser(g.user["userId"], request.args.get("courseCode"))
 
     if request.args.get("userId") and request.args.get("courseCode"):
         return activityOfUser(
@@ -54,7 +54,7 @@ def post(courseCode, name):
                     courseCode=courseCode,
                     name=name,
                     week=float(request.json["week"]),
-                    userId=session["user"]["userId"],
+                    userId=g.user["userId"],
                     desc=request.json["desc"],
                 ),
             }

@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -15,16 +15,16 @@ def get_compare(overwriterId, overwriteeId):
             {
                 "success": True,
                 "overwriter": get_api_driver().graph.get_graph(
-                    deltaGraphId=overwriterId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriterId, userId=g.user["userId"]
                 ),
                 "overwriter_triples": get_api_driver().triple.get_graph_triple(
-                    deltaGraphId=overwriterId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriterId, userId=g.user["userId"]
                 ),
                 "overwritee": get_api_driver().graph.get_graph(
-                    deltaGraphId=overwriteeId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriteeId, userId=g.user["userId"]
                 ),
                 "overwritee_triples": get_api_driver().triple.get_graph_triple(
-                    deltaGraphId=overwriteeId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriteeId, userId=g.user["userId"]
                 ),
             }
         )
@@ -35,19 +35,19 @@ def get_compare(overwriterId, overwriteeId):
                 "overwriter": dict(
                     get_api_driver()
                     .workspace.get_workspace(
-                        deltaGraphId=overwriterId, userId=session["user"]["userId"]
+                        deltaGraphId=overwriterId, userId=g.user["userId"]
                     )
                     .items(),
                     labels=["Workspace"],
                 ),
                 "overwriter_triples": get_api_driver().triple.get_workspace_triple(
-                    deltaGraphId=overwriterId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriterId, userId=g.user["userId"]
                 ),
                 "overwritee": get_api_driver().workspace.get_workspace_subject(
-                    deltaGraphId=overwriterId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriterId, userId=g.user["userId"]
                 ),
                 "overwritee_triples": get_api_driver().triple.get_workspace_subject_triple(
-                    deltaGraphId=overwriterId, userId=session["user"]["userId"]
+                    deltaGraphId=overwriterId, userId=g.user["userId"]
                 ),
             }
         )
@@ -59,10 +59,10 @@ def get(deltaGraphId):
         {
             "success": True,
             "graph": get_api_driver().graph.get_graph(
-                deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                deltaGraphId=deltaGraphId, userId=g.user["userId"]
             ),
             "triples": get_api_driver().triple.get_graph_triple(
-                deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                deltaGraphId=deltaGraphId, userId=g.user["userId"]
             ),
         }
     )

@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -21,7 +21,7 @@ def materialOfUser(courseCode):
             {
                 "success": True,
                 "materials": get_api_driver().material.list_a_user_material(
-                    courseCode=courseCode, userId=session["user"]["userId"]
+                    courseCode=courseCode, userId=g.user["userId"]
                 ),
             }
         )
@@ -64,7 +64,7 @@ def post(courseCode, name):
                 "material": get_api_driver().material.create_material(
                     courseCode=courseCode,
                     name=name,
-                    userId=session["user"]["userId"],
+                    userId=g.user["userId"],
                     url=request.json["url"],
                     desc=request.json["desc"],
                 ),
@@ -86,7 +86,7 @@ def delete(id):
                     "success": True,
                     "reply": get_api_driver().material.remove_material(
                         id=id,
-                        userId=session["user"]["userId"],
+                        userId=g.user["userId"],
                     ),
                 }
             )

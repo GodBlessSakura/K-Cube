@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -47,7 +47,7 @@ def put(userId):
             get_api_driver().user.assign_user_role(
                 userId=userId,
                 role=request.json["role"],
-                message="granted by " + session["user"]["userId"],
+                message="granted by " + g.user["userId"],
             )
             cache.delete_memoized(user_permission, userId)
             return jsonify({"success": True, "message": "assign done"})

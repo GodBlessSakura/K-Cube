@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -18,7 +18,7 @@ def post(overwriterId, overwriteeId):
                         "trunk": get_api_driver().workspace.commit_workspace_as_fork(
                             deltaGraphId=overwriterId,
                             tag=request.json["tag"],
-                            userId=session["user"]["userId"],
+                            userId=g.user["userId"],
                         ),
                     }
                 )
@@ -29,7 +29,7 @@ def post(overwriterId, overwriteeId):
                         "trunk": get_api_driver().workspace.commit_workspace_as_patch(
                             deltaGraphId=overwriterId,
                             tag=request.json["tag"],
-                            userId=session["user"]["userId"],
+                            userId=g.user["userId"],
                         ),
                     }
                 )
@@ -42,7 +42,7 @@ def post(overwriterId, overwriteeId):
                             overwriterId=overwriterId,
                             overwriteeId=overwriteeId,
                             tag=request.json["tag"],
-                            userId=session["user"]["userId"],
+                            userId=g.user["userId"],
                         ),
                     }
                 )
@@ -54,7 +54,7 @@ def post(overwriterId, overwriteeId):
                             overwriterId=overwriterId,
                             overwriteeId=overwriteeId,
                             tag=request.json["tag"],
-                            userId=session["user"]["userId"],
+                            userId=g.user["userId"],
                         ),
                     }
                 )
@@ -71,7 +71,7 @@ def patch(deltaGraphId):
                     "success": True,
                     "trunk": get_api_driver().trunk.set_active(
                         deltaGraphId=deltaGraphId,
-                        userId=session["user"]["userId"],
+                        userId=g.user["userId"],
                     ),
                 }
             )

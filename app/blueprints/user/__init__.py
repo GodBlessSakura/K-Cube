@@ -26,8 +26,8 @@ def back():
 @authorize_RESTful_with([], require_userId=True)
 def refreshPermission():
     try:
-        assign_role_accroding_to_email(session["user"]["userId"], g.user["email"])
-        cache.delete_memoized(user_permission, session["user"]["userId"])
+        assign_role_accroding_to_email(g.user["userId"], g.user["email"])
+        cache.delete_memoized(user_permission, g.user["userId"])
     finally:
         return redirect("/")
 
@@ -113,7 +113,7 @@ def login():
                 from app.cache_driver import user_permission
 
                 session["user"] = user
-                permission = user_permission(session["user"]["userId"])
+                permission = user_permission(g.user["userId"])
                 if "role" in permission:
                     if "instructor" in permission["role"]:
                         return jsonify(
@@ -142,15 +142,15 @@ def isUserIdAvaliable():
 def patch():
     if "userName" in request.json and "email" in request.json and "user" in session:
         user = get_api_driver().user.update_user(
-            userId=session["user"]["userId"],
+            userId=g.user["userId"],
             email=request.json["email"],
             userName=request.json["userName"],
         )
 
         if user is not None:
-            cache.delete_memoized(user_info, session["user"]["userId"])
+            cache.delete_memoized(user_info, g.user["userId"])
             assign_role_accroding_to_email(
-                session["user"]["userId"], request.json["email"]
+                g.user["userId"], request.json["email"]
             )
             try:
                 verify()
@@ -167,7 +167,7 @@ def verify():
         if not g.user.verified:
             from ...sender import send_email
 
-            # send_email(session["user"]["email"],
+            # send_email(g.user["email"],
             # "email verification",
             # "")
             return jsonify(

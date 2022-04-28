@@ -1,4 +1,4 @@
-from flask import jsonify, session, request, abort
+from flask import jsonify, session, request, abort, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -22,7 +22,7 @@ def getCourse(courseCode, userId):
         course = get_api_driver().course.get_course(courseCode=courseCode)
         if request.args.get("editing"):
             result = get_api_driver().triple.get_course_editing_triple(
-                courseCode=courseCode, userId=session["user"]["userId"]
+                courseCode=courseCode, userId=g.user["userId"]
             )
             return jsonify({"success": True, "triples": result, "course": course})
         if userId is None:
@@ -50,7 +50,7 @@ def put(deltaGraphId):
         try:
             result = get_api_driver().triple.set_workspace_triple(
                 deltaGraphId=deltaGraphId,
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
                 h_name=request.json["h_name"],
                 r_name=request.json["r_name"],
                 t_name=request.json["t_name"],
@@ -73,7 +73,7 @@ def delete(deltaGraphId):
         try:
             result = get_api_driver().triple.remove_workspace_triple(
                 deltaGraphId=deltaGraphId,
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
                 h_name=request.json["h_name"],
                 r_name=request.json["r_name"],
                 t_name=request.json["t_name"],
@@ -90,7 +90,7 @@ def deleteUnreachable(deltaGraphId):
     try:
         result = get_api_driver().triple.remove_unreachable_triple(
             deltaGraphId=deltaGraphId,
-            userId=session["user"]["userId"],
+            userId=g.user["userId"],
         )
         return jsonify({"success": True, "triples": result})
     except Exception as e:

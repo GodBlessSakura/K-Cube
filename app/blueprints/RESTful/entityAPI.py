@@ -1,4 +1,4 @@
-from flask import jsonify, session, request, abort
+from flask import jsonify, session, request, abort, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from neo4j.exceptions import ConstraintError
@@ -33,7 +33,7 @@ def get(courseCode, name):
     if courseCode and name and request.args.get("ofUser"):
         try:
             result = get_api_driver().entity.get_user_course_entity(
-                name=name, courseCode=courseCode, userId=session["user"]["userId"]
+                name=name, courseCode=courseCode, userId=g.user["userId"]
             )
             return jsonify(
                 {
@@ -58,7 +58,7 @@ def patch(courseCode, name):
                 name=name,
                 courseCode=courseCode,
                 newName=request.json.get("disambiguation"),
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
             )
             return jsonify(
                 {
@@ -82,7 +82,7 @@ def createDisambiguation(courseCode, name):
                 name=name,
                 courseCode=courseCode,
                 newName=request.json.get("disambiguation"),
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
             )
             return jsonify({"success": True, "message": "creation done"})
         except Exception as e:
@@ -101,7 +101,7 @@ def removeDisambiguation(courseCode, name):
                 name=name,
                 courseCode=courseCode,
                 newName=request.json.get("disambiguation"),
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
             )
             return jsonify({"success": True, "message": "deletation done"})
         except Exception as e:
@@ -114,7 +114,7 @@ def removeDisambiguation(courseCode, name):
 def disambiguationQuery():
     try:
         result = get_api_driver().entity.list_entity_disambiguation_proposal(
-            userId=session["user"]["userId"],
+            userId=g.user["userId"],
         )
         return jsonify(
             {

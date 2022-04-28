@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -36,7 +36,7 @@ def getRelationShipView():
             {
                 "success": True,
                 "relationships": get_api_driver().relationship.list_relationship(
-                    userId=session["user"]["userId"]
+                    userId=g.user["userId"]
                 ),
             }
         )
@@ -51,7 +51,7 @@ def createProposal():
         try:
             result = jsonify(
                 get_api_driver().relationship.create_proposal(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=g.user["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "creation done"})
@@ -67,7 +67,7 @@ def removeProposal():
         try:
             result = jsonify(
                 get_api_driver().relationship.remove_proposal(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=g.user["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "deletation done"})
@@ -83,7 +83,7 @@ def createApproval():
         try:
             result = jsonify(
                 get_api_driver().relationship.create_approval(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=g.user["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "assign done"})
@@ -99,7 +99,7 @@ def removeApproval():
         try:
             result = jsonify(
                 get_api_driver().relationship.remove_approval(
-                    userId=session["user"]["userId"], name=request.json["name"]
+                    userId=g.user["userId"], name=request.json["name"]
                 )
             )
             return jsonify({"success": True, "message": "assign done"})

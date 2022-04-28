@@ -1,4 +1,4 @@
-from flask import jsonify, session, request
+from flask import jsonify, session, request, g
 from flask.blueprints import Blueprint
 from app.api_driver import get_api_driver
 from app.authorizer import authorize_RESTful_with
@@ -19,7 +19,7 @@ def post(deltaGraphId):
             newId = get_api_driver().workspace.create_repository(
                 deltaGraphId=deltaGraphId,
                 tag=request.json["tag"],
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
                 w_tag=request.json["w_tag"],
             )
             return jsonify({"success": True, "deltaGraphId": newId})
@@ -33,7 +33,7 @@ def post(deltaGraphId):
                     "deltaGraphId": get_api_driver().workspace.create_from_import(
                         deltaGraphId=deltaGraphId,
                         tag=request.json["tag"],
-                        userId=session["user"]["userId"],
+                        userId=g.user["userId"],
                         triples=triples,
                     ),
                 }
@@ -42,7 +42,7 @@ def post(deltaGraphId):
             newId = get_api_driver().workspace.create_workspace(
                 deltaGraphId=deltaGraphId,
                 tag=request.json["tag"],
-                userId=session["user"]["userId"],
+                userId=g.user["userId"],
             )
             return jsonify({"success": True, "deltaGraphId": newId})
         except Exception as e:
@@ -67,7 +67,7 @@ def lastModifiedWorkspace(courseCode):
             {
                 "success": True,
                 "workspaces": get_api_driver().workspace.get_user_course_lastModified(
-                    courseCode=courseCode, userId=session["user"]["userId"]
+                    courseCode=courseCode, userId=g.user["userId"]
                 ),
             }
         )
@@ -83,16 +83,16 @@ def get(deltaGraphId):
             {
                 "success": True,
                 "workspace": get_api_driver().workspace.get_workspace(
-                    deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                    deltaGraphId=deltaGraphId, userId=g.user["userId"]
                 ),
                 "triples": get_api_driver().triple.get_workspace_triple(
-                    deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                    deltaGraphId=deltaGraphId, userId=g.user["userId"]
                 ),
                 "subject": get_api_driver().workspace.get_workspace_subject(
-                    deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                    deltaGraphId=deltaGraphId, userId=g.user["userId"]
                 ),
                 "subject_triples": get_api_driver().triple.get_workspace_subject_triple(
-                    deltaGraphId=deltaGraphId, userId=session["user"]["userId"]
+                    deltaGraphId=deltaGraphId, userId=g.user["userId"]
                 ),
             }
         )
@@ -110,7 +110,7 @@ def patch(deltaGraphId):
                     "success": True,
                     "branch": get_api_driver().workspace.sync_workspace(
                         deltaGraphId=deltaGraphId,
-                        userId=session["user"]["userId"],
+                        userId=g.user["userId"],
                     ),
                 }
             )
@@ -125,7 +125,7 @@ def patch(deltaGraphId):
                     "branch": get_api_driver().workspace.checkout_workspace(
                         deltaGraphId=deltaGraphId,
                         checkout=request.json["deltaGraphId"],
-                        userId=session["user"]["userId"],
+                        userId=g.user["userId"],
                     ),
                 }
             )
@@ -136,7 +136,7 @@ def patch(deltaGraphId):
                     "branch": get_api_driver().workspace.rename_workspace(
                         deltaGraphId=deltaGraphId,
                         tag=request.json["tag"],
-                        userId=session["user"]["userId"],
+                        userId=g.user["userId"],
                     ),
                 }
             )
@@ -149,7 +149,7 @@ def delete(deltaGraphId):
     if deltaGraphId is not None:
         get_api_driver().workspace.delete_workspace(
             deltaGraphId=deltaGraphId,
-            userId=session["user"]["userId"],
+            userId=g.user["userId"],
         )
         return jsonify(
             {

@@ -7,6 +7,7 @@ from flask import (
     session,
     redirect,
     abort,
+    g,
 )
 import os
 from app.authorizer import authorize_with
@@ -233,7 +234,7 @@ def disambiguation(courseCode):
         courseCodes=[
             c["concept"]["name"]
             for c in get_api_driver().course.list_internal_course(
-                userId=session["user"]["userId"]
+                userId=g.user["userId"]
             )
         ],
         names=[e["concept"]["name"] for e in get_api_driver().entity.list_entity()],
