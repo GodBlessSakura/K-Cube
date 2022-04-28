@@ -1334,7 +1334,11 @@
                 }
             },
             editorFit() {
+                var maxZoom = cy.maxZoom();
+                cy.maxZoom(4);
                 cy.fit(cy, fitPadding)
+                cy.maxZoom(maxZoom);
+
             },
             saveLayout() {
                 let layout = []
