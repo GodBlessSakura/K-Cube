@@ -143,7 +143,7 @@ def create_app(config_string):
         click.echo(userid)
         click.echo(
             api_driver.get_api_driver().user.assign_user_role(
-                userId=userid, role="admin"
+                userId=userid, role="admin", message="granted by cli"
             )
         )
 

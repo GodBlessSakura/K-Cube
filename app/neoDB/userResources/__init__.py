@@ -75,7 +75,12 @@ class userDAO:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, userId=userId, userName=userName, email=email,)
+            result = tx.run(
+                query,
+                userId=userId,
+                userName=userName,
+                email=email,
+            )
             try:
                 rows = [record for record in result]
                 return dict(rows[0]["user"].items())
@@ -85,14 +90,12 @@ class userDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def assign_user_role(
-        self, userId, role,
-    ):
+    def assign_user_role(self, userId, role, message=""):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, userId=userId, role=role)
+            result = tx.run(query, userId=userId, role=role, message=message)
             return [
                 {
                     "user": dict(record["user"].items()),
@@ -106,7 +109,9 @@ class userDAO:
             return session.write_transaction(_query)
 
     def remove_user_role(
-        self, userId, role,
+        self,
+        userId,
+        role,
     ):
         fname = sys._getframe().f_code.co_name
 

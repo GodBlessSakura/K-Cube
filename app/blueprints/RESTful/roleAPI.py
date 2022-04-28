@@ -45,7 +45,9 @@ def put(userId):
     if "role" in request.json and userId is not None:
         try:
             get_api_driver().user.assign_user_role(
-                userId=userId, role=request.json["role"]
+                userId=userId,
+                role=request.json["role"],
+                message="granted by " + session["user"]["userId"],
             )
             cache.delete_memoized(user_permission, userId)
             return jsonify({"success": True, "message": "assign done"})

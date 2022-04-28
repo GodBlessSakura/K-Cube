@@ -26,6 +26,7 @@ def back():
 @authorize_RESTful_with([], require_userId=True)
 def refreshPermission():
     try:
+        assign_role_accroding_to_email(session["user"]["userId"], g.user["email"])
         cache.delete_memoized(user_permission, session["user"]["userId"])
     finally:
         return redirect("/")
@@ -52,6 +53,7 @@ def register():
             user = get_api_driver().user.create_user(
                 userId=userId, password=password, email=email, userName=userName
             )
+            assign_role_accroding_to_email(userId, email)
         except ConstraintError:
             return jsonify(
                 {
@@ -64,6 +66,31 @@ def register():
             session["user"] = user
             return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete register request"})
+
+
+def assign_role_accroding_to_email(userId, email):
+    ### if the below "assign_role_to_varified_account_accroding_to_email" function is implemented, delete this function
+    role = (
+        "student"
+        if "@connect.polyu.hk" in email
+        else "instructor"
+        if "@polyu.edu.hk" in email
+        else None
+    )
+    print(email)
+    print("@connect.polyu.hk" in email)
+    print(role)
+    if role:
+        get_api_driver().user.assign_user_role(
+            userId=userId,
+            role=role,
+            message="granted by email pattern matching",
+        )
+
+
+def assign_role_to_varified_account_accroding_to_email(userId, email):
+    ### check is user verified if yes assign role
+    pass
 
 
 @user.route("/logout")
@@ -81,6 +108,7 @@ def login():
             user = get_api_driver().user.authenticate_user(
                 userId=userId, password=password
             )
+            assign_role_accroding_to_email(userId, user["email"])
             if user is not None:
                 from app.cache_driver import user_permission
 
@@ -121,6 +149,9 @@ def patch():
 
         if user is not None:
             cache.delete_memoized(user_info, session["user"]["userId"])
+            assign_role_accroding_to_email(
+                session["user"]["userId"], request.json["email"]
+            )
             try:
                 verify()
             except:
