@@ -250,7 +250,7 @@
                                     <v-icon>fit_screen</v-icon>
                                 </v-list-item-icon>
                             </v-list-item>
-                            <v-list-item dense @click="redoLayout()">
+                            <v-list-item dense @click="redoLayout(false)">
                                 <v-list-item-title>tidy layout</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-icon></v-icon>
@@ -904,7 +904,6 @@
                             let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
                                 .rootName +
                                 '"]')
-                            this.isPhysicsRunning = true
                             this.redoLayout()
                             this.edgeStatistic()
                         } else {
@@ -980,6 +979,7 @@
             },
             physics(bool) {
                 this.isPhysicsRunning = bool
+                localStorage.setItem(this.workspace.deltaGraphId + "_isPhysicsRunning", this.isPhysicsRunning)
                 if (bool) {
                     cyLayout = cy.layout(colaLayoutOptions)
                     cyLayout.run()
@@ -1072,7 +1072,6 @@
                                     })
                                 }
                                 if (!this.isPhysicsRunning) {
-                                    console.log("simulate")
                                     cy.nodes().lock()
                                     newNodes.unlock()
                                     let initOption = { ...colaLayoutOptions }
@@ -1082,7 +1081,6 @@
                                     initOption.convergenceThreshold = 0
                                     cyLayout = cy.layout(initOption)
                                     cyLayout.one('layoutstop', () => {
-                                        console.log("stop")
                                         cy.nodes().unlock()
                                     })
                                     cyLayout.run()
@@ -1338,10 +1336,28 @@
             editorFit() {
                 cy.fit(cy, fitPadding)
             },
-            redoLayout() {
+            saveLayout() {
+                let layout = []
+                cy.nodes().forEach(node => {
+                    layout.push({ name: node.id(), x: node.position().x, y: node.position().y })
+                })
+                layout = JSON.stringify(layout)
+                localStorage.setItem(this.workspace.deltaGraphId + "_layout", layout)
+            },
+            redoLayout(useLocalStorage = true) {
                 this.graphLoading = true
-                cyLayout = cy.layout(concentricLayoutOptions)
-                cyLayout.one('layoutstop', () => {
+                let storedLayout = useLocalStorage ? localStorage.getItem(this.workspace.deltaGraphId + "_layout") : null
+                if (storedLayout) {
+                    storedLayout = JSON.parse(storedLayout)
+                    storedLayout.forEach(node => {
+                        cy.getElementById(node.name).position({ x: node.x, y: node.y })
+                    })
+                    setTimeout(() => {
+                        this.graphLoading = false
+                        this.editorFit()
+                    }, 0.00001)
+                    this.physics(this.isPhysicsRunning)
+                } else {
                     let initOption = { ...colaLayoutOptions }
                     initOption.maxSimulationTime = 5000
                     initOption.infinite = false
@@ -1357,6 +1373,7 @@
                         initOption.animate = false
                         cyLayout = cy.layout(initOption)
                         cyLayout.one('layoutstop', () => {
+                            this.saveLayout()
                             setTimeout(() => {
                                 this.graphLoading = false
                                 this.editorFit()
@@ -1366,8 +1383,7 @@
                         cyLayout.run()
                     })
                     cyLayout.run()
-                })
-                cyLayout.run()
+                }
 
             },
             showCommitExposeDialogue() {
@@ -1405,7 +1421,6 @@
                 })
             },
             toggleCanPull() {
-                console.log(this.subject.canPull)
                 this.$root.actionDisplay("You are " + (this.subject.canPull ? "unsubmitting" : "submitting") + " patch " + this.subject.tag, "sure", () => {
                     if (this.$root.progress.show == true) {
                         this.$root.bePatientSnackBar.show = true
@@ -1717,6 +1732,12 @@
             //     });
             //     animation.play()
             // })
+            cy.on('dragfreeon', 'node', (event) => {
+                this.saveLayout()
+            })
+            let isPhysicsRunning = localStorage.getItem("{{deltaGraphId}}_isPhysicsRunning")
+            if (isPhysicsRunning != null)
+                this.isPhysicsRunning = isPhysicsRunning === 'true'
             this.loadData()
         },
         template: '#content',
