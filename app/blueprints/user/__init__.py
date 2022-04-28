@@ -77,9 +77,6 @@ def assign_role_accroding_to_email(userId, email):
         if "@polyu.edu.hk" in email
         else None
     )
-    print(email)
-    print("@connect.polyu.hk" in email)
-    print(role)
     if role:
         get_api_driver().user.assign_user_role(
             userId=userId,
