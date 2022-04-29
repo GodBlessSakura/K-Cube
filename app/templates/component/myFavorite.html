@@ -141,13 +141,16 @@
             },
             toggleExpansionPannel() {
                 if (this.expansionPannel != undefined) {
-                    setTimeout(() => { this.$root.miniSync = false }, 155);
+                    this.isnavHoverDisabledByMe = this.$root.navHover != false
+                    setTimeout(() => { this.$root.miniSync = false; this.$root.navHover = false; }, 155);
                     setTimeout(() => { this.favoriteTooltip = true }, 150);
                     setTimeout(() => { this.removeTooltip = true }, 150);
                 }
                 else {
                     this.favoriteTooltip = false
                     this.removeTooltip = false
+                    if (this.isnavHoverDisabledByMe)
+                        this.$root.navHover = true;
                 }
             },
         },
