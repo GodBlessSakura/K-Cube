@@ -161,7 +161,7 @@ def patch():
 @authorize_RESTful_with([], require_userId=True)
 def verify():
     if "user" in session:
-        if not g.user.verified:
+        if not g.user["verified"]:
             from ...sender import send_email
 
             # send_email(g.user["email"],
