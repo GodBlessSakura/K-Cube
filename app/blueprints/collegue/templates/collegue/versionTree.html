@@ -54,7 +54,7 @@
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
-                @click="newTab('{{ url_for('instructor.graphimport')}}' + this._selectedNode?.data('deltaGraphId'))">
+                @click="newTab('{{ url_for('instructor.graphimport')}}' + _selectedNode?.data('deltaGraphId'))">
                 <v-list-item-title>Import graph</v-list-item-title>
             </v-list-item>
             <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
