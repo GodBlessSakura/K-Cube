@@ -333,7 +333,6 @@
                         [0.0902, 0.7451, 0.8118]
                     ].map(rgb => rgb.map(c => Math.floor(c * 255))).map(rgb => "rgb(" + rgb.join(
                         ',') + ")")
-                    console.log(colorMap)
                     bodies[1].triples.forEach(triple => {
                         let bothCourseExists = true
                         for (let name of [triple.h_name, triple.t_name]) {
