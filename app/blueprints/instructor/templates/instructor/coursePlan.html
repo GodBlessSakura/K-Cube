@@ -39,7 +39,13 @@
     </v-row>
     <v-row>
         <v-col cols="auto">
-            <v-btn @click="constructTimetable(triples,[])">recompute</v-btn>
+            <v-btn @click="constructTimetable(triples,[],true)">recompute</v-btn>
+        </v-col>
+        <v-col cols="auto" v-if="preview">
+            <v-btn color="success" @click="submitTable()">submit</v-btn>
+        </v-col>
+        <v-col cols="auto" v-if="preview">
+            <v-btn color="error" @click="loadData()">undo</v-btn>
         </v-col>
     </v-row>
     </div>
@@ -88,6 +94,7 @@
             details: null,
             showMenu: false,
             inIframe: false,
+            preview: false,
         }),
 
         methods: {
@@ -177,12 +184,22 @@
                     let activities = data[2]
                     this.triples = triples
                     this.activities = activities
-                    this.constructTimetable(triples, activities, "{{courseCode}}")
+                    this.constructTimetable(triples, activities)
 
                 })
             },
-            constructTimetable(triples, activities) {
+            constructTimetable(triples, activities, preview = false) {
                 this.plan = assign_timeslot(triples, activities, "{{courseCode}}")
+                this.preview = preview
+                if (preview) {
+
+                }
+                else {
+                    this.submitTable()
+                }
+            },
+            submitTable() {
+                this.preview = false
                 for (week in this.plan) {
                     for (index in this.plan[week]) {
                         if (this.plan[week][index].week) {
