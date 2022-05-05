@@ -27,7 +27,7 @@
                     Verified
                 </v-col>
                 <v-col>
-                    <v-checkbox readonly @click="tryVerification()" value="{{USER.verified}}"
+                    <v-checkbox readonly {{ ('input-value="true"' if USER.verified else '@click="tryVerification()"')| safe}}
                         :label="{{ 'true' if USER.verified else 'false'}}?'':'send verification mail'">
                     </v-checkbox>
                 </v-col>
@@ -49,7 +49,8 @@
                                 <v-list-item>
                                     <v-btn href="{{ url_for('user.refreshPermission') }}">renew permission</v-btn>
                                 </v-list-item>
-                                {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role) %}
+                                {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in
+                                PERMISSION.role) %}
                                 {% for permission in PERMISSION %}
                                 <v-list-item>
                                     {{ permission }} : {{ PERMISSION[permission] }}
@@ -74,15 +75,15 @@
             userNameRules: [
                 v => !!v || 'Name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
-                'Name should be anything between 4 and 100 charactors',
+                    'Name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["userName"]}}/.test(v)) ||
-                'Name can only contains alphanumeric characters and space.'
+                    'Name can only contains alphanumeric characters and space.'
             ],
             emailRuels: [
                 v => !!v || 'E-mail is required',
                 v => (v && v.length < 320) || 'A valid email should have less then 320 characters',
                 v => (v && /{{regExpRules["email"]}}/.test(v)) ||
-                'E-mail must be in valid format',
+                    'E-mail must be in valid format',
             ],
         }),
         methods: {
@@ -93,12 +94,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('user.refreshPermission') }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -121,16 +122,16 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('user.patch') }}", {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userName: this.userName,
-                                email: this.email
-                            })
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userName: this.userName,
+                            email: this.email
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -149,12 +150,12 @@
             },
             tryVerification() {
                 fetch("{{ url_for('user.verify') }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()

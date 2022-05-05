@@ -1,6 +1,6 @@
 MATCH
 (permission:Permission{role: $role}),
-(user:User{userId: $userId})
+(user:User{userId: $userId, verified: true})
 MERGE (permission)<-[permission_grant:PRIVILEGED_OF]-(user)
 ON CREATE
 SET

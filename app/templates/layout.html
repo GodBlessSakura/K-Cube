@@ -7,7 +7,9 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
 
     <!-- Vuetify stylesheet -->
-    <link href="{{ url_for('static', filename='material-design-icons-iconfont-master/dist/material-design-icons.css') }}" rel="stylesheet">
+    <link
+        href="{{ url_for('static', filename='material-design-icons-iconfont-master/dist/material-design-icons.css') }}"
+        rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
 
@@ -92,6 +94,9 @@
                         <v-list-item href="{{ url_for('user.profile') }}">
                             <v-list-item-title>Edit Profile</v-list-item-title>
                         </v-list-item>
+                        <v-list-item href="{{ url_for('user.changePassword') }}">
+                            <v-list-item-title>Change Password</v-list-item-title>
+                        </v-list-item>
                         <v-list-item href="{{ url_for('user.logout') }}">
                             <v-list-item-title>Logout</v-list-item-title>
                         </v-list-item>
@@ -126,6 +131,9 @@
 
                                                 <v-btn @click="loginFormLogin" color="success">
                                                     login
+                                                </v-btn>
+                                                <v-btn @click="forgotPassword">
+                                                    forgot password
                                                 </v-btn>
                                             </v-form>
                                         </v-card>
@@ -701,6 +709,36 @@
                             })
 
                     }
+                },
+                forgotPassword() {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('user.forgotPassword') }}", {
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            userId: this.loginForm.id,
+                        })
+                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body, 'Request failed for unknown reason.')
+                        })
                 },
                 loginFormLogin() {
                     if (this.$refs.loginFormControl.validate()) {

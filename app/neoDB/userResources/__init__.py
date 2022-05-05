@@ -1,5 +1,7 @@
+from cmath import e
 from xmlrpc.client import Boolean
 from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
 from importlib import resources
@@ -70,10 +72,22 @@ class userDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-    def update_user(self, userId, userName, email):
+    def update_user(self, user, userId, userName, email):
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
+            if user["email"] != email:
+                result = tx.run(
+                    "MATCH (user:User {email: $email}) RETURN user",
+                    email=email,
+                )
+                result = [record["user"] for record in result]
+                if len(result) > 0:
+                    from ..resourcesGuard import InvalidRequest
+
+                    raise InvalidRequest(
+                        "Email already taken by another user. Contact admin if your email is taken by others."
+                    )
             query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
@@ -183,6 +197,115 @@ class userDAO:
             try:
                 rows = [record for record in result]
                 return dict(rows[0]["user"].items())
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def try_activate_user_w_hash(self, hash):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, hash=hash)
+            try:
+                return [
+                    {
+                        "user": dict(record["user"].items()),
+                        "activation": dict(record["activation"].items()),
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def reset_user_password(self, userId, oldPassword, newPassword):
+        fname = sys._getframe().f_code.co_name
+        try:
+            self.authenticate_user(userId=userId, password=oldPassword)
+        except VerifyMismatchError as e:
+            from ..resourcesGuard import InvalidRequest
+
+            raise InvalidRequest("The old password is wrong.")
+
+        def _query(tx):
+            ph = PasswordHasher()
+            newSaltedHash = ph.hash(newPassword)
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                userId=userId,
+                saltedHash=newSaltedHash,
+            )
+            rows = [record for record in result]
+            return dict(rows[0]["user"].items())
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def try_reset_user_password_w_hash(self, userId, hash, password):
+        ph = PasswordHasher()
+        saltedHash = ph.hash(password)
+
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                userId=userId,
+                hash=hash,
+                saltedHash=saltedHash,
+            )
+            try:
+                rows = [record for record in result]
+                return dict(rows[0]["user"].items())
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def set_user_activation_hash(self, userId, email):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            ph = PasswordHasher()
+            result = tx.run(
+                query,
+                userId=userId,
+                email=email,
+                hash=ph.hash(userId + "@" + email).split("$")[-1],
+            )
+            try:
+                rows = [record for record in result]
+                return dict(rows[0]["activation"].items())
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def set_user_renew_password_hash(self, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            ph = PasswordHasher()
+            result = tx.run(query, userId=userId, hash=ph.hash(userId).split("$")[-1])
+            try:
+                return [
+                    {
+                        "user": dict(record["user"].items()),
+                        "token": dict(record["token"].items()),
+                    }
+                    for record in result
+                ][0]
             except Exception as exception:
                 raise exception
 

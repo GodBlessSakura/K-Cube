@@ -15,9 +15,9 @@
                     :search="search">
                     <template v-slot:item="{ item }">
                         <tr>
-                            <td v-for="(value, name) in item">
+                            <td v-for="(value, name) in item.role">
                                 <v-simple-checkbox readonly color="info" :value="value"
-                                    v-if="typeof value  == 'boolean'" @click="flipRole(item.userId , name, value)">
+                                    v-if="typeof value  == 'boolean'" @click="flipRole(item , name, value)">
                                 </v-simple-checkbox>
                                 <v-chip v-else>${item.userId}</v-chip>
                             </td>
@@ -52,13 +52,13 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                        "{{ url_for('RESTful.role.query', listRolePermission=True) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                        })
+                    "{{ url_for('RESTful.role.query', listRolePermission=True) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -71,19 +71,19 @@
                     .then(body => {
                         if (body.permissions) {
                             this.roles = [{
-                                    text: "UserId",
-                                    value: 'userId',
-                                    groupable: false,
-                                }, ...body.permissions.sort((a, b) => {
-                                    a_permission = Object.values(a).reduce((count, value) => {
-                                        return count + (value ? 1 : 0)
-                                    }, 0)
-                                    b_permission = Object.values(b).reduce((count, value) => {
-                                        return count + (value ? 1 : 0)
-                                    }, 0)
-                                    return a_permission < b_permission ? -1 : a_permission >
-                                        b_permission ? 1 : 0
-                                })
+                                text: "UserId",
+                                value: 'userId',
+                                groupable: false,
+                            }, ...body.permissions.sort((a, b) => {
+                                a_permission = Object.values(a).reduce((count, value) => {
+                                    return count + (value ? 1 : 0)
+                                }, 0)
+                                b_permission = Object.values(b).reduce((count, value) => {
+                                    return count + (value ? 1 : 0)
+                                }, 0)
+                                return a_permission < b_permission ? -1 : a_permission >
+                                    b_permission ? 1 : 0
+                            })
                                 .map(p => {
                                     return {
                                         text: p.role,
@@ -103,12 +103,12 @@
                                 }
                             })
                             fetch("{{ url_for('RESTful.role.query', listUser=True ) }}", {
-                                    method: 'GET',
-                                    cache: 'no-store',
-                                    headers: {
-                                        'Content-Type': 'application/json'
-                                    },
-                                })
+                                method: 'GET',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                            })
                                 .then(response => {
                                     try {
                                         return response.json()
@@ -121,13 +121,14 @@
                                 .then(body => {
                                     if (body.users) {
                                         this.users = body.users.map(u => {
-                                            user_row = {
+                                            let user_role = {
                                                 userId: u.user.userId
                                             }
                                             this.permissions.forEach(element => {
-                                                user_row[element.name] = u.roles
+                                                user_role[element.name] = u.roles
                                                     .includes(element.name)
                                             });
+                                            let user_row = { user: u.user, role: user_role }
                                             return user_row
                                         })
                                         this.$root.progress.show = false
@@ -144,22 +145,27 @@
                     })
 
             },
-            flipRole(userId, role, value) {
+            flipRole(item, role, value) {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
+                if (!item.user.verified && !value) {
+                    this.$root.responseSnackBar({}, 'The email of this user is not verified, assigning role to unverified user is risky.')
+                    return
+                }
+                userId = item.user.userId
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.role.put') }}" + encodeURIComponent(userId), {
-                        method: value ? "DELETE" : "PUT",
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            role: role
-                        })
+                    method: value ? "DELETE" : "PUT",
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role: role
                     })
+                })
                     .then(response => {
                         try {
                             return response.json()

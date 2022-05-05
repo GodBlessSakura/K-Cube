@@ -4,20 +4,14 @@ from flask_mail import Message
 from . import mail
 
 
-def send_email(to, subject, template, **kwargs):
-    app = current_app._get_current_object()
-    msg = Message(
-        "KCUBE : " + subject,
-        sender="",
-        recipients=[to],
-    )
-    msg.body = render_template(template + ".txt", **kwargs)
-    msg.html = render_template(template + ".html", **kwargs)
-    thr = Thread(target=send_async_email, args=[app, msg])
-    thr.start()
-    return thr
+def send_email(to, message):
+    import smtplib, ssl
+    port = 465
+    email = current_app.config["EMAIL_ADDRESS"]
+    password = current_app.config["EMAIL_PASSWORD"]
+    context = ssl.create_default_context()
+    with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
+        server.login(email, password)
+        server.sendmail(email, to, message)
 
 
-def send_async_email(app, msg):
-    with app.app_context():
-        mail.send(msg)

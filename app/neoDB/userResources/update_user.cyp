@@ -8,5 +8,8 @@ user.verified = CASE user.email = $email
     ELSE false
     END,
 user.userName = $userName,
+user.verified = CASE
+    WHEN user.email = $email THEN user.verified
+    ELSE false END,
 user.email = $email
 RETURN user;
