@@ -95,7 +95,7 @@ function assign_timeslot(triples, activities, courseCode) {
     }
 
     function slot_width(n_item) {
-        return Math.min(Math.round(n_item / itemPerRow), 12 - slot_cursor)
+        return Math.min(Math.round(n_item / itemPerRow), 13 - slot_cursor)
     }
     let counter = 0
     for (firstHopEntity in newdata) {
