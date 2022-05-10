@@ -86,13 +86,11 @@
         name: 'cose',
         padding: document.documentElement.clientHeight * 0.15,
         fit: true,
-        idealEdgeLength: function (edge) {
-            return 64;
-        },
-        edgeElasticity: function (edge) {
-            return 128;
-        },
-        gravity: 0.15
+        idealEdgeLength: 64,
+        edgeElasticity: 128,
+        gravity: 0.15,
+        numIter: 750,
+        initialTemp: 2000,
     }
 
     function nodeFactory(name) {
@@ -179,6 +177,7 @@
                                 }
                             })
                             cy.elements().style('visibility', 'hidden')
+                            
                             let cyLayout = cy.layout({
                                 ...concentricLayoutOptions,
                                 // concentric: function (node) {
@@ -186,9 +185,19 @@
                                 // }
                             })
                             cyLayout.one('layoutstop', function () {
-                                let cyLayout = cy.layout(coseLayoutOptions)
-                                cyLayout.one('layoutstop', function () {
-                                    cy.elements().style('visibility', 'visible')
+                                let initOption = { ...coseLayoutOptions }
+                                initOption.idealEdgeLength = initOption.idealEdgeLength * 2
+                                initOption.numIter = Math.floor(initOption.numIter / 4)
+                                initOption.animate = false
+                                cyLayout = cy.layout(initOption)
+                                cyLayout.one('layoutstop', () => {
+                                    let initOption = { ...coseLayoutOptions }
+                                    initOption.animate = false
+                                    cyLayout = cy.layout(initOption)
+                                    cyLayout.one('layoutstop', () => {
+                                        cy.elements().style('visibility', 'visible')
+                                    })
+                                    cyLayout.run()
                                 })
                                 cyLayout.run()
                             })
