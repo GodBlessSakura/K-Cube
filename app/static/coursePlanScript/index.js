@@ -100,7 +100,7 @@ function assign_timeslot(triples, activities, courseCode) {
         return slot_cursor + Math.max(
             Math.min(
                 Math.floor(c / (totalItem / w)),
-                w
+                w - 1
             ),
             0) + 1
     }
