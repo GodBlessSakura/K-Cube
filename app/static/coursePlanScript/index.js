@@ -83,16 +83,21 @@ function assign_timeslot(triples, activities, courseCode) {
         totalItem = totalItem + (newdata[firstHopEntity].length < 1 ? 1 : newdata[firstHopEntity].length)
     }
     let itemPerRow = (totalItem / 13)
-    let counter = 0
     let slot_cursor = 0
-    let couterToRow = (c, w) => Math.max(Math.min(
-        Math.floor(c / itemPerRow),
-        w
-    ), slot_cursor) + 1
+
+    function couterToRow(c, w) {
+        return slot_cursor + Math.max(
+            Math.min(
+                Math.floor(c / itemPerRow),
+                w
+            ),
+            0) + 1
+    }
 
     function slot_width(n_item) {
-        Math.min(Math.round(n_item / itemPerRow), 12 - slot_cursor)
+        return Math.min(Math.round(n_item / itemPerRow), 12 - slot_cursor)
     }
+    let counter = 0
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
@@ -113,8 +118,10 @@ function assign_timeslot(triples, activities, courseCode) {
             entity = createItem(content, uri, undefined);
             timeSlot.push(entity);
             slot_cursor += slot_width(newdata[firstHopEntity].length)
+            if (slot_width(newdata[firstHopEntity].length) > 0) counter = 0
         } else {}
     }
+    counter = 0
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
