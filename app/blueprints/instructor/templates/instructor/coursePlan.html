@@ -179,8 +179,9 @@
                         }
                     })
                 Promise.all([graphPromise, departmentGraphPromise, activityPromise]).then(data => {
-                    let triples = data[0].filter(triple => triple.r_name == "Subtopic in")
-                    if (triples.length == 0) triples = data[1].filter(triple => triple.r_name == "Subtopic in" && triple.r_value == true)
+                    tripleFilter = triple => triple.r_name == "Subtopic in" && triple.r_value == true
+                    let triples = data[0].filter(tripleFilter)
+                    if (triples.length == 0) triples = data[1].filter(tripleFilter)
                     let activities = data[2]
                     this.triples = triples
                     this.activities = activities
