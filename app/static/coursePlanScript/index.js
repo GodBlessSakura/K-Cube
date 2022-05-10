@@ -77,6 +77,18 @@ function assign_timeslot(triples, activities, courseCode) {
         let timeSlot = timeslots[olddata[uri].week];
         if (timeSlot) timeSlot.push(olddata[uri]);
     }
+    // move item to item
+    let noKids = []
+    for (firstHopEntity in newdata) {
+        if (Object.keys(olddata).includes(firstHopEntity)) {
+
+        } else if (newdata[firstHopEntity].length > 0) {} else {
+            noKids.push(firstHopEntity)
+        }
+    }
+    noKids.forEach(firstHopEntityWithNoKids => delete newdata[firstHopEntityWithNoKids])
+    newdatakey = Object.keys(newdata)
+    newdata[newdatakey[newdatakey.length - 1]] = newdata[newdatakey[newdatakey.length - 1]].concat(noKids)
     // add new data
     let totalItem = 0
     for (firstHopEntity in newdata) {
@@ -85,27 +97,32 @@ function assign_timeslot(triples, activities, courseCode) {
     let itemPerRow = (totalItem / 13)
     let slot_cursor = 0
 
-    function couterToRow(c, w) {
+    function couterToRow(c, w, totalItem) {
         return slot_cursor + Math.max(
             Math.min(
-                Math.floor(c / itemPerRow),
+                Math.floor(c / (totalItem / w)),
                 w
             ),
             0) + 1
     }
 
     function slot_width(n_item) {
-        return Math.min(Math.round(n_item / itemPerRow), 13 - slot_cursor)
+        let num_rows_remining = 13 - slot_cursor
+        let width = Math.min(Math.round(n_item / itemPerRow), num_rows_remining)
+        totalItem = totalItem - n_item
+        itemPerRow = (totalItem / num_rows_remining)
+        return width
     }
     let counter = 0
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
         } else if (newdata[firstHopEntity].length > 0) {
+            let width = slot_width(newdata[firstHopEntity].length)
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
                     content = depthFirstEntity;
-                let slot = couterToRow(counter, slot_width(newdata[firstHopEntity].length))
+                let slot = couterToRow(counter, width, newdata[firstHopEntity].length)
                 let timeSlot = timeslots[slot];
                 entity = createItem(content, uri, undefined);
                 timeSlot.push(entity);
@@ -117,23 +134,9 @@ function assign_timeslot(triples, activities, courseCode) {
             let timeSlot = timeslots[slot];
             entity = createItem(content, uri, undefined);
             timeSlot.push(entity);
-            slot_cursor += slot_width(newdata[firstHopEntity].length)
-            if (slot_width(newdata[firstHopEntity].length) > 0) counter = 0
+            slot_cursor += width
+            if (width > 0) counter = 0
         } else {}
-    }
-    counter = 0
-    for (firstHopEntity in newdata) {
-        if (Object.keys(olddata).includes(firstHopEntity)) {
-
-        } else if (newdata[firstHopEntity].length > 0) {} else {
-            let uri = firstHopEntity,
-                content = firstHopEntity;
-            let slot = couterToRow(counter, 0)
-            let timeSlot = timeslots[slot];
-            entity = createItem(content, uri, undefined);
-            timeSlot.push(entity);
-            counter++
-        }
     }
     return timeslots
 }
