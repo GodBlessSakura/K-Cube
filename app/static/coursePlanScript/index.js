@@ -94,7 +94,6 @@ function assign_timeslot(triples, activities, courseCode) {
     for (firstHopEntity in newdata) {
         totalItem = totalItem + (newdata[firstHopEntity].length < 1 ? 1 : newdata[firstHopEntity].length)
     }
-    let itemPerRow = (totalItem / 13)
     let slot_cursor = 0
 
     function couterToRow(c, w, totalItem) {
@@ -108,9 +107,9 @@ function assign_timeslot(triples, activities, courseCode) {
 
     function slot_width(n_item) {
         let num_rows_remining = 13 - slot_cursor
+        let itemPerRow = (totalItem / num_rows_remining)
         let width = Math.min(Math.round(n_item / itemPerRow), num_rows_remining)
         totalItem = totalItem - n_item
-        itemPerRow = (totalItem / num_rows_remining)
         return width
     }
     let counter = 0
@@ -119,10 +118,14 @@ function assign_timeslot(triples, activities, courseCode) {
 
         } else if (newdata[firstHopEntity].length > 0) {
             let width = slot_width(newdata[firstHopEntity].length)
+            console.log(firstHopEntity)
+            console.log(width)
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
                     content = depthFirstEntity;
                 let slot = couterToRow(counter, width, newdata[firstHopEntity].length)
+                console.log(depthFirstEntity)
+                console.log(slot)
                 let timeSlot = timeslots[slot];
                 entity = createItem(content, uri, undefined);
                 timeSlot.push(entity);
