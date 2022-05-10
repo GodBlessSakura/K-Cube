@@ -118,7 +118,8 @@ function assign_timeslot(triples, activities, courseCode) {
 
         } else if (newdata[firstHopEntity].length > 0) {
             let width = slot_width(newdata[firstHopEntity].length)
-            console.log(firstHopEntity)
+            console.log("new region: " + firstHopEntity)
+            console.log(slot_cursor)
             console.log(width)
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
