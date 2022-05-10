@@ -40,23 +40,18 @@ class InvalidRequest(Exception):
 
 import re
 
-special_charactor = "\*\+\-\[\]\(\)\\\\/"
+special_charactor = "\\*\\+\\-\\[\\]\\(\\)\\\\\\/._'"
 regExpRules = {
     "courseCode": "^[a-zA-Z0-9\s]{4,100}$",
     "courseName": "^[a-zA-Z][a-zA-Z0-9\s" + special_charactor + "]{3,99}$",
     "userName": "^[a-zA-Z0-9\s]{4,100}$",
     "userId": "^[a-zA-Z][a-zA-Z0-9]{3,99}$",
     "email": "^[-\w\.]+@([\w-]+\.)+[\w-]{2,4}$",
-    "name": "^[a-zA-Z"
+    "name": "^[a-zA-Z0-9"
     + special_charactor
     + "][a-zA-Z0-9\s"
     + special_charactor
-    + "]{1,99}$",
-    "desc": "^[a-zA-Z"
-    + special_charactor
-    + "][a-zA-Z0-9\s"
-    + special_charactor
-    + "]{1,99}$",
+    + "]{0,99}$",
     "title": "^[a-zA-Z"
     + special_charactor
     + "][a-zA-Z0-9\s"
@@ -64,6 +59,7 @@ regExpRules = {
     + "]{3,500}$",
     "tag": "^[-:,a-zA-Z0-9\s.]{4,100}$",
 }
+regExpRules["desc"] = regExpRules["name"]
 regExpRules["ownerId"] = regExpRules["userId"]
 regExpRules["h_name"] = regExpRules["name"]
 regExpRules["r_name"] = regExpRules["name"]
@@ -146,7 +142,9 @@ def reject_invalid(function):
             and re.search(regExpRules["title"], kwargs["title"]) == None
         ):
             raise InvalidRequest("Invalid text pattern.")
-        if "week" in kwargs and not (type(kwargs["week"]) == int or type(kwargs["week"]) == float):
+        if "week" in kwargs and not (
+            type(kwargs["week"]) == int or type(kwargs["week"]) == float
+        ):
             raise InvalidRequest("Invalid week value.")
         if "tag" in kwargs and re.search(regExpRules["tag"], kwargs["tag"]) == None:
             raise InvalidRequest("Invalid tag pattern.")
