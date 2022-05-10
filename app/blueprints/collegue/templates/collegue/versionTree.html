@@ -102,6 +102,34 @@
         </v-card>
     </v-dialog>
     {% endif %}
+    <v-btn @click="setZoom(0.2)"
+        style="position: absolute; right:5vw; bottom: 5vw; border-radius: 100px 100px 0px 0px; height: 50px; width:100px; transform: translate(+50%, -50%); min-width: unset;">
+        <v-icon>add</v-icon>
+    </v-btn>
+    <v-btn @click="setZoom(-0.2)"
+        style="position: absolute; right:5vw; bottom: 5vw; border-radius: 0px 0px 100px 100px; height: 50px; width:100px; transform: translate(+50%, 50%); min-width: unset;">
+        <v-icon>remove</v-icon>
+    </v-btn>
+    <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToFocusedNode()"
+                style="position: absolute; right:calc(5vw - 50px); bottom: calc(5vw + 50px); transform: translate(+50%, -50%);">
+                <v-icon>loupe</v-icon>
+            </v-btn>
+        </template>
+        back to selected
+    </v-tooltip>
+    <v-tooltip bottom>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')"
+                style="position: absolute; right:calc(5vw - 50px); bottom: calc(5vw - 50px); transform: translate(+50%, 50%);">
+                <v-icon>zoom_out_map</v-icon>
+            </v-btn>
+        </template>
+        show all
+    </v-tooltip>
+    <span
+        style="position: absolute; right:5vw; bottom: 5vw; transform: translate(+50%, -50%); pointer-events: none;">${zoom.toFixed(1)}</span>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
@@ -233,6 +261,9 @@
     }
     Vue.component('app-content', {
         data: () => ({
+            _focusedNode: null,
+            zoom: 0,
+            lastFocusedId: null,
             url: "",
             showMenu: false,
             cursor_x: undefined,
@@ -277,7 +308,10 @@
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
                             cy.remove(cy.elements())
                             body.trunk_nodes.forEach(node => {
-                                cy.add(nodeFactory(node, ["trunk"]))
+                                cyNode = cy.add(nodeFactory(node, ["trunk"]))
+                                if (node.isActive) {
+                                    this._focusedNode = cyNode
+                                }
                             })
                             body.branch_nodes.forEach(node => {
                                 cy.add(nodeFactory(node, ["branch"]))
@@ -300,13 +334,6 @@
 
                                 cy.add(edgeFactory(edge))
                             })
-                            cy.layout({
-                                name: 'breadthfirst',
-                                fit: true,
-                                grid: true,
-                                roots: 'node[tag = "init"]',
-                                padding: document.documentElement.clientHeight * 0.15
-                            }).run()
                             let root = cy.nodes('[tag = "init"]')
                             let stepX = 200
                             let stepY = 200
@@ -411,7 +438,7 @@
                             locatePredecessorsX(root)
                             locatePredecessorsY(root)
                             locateWorkspace(root)
-                            cy.fit()
+                            this.focus(this._focusedNode.data("id"), 0)
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting versions information.')
@@ -585,7 +612,44 @@
             openFrame(url) {
                 this.url = url
                 this.resume()
-            }
+            },
+            focus(id, duration = 1000) {
+                cy.stop()
+                cy.clearQueue()
+                this.lastFocusedId = id
+                let ele = document.getElementById('cy');
+                if (id) {
+                    cy.nodes().unselect()
+                    let node = cy.getElementById(id)
+                    this._focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
+                    this._focusedNode.select()
+                    animation = cy.animation({
+                        fit: {
+                            eles: this._focusedNode.boundingBox(),
+                            padding: ele.offsetWidth * (0.48 - this.zoom * 0.095)
+                        },
+                        duration: duration
+                    })
+                } else {
+                    animation = cy.animation({
+                        fit: {
+                            padding: ele.offsetWidth * (0.05 - this.zoom * 0.01)
+                        },
+                        duration: duration
+                    })
+                }
+
+                animation.play()
+            },
+            setZoom(value) {
+                this.zoom = this.zoom + value
+                this.zoom = Math.min(this.zoom, 1)
+                this.zoom = Math.max(this.zoom, 0)
+                this.focus(this.lastFocusedId, 200)
+            },
+            backToFocusedNode() {
+                if (this._focusedNode) this.focus(this._focusedNode.data("id"), 500)
+            },
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
@@ -699,6 +763,56 @@
                             'deltaGraphId'))
 
                 }
+            })
+            window.addEventListener('keydown', (event) => {
+                if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
+                    let sibling = this._focusedNode.outgoers('[tag = "FORK"]').
+                        targets().incomers('[tag = "FORK"]').sources()
+                    let siblingIndex
+                    if (sibling.length == 0) {
+                        siblingIndex = -1
+                        sibling = this._focusedNode.incomers('[tag = "FORK"]').sources()
+                        if(sibling.length == 0){
+                            return
+                        }
+                    }
+                    else {
+                        let i = 0
+                        for (node of sibling) {
+                            if (node.data("id") == this._focusedNode.data("id")) {
+                                siblingIndex = i
+                                break
+                            }
+                            i++
+                        }
+                    }
+                    if (event.key == "ArrowLeft") {
+                        siblingIndex--
+                    }
+                    if (event.key == "ArrowRight") {
+                        siblingIndex++
+                    }
+                    siblingIndex = (
+                        (siblingIndex % sibling.length) + sibling.length) % sibling.length
+                    this._focusedNode = sibling[siblingIndex]
+                    this.focus(this._focusedNode.data("id"))
+                }
+                if (event.key == "ArrowUp" || event.key == "ArrowDown") {
+                    if (event.key == "ArrowUp") {
+                        target = this._focusedNode.connectedEdges('[tag = "FORK"],[tag = "PATCH"]').target()
+                    }
+                    if (event.key == "ArrowDown") {
+                        target = this._focusedNode.connectedEdges('[tag = "PATCH"]').source()
+                    }
+                    if (target) {
+                        this._focusedNode = target
+                        this.focus(this._focusedNode.data("id"))
+                    }
+                }
+                if (event.key == "Escape") {
+                    this.focus('')
+                }
+
             })
             this.$refs.iframe.addEventListener('onCloseWindow', () => {
                 this.loadData()
