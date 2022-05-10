@@ -84,21 +84,23 @@ function assign_timeslot(triples, activities, courseCode) {
     }
     let itemPerRow = (totalItem / 13)
     let counter = 0
+    let slot_cursor = 0
+    let couterToRow = (c, w) => Math.max(Math.min(
+        Math.floor(c / itemPerRow),
+        w
+    ), slot_cursor) + 1
+
+    function slot_width(n_item) {
+        Math.min(Math.round(n_item / itemPerRow), 12 - slot_cursor)
+    }
     for (firstHopEntity in newdata) {
         if (Object.keys(olddata).includes(firstHopEntity)) {
 
         } else if (newdata[firstHopEntity].length > 0) {
-            let slot_cursor = Math.floor(counter / itemPerRow)
-            let index_of_first_item = counter
             for (depthFirstEntity of newdata[firstHopEntity]) {
                 let uri = depthFirstEntity,
                     content = depthFirstEntity;
-                let slot = Math.min(
-                    Math.floor(counter / itemPerRow),
-                    13,
-                )
-                slot = Math.max(slot, 0)
-                slot++
+                let slot = couterToRow(counter, slot_width(newdata[firstHopEntity].length))
                 let timeSlot = timeslots[slot];
                 entity = createItem(content, uri, undefined);
                 timeSlot.push(entity);
@@ -106,10 +108,11 @@ function assign_timeslot(triples, activities, courseCode) {
             }
             let uri = firstHopEntity,
                 content = firstHopEntity;
-            let slot = slot_cursor + '.5'
+            let slot = (slot_cursor + 0.5).toString()
             let timeSlot = timeslots[slot];
             entity = createItem(content, uri, undefined);
             timeSlot.push(entity);
+            slot_cursor += slot_width(newdata[firstHopEntity].length)
         } else {}
     }
     for (firstHopEntity in newdata) {
@@ -118,7 +121,7 @@ function assign_timeslot(triples, activities, courseCode) {
         } else if (newdata[firstHopEntity].length > 0) {} else {
             let uri = firstHopEntity,
                 content = firstHopEntity;
-            let slot = Math.floor(counter / itemPerRow) + 1
+            let slot = couterToRow(counter, 0)
             let timeSlot = timeslots[slot];
             entity = createItem(content, uri, undefined);
             timeSlot.push(entity);
