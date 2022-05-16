@@ -1469,7 +1469,7 @@
                     },
                     body: JSON.stringify({
                         tag: this.tag,
-                        action: this.subject.isPatchLeaf ? "patch" : "fork",
+                        action: this.subject.isPatchLeaf && this.subject.isOwner && this.subject.labels.includes("Branch") ? "patch" : "fork",
                         expose: true
                     })
                 })
