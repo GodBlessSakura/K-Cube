@@ -10,17 +10,17 @@
                         <v-col cols="4">
                             <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
                                 @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="sibling"
-                                item-value="id" item-text="tag" :label="'# of sibling: ' + sibling.length"></v-select>
+                                item-value="id" item-text="tag" :label="'# of versions in sibling: ' + sibling.length"></v-select>
                         </v-col>
                         <v-col cols="4">
                             <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
                                 @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="variant"
-                                item-value="id" item-text="tag" :label="'# of variant: ' + variant.length"></v-select>
+                                item-value="id" item-text="tag" :label="'# of versions in variant: ' + variant.length"></v-select>
                         </v-col>
                         <v-col cols="4">
                             <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
                                 @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="repository"
-                                item-value="id" item-text="tag" :label="'# of repository: ' + repository.length">
+                                item-value="id" item-text="tag" :label="'# of versions in repository: ' + repository.length">
                             </v-select>
                         </v-col>
                         <v-col>
