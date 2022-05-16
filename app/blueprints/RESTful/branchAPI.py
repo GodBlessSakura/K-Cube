@@ -14,7 +14,7 @@ def post(overwriterId, overwriteeId):
         if "tag" in request.json and "action" in request.json:
             if overwriterId is not None and overwriteeId is None:
                 if request.json["action"] == "fork":
-                    if request.json["expose"]:
+                    if "expose" in request.json and request.json["expose"]:
                         return jsonify(
                             {
                                 "success": True,
@@ -37,7 +37,7 @@ def post(overwriterId, overwriteeId):
                             }
                         )
                 if request.json["action"] == "patch":
-                    if request.json["expose"]:
+                    if "expose" in request.json and request.json["expose"]:
                         return jsonify(
                             {
                                 "success": True,
