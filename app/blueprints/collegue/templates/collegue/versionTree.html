@@ -1,24 +1,67 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
-<v-card style="height: 100%; width: 100%;">
-    <v-container style="height: 100%; width: 100%;">
-        <v-row style="height: 100%;">
-            <v-col>
-                <v-row style="height: 25%;">
+<div style="height: 100%; width: 100%;">
+    <v-container style="height: 100%; width: 100%; padding: 0; margin: 0; max-width: unset; overflow: hidden;">
+        <v-row style="height: 100%;" no-gutters>
+            <v-col style="height: 100%;">
+                <v-container style="height: 100%; width: 100%; padding: 0; margin: 0; max-width: unset;">
+                    <v-row style="height: 12.5%; margin: 0;">
+                        <v-col cols="4">
+                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
+                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="sibling"
+                                item-value="id" item-text="tag" :label="'# of sibling: ' + sibling.length"></v-select>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
+                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="variant"
+                                item-value="id" item-text="tag" :label="'# of variant: ' + variant.length"></v-select>
+                        </v-col>
+                        <v-col cols="4">
+                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
+                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="repository"
+                                item-value="id" item-text="tag" :label="'# of repository: ' + repository.length">
+                            </v-select>
+                        </v-col>
+                        <v-col>
 
-                </v-row>
-                <v-row style="height: 75%; border-top: 1px solid black">
-                    <div v-if="url==''">
-                        click on a node to view a version<br>
-                        click on an edge to view the changes that an update has made
-                    </div>
-                    <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0" :src="url" scrolling="no">
-
-                    </iframe>
-                </v-row>
+                        </v-col>
+                    </v-row>
+                    <v-row style="height: 12.5%; margin: 0;">
+                    </v-row>
+                    <v-row style="height: 75%; border-top: 1px solid black; margin: 0;">
+                        <v-expand-transition>
+                            <v-card style="width: 100%; height: calc(100% - 20px)" v-show="!showFrame">
+                            </v-card>
+                        </v-expand-transition>
+                        <v-btn block x-small @click="showFrame = !showFrame" elevation="0">
+                            ${showFrame? 'view summary':'view graph'}
+                            <v-icon dark>
+                                ${showFrame? 'expand_more':'expand_less'}
+                            </v-icon>
+                        </v-btn>
+                        <v-expand-transition>
+                            <div v-show="showFrame" style="width: 100%; height: calc(100% - 20px)">
+                                <div style="position:absolute; white-space: pre-line">
+                                    <v-card-text v-if="!url">
+                                        click on a node to view the graph of a version
+                                        click on an edge to view the changes that an update has made
+                                    </v-card-text>
+                                    <v-card-text v-if="focusedNode?.id != viewingId">
+                                        You may press "Enter" to view the graph of the <span
+                                            style="color: lightgreen">${focusedNode?.tag}</span>
+                                        (The version youd had chosen in the right panel).
+                                    </v-card-text>
+                                </div>
+                                <iframe ref="iframe" style="width: 100%; height: 100%" frameBorder="0" :src="url"
+                                    scrolling="no">
+                                </iframe>
+                            </div>
+                        </v-expand-transition>
+                    </v-row>
+                </v-container>
             </v-col>
-            <v-col style="height: 100%; border-left: 1px solid black" cols="3">
+            <v-col style="height: 100%; border-left: 1px solid black;" cols="3">
                 <div id="cy" style="height: 100%; width: 100%;"></div>
             </v-col>
         </v-row>
@@ -119,7 +162,7 @@
         </template>
         back to selected
     </v-tooltip>
-    <v-tooltip bottom>
+    <v-tooltip bottom attach>
         <template v-slot:activator="{ on, attrs }">
             <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')"
                 style="position: absolute; right:calc(5vw - 50px); bottom: calc(5vw - 50px); transform: translate(+50%, 50%);">
@@ -128,9 +171,24 @@
         </template>
         show all
     </v-tooltip>
+
+    <v-tooltip bottom attach>
+        <template v-slot:activator="{ on, attrs  }">
+            <v-btn style="position:absolute; top: 5px; left: calc(75% + 5px)" icon
+                :color="interactingWithSelect?'grey':'blue'" v-bind="attrs" v-on="on">
+                <v-icon>open_with</v-icon>
+            </v-btn>
+        </template>
+        <span v-if="interactingWithSelect">
+            you are browsing using drop-down list<br>
+            you may click elsewhere to unfocus the drop-down list<br>
+            if you want to browse using arrow key, "Enter" or "Esc"
+        </span>
+        <span v-else>browse using arrow key, "Enter" or "Esc"</span>
+    </v-tooltip>
     <span
         style="position: absolute; right:5vw; bottom: 5vw; transform: translate(+50%, -50%); pointer-events: none;">${zoom.toFixed(1)}</span>
-</v-card>
+</div>
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
@@ -190,6 +248,13 @@
             style: {
                 'opacity': 0.25
             }
+        },
+        {
+            selector: 'node.focused',
+            style: {
+                'border-width': 3,
+                'border-color': 'lightgreen'
+            }
         }, {
             selector: 'node.branch',
             style: {
@@ -199,6 +264,13 @@
             selector: 'node.canPull',
             style: {
                 'shape': 'diamond'
+            }
+        }, {
+            selector: '.viewing',
+            style: {
+                'border-width': 3,
+                'border-color': 'SteelBlue',
+                'line-color': 'SteelBlue',
             }
         },
         ],
@@ -262,6 +334,15 @@
     Vue.component('app-content', {
         data: () => ({
             _focusedNode: null,
+            _sibling: null,
+            _variant: null,
+            _repository: null,
+            sibling: [],
+            variant: [],
+            repository: [],
+            focusedNode: null,
+            viewingId: null,
+            interactingWithSelect: false,
             zoom: 0,
             lastFocusedId: null,
             url: "",
@@ -272,6 +353,8 @@
             snackbarMethod: '',
             _selectedNode: undefined, // this makes the vuetify not observing the object
             selectedNodeClasses: [],
+            siblingId: [],
+            showFrame: false,
             //{% if request.blueprint == "instructor" %}
             workspaceCreateDialog: false,
             tag: '',
@@ -307,10 +390,11 @@
                         this.$root.progress.show = false
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
                             cy.remove(cy.elements())
+                            let activeNode
                             body.trunk_nodes.forEach(node => {
                                 cyNode = cy.add(nodeFactory(node, ["trunk"]))
                                 if (node.isActive) {
-                                    this._focusedNode = cyNode
+                                    activeNode = cyNode
                                 }
                             })
                             body.branch_nodes.forEach(node => {
@@ -334,7 +418,7 @@
 
                                 cy.add(edgeFactory(edge))
                             })
-                            let root = cy.nodes('[tag = "init"]')
+                            let root = cy.nodes('[tag = "init"]').filter(node => node.outgoers().length == 0)
                             let stepX = 200
                             let stepY = 200
 
@@ -438,7 +522,8 @@
                             locatePredecessorsX(root)
                             locatePredecessorsY(root)
                             locateWorkspace(root)
-                            this.focus(this._focusedNode.data("id"), 0)
+                            this.focus(activeNode.data("id"), 0)
+                            this.setFocusedNode(activeNode, 0)
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting versions information.')
@@ -609,26 +694,42 @@
                 w.focus()
                 this.resume()
             },
-            openFrame(url) {
+            openFrame(url, eles) {
+                cy.nodes(".viewing").removeClass('viewing')
+                cy.edges(".viewing").removeClass('viewing')
+                cy.nodes().unselect()
+                cy.edges().unselect()
+                this.viewingId = eles.data("id")
+                eles.addClass('viewing')
                 this.url = url
+                this.showFrame = true
                 this.resume()
             },
-            focus(id, duration = 1000) {
+            focus(id, duration = 200) {
                 cy.stop()
                 cy.clearQueue()
                 this.lastFocusedId = id
                 let ele = document.getElementById('cy');
-                if (id) {
+                if (id && id != '') {
                     cy.nodes().unselect()
                     let node = cy.getElementById(id)
-                    this._focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
-                    this._focusedNode.select()
                     animation = cy.animation({
-                        fit: {
-                            eles: this._focusedNode.boundingBox(),
-                            padding: ele.offsetWidth * (0.48 - this.zoom * 0.095)
+                        zoom: {
+                            level: 0.75 + this.zoom * 0.25,
+                            position: {
+                                x: node.position().x,
+                                y: node.position().y
+                            }
                         },
-                        duration: duration
+                        duration: duration / 2,
+                        complete: () => {
+                            cy.animation({
+                                center: {
+                                    eles: node
+                                },
+                                duration: duration / 2
+                            }).play()
+                        }
                     })
                 } else {
                     animation = cy.animation({
@@ -638,24 +739,59 @@
                         duration: duration
                     })
                 }
-
                 animation.play()
             },
             setZoom(value) {
+                let oldZoom = this.zoom
                 this.zoom = this.zoom + value
                 this.zoom = Math.min(this.zoom, 1)
-                this.zoom = Math.max(this.zoom, 0)
-                this.focus(this.lastFocusedId, 200)
+                this.zoom = Math.max(this.zoom, -1)
+                this.focus(this.lastFocusedId)
             },
             backToFocusedNode() {
-                if (this._focusedNode) this.focus(this._focusedNode.data("id"), 500)
+                if (this._focusedNode) this.focus(this._focusedNode.data("id"))
             },
+            setFocusedNodeById(id, duration = null) {
+                let node = cy.nodes('[id = "' + id + '"]')
+                if (node) {
+                    this.setFocusedNode(node, duration)
+                }
+            },
+            setFocusedNode(node, duration = null) {
+                this._sibling = node.outgoers('[tag = "FORK"]').
+                    targets().incomers('[tag = "FORK"]').sources().sort((childA, childB) => {
+                        return childA.data('creationDate') - childB.data('creationDate')
+                    })
+                this._variant = node.incomers('[tag = "FORK"]').sources().sort((childA, childB) => {
+                    return childA.data('creationDate') - childB.data('creationDate')
+                })
+                this._repository = []
+                target = node
+                while (target.outgoers('[tag = "PATCH"]').target() != null) {
+                    target = target.outgoers('[tag = "PATCH"]').target()
+                }
+                this._repository.push(target)
+                while (target.incomers('[tag = "PATCH"]').source() != null) {
+                    target = target.incomers('[tag = "PATCH"]').source()
+                    this._repository.push(target)
+                }
+                this.sibling = this._sibling.map(node => node.data())
+                this.variant = this._variant.map(node => node.data())
+                this.repository = this._repository.map(node => node.data())
+                this._focusedNode = node
+                this.focusedNode = this._focusedNode.data()
+                cy.nodes(".focused").removeClass('focused')
+                this._focusedNode.addClass('focused')
+                if (duration != null) {
+                    this.focus(this._focusedNode.data("id"), duration)
+                }
+                else {
+                    this.focus(this._focusedNode.data("id"))
+                }
+            }
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
-            window.onresize = () => {
-                cy.fit()
-            }
             self = this
             cy.on('cxttapend', 'node', (event) => {
                 console.log(event)
@@ -729,11 +865,13 @@
                 }
                 if (event.target.classes().includes("trunk")) {
                     this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
-                        'deltaGraphId'))
+                        'deltaGraphId'), event.target[0])
+                    this.setFocusedNode(event.target[0])
                 }
                 if (event.target.classes().includes("branch")) {
                     this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
-                        'deltaGraphId'))
+                        'deltaGraphId'), event.target[0])
+                    this.setFocusedNode(event.target[0])
                 }
                 if (event.target.classes().includes("workspace")) {
                     this.newTab("{{ url_for('instructor.workspace')}}" + event.target.data(
@@ -749,7 +887,7 @@
                 if (tag == "FORK" || tag == "PATCH") {
                     this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
                         'deltaGraphId') + "/" + event.target[0].target().data(
-                            'deltaGraphId'))
+                            'deltaGraphId'), event.target[0])
 
                 }
                 else if (tag.includes("PULL")) {
@@ -760,57 +898,89 @@
                     if (parentOfSource.length < 1) return;
                     this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
                         'deltaGraphId') + "/" + parentOfSource[0].data(
-                            'deltaGraphId'))
+                            'deltaGraphId'), event.target[0])
 
                 }
             })
             window.addEventListener('keydown', (event) => {
+                if (this.interactingWithSelect) { return }
                 if (event.key == "ArrowLeft" || event.key == "ArrowRight") {
-                    let sibling = this._focusedNode.outgoers('[tag = "FORK"]').
-                        targets().incomers('[tag = "FORK"]').sources()
-                    let siblingIndex
-                    if (sibling.length == 0) {
-                        siblingIndex = -1
-                        sibling = this._focusedNode.incomers('[tag = "FORK"]').sources()
-                        if(sibling.length == 0){
+                    let nodeList
+                    let nodeListIndex
+                    if (this._sibling.length == 0) {
+                        nodeList = this._variant
+                        if (nodeList.length == 0) {
                             return
+                        }
+                        if (event.key == "ArrowLeft") {
+                            nodeListIndex = nodeList.length
+                        }
+                        if (event.key == "ArrowRight") {
+                            nodeListIndex = -1
                         }
                     }
                     else {
+                        nodeList = this._sibling
                         let i = 0
-                        for (node of sibling) {
+                        nodeList.every((node) => {
                             if (node.data("id") == this._focusedNode.data("id")) {
-                                siblingIndex = i
-                                break
+                                nodeListIndex = i
+                                return false
                             }
                             i++
-                        }
+                            return true
+                        })
                     }
                     if (event.key == "ArrowLeft") {
-                        siblingIndex--
+                        nodeListIndex--
                     }
                     if (event.key == "ArrowRight") {
-                        siblingIndex++
+                        nodeListIndex++
                     }
-                    siblingIndex = (
-                        (siblingIndex % sibling.length) + sibling.length) % sibling.length
-                    this._focusedNode = sibling[siblingIndex]
-                    this.focus(this._focusedNode.data("id"))
+                    if (nodeListIndex < 0 || nodeListIndex >= nodeList.length) {
+                        this.setFocusedNode(this._focusedNode.outgoers('[tag = "FORK"]').
+                            targets()[0])
+                    } else {
+                        this.setFocusedNode(nodeList[nodeListIndex])
+                    }
                 }
                 if (event.key == "ArrowUp" || event.key == "ArrowDown") {
+                    let nodeList = this._repository
+                    let nodeListIndex
+                    let i = 0
+                    nodeList.every((node) => {
+                        if (node.data("id") == this._focusedNode.data("id")) {
+                            nodeListIndex = i
+                            return false
+                        }
+                        i++
+                        return true
+                    })
                     if (event.key == "ArrowUp") {
-                        target = this._focusedNode.connectedEdges('[tag = "FORK"],[tag = "PATCH"]').target()
+                        nodeListIndex--
                     }
                     if (event.key == "ArrowDown") {
-                        target = this._focusedNode.connectedEdges('[tag = "PATCH"]').source()
+                        nodeListIndex++
                     }
-                    if (target) {
-                        this._focusedNode = target
-                        this.focus(this._focusedNode.data("id"))
+                    if (nodeListIndex < 0) {
+                        nodeListIndex = nodeList.length - 1
+                    } else if (nodeListIndex >= nodeList.length) {
+                        nodeListIndex = 0
                     }
+                    this.setFocusedNode(nodeList[nodeListIndex])
                 }
                 if (event.key == "Escape") {
                     this.focus('')
+                }
+                if (event.key == "Enter") {
+                    if (this._focusedNode.classes().includes("trunk")) {
+                        this.openFrame("{{ url_for('collegue.graphView')}}" + this._focusedNode.data(
+                            'deltaGraphId'), this._focusedNode)
+                    }
+                    if (this._focusedNode.classes().includes("branch")) {
+                        this.openFrame("{{ url_for('collegue.graphView')}}" + this._focusedNode.data(
+                            'deltaGraphId'), this._focusedNode)
+                    }
                 }
 
             })
