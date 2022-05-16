@@ -217,7 +217,7 @@
                 {% endif %}
 
             </v-app-bar>
-            <v-navigation-drawer :value="navBar" :expand-on-hover="navHover" :permanent="navBar" mini-variant
+            <v-navigation-drawer v-if="navBar" :expand-on-hover="navHover"  mini-variant
                 :mini-variant.sync="miniSync" mini-variant-width="50" app>
 
                 <v-divider></v-divider>
