@@ -78,6 +78,10 @@
                                 text: "Email",
                                 value: 'email',
                                 groupable: false,
+                            }, {
+                                text: "Verified",
+                                value: 'verified',
+                                groupable: false,
                             }, ...body.permissions.sort((a, b) => {
                                 a_permission = Object.values(a).reduce((count, value) => {
                                     return count + (value ? 1 : 0)
@@ -127,7 +131,8 @@
                                         this.users = body.users.map(u => {
                                             let user_role = {
                                                 userId: u.user.userId,
-                                                email: u.user.email
+                                                email: u.user.email,
+                                                verified: u.user.verified
                                             }
                                             this.permissions.forEach(element => {
                                                 user_role[element.name] = u.roles
@@ -155,11 +160,11 @@
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
-                if (!item.user.verified && !value) {
+                if (!item.verified && !value) {
                     this.$root.responseSnackBar({}, 'The email of this user is not verified, assigning role to unverified user is risky.')
                     return
                 }
-                userId = item.user.userId
+                userId = item.userId
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.role.put') }}" + encodeURIComponent(userId), {
                     method: value ? "DELETE" : "PUT",
