@@ -7,34 +7,172 @@
             <v-col style="height: 100%;">
                 <v-container style="height: 100%; width: 100%; padding: 0; margin: 0; max-width: unset;">
                     <v-row style="height: 12.5%; margin: 0;">
-                        <v-col cols="4">
+                        <v-col cols="auto" style="align-items: center;display: grid;">
+                            <v-card-text>
+                                Jump to another related version:
+                            </v-card-text>
+                        </v-col>
+                        <v-col cols="3">
                             <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
                                 @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="sibling"
-                                item-value="id" item-text="tag" :label="'# of versions in sibling: ' + sibling.length"></v-select>
-                        </v-col>
-                        <v-col cols="4">
-                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
-                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="variant"
-                                item-value="id" item-text="tag" :label="'# of versions in variant: ' + variant.length"></v-select>
-                        </v-col>
-                        <v-col cols="4">
-                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
-                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="repository"
-                                item-value="id" item-text="tag" :label="'# of versions in repository: ' + repository.length">
+                                item-value="id" item-text="tag" :label="'# of versions in sibling: ' + sibling.length">
                             </v-select>
                         </v-col>
-                        <v-col>
-
+                        <v-col cols="3">
+                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
+                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="variant"
+                                item-value="id" item-text="tag" :label="'# of versions in variant: ' + variant.length">
+                            </v-select>
+                        </v-col>
+                        <v-col cols="3">
+                            <v-select @focus="interactingWithSelect=true" @blur="interactingWithSelect=false"
+                                @change="setFocusedNodeById($event)" :value="focusedNode?.id" :items="repository"
+                                item-value="id" item-text="tag"
+                                :label="'# of versions in repository: ' + repository.length">
+                            </v-select>
                         </v-col>
                     </v-row>
                     <v-row style="height: 12.5%; margin: 0;">
+                        <v-col cols="3" style="align-items: center;display: grid;">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs  }">
+                                    <div v-bind="attrs" v-on="on">
+                                        <v-card-text>
+                                            Swap among related version:
+                                            <v-btn icon :color="interactingWithSelect?'grey':'blue'">
+                                                <v-icon>keyboard</v-icon>
+                                            </v-btn>
+                                            <v-icon>help</v-icon>
+                                        </v-card-text>
+                                    </div>
+                                </template>
+                                <span v-if="interactingWithSelect">
+                                    You are focusing one of the above drop-down list, keyboard command are captured for
+                                    scrolling through the drop-down list.<br>
+                                    If you want to browse the version tree, you may click on anywhere outside the
+                                    drop-down list<br>
+                                </span>
+                                <span v-else>
+                                    <v-card-text>
+                                        Use <v-icon color="white">swap_horiz</v-icon> to swap focus among varient and
+                                        sibling.<br>
+                                        Use <v-icon color="white">swap_vert</v-icon> to swap focus among repository.<br>
+                                        Use "Enter" to open the graph viewer of the focused version.<br>
+                                        Use "Ese" to close the graph viewer.
+                                    </v-card-text>
+                                </span>
+                            </v-tooltip>
+                        </v-col>
+                        <v-col cols="1" style="align-items: center;display: grid;">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs  }">
+                                    <v-icon v-bind="attrs" v-on="on">tips_and_updates</v-icon>
+                                </template>
+                                You may click on an edge to view the changes that an update has made
+                            </v-tooltip>
+                        </v-col>
                     </v-row>
                     <v-row style="height: 75%; border-top: 1px solid black; margin: 0;">
                         <v-expand-transition>
                             <v-card style="width: 100%; height: calc(100% - 20px)" v-show="!showFrame">
+                                <v-card-title>Version tag: ${focusedNode?.tag}</v-card-title>
+                                <v-card-subtitle>Id: ${focusedNode?.deltaGraphId}</v-card-subtitle>
+                                <v-card-subtitle>Creation date: ${focusedNode?.creationDate | formatDate}
+                                </v-card-subtitle>
+
+                                <v-card-actions>
+                                    <v-btn v-if="viewingId != focusedNode?.id" style="text-transform: none;" outlined
+                                        @click="openFrame(_focusedNode)">
+                                        open graph of this version
+                                    </v-btn>
+                                    <v-btn v-else style="text-transform: none;" outlined @click="showFrame = true">
+                                        already viewing graph of this version
+                                    </v-btn>
+                                </v-card-actions>
+                                <div v-if="showSelectBar">
+                                    <v-card-actions>
+                                        <v-btn style="text-transform: none;" outlined @click="resume" color="error">
+                                            Cancel
+                                        </v-btn>
+                                        <v-card-subtitle>
+                                            action target: ${_selectedNode.data("tag")}
+                                            (${_selectedNode.data("deltaGraphId")})
+                                            ${_selectedNode.classes() | nonStylingClasses}
+                                        </v-card-subtitle>
+                                    </v-card-actions>
+                                </div>
+                                <div v-else>
+                                    {% if request.blueprint == "instructor" %}
+                                    <v-card-actions>
+                                        <v-subheader
+                                            v-if="focusedNode?.classes.includes('branch') || focusedNode?.classes.includes('trunk')">
+                                            status
+                                        </v-subheader>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('isOwner')"
+                                            @click="selectFocusedNode();toggleExposure(_focusedNode)">
+                                            Toggle exposure
+                                        </v-btn>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('isOwner')"
+                                            @click="selectFocusedNode();readyToPush(_focusedNode)">
+                                            Toggle ready-to-pull
+                                        </v-btn>
+                                    </v-card-actions>
+                                    <v-card-actions>
+                                        <v-subheader
+                                            v-if="focusedNode?.classes.includes('branch') || focusedNode?.classes.includes('trunk')">
+                                            versioning</v-subheader>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('branch')"
+                                            @click="selectFocusedNode();mergeWithAnother(_focusedNode)">
+                                            Merge with another
+                                        </v-btn>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('branch') || focusedNode?.classes.includes('trunk')"
+                                            @click="selectFocusedNode();newTab('{{ url_for('instructor.graphimport')}}' + _focusedNode?.data('deltaGraphId'))">
+                                            Import graph
+                                        </v-btn>
+                                    </v-card-actions>
+                                    <v-card-actions>
+                                        <v-subheader>workspaces</v-subheader>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('branch') || focusedNode?.classes.includes('trunk')"
+                                            @click="selectFocusedNode();createWorkspaceDialogue(_focusedNode)">
+                                            Create workspace
+                                        </v-btn>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('workspace')"
+                                            @click="selectFocusedNode();commit(_focusedNode)">
+                                            Commit workspace
+                                        </v-btn>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('workspace')"
+                                            @click="selectFocusedNode();checkout()">
+                                            Checkout different graph
+                                        </v-btn>
+                                    </v-card-actions>
+                                    {% endif %}
+                                    {% if request.blueprint == "DLTC" %}
+                                    <v-card-actions>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('trunk') && !focusedNode?.classes.includes('isActive')"
+                                            @click="selectFocusedNode();setActive(_focusedNode)">
+                                            Set as active
+                                        </v-btn>
+                                        <v-btn style="text-transform: none;" outlined
+                                            v-if="focusedNode?.classes.includes('trunk')"
+                                            @click="selectFocusedNode();release(_focusedNode)">
+                                            Release new version
+                                        </v-btn>
+                                    </v-card-actions>
+                                    {% endif %}
+
+                                </div>
                             </v-card>
                         </v-expand-transition>
-                        <v-btn block x-small @click="showFrame = !showFrame" elevation="0">
+                        <v-btn style="text-transform: none;" block x-small @click="showFrame = !showFrame"
+                            elevation="0">
                             ${showFrame? 'view summary':'view graph'}
                             <v-icon dark>
                                 ${showFrame? 'expand_more':'expand_less'}
@@ -42,19 +180,8 @@
                         </v-btn>
                         <v-expand-transition>
                             <div v-show="showFrame" style="width: 100%; height: calc(100% - 20px)">
-                                <div style="position:absolute; white-space: pre-line">
-                                    <v-card-text v-if="!url">
-                                        click on a node to view the graph of a version
-                                        click on an edge to view the changes that an update has made
-                                    </v-card-text>
-                                    <v-card-text v-if="focusedNode?.id != viewingId">
-                                        You may press "Enter" to view the graph of the <span
-                                            style="color: lightgreen">${focusedNode?.tag}</span>
-                                        (The version youd had chosen in the right panel).
-                                    </v-card-text>
-                                </div>
-                                <iframe ref="iframe" style="width: 100%; height: 100%" frameBorder="0" :src="url"
-                                    scrolling="no">
+                                <iframe v-show="showFrame" ref="iframe" style="width: 100%; height: 100%"
+                                    frameBorder="0" :src="url" scrolling="no">
                                 </iframe>
                             </div>
                         </v-expand-transition>
@@ -67,11 +194,12 @@
         </v-row>
     </v-container>
     <v-snackbar v-model="showSelectBar" timeout='-1'>
-        Select a ${ (snackbarMethod == 'branch' || snackbarMethod == 'workspace')?'a branch or a trunk':'ready branch'}
+        Select (press "Enter" / click on) a
+        ${ (snackbarMethod == 'branch' || snackbarMethod == 'workspace')?'a branch or a trunk':'ready branch'}
         for ${
         (snackbarMethod == 'branch')?'merging':(snackbarMethod == 'workspace')?'checkout':'creation'}
         <template v-slot:action="{ attrs }">
-            <v-btn color="blue" text v-bind="attrs" @click="resume()">
+            <v-btn color="error" text v-bind="attrs" @click="resume()">
                 Cancel
             </v-btn>
         </template>
@@ -83,17 +211,17 @@
             {% if request.blueprint == "instructor" %}
             <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">status
             </v-subheader>
-            <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="toggleExposure()">
+            <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="toggleExposure(_selectedNode)">
                 <v-list-item-title>Toggle exposure</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="readyToPush()">
+            <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="readyToPush(_selectedNode)">
                 <v-list-item-title>Toggle ready-to-pull</v-list-item-title>
             </v-list-item>
             <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
             </v-divider>
             <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">
                 versioning</v-subheader>
-            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother()">
+            <v-list-item v-if="selectedNodeClasses.includes('branch')" @click="mergeWithAnother(_selectedNode)">
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
@@ -104,22 +232,22 @@
             </v-divider>
             <v-subheader>workspaces</v-subheader>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
-                @click="createWorkspaceDialogue()">
+                @click="createWorkspaceDialogue(_selectedNode)">
                 <v-list-item-title>Create workspace</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="commit()">
+            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="commit(_selectedNode)">
                 <v-list-item-title>Commit workspace</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="checkout()">
+            <v-list-item v-if="selectedNodeClasses.includes('workspace')" @click="checkout(_selectedNode)">
                 <v-list-item-title>Checkout different graph</v-list-item-title>
             </v-list-item>
             {% endif %}
             {% if request.blueprint == "DLTC" %}
             <v-list-item v-if="selectedNodeClasses.includes('trunk') && !selectedNodeClasses.includes('isActive')"
-                @click="setActive()">
+                @click="setActive(_selectedNode)">
                 <v-list-item-title>Set as active</v-list-item-title>
             </v-list-item>
-            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="release()">
+            <v-list-item v-if="selectedNodeClasses.includes('trunk')" @click="release(_selectedNode)">
                 <v-list-item-title>Release new version</v-list-item-title>
             </v-list-item>
             {% endif %}
@@ -171,21 +299,6 @@
         </template>
         show all
     </v-tooltip>
-
-    <v-tooltip bottom attach>
-        <template v-slot:activator="{ on, attrs  }">
-            <v-btn style="position:absolute; top: 5px; left: calc(75% + 5px)" icon
-                :color="interactingWithSelect?'grey':'blue'" v-bind="attrs" v-on="on">
-                <v-icon>open_with</v-icon>
-            </v-btn>
-        </template>
-        <span v-if="interactingWithSelect">
-            you are browsing using drop-down list<br>
-            you may click elsewhere to unfocus the drop-down list<br>
-            if you want to browse using arrow key, "Enter" or "Esc"
-        </span>
-        <span v-else>browse using arrow key, "Enter" or "Esc"</span>
-    </v-tooltip>
     <span
         style="position: absolute; right:5vw; bottom: 5vw; transform: translate(+50%, -50%); pointer-events: none;">${zoom.toFixed(1)}</span>
 </div>
@@ -195,6 +308,14 @@
 <script>
     cy = cytoscape({
         style: [{
+            selector: ':selected,.',
+            style: {
+                'background-color': 'grey',
+                'line-color': 'grey',
+                'target-arrow-color': 'grey',
+                'source-arrow-color': 'grey'
+            }
+        }, {
             selector: 'node',
             style: {
                 'label': 'data(tag)'
@@ -331,6 +452,16 @@
         return output
 
     }
+    Vue.filter("formatDate", (value) => {
+        if (value) {
+            return (new Date(value)).toLocaleString("en-US", {})
+        }
+    })
+    Vue.filter("nonStylingClasses", (value) => {
+        if (value) {
+            return value.filter(c => !["isOwner", "focused", "uselectable"].includes(c))
+        }
+    })
     Vue.component('app-content', {
         data: () => ({
             _focusedNode: null,
@@ -522,29 +653,38 @@
                             locatePredecessorsX(root)
                             locatePredecessorsY(root)
                             locateWorkspace(root)
-                            this.focus(activeNode.data("id"), 0)
-                            this.setFocusedNode(activeNode, 0)
+                            if (this._focusedNode == null) {
+                                this.focus(activeNode.data("id"), 0)
+                                this.setFocusedNode(activeNode, 0)
+                            }
+                            else {
+                                newFocus = cy.getElementById(this._focusedNode.data("id"))
+                                this.setFocusedNode(newFocus, 0)
+                            }
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting versions information.')
                         }
                     })
             },
+            selectFocusedNode() {
+                this._selectedNode = this._focusedNode
+            },
             // {% if request.blueprint == "instructor" %}
-            readyToPush() {
+            readyToPush(node) {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.branch.patch') }}" + this._selectedNode.data("deltaGraphId"), {
+                fetch("{{ url_for('RESTful.branch.patch') }}" + node.data("deltaGraphId"), {
                     method: 'PATCH',
                     cache: 'no-store',
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        canPull: !this._selectedNode.classes().includes("canPull")
+                        canPull: !node.classes().includes("canPull")
                     })
                 })
                     .then(response => {
@@ -559,14 +699,14 @@
                             })
                     })
             },
-            toggleExposure() {
+            toggleExposure(node) {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
                 this.$root.progress.show = true
-                let isExposed = this._selectedNode.classes().includes("isExposed") ? false : true
-                fetch("{{ url_for('RESTful.branch.patch') }}" + this._selectedNode.data("deltaGraphId"), {
+                let isExposed = node.classes().includes("isExposed") ? false : true
+                fetch("{{ url_for('RESTful.branch.patch') }}" + node.data("deltaGraphId"), {
                     method: 'PATCH',
                     cache: 'no-store',
                     headers: {
@@ -589,10 +729,10 @@
                     })
 
             },
-            mergeWithAnother() {
+            mergeWithAnother(node) {
                 this.snackbarMethod = 'branch'
                 this.selectableNodes = cy.nodes(
-                    '.branch[deltaGraphId  != "' + this._selectedNode.data("deltaGraphId") + '"],' +
+                    '.branch[deltaGraphId  != "' + node.data("deltaGraphId") + '"],' +
                     '.trunk')
                 this.selectAnotherMode()
             },
@@ -604,14 +744,14 @@
             createWorkspaceDialogue() {
                 this.workspaceCreateDialog = true
             },
-            createWorkspace() {
+            createWorkspace(node) {
                 if (this.$refs.createWorkspaceControl.validate()) {
                     if (this.$root.progress.show == true) {
                         this.$root.bePatientSnackBar.show = true
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.workspace.post') }}" + this._selectedNode.data("deltaGraphId"), {
+                    fetch("{{ url_for('RESTful.workspace.post') }}" + node.data("deltaGraphId"), {
                         method: 'POST',
                         cache: 'no-store',
                         headers: {
@@ -636,18 +776,18 @@
                         })
                 }
             },
-            commit() {
-                this.newTab("{{ url_for('instructor.commit')}}" + this._selectedNode.data("deltaGraphId"))
+            commit(node) {
+                this.newTab("{{ url_for('instructor.commit')}}" + node.data("deltaGraphId"))
             },
             // {% endif %}
             // {% if request.blueprint == "DLTC" %}
-            setActive() {
+            setActive(node) {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.trunk.patch') }}" + this._selectedNode.data("deltaGraphId"), {
+                fetch("{{ url_for('RESTful.trunk.patch') }}" + node.data("deltaGraphId"), {
                     method: 'PATCH',
                     cache: 'no-store',
                     headers: {
@@ -688,22 +828,54 @@
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
+                if (w == null) {
+                    alert('pop up is blocked')
+                }
                 w.onbeforeunload = () => {
                     this.loadData()
                 }
                 w.focus()
                 this.resume()
             },
-            openFrame(url, eles) {
+            openFrame(eles) {
                 cy.nodes(".viewing").removeClass('viewing')
                 cy.edges(".viewing").removeClass('viewing')
                 cy.nodes().unselect()
                 cy.edges().unselect()
-                this.viewingId = eles.data("id")
-                eles.addClass('viewing')
-                this.url = url
-                this.showFrame = true
-                this.resume()
+                if (eles.isNode()) {
+                    if (eles.classes().includes("trunk")) {
+                        url = "{{ url_for('collegue.graphView')}}" + eles.data('deltaGraphId')
+                    }
+                    if (this._focusedNode.classes().includes("branch")) {
+                        url = "{{ url_for('collegue.graphView')}}" + eles.data('deltaGraphId')
+                    }
+                }
+                else if (eles.isEdge()) {
+                    let tag = eles.data("tag")
+                    if (tag == "FORK" || tag == "PATCH") {
+                        url = "{{ url_for('collegue.compare')}}" + eles.source().data(
+                            'deltaGraphId') + "/" + eles.target().data(
+                                'deltaGraphId')
+
+                    }
+                    else if (tag.includes("PULL")) {
+                        let parentOfSource = eles.source().connectedEdges(
+                            '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
+                                0]
+                                .data('id') + '"]')
+                        if (parentOfSource.length < 1) return;
+                        url = "{{ url_for('collegue.compare')}}" + eles.source().data(
+                            'deltaGraphId') + "/" + parentOfSource[0].data(
+                                'deltaGraphId')
+                    }
+                }
+                if (url) {
+                    this.viewingId = eles.data("id")
+                    eles.addClass('viewing')
+                    this.url = url
+                    this.showFrame = true
+                    this.resume()
+                }
             },
             focus(id, duration = 200) {
                 cy.stop()
@@ -780,6 +952,7 @@
                 this.repository = this._repository.map(node => node.data())
                 this._focusedNode = node
                 this.focusedNode = this._focusedNode.data()
+                this.focusedNode.classes = this._focusedNode.classes()
                 cy.nodes(".focused").removeClass('focused')
                 this._focusedNode.addClass('focused')
                 if (duration != null) {
@@ -805,72 +978,70 @@
                 cy.edges().unselect()
                 event.target[0].select()
             })
+            resolveAction = (node) => {
+                // {% if request.blueprint == "instructor" %}
+                if (this.snackbarMethod == 'branch') {
+                    if (this.selectableNodes.contains(node)) {
+                        this.newTab("{{ url_for('instructor.branch')}}" + node.data(
+                            'deltaGraphId') + '/' + this._selectedNode.data("deltaGraphId"))
+                    }
+                }
+                if (this.snackbarMethod == 'workspace') {
+                    if (this.selectableNodes.contains(node)) {
+                        fetch("{{ url_for('RESTful.workspace.patch') }}" + this._selectedNode.data("deltaGraphId"), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                checkout: true,
+                                deltaGraphId: node.data(
+                                    'deltaGraphId')
+                            })
+                        })
+                            .then(response => {
+                                try {
+                                    return response.json()
+                                } catch {
+                                    this.$root.progress.show = false
+                                    this.$root.errorDisplay({},
+                                        'Unexpected error occured.')
+                                }
+                            })
+                            .then(body => {
+                                this.$root.progress.show = false
+                                this.$root.responseSnackBar(body,
+                                    'Sync failed for unknown reason.',
+                                    () => {
+                                        this.loadData()
+                                    })
+                            })
+                    }
+                }
+                // {% endif %}
+                // {% if request.blueprint == "DLTC" %}
+                if (this.snackbarMethod == 'trunk') {
+                    if (this.selectableNodes.contains(node)) {
+                        this.newTab("{{ url_for('DLTC.trunk')}}" + node.data(
+                            'deltaGraphId') + '/' + this._selectedNode.data("deltaGraphId"))
+                    }
+                }
+                // {% endif %}
+            }
             cy.on('tap', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
                 if (this.showSelectBar) {
-                    // {% if request.blueprint == "instructor" %}
-                    if (this.snackbarMethod == 'branch') {
-                        if (this.selectableNodes.contains(event.target[0])) {
-                            this.newTab("{{ url_for('instructor.branch')}}" + event.target[0].data(
-                                'deltaGraphId') + '/' + this
-                                    ._selectedNode.data("deltaGraphId"))
-                        }
-                    }
-                    if (this.snackbarMethod == 'workspace') {
-                        if (this.selectableNodes.contains(event.target[0])) {
-                            fetch("{{ url_for('RESTful.workspace.patch') }}" + this
-                                ._selectedNode.data("deltaGraphId"), {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    checkout: true,
-                                    deltaGraphId: event.target[0].data(
-                                        'deltaGraphId')
-                                })
-                            })
-                                .then(response => {
-                                    try {
-                                        return response.json()
-                                    } catch {
-                                        this.$root.progress.show = false
-                                        this.$root.errorDisplay({},
-                                            'Unexpected error occured.')
-                                    }
-                                })
-                                .then(body => {
-                                    this.$root.progress.show = false
-                                    this.$root.responseSnackBar(body,
-                                        'Sync failed for unknown reason.',
-                                        () => {
-                                            this.loadData()
-                                        })
-                                })
-                        }
-                    }
-                    // {% endif %}
-                    // {% if request.blueprint == "DLTC" %}
-                    if (this.snackbarMethod == 'trunk') {
-                        if (this.selectableNodes.contains(event.target[0])) {
-                            this.newTab("{{ url_for('DLTC.trunk')}}" + event.target[0].data(
-                                'deltaGraphId') + '/' + this
-                                    ._selectedNode.data("deltaGraphId"))
-                        }
-                    }
-                    // {% endif %}
+                    resolveAction(event.target[0])
                     return
                 }
                 if (event.target.classes().includes("trunk")) {
-                    this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
-                        'deltaGraphId'), event.target[0])
+                    this.openFrame(event.target[0])
                     this.setFocusedNode(event.target[0])
                 }
                 if (event.target.classes().includes("branch")) {
-                    this.openFrame("{{ url_for('collegue.graphView')}}" + event.target[0].data(
-                        'deltaGraphId'), event.target[0])
+                    this.openFrame(event.target[0])
                     this.setFocusedNode(event.target[0])
                 }
                 if (event.target.classes().includes("workspace")) {
@@ -884,22 +1055,8 @@
             })
             cy.on('tap', 'edge', (event) => {
                 let tag = event.target[0].data("tag")
-                if (tag == "FORK" || tag == "PATCH") {
-                    this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
-                        'deltaGraphId') + "/" + event.target[0].target().data(
-                            'deltaGraphId'), event.target[0])
-
-                }
-                else if (tag.includes("PULL")) {
-                    let parentOfSource = event.target[0].source().connectedEdges(
-                        '[tag = "FORK"],[tag = "PATCH"]').targets('[id != "' + event.target[
-                            0]
-                            .data('id') + '"]')
-                    if (parentOfSource.length < 1) return;
-                    this.openFrame("{{ url_for('collegue.compare')}}" + event.target[0].source().data(
-                        'deltaGraphId') + "/" + parentOfSource[0].data(
-                            'deltaGraphId'), event.target[0])
-
+                if (tag == "FORK" || tag == "PATCH" || tag.includes("PULL")) {
+                    this.openFrame(event.target[0])
                 }
             })
             window.addEventListener('keydown', (event) => {
@@ -970,19 +1127,17 @@
                     this.setFocusedNode(nodeList[nodeListIndex])
                 }
                 if (event.key == "Escape") {
-                    this.focus('')
+                    this.showFrame = false
                 }
                 if (event.key == "Enter") {
-                    if (this._focusedNode.classes().includes("trunk")) {
-                        this.openFrame("{{ url_for('collegue.graphView')}}" + this._focusedNode.data(
-                            'deltaGraphId'), this._focusedNode)
+                    if (this.showSelectBar) {
+                        resolveAction(this._focusedNode)
+                        return
                     }
-                    if (this._focusedNode.classes().includes("branch")) {
-                        this.openFrame("{{ url_for('collegue.graphView')}}" + this._focusedNode.data(
-                            'deltaGraphId'), this._focusedNode)
+                    else {
+                        this.openFrame(this._focusedNode)
                     }
                 }
-
             })
             this.$refs.iframe.addEventListener('onCloseWindow', () => {
                 this.loadData()
