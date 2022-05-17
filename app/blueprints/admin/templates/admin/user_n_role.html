@@ -19,7 +19,7 @@
                                 <v-simple-checkbox readonly color="info" :value="value"
                                     v-if="typeof value  == 'boolean'" @click="flipRole(item , name, value)">
                                 </v-simple-checkbox>
-                                <v-chip v-else>${item.userId}</v-chip>
+                                <span v-else>${value}</span>
                             </td>
                         </tr>
                     </template>
@@ -74,6 +74,10 @@
                                 text: "UserId",
                                 value: 'userId',
                                 groupable: false,
+                            }, {
+                                text: "Email",
+                                value: 'email',
+                                groupable: false,
                             }, ...body.permissions.sort((a, b) => {
                                 a_permission = Object.values(a).reduce((count, value) => {
                                     return count + (value ? 1 : 0)
@@ -122,7 +126,8 @@
                                     if (body.users) {
                                         this.users = body.users.map(u => {
                                             let user_role = {
-                                                userId: u.user.userId
+                                                userId: u.user.userId,
+                                                email: u.user.email
                                             }
                                             this.permissions.forEach(element => {
                                                 user_role[element.name] = u.roles
