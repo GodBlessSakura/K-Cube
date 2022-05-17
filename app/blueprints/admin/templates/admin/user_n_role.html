@@ -15,7 +15,7 @@
                     :search="search">
                     <template v-slot:item="{ item }">
                         <tr>
-                            <td v-for="(value, name) in item.role">
+                            <td v-for="(value, name) in item">
                                 <v-simple-checkbox readonly color="info" :value="value"
                                     v-if="typeof value  == 'boolean'" @click="flipRole(item , name, value)">
                                 </v-simple-checkbox>
@@ -133,7 +133,7 @@
                                                 user_role[element.name] = u.roles
                                                     .includes(element.name)
                                             });
-                                            let user_row = { user: u.user, role: user_role }
+                                            let user_row = user_role
                                             return user_row
                                         })
                                         this.$root.progress.show = false
