@@ -149,7 +149,7 @@
                                         <v-btn style="text-transform: none;" outlined
                                             v-if="focusedNode?.classes.includes('workspace')"
                                             @click="selectFocusedNode();checkout()">
-                                            Checkout different graph
+                                            Checkout different version
                                         </v-btn>
                                     </v-card-actions>
                                     {% endif %}
@@ -194,8 +194,8 @@
         </v-row>
     </v-container>
     <v-snackbar v-model="showSelectBar" timeout='-1'>
-        Select (press "Enter" / click on) a
-        ${ (snackbarMethod == 'branch' || snackbarMethod == 'workspace')?'a branch or a trunk':'ready branch'}
+        Select (press "Enter" / click on)
+        ${ (snackbarMethod == 'branch' || snackbarMethod == 'workspace')?'a branch or a trunk':'a ready branch'}
         for ${
         (snackbarMethod == 'branch')?'merging':(snackbarMethod == 'workspace')?'checkout':'creation'}
         <template v-slot:action="{ attrs }">

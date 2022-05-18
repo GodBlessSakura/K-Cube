@@ -64,7 +64,7 @@ class courseDAO:
             try:
                 return [
                     {
-                        "userId": record["userId"],
+                       "user": dict(record["user"].items()),
                         "isTeaching": record["isTeaching"],
                     }
                     for record in result

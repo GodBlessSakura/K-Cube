@@ -5,7 +5,23 @@
     </v-card-title>
     <v-form ref="createRepositoryControl">
         <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId"
-            v-model="selectedNode" label="base on version">
+            v-model="selectedNode" label="base on version (★ for the active version provided by the department):">
+            <template v-slot:selection="data">
+                <template>
+                    <v-chip>
+                        <v-list-item-content v-text="data.item.tag">
+                        </v-list-item-content>
+                        <v-icon v-if="data.item.isActive" small>star</v-icon>
+                    </v-chip>
+                </template>
+            </template>
+            <template v-slot:item="data">
+                <template>
+                    <v-list-item-content v-text="data.item.tag">
+                    </v-list-item-content>
+                    <v-icon v-if="data.item.isActive" small>star</v-icon>
+                </template>
+            </template>
         </v-autocomplete>
         <v-text-field label="tag of repository" :rules="repoTagRules" v-model="repoTag" required></v-text-field>
         <v-text-field label="tag of workspace" :rules="wTagRules" v-model="w_tag" required></v-text-field>
@@ -95,17 +111,14 @@
                                 this.trunkOrBranch = [];
                                 [body.trunk_nodes, body.branch_nodes].forEach(nodes => {
                                     nodes.forEach(node => {
-                                        this.trunkOrBranch.push({
+                                        let item = {
                                             tag: node.property.tag,
-                                            deltaGraphId: node.property.deltaGraphId
-                                        })
-                                        if (body.edges.filter(e => e.start == node.id).length ==
-                                            0) {
-
-                                            this.selectedNode = {
-                                                tag: node.property.tag,
-                                                deltaGraphId: node.property.deltaGraphId
-                                            }
+                                            deltaGraphId: node.property.deltaGraphId,
+                                            isActive: node.isActive
+                                        }
+                                        this.trunkOrBranch.push(item)
+                                        if (node.isActive) {
+                                            this.selectedNode = item
                                         }
                                     })
                                 })
