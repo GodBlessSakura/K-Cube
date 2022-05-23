@@ -27,6 +27,10 @@
     <script src="//cdn.jsdelivr.net/npm/sortablejs@1.8.4/Sortable.min.js"></script>
     <!-- CDNJS :: Vue.Draggable (https://cdnjs.com/) -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/Vue.Draggable/2.20.0/vuedraggable.umd.min.js"></script>
+    <!--  -->
+    <script src="https://cdn.jsdelivr.net/npm/shepherd.js@8.3.1/dist/js/shepherd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/shepherd.js@8.3.1/dist/css/shepherd.css" />
+    <script src="https://cdn.jsdelivr.net/npm/vue-shepherd@0.2.1/dist/vue-shepherd.umd.js"></script>
     <style>
         [v-cloak] {
             display: none;
@@ -46,7 +50,7 @@
                 <template v-if="KCube.tabs && KCube.tabs.length > 0">
                     <v-select @change="switchRole" style="max-width: 200px;" solo hide-details
                         background-color="transparent" flat label="view as" v-model="KCube.view" :items="KCube.roleTab"
-                        item-text="name" item-value="name">
+                        item-text="name" item-value="name" ref="shepherd-roleSelect">
                         <template v-slot:item="{ item, on, attrs }">
                             <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-icon>
@@ -69,6 +73,7 @@
                         </template>
                     </v-select>
                     <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" icons-and-text
+                        ref="shepherd-layoutTab"
                         style="position: absolute; left: 50%; transform: translateX(-50%); width: unset;">
                         {% for i in [0,1,2,3,4,5,6] %}
                         <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">
@@ -83,15 +88,35 @@
                     </v-tabs>
                 </template>
                 <v-spacer></v-spacer>
-                {% if session['user'] %}
-                <v-menu offset-y>
+                <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn text v-bind="attrs" v-on="on" style="text-transform: none !important;">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on: onMenu }">
+                                <v-btn v-bind="attrs" v-on="{ ...onMenu, ...on }" color="warning">
+                                    help</v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item @click="appIntro()">
+                                    <v-list-item-title>Overview</v-list-item-title>
+                                </v-list-item>
+                                <v-list-item @click="pageIntro()">
+                                    <v-list-item-title>This particular page</v-list-item-title>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </template>
+                    A tour of the website
+                </v-tooltip>
+                {% if session['user'] %}
+                <v-menu offset-y eager>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn text v-bind="attrs" v-on="on" style="text-transform: none !important;"
+                            ref="shepherd-userMenu">
                             {{USER.userName}}<v-icon>arrow_drop_down</v-icon>
                         </v-btn>
                     </template>
                     <v-list>
-                        <v-list-item href="{{ url_for('user.profile') }}">
+                        <v-list-item href="{{ url_for('user.profile') }}" ref="shepherd-userProfile">
                             <v-list-item-title>Edit Profile</v-list-item-title>
                         </v-list-item>
                         <v-list-item href="{{ url_for('user.changePassword') }}">
@@ -217,12 +242,12 @@
                 {% endif %}
 
             </v-app-bar>
-            <v-navigation-drawer v-if="navBar" :expand-on-hover="navHover"  mini-variant
-                :mini-variant.sync="miniSync" mini-variant-width="50" app>
+            <v-navigation-drawer v-if="navBar" :expand-on-hover="navHover" mini-variant :mini-variant.sync="miniSync"
+                mini-variant-width="50" app ref="shepherd-layoutNavigation" eg>
 
                 <v-divider></v-divider>
                 <v-list nav dense>
-                    <v-list-item link @click="navHover = !navHover">
+                    <v-list-item link @click="navHover = !navHover" ref="shepherd-layoutNavigationToggle">
                         <v-list-item-icon v-if="!miniSync">
                         </v-list-item-icon>
                         <v-list-item-title v-if="!miniSync">
@@ -231,8 +256,9 @@
                         <v-icon v-if="navHover">menu</v-icon>
                         <v-icon v-else>menu_open</v-icon>
                     </v-list-item>
-                    <div v-for="LG in KCube.navigationListGroup">
-                        <v-list-group :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
+                    <div ref="shepherd-layoutNavigationRoleGroup">
+                        <v-list-group v-for="LG in KCube.navigationListGroup" :value="KCube.currentBlueprint == LG.name"
+                            :prepend-icon="LG.icon">
                             <template v-slot:activator>
                                 <v-list-item-title>${LG.title}</v-list-item-title>
                             </template>
@@ -558,6 +584,7 @@
         }
         KCube_initialize()
         Vue.use(Vuetify)
+        Vue.use(VueShepherd)
     </script>
     <script type="text/x-template" id="content">
         {% block VueComponent %} {% endblock %}
@@ -830,6 +857,93 @@
                             }
                             throw error
                         })
+                },
+                appIntro() {
+                    this._tour = this.$shepherd({
+
+                        useModalOverlay: true,
+                        defaultStepOptions: {
+                            classes: 'shadow-md bg-purple-dark',
+                            scrollTo: true,
+                            cancelIcon: {
+                                enabled: true
+                            },
+                            canClickTarget: false,
+                            buttons: [
+                                {
+                                    text: 'Next',
+                                    action: () => this._tour.next()
+                                }
+                            ],
+                        }
+                    })
+                    if (this.$refs["shepherd-layoutTab"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-layoutTab"].$el, on: 'bottom' },
+                            text: 'These tabs bring you to commonly used page of our website',
+
+                        })
+                    }
+                    if (this.$refs["shepherd-roleSelect"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-roleSelect"].$el, on: 'bottom' },
+                            text: 'If you have multiple user role, you mean view the same page from different persepctive.',
+
+                        })
+                    }
+                    if (this.$refs["shepherd-layoutNavigation"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-layoutNavigation"].$el, on: 'right' },
+                            text: 'All page of our website are listed here. (You may expand menu by move your cursor over this region)',
+                            canClickTarget: true,
+                        })
+                    }
+                    if (this.$refs["shepherd-layoutNavigationToggle"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-layoutNavigationToggle"].$el, on: 'right' },
+                            text: 'You may keep the menu expanding (or not) by click this.',
+                            canClickTarget: true,
+                            beforeShowPromise: () =>
+                                new Promise((resolve, reject) => {
+                                    this.miniSync = false
+                                    this.$refs["shepherd-layoutNavigationToggle"].$el.dispatchEvent(new MouseEvent("click"))
+                                    setTimeout(() => {
+                                        resolve();
+                                    }, 100);
+                                }),
+                        })
+                    }
+                    if (this.$refs["shepherd-layoutNavigationRoleGroup"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-layoutNavigationRoleGroup"], on: 'right' },
+                            text: 'Pages avaliable to specific user group are listed here.',
+                        })
+                    }
+                    if (this.$refs["shepherd-userMenu"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-userMenu"].$el, on: 'bottom' },
+                            text: 'You mean check and modify your account in this menu.',
+
+                        })
+                    }
+                    if (this.$refs["shepherd-userProfile"]) {
+                        this._tour.addStep({
+                            attachTo: { element: this.$refs["shepherd-userProfile"].$el, on: 'left' },
+                            text: 'You mean check and modify your profile here.<br>Make sure you verify your email account, if you would like to acquire priveledge.',
+                            beforeShowPromise: () =>
+                                new Promise((resolve, reject) => {
+                                    this.$refs["shepherd-userMenu"].$el.dispatchEvent(new MouseEvent("click"))
+
+                                    setTimeout(() => {
+                                        resolve();
+                                    }, 100);
+                                }),
+                        })
+                    }
+
+                    this._tour.start();
+                },
+                pageIntro() {
                 }
             },
             delimiters: ['${', '}'],

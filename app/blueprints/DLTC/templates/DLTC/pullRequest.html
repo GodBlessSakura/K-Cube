@@ -5,7 +5,7 @@
     <v-container>
         <v-row>
             <v-col cols="auto">
-                <v-btn :href="activeTrunk?.link" style="text-transform: none;">
+                <v-btn :href="activeTrunk?.link" style="text-transform: none;" ref="shepherd-activeVersion">
                     Active version: ${activeTrunk?.tag}
                     <v-icon right>
                         open_in_new
@@ -39,7 +39,7 @@
                 </v-autocomplete>
             </v-col>
             <v-col cols="auto">
-                <v-btn @click="changeAtiveTrunk = !changeAtiveTrunk" v-if="!changeAtiveTrunk">
+                <v-btn @click="changeAtiveTrunk = !changeAtiveTrunk" v-if="!changeAtiveTrunk" ref="shepherd-changeActiveVersion">
                     change active version
                 </v-btn>
                 <v-btn @click="setActive()" v-if="changeAtiveTrunk">
@@ -57,7 +57,7 @@
                 <template v-slot:item.actions="{ item }">
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon v-bind="attrs" v-on="on"
+                            <v-btn icon v-bind="attrs" v-on="on" ref="shepherd-compare"
                                 @click="newTab('{{ url_for('DLTC.trunk')}}' + item.deltaGraphId + '/' + activeTrunk.deltaGraphId)">
                                 <v-icon>
                                     compare
@@ -206,6 +206,47 @@
             }
         },
         mounted: function () {
+            self = this
+            this.$root.pageIntro = () => {
+                console.log(self.$refs)
+                self._tour = self.$shepherd({
+                    useModalOverlay: true,
+                    defaultStepOptions: {
+                        classes: 'shadow-md bg-purple-dark',
+                        scrollTo: true,
+                        cancelIcon: {
+                            enabled: true
+                        },
+                        canClickTarget: false,
+                        buttons: [
+                            {
+                                text: 'Next',
+                                action: () => self._tour.next()
+                            }
+                        ],
+                    }
+                })
+                if (self.$refs["shepherd-activeVersion"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-activeVersion"].$el, on: 'bottom' },
+                        text: "Step 1: Click to view current version",
+                    })
+                }
+                if (self.$refs["shepherd-compare"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-compare"].$el, on: 'bottom' },
+                        text: "Step 2: Click to preview the instrcutors' versions",
+                    })
+                }
+                if (self.$refs["shepherd-changeActiveVersion"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-changeActiveVersion"].$el, on: 'bottom' },
+                        text: "Step3: Change the public version to any one",
+                    })
+                }
+
+                self._tour.start();
+            }
             this.loadData()
         },
         template: '#content',

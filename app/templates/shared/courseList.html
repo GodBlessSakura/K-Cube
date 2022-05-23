@@ -20,7 +20,7 @@
             {% if request.blueprint == "instructor" %}
             <v-chip filter v-model="filter.joined"
                 @click="filter.joined = !filter.joined; filter.notJoined = filter.joined?false:filter.notJoined; search()"
-                dense hide-details>
+                dense hide-details ref="shepherd-joinedFilter">
                 joined</v-chip>
             <v-chip filter v-model="filter.notJoined"
                 @click="filter.notJoined = !filter.notJoined; filter.joined = filter.notJoined?false:filter.joined; search();"
@@ -31,7 +31,8 @@
         {% if request.blueprint == "instructor" %}
         <v-divider vertical></v-divider>
         <v-col cols="auto">
-            <v-btn color="success" @click="filter.joined=false;filter.public=false;filter.internal=false;search()">
+            <v-btn color="success" @click="filter.joined=false;filter.public=false;filter.internal=false;search()"
+                ref="shepherd-joinNewCourse">
                 <v-icon left>add</v-icon>join new course
             </v-btn>
         </v-col>
@@ -258,7 +259,7 @@
                         <v-slide-item>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on" color="info"
+                                    <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-approveUpdates"
                                         :href="'{{ url_for('DLTC.pullRequest') }}/' + courses[row*colPerRow + col].courseCode"
                                         icon>
                                         <v-icon>library_add</v-icon>
@@ -270,7 +271,7 @@
                         <v-slide-item>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on" color="info"
+                                    <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-manageVersions"
                                         :href="'{{ url_for('DLTC.trunkVersions') }}/' + courses[row*colPerRow + col].courseCode"
                                         icon>
                                         <v-icon>library_add_check</v-icon>
@@ -286,7 +287,7 @@
                         <v-slide-item>
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
-                                    <v-btn v-bind="attrs" v-on="on" color="info"
+                                    <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-listCourseInstructor"
                                         @click="courseAssignment(courses[row*colPerRow + col])" icon>
                                         <v-icon>assignment_ind</v-icon>
                                     </v-btn>
@@ -318,7 +319,8 @@
                         <v-tooltip bottom>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn v-bind="attrs" v-on="on" color="success" style="width: 36px; min-width: unset;"
-                                    @click="openWorkspaceDialogue(courses[row*colPerRow + col])">
+                                    @click="openWorkspaceDialogue(courses[row*colPerRow + col])"
+                                    ref="shepherd-newWorkspace">
                                     <v-icon>
                                         add_box</v-icon>
                                 </v-btn>
@@ -327,7 +329,7 @@
                         </v-tooltip>
                         <v-tooltip bottom>
                             <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-bind="attrs" v-on="on" color="info"
+                                <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-recentVisit"
                                     :href="'{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId">
                                     recent visit &nbsp;<v-icon small>work</v-icon>
                                 </v-btn>
@@ -904,8 +906,73 @@
             }
         },
         mounted: function () {
-            this.loadData()
-            this.search()
+            self = this
+            this.$root.pageIntro = () => {
+                console.log(self.$refs)
+                self._tour = self.$shepherd({
+                    useModalOverlay: true,
+                    defaultStepOptions: {
+                        classes: 'shadow-md bg-purple-dark',
+                        scrollTo: true,
+                        cancelIcon: {
+                            enabled: true
+                        },
+                        canClickTarget: false,
+                        buttons: [
+                            {
+                                text: 'Next',
+                                action: () => self._tour.next()
+                            }
+                        ],
+                    }
+                })
+                if (self.$refs["shepherd-newWorkspace"] && self.$refs["shepherd-newWorkspace"].length > 0) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-newWorkspace"][0].$el, on: 'bottom' },
+                        text: 'Click to create an empty workspace',
+                    })
+                }
+                if (self.$refs["shepherd-recentVisit"] && self.$refs["shepherd-recentVisit"].length > 0) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-recentVisit"][0].$el, on: 'bottom' },
+                        text: "Click to enter a recently visited workspace",
+                    })
+                }
+                if (self.$refs["shepherd-joinedFilter"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-joinedFilter"].$el, on: 'bottom' },
+                        text: "Defualt Filter, click to clear the criteria and see all public courses",
+                    })
+                }
+                if (self.$refs["shepherd-joinNewCourse"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-joinNewCourse"].$el, on: 'bottom' },
+                        text: "Click to show all public courses",
+                    })
+                }
+                console.log(self.$refs)
+                if (self.$refs["shepherd-listCourseInstructor"] && self.$refs["shepherd-listCourseInstructor"].length > 0) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-listCourseInstructor"][0].$el, on: 'bottom' },
+                        text: "Click to assign/unassign instructors",
+                    })
+                }
+                if (self.$refs["shepherd-manageVersions"] && self.$refs["shepherd-manageVersions"].length > 0) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-manageVersions"][0].$el, on: 'bottom' },
+                        text: "Click to enter the version management panel",
+                    })
+                }
+                if (self.$refs["shepherd-approveUpdates"] && self.$refs["shepherd-approveUpdates"].length > 0) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-approveUpdates"][0].$el, on: 'bottom' },
+                        text: "Click to view update requests from instructors",
+                    })
+                }
+                self._tour.start();
+            }
+            self.loadData()
+            self.search()
         },
         template: '#content',
         delimiters: ['${', '}'],
