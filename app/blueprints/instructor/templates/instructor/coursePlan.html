@@ -30,7 +30,7 @@
                 <v-card v-ripple="{ class: 'primary--text' }" elevation="2" @contextmenu="showDetails($event,entity)" style="margin-left: 5px"
                     v-for="entity in plan[week]" dense v-bind:id="'entity:'+entity.name">
                     <v-list-item>
-                        <v-icon small class="handle">drag_handle</v-icon>
+                        <v-icon small class="handle">drag_indicator</v-icon>
                         <v-text-field background-color="transparent" dense hide-details flat solo v-model="entity.desc"
                             @change="patchEntity(entity)">
                     </v-list-item>
