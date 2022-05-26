@@ -99,7 +99,7 @@
                                 <v-list-item @click="appIntro()">
                                     <v-list-item-title>Overview</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item @click="pageIntro()">
+                                <v-list-item v-if="pageIntro" @click="pageIntro()">
                                     <v-list-item-title>This particular page</v-list-item-title>
                                 </v-list-item>
                             </v-list>
@@ -943,8 +943,6 @@
 
                     this._tour.start();
                 },
-                pageIntro() {
-                }
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
