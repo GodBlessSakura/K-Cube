@@ -153,7 +153,6 @@ def login():
                 userId=userId, password=password
             )
             if user is not None:
-                from app.cache_driver import user_permission
 
                 session["user"] = user
                 return jsonify({"success": True, "url": url_for("userHomePage")})
