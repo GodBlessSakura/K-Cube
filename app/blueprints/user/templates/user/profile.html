@@ -149,6 +149,11 @@
                 }
             },
             tryVerification() {
+                if (this.$root.progress.show == true) {
+                    this.$root.bePatientSnackBar.show = true
+                    return
+                }
+                this.$root.progress.show = true
                 fetch("{{ url_for('user.verify') }}", {
                     method: 'POST',
                     cache: 'no-store',
