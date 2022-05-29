@@ -21,7 +21,7 @@
                     internal</v-chip>
                 {% if request.blueprint == "instructor" %}
                 <v-divider vertical style="margin-left: 8px; margin-right: 8px;"></v-divider>
-                <v-chip filter v-model="filter.joined" color="success"
+                <v-chip filter v-model="filter.joined" color="success" :outlined="!filter.joined"
                     @click="filter.joined = !filter.joined; filter.notJoined = filter.joined?false:filter.notJoined; search()">
                     on-duty</v-chip>
                 <v-chip filter v-model="filter.notJoined"
