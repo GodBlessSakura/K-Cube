@@ -68,7 +68,11 @@ def permission_check(permissions=[], require_userId=False, roles=[]):
             return False, None
     if (len(permissions) > 0 or len(roles) > 0) and "permission" not in g:
         return False, None
-    if g.permission["role"] is None or len(g.permission["role"]) < 1:
+    if len(roles) > 0 and (
+        "role" not in g.permission
+        or g.permission["role"] is None
+        or len(g.permission["role"]) < 1
+    ):
         return False, None
 
     at_least_one_role_fullfiled = len(roles) == 0
