@@ -107,6 +107,7 @@ def create_app(config_string):
             "user" in session
             and "userId" in session["user"]
             and "permission" in g
+            and "role" in g.permission
             and g.permission["role"] is not None
         ):
             if "DLTC" in g.permission["role"]:

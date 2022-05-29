@@ -98,6 +98,7 @@ def logout():
     session.clear()
     return redirect("/")
 
+
 @user.post("/forgotPassword")
 def forgotPassword():
     userId = None
@@ -141,6 +142,7 @@ def forgotPassword():
         return jsonify({"success": True, "message": "An email is sent"})
     return jsonify({"success": False, "message": "incomplete login request"})
 
+
 @user.route("/login", methods=["POST"])
 def login():
     if "userId" in request.json and "password" in request.json:
@@ -154,17 +156,7 @@ def login():
                 from app.cache_driver import user_permission
 
                 session["user"] = user
-                permission = user_permission(user["userId"])
-                if "role" in permission:
-                    if "instructor" in permission["role"]:
-                        return jsonify(
-                            {"success": True, "url": url_for("instructor.courseList")}
-                        )
-                    if "DLTC" in permission["role"]:
-                        return jsonify(
-                            {"success": True, "url": url_for("DLTC.courseList")}
-                        )
-                return jsonify({"success": True})
+                return jsonify({"success": True, "url": url_for("userHomePage")})
             return jsonify({"success": False})
         except Exception as e:
             print(e)
@@ -194,16 +186,17 @@ def patch():
             return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete request"})
 
+
 @user.patch("/password")
 def patchPassword():
     if "newPassword" in request.json:
         if "userId" in request.json and "hash" in request.json:
             try:
                 user = get_api_driver().user.try_reset_user_password_w_hash(
-                userId=request.json["userId"],
-                hash=request.json["hash"],
-                password=request.json["newPassword"],
-            )
+                    userId=request.json["userId"],
+                    hash=request.json["hash"],
+                    password=request.json["newPassword"],
+                )
             except Exception as e:
                 return jsonify({"success": False, "message": "token incorrect"})
             return jsonify({"success": True})
