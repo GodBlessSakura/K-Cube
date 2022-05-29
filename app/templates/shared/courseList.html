@@ -460,9 +460,12 @@
     </v-dialog>
     {% endif %}
 </v-container>
-
 {% endblock %}
 {% block VueComponentScript %}
+
+{% if request.blueprint == "instructor" %}
+{% include "instructor/components/workspaceForm.html" %}
+{% endif %}
 <style>
     .no-padding-list>* {
         padding: unset
@@ -477,6 +480,8 @@
             searchText: "",
             course: null,
             // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
+            num_courses_wo_filter: null,
+            num_courses_wo_search_text: null,
             coursePreviewUrl: "",
             filter: {
                 public: false,
