@@ -110,10 +110,10 @@ def create_app(config_string):
             and "role" in g.permission
             and g.permission["role"] is not None
         ):
-            if "DLTC" in g.permission["role"]:
-                return redirect("/DLTC/courseList")
             if "instructor" in g.permission["role"]:
                 return redirect("/instructor/courseList")
+            if "DLTC" in g.permission["role"]:
+                return redirect("/DLTC/courseList")
         return render_template("index.html")
 
     @app.route("/index")

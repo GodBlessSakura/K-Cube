@@ -565,7 +565,9 @@
             ]
         }
         KCube_initialize = () => {
-            KCube.currentBlueprint = KCube.currentBlueprint == "None" ? KCube.navigationListGroup[0].name : KCube.currentBlueprint
+            if (KCube.currentBlueprint == "None" && KCube.navigationListGroup.length > 0) {
+                KCube.currentBlueprint = KCube.navigationListGroup[0].name
+            }
             KCube.view = KCube.roleTab.map(t => t.name).includes(KCube.currentBlueprint) ? KCube.currentBlueprint : localStorage.getItem('lastView')
             localStorage.setItem('lastView', KCube.view)
             if (KCube.roleTab.length > 0) {
@@ -795,7 +797,7 @@
                             .then(body => {
                                 this.progress.show = false
                                 this.responseSnackBar(body, 'incorrect username or password', () => {
-                                    if (body.url) {
+                                    if (body.url && (window.location == "{{ url_for('index') }}")) {
                                         window.location.href = body.url
                                     }
                                     else {
