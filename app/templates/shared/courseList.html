@@ -3,52 +3,70 @@
 {% block VueComponent %}
 
 <v-container>
-    <v-row>
+    <v-row ref="shepherd-searchText">
         <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
     </v-row>
     {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
     <v-row no-gutters>
-        <v-col>
+        <v-col align-self="center" cols="auto">
             <span class="mr-4">filters:</span>
-            <v-chip filter v-model="filter.public"
-                @click="filter.public = !filter.public; filter.internal = filter.public?false:filter.internal; search()"
-                dense hide-details>
-                public</v-chip>
-            <v-chip filter v-model="filter.internal"
-                @click="filter.internal = !filter.internal; filter.public = filter.internal?false:filter.public; search()"
-                dense hide-details>internal</v-chip>
-            {% if request.blueprint == "instructor" %}
-            <v-divider vertical></v-divider>
-            <v-chip filter v-model="filter.joined"
-                @click="filter.joined = !filter.joined; filter.notJoined = filter.joined?false:filter.notJoined; search()"
-                dense hide-details ref="shepherd-joinedFilter">
-                on-duty</v-chip>
-            <v-chip filter v-model="filter.notJoined"
-                @click="filter.notJoined = !filter.notJoined; filter.joined = filter.notJoined?false:filter.joined; search();"
-                dense hide-details>off-duty
-            </v-chip>
-            <v-divider vertical></v-divider>
-            <v-chip filter v-model="filter.working" @click="filter.working = !filter.working; search();" dense
-                hide-details>working
-            </v-chip>
+        </v-col>
+        <v-col align-self="center" cols="auto" ref="shepherd-filter">
+            <v-slide-group>
+                <v-chip filter v-model="filter.public"
+                    @click="filter.public = !filter.public; filter.internal = filter.public?false:filter.internal; search()">
+                    public</v-chip>
+                <v-chip filter v-model="filter.internal"
+                    @click="filter.internal = !filter.internal; filter.public = filter.internal?false:filter.public; search()">
+                    internal</v-chip>
+                {% if request.blueprint == "instructor" %}
+                <v-divider vertical style="margin-left: 8px; margin-right: 8px;"></v-divider>
+                <v-chip filter v-model="filter.joined" color="success"
+                    @click="filter.joined = !filter.joined; filter.notJoined = filter.joined?false:filter.notJoined; search()">
+                    on-duty</v-chip>
+                <v-chip filter v-model="filter.notJoined"
+                    @click="filter.notJoined = !filter.notJoined; filter.joined = filter.notJoined?false:filter.joined; search();">
+                    off-duty
+                </v-chip>
+                <v-divider vertical style="margin-left: 8px; margin-right: 8px;"></v-divider>
+                <v-chip filter v-model="filter.working" @click="filter.working = !filter.working; search();" dense
+                    hide-details>working
+                </v-chip>
+                {% endif %}
+            </v-slide-group>
+        </v-col>
+        <v-col align-self="center" cols="auto">
             <v-btn @click="clearFilter(); search();" small>
                 clear <v-icon>close</v-icon>
             </v-btn>
-            {% endif %}
         </v-col>
         {% if request.blueprint == "instructor" %}
-        <v-divider vertical></v-divider>
+        <v-spacer></v-spacer>
         <v-col cols="auto">
-            <v-btn color="success" @click="joinMode=!joinMode;clearFilter();search()" ref="shepherd-joinNewCourse">
-                <v-icon left>rule</v-icon>Manage course duty
+            <v-btn :color="joinMode?'':'success'" @click="joinMode=!joinMode;clearFilter();search()"
+                ref="shepherd-joinNewCourse">
+                <v-icon left>rule</v-icon>${joinMode?'hide duty on-off label':'Manage course duty'}
             </v-btn>
         </v-col>
         {% endif %}
     </v-row>
     {% endif %}
-    <v-row v-if="courses.length == 0">
-        <v-col v-if="searchText.length>0">No course for search text "${searchText}". <br>
-            <v-btn color="error" @click="searchText='';search()">clear search text</v-btn>
+    <v-row v-if="courses.length == 0 && num_courses_wo_filter>0">
+        <v-col>There will be ${num_courses_wo_filter} results if no filter is applied.
+            <br>
+            <v-btn @click="clearFilter(); search();">clear filter</v-btn>
+        </v-col>
+    </v-row>
+    <v-row v-if="courses.length == 0 && num_courses_wo_search_text>0">
+        <v-col>There will be ${num_courses_wo_search_text} results if no search text is applied.
+            <br>
+            <v-btn @click="searchText=''; search();">clear search text</v-btn>
+        </v-col>
+    </v-row>
+    <v-row v-if="courses.length == 0 && num_courses_wo_search_text == 0 && num_courses_wo_filter == 0">
+        <v-col>No course with current search text "${searchText}" and filter setting.
+            <br>
+            <v-btn @click="clearFilter(); searchText='';search()">clear search text & filter</v-btn>
         </v-col>
     </v-row>
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
@@ -305,15 +323,17 @@
                     </v-slide-group>
                     {% endif %}
                     {% if request.blueprint == "instructor" %}
-                    <v-tooltip bottom v-if="joinMode">
+                    <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-btn :outlined="!courses[row*colPerRow + col].isTeaching"
-                                :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs"
-                                v-on="on"
-                                @click="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
-                                <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
-                                ${courses[row*colPerRow + col].isTeaching?'on-duty':'off-duty'}
-                            </v-btn>
+                            <v-scroll-x-transition>
+                                <v-btn :outlined="!courses[row*colPerRow + col].isTeaching" v-show="joinMode"
+                                    :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs"
+                                    v-on="on" ref="shepherd-joined"
+                                    @click="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
+                                    <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
+                                    ${courses[row*colPerRow + col].isTeaching?'on-duty':'off-duty'}
+                                </v-btn>
+                            </v-scroll-x-transition>
                         </template>
                         ${'click to become '+(courses[row*colPerRow + col].isTeaching?'off-duty':'on-duty')}
                     </v-tooltip>
@@ -464,8 +484,7 @@
                 public: false,
                 internal: false,
                 // {% if request.blueprint == "instructor" %}
-                joined: false,
-                //joined: new URLSearchParams(window.location.search).get('joined') == null,
+                joined: new URLSearchParams(window.location.search).get('duty') != null,
                 notJoined: false,
                 working: false,
                 // {% endif %}
@@ -909,21 +928,31 @@
                         c.courseName.toLowerCase().includes(this.searchText.toLowerCase())
                     )
                 }
+
                 // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
-                if (Object.keys(this.filter).map(key => this.filter[key]).filter(value => value).length > 0)
+                this.num_courses_wo_search_text = this.allCourses.length
+                this.num_courses_wo_filter = this.courses.length
+                this.filter_length = Object.keys(this.filter).map(key => this.filter[key]).filter(value => value).length
+                if (this.filter_length > 0) {
                     this.courses = this.courses.filter(c =>
                         !(this.filter.public && c.isInternal) &&
                         !(this.filter.internal && !c.isInternal) &&
                         !(this.filter.joined && !c.isTeaching) &&
                         !(this.filter.notJoined && c.isTeaching) &&
                         !(this.filter.working && c.workspaces.length == 0)).slice()
+                    this.num_courses_wo_search_text = this.allCourses.filter(c =>
+                        !(this.filter.public && c.isInternal) &&
+                        !(this.filter.internal && !c.isInternal) &&
+                        !(this.filter.joined && !c.isTeaching) &&
+                        !(this.filter.notJoined && c.isTeaching) &&
+                        !(this.filter.working && c.workspaces.length == 0)).length
+                }
                 // {% endif %}
             }
         },
         mounted: function () {
             self = this
             this.$root.pageIntro = () => {
-                console.log(self.$refs)
                 self._tour = self.$shepherd({
                     useModalOverlay: true,
                     defaultStepOptions: {
@@ -953,19 +982,44 @@
                         text: "Click to enter a recently visited workspace",
                     })
                 }
-                if (self.$refs["shepherd-joinedFilter"]) {
+                if (self.$refs["shepherd-searchText"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-joinedFilter"].$el, on: 'bottom' },
-                        text: "Defualt Filter, click to clear the criteria and see all public courses",
+                        attachTo: { element: self.$refs["shepherd-searchText"], on: 'bottom' },
+                        text: "You may search courses with it's code or it's name",
+                    })
+                }
+                if (self.$refs["shepherd-filter"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-filter"], on: 'bottom' },
+                        text: "Click to apply filter on courses",
                     })
                 }
                 if (self.$refs["shepherd-joinNewCourse"]) {
                     self._tour.addStep({
                         attachTo: { element: self.$refs["shepherd-joinNewCourse"].$el, on: 'bottom' },
-                        text: "Click to show all public courses",
+                        text: "Click to manage course duty",
                     })
                 }
-                console.log(self.$refs)
+                if (self.$refs["shepherd-joinNewCourse"]) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-joinNewCourse"].$el, on: 'bottom' },
+                        text: "Make sure the course you are teaching are labeled as 'on-duty'",
+                        beforeShowPromise: () =>
+                            new Promise((resolve, reject) => {
+                                this.miniSync = false
+                                this.$refs["shepherd-joinNewCourse"].$el.dispatchEvent(new MouseEvent("click"))
+                                setTimeout(() => {
+                                    resolve();
+                                }, 100);
+                            }),
+                    })
+                }
+                if (self.$refs["shepherd-joined"] && self.$refs["shepherd-joined"].length > 0) {
+                    self._tour.addStep({
+                        attachTo: { element: self.$refs["shepherd-joined"][0].$el, on: 'bottom' },
+                        text: "Click to toggle the label",
+                    })
+                }
                 if (self.$refs["shepherd-listCourseInstructor"] && self.$refs["shepherd-listCourseInstructor"].length > 0) {
                     self._tour.addStep({
                         attachTo: { element: self.$refs["shepherd-listCourseInstructor"][0].$el, on: 'bottom' },

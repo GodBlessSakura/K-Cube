@@ -1,5 +1,5 @@
 from ast import operator
-from flask import Flask, render_template, jsonify, session, g, abort
+from flask import Flask, render_template, jsonify, session, g, abort, redirect
 
 from flask_mail import Mail
 from app.config import config
@@ -102,6 +102,20 @@ def create_app(config_string):
         )
 
     @app.route("/")
+    def userHomePage():
+        if (
+            "user" in session
+            and "userId" in session["user"]
+            and "permission" in g
+            and g.permission["role"] is not None
+        ):
+            if "DLTC" in g.permission["role"]:
+                return redirect("/DLTC/courseList")
+            if "instructor" in g.permission["role"]:
+                return redirect("/instructor/courseList")
+        return render_template("index.html")
+
+    @app.route("/index")
     def index():
         return render_template("index.html")
 
