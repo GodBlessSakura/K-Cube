@@ -34,9 +34,10 @@
                 teaching material:
             </v-col>
             <v-col>
-                <v-dialog v-model="materialForm" max-width="75vw">
+                <v-dialog v-model="materialForm" max-width="75vw" eager>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on">add_link</v-icon>
+                        <v-icon v-bind="attrs" v-on="on" ref="shepherd-materialFormOpenBtn">add_link
+                        </v-icon>
                     </template>
                     <v-card>
                         <v-card-title>Create teaching material for ${name}:

@@ -47,7 +47,7 @@
                     <v-tooltip :disabled="subject?.isExposed && activePositiveEdgeCount + activeNegativeEdgeCount == 0"
                         bottom>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on"
+                            <v-list-item v-bind="attrs" v-on="on" ref="shepherd-coursePlan"
                                 @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
                                 <v-list-item-subtitle>Course plan
                                 </v-list-item-subtitle>
@@ -320,6 +320,21 @@
                         </v-list>
                     </v-menu>
                 </v-col>
+                <v-col cols="auto" dense>
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
+                                v-on="on" tile>
+                                help
+                            </v-btn>
+                        </template>
+                        <v-list>
+                            <v-list-item dense @click="tutorial">
+                                <v-list-item-title>tutorial</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </v-col>
             </v-row>
         </v-col>
     </v-row>
@@ -328,6 +343,11 @@
         </v-progress-circular>
         <div id="editor" style="height: 100%; width: 100%;"
             v-bind:style="{visibility: graphLoading?'hidden':'visible'}">
+            <div style="position: absolute; height: 100%; width: 100%;">
+                <div ref="shepherd-graphNode"
+                    :style="{position: 'relative', height: boundingBox.h +'px', width: boundingBox.w +'px', left: boundingBox.x1 +'px', top: boundingBox.y1 +'px'}">
+                </div>
+            </div>
         </div>
     </v-row>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
@@ -335,14 +355,14 @@
     </v-bottom-sheet>
 
     <v-card>
-        <v-bottom-sheet v-model="tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay
+        <v-bottom-sheet v-model="tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay eager
             no-click-animation>
             <template v-slot:activator="{ on, attrs }">
                 <v-bottom-sheet :value="!tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay
                     no-click-animation>
                     <v-sheet>
                         <v-btn :ripple="false" color="success" plain block @click="tripleBottomSheet = true"
-                            elevation="2">
+                            ref="shepherd-openTripleFormBtn" elevation="2">
                             open triple form
                             <v-icon right>
                                 menu_open
@@ -362,7 +382,7 @@
                                 </v-icon>
                             </v-btn>
                         </v-row>
-                        <v-row>
+                        <v-row ref="shepherd-openTripleFormField">
                             <v-col>
                                 <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
                                     persistent-hint @focus="nodeFieldFocus('head')" @input="nodeFieldChange"
@@ -405,36 +425,38 @@
                                 </v-combobox>
                             </v-col>
                         </v-row>
-                        <v-row v-if="diffMode">
-                            <v-btn color="success" @click="createTriple(true)"
-                                :disabled="!canLinkEdge || !canUpdateEdge">
-                                associate
-                            </v-btn>
-                            <v-btn color="indigo lighten-2" @click="createTriple(false)"
-                                :disabled="!canUnlinkEdge || !canUpdateEdge">
-                                dissociate
-                            </v-btn>
-                            <v-tooltip top v-if="canDeleteEdge">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on"
-                                        @click="tripledelete()" :disabled="!canDeleteEdge || !canUpdateEdge">
-                                        defer decision
-                                    </v-btn>
-                                </template>
-                                <span>
-                                    Let others decide whether these concept should be linked or not
-                                </span>
-                            </v-tooltip>
-                        </v-row>
-                        <v-row v-else>
-                            <v-btn color="success" @click="smartLink()"
-                                :disabled="!canNontrivalLinkEdge || !canUpdateEdge">
-                                link
-                            </v-btn>
-                            <v-btn style=" margin-left: auto; margin-right: 0;" color="indigo lighten-2"
-                                @click="smartUnlink()" :disabled="!canNontrivalRemoveEdge || !canUpdateEdge">
-                                unlink
-                            </v-btn>
+                        <v-row ref="shepherd-openTripleFormLinkBtn">
+                            <div v-if="diffMode">
+                                <v-btn color="success" @click="createTriple(true)"
+                                    :disabled="!canLinkEdge || !canUpdateEdge">
+                                    associate
+                                </v-btn>
+                                <v-btn color="indigo lighten-2" @click="createTriple(false)"
+                                    :disabled="!canUnlinkEdge || !canUpdateEdge">
+                                    dissociate
+                                </v-btn>
+                                <v-tooltip top v-if="canDeleteEdge">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on"
+                                            @click="tripledelete()" :disabled="!canDeleteEdge || !canUpdateEdge">
+                                            defer decision
+                                        </v-btn>
+                                    </template>
+                                    <span>
+                                        Let others decide whether these concept should be linked or not
+                                    </span>
+                                </v-tooltip>
+                            </div>
+                            <div v-else>
+                                <v-btn color="success" @click="smartLink()"
+                                    :disabled="!canNontrivalLinkEdge || !canUpdateEdge">
+                                    link
+                                </v-btn>
+                                <v-btn style=" margin-left: auto; margin-right: 0;" color="indigo lighten-2"
+                                    @click="smartUnlink()" :disabled="!canNontrivalRemoveEdge || !canUpdateEdge">
+                                    unlink
+                                </v-btn>
+                            </div>
                         </v-row>
                     </v-container>
                 </v-form>
@@ -786,6 +808,9 @@
     }
     Vue.component('app-content', {
         data: () => ({
+            boundingBox: {
+                w: 0, h: 0, x1: 0, y1: 0
+            },
             commitExposeDialogue: false,
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
@@ -1612,6 +1637,88 @@
             },
             reloadCoursePlan(activity) {
                 this.$refs.iframe.contentWindow.postMessage(activity, '*')
+            },
+            tutorial() {
+                let node = cy.nodes()[0]
+                this.boundingBox = node.renderedBoundingBox()
+                this._tour = this.$shepherd({
+                    useModalOverlay: true,
+                    defaultStepOptions: {
+                        classes: 'shadow-md bg-purple-dark',
+                        scrollTo: true,
+                        cancelIcon: {
+                            enabled: true
+                        },
+                        canClickTarget: false,
+                        buttons: [
+                            {
+                                text: 'Next',
+                                action: () => this._tour.next()
+                            }
+                        ],
+                    }
+                })
+                if (this.$refs["shepherd-openTripleFormBtn"] && this.tripleBottomSheet == false) {
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["shepherd-openTripleFormBtn"].$el, on: 'top' },
+                        text: 'Step 1:  Click to manipulate triples',
+                    })
+                }
+                if (this.$refs["shepherd-openTripleFormField"]) {
+                    let text = this.tripleBottomSheet == true?'Triple form is already opened<br>':''
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["shepherd-openTripleFormField"], on: 'top' },
+                        text: text + 'Step 2:  Choose corresponding head and tail entity',
+                        beforeShowPromise: () =>
+                            new Promise((resolve, reject) => {
+                                this.$refs["shepherd-openTripleFormBtn"].$el.dispatchEvent(new MouseEvent("click"))
+                                setTimeout(() => {
+                                    resolve();
+                                }, 200);
+                            }),
+                    })
+                }
+                if (this.$refs["shepherd-openTripleFormLinkBtn"]) {
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["shepherd-openTripleFormLinkBtn"], on: 'top' },
+                        text: 'Step 3: Link to form a triple, Unlink to break a triple',
+                    })
+                }
+                if (this.$refs["shepherd-graphNode"]) {
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["shepherd-graphNode"], on: 'bottom' },
+                        text: 'For editing concept information<br>Step 1: Click the corresponding node',
+                    })
+                }
+                console.log(this.$refs["entityForm"].$refs)
+                if (this.$refs["entityForm"].$refs["activityControl"]) {
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["entityForm"].$refs["activityControl"].$el, on: 'bottom' },
+                        text: 'Step 2: Click to change arrangements',
+                        beforeShowPromise: () =>
+                            new Promise((resolve, reject) => {
+                                node.emit('tap')
+                                setTimeout(() => {
+                                    resolve();
+                                }, 100);
+                            }),
+                    })
+                }
+                if (this.$refs["entityForm"].$refs["shepherd-materialFormOpenBtn"]) {
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["entityForm"].$refs["shepherd-materialFormOpenBtn"].$el, on: 'bottom' },
+                        text: 'Step 3: Click to add materals\' link',
+                    })
+                }
+                if (this.$refs["shepherd-coursePlan"]) {
+                    this._tour.addStep({
+                        attachTo: { element: this.$refs["shepherd-coursePlan"].$el, on: 'bottom' },
+                        text: 'Click to open the course plan',
+                    })
+                }
+
+
+                this._tour.start();
             },
         },
         mounted: function () {
