@@ -47,3 +47,70 @@ class graphDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def set_isExposed(self, deltaGraphId, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["graph"].items()
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def unset_isExposed(self, deltaGraphId, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["graph"].items()
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def get_course_instructor_graph(self, courseCode, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode, userId=userId)
+            try:
+                graphs = [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["graph"].items()
+                    }
+                    for record in result
+                ]
+                return graphs[0] if len(graphs) > 0 else None
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

@@ -66,6 +66,37 @@ class tripleDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def set_workspace_exclusive_head_triple(
+        self, deltaGraphId, userId, h_name, r_name, t_name, r_value
+    ):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                deltaGraphId=deltaGraphId,
+                userId=userId,
+                h_name=h_name,
+                r_name=r_name,
+                t_name=t_name,
+                r_value=r_value,
+            )
+            try:
+                row = [record for record in result][0]
+                return {
+                    "h_name": row["h.name"],
+                    "r_name": row["exclusive_r.name"],
+                    "t_name": row["t.name"],
+                    "r_value": row["exclusive_r.value"],
+                }
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+
     def remove_workspace_triple(self, deltaGraphId, userId, h_name, r_name, t_name):
         fname = sys._getframe().f_code.co_name
 

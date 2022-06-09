@@ -31,7 +31,7 @@ UNION
     WHERE NOT id(r) IN reachable_id
     WITH h, t, r.name as r_name, workspace    
     MERGE (h) -[r:DELTA_GRAPH_RELATIONSHIP{name: r_name, deltaGraphId: workspace.deltaGraphId}]-> (t)
-    SET
+    ON CREATE SET
         r.creationDate = datetime.transaction(),
         r.value = false
     RETURN h.name AS h_name, r.name AS r_name, t.name AS t_name, r.value as r_value

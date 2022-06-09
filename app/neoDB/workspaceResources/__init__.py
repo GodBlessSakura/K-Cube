@@ -114,6 +114,9 @@ class workspaceDAO:
                         for key, value in record["workspace"].items()
                     }.items()
                     | record["course"].items()
+                    | {
+                        "isExposed": record["isExposed"],
+                    }.items(),
                 )
                 for record in result
             ][0]

@@ -20,24 +20,28 @@ def query():
 def getCourse(courseCode, userId):
     if courseCode is not None:
         course = get_api_driver().course.get_course(courseCode=courseCode)
-        if request.args.get("editing"):
-            result = get_api_driver().triple.get_course_editing_triple(
-                courseCode=courseCode, userId=g.user["userId"]
-            )
-            return jsonify({"success": True, "triples": result, "course": course})
+        # if request.args.get("editing"):
+        #     result = get_api_driver().triple.get_course_editing_triple(
+        #         courseCode=courseCode, userId=g.user["userId"]
+        #     )
+        #     return jsonify({"success": True, "triples": result, "course": course})
         if userId is None:
             result = get_api_driver().triple.get_course_triple(courseCode=courseCode)
             return jsonify({"success": True, "triples": result, "course": course})
         else:
+            graph = get_api_driver().graph.get_course_instructor_graph(
+                courseCode=courseCode, userId=userId
+            )
             result = get_api_driver().triple.get_course_instructor_triple(
                 courseCode=courseCode, userId=userId
             )
-            return jsonify({"success": True, "triples": result, "course": course})
-
+            return jsonify(
+                {"success": True, "triples": result, "course": course, "graph": graph}
+            )
 
     return jsonify({"success": False, "message": "incomplete request"})
 
-
+@triple.put("/", defaults={"deltaGraphId": None})
 @triple.put("<deltaGraphId>")
 @authorize_RESTful_with(["canWriteTeachingCourseBranch"])
 def put(deltaGraphId):
@@ -48,14 +52,24 @@ def put(deltaGraphId):
         and "r_value" in request.json
     ):
         try:
-            result = get_api_driver().triple.set_workspace_triple(
-                deltaGraphId=deltaGraphId,
-                userId=g.user["userId"],
-                h_name=request.json["h_name"],
-                r_name=request.json["r_name"],
-                t_name=request.json["t_name"],
-                r_value=request.json["r_value"],
-            )
+            if "exclusive_head" in request.json and request.json["exclusive_head"]:
+                result = get_api_driver().triple.set_workspace_exclusive_head_triple(
+                    deltaGraphId=deltaGraphId,
+                    userId=g.user["userId"],
+                    h_name=request.json["h_name"],
+                    r_name=request.json["r_name"],
+                    t_name=request.json["t_name"],
+                    r_value=request.json["r_value"],
+                )
+            else:    
+                result = get_api_driver().triple.set_workspace_triple(
+                    deltaGraphId=deltaGraphId,
+                    userId=g.user["userId"],
+                    h_name=request.json["h_name"],
+                    r_name=request.json["r_name"],
+                    t_name=request.json["t_name"],
+                    r_value=request.json["r_value"],
+                )
             return jsonify({"success": True, "triple": result})
         except Exception as e:
             raise e
@@ -81,20 +95,17 @@ def delete(deltaGraphId):
             return jsonify({"success": True, "triple": result})
         except Exception as e:
             raise e
+    if "unreachable" in request.json and request.json["unreachable"]:
+        try:
+            result = get_api_driver().triple.remove_unreachable_triple(
+                deltaGraphId=deltaGraphId,
+                userId=g.user["userId"],
+            )
+            return jsonify({"success": True, "triples": result})
+        except Exception as e:
+            raise e
+
     return jsonify({"success": False, "message": "incomplete request"})
-
-
-@triple.delete("<deltaGraphId>/unreachable")
-@authorize_RESTful_with(["canWriteTeachingCourseBranch"])
-def deleteUnreachable(deltaGraphId):
-    try:
-        result = get_api_driver().triple.remove_unreachable_triple(
-            deltaGraphId=deltaGraphId,
-            userId=g.user["userId"],
-        )
-        return jsonify({"success": True, "triples": result})
-    except Exception as e:
-        raise e
 
 
 def aggregatedTriple():

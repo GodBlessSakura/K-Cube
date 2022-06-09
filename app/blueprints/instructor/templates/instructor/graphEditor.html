@@ -43,31 +43,57 @@
                         </v-tooltip>
                     </v-list-item>
                 </v-col>
+                <v-divider vertical dense></v-divider>
                 <v-col cols="auto">
-                    <v-tooltip :disabled="subject?.isExposed && activePositiveEdgeCount + activeNegativeEdgeCount == 0"
-                        bottom>
+                    <v-tooltip :disabled="workspace?.isExposed" bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-list-item v-bind="attrs" v-on="on" ref="shepherd-coursePlan"
                                 @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
-                                <v-list-item-subtitle>Course plan
+                                <v-list-item-subtitle>${subject?.courseCode} course plan
                                 </v-list-item-subtitle>
                                 <v-list-item-icon>
                                     <v-icon>open_in_new</v-icon>
-                                    <v-icon
-                                        v-if="!subject?.isExposed || activePositiveEdgeCount + activeNegativeEdgeCount > 0">
+                                    <v-icon v-if="!workspace?.isExposed">
                                         error_outline</v-icon>
                                 </v-list-item-icon>
                             </v-list-item>
                         </template>
-                        <span style="font-size: small;" v-if="!subject?.isExposed">
+                        <span style="font-size: small;">
                             Course plan only reflects contents on exposed graph.<br>
-                            The workspace is not editing the exposed graph.<br>
-                            You may expose the graph through "patch => publish patch"<br>.
+                            The workspace is not exposed.<br>
                         </span>
-                        <span style="font-size: small;" v-else-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                            Uncommitted changes are NOT reflected on course plan.<br>
-                            You may commit and expose to include these changes in<br>
-                            the course plan.
+                    </v-tooltip>
+                </v-col>
+                <v-col cols="auto">
+                    <v-tooltip color="warning" :value="workspace?.isExposed && ! subject?.isTeaching" bottom>
+                        <template v-slot:activator="{ on }">
+                            <v-list-item @click="toggleJoin()">
+                                <v-list-item-title>${subject?.isTeaching?'on-duty':'off-duty'}</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()">
+                                    </v-simple-checkbox>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size:small"> An exposed graph is not shown to student,<br> if instructor
+                            is off-duty.</span>
+                    </v-tooltip>
+                </v-col>
+                <v-divider vertical></v-divider>
+                <v-col cols="auto">
+                    <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
+                        <template v-slot:activator="{ on }">
+                            <v-list-item @click="toggleExposure(workspace)">
+                                <v-list-item-title>exposed</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-simple-checkbox :value="workspace?.isExposed" @click="toggleExposure(workspace)">
+                                    </v-simple-checkbox>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </template>
+                        <span style="font-size:small">
+                            Course plan only reflects contents on exposed graph.<br>
+                            The workspace is not exposed.<br>
                         </span>
                     </v-tooltip>
                 </v-col>
@@ -105,19 +131,13 @@
                 <v-col cols="auto" dense>
                     <v-menu offset-y>
                         <template v-slot:activator="{ on, attrs }">
-                            <v-tooltip color="warning" :value="subject?.isExposed && ! subject?.isTeaching" bottom>
-                                <template v-slot:activator="{ _ }">
-                                    <v-btn id="patchMenu" small tile outlined elevation="0"
-                                        style="text-transform: none;" v-bind="attrs" v-on="on" tile>
-                                        patch
-                                        <v-icon v-if="!subject?.isPatchLeaf">
-                                            sync
-                                        </v-icon>
-                                    </v-btn>
-                                </template>
-                                <span style="font-size:small"> You haven't join the course<br>(You may join in
-                                    "publish patch")</span>
-                            </v-tooltip>
+                            <v-btn id="patchMenu" small tile outlined elevation="0" style="text-transform: none;"
+                                v-bind="attrs" v-on="on" tile>
+                                patch
+                                <v-icon v-if="!subject?.isPatchLeaf">
+                                    sync
+                                </v-icon>
+                            </v-btn>
                         </template>
                         <v-list>
                             <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>
@@ -189,37 +209,6 @@
                                     </v-list-item>
                                 </template>
                                 <v-list>
-                                    <v-list-item dense>
-                                        <v-list-item-subtitle>expose patch</v-list-item-subtitle>
-                                    </v-list-item>
-                                    <v-tooltip bottom>
-                                        <template v-slot:activator="{ on, attrs }">
-                                            <span v-bind="attrs" v-on="on">
-                                                <v-list-item dense @click="toggleExposure()">
-                                                    <v-list-item-title>exposed</v-list-item-title>
-                                                    <v-list-item-icon>
-                                                        <v-simple-checkbox :value="subject?.isExposed"
-                                                            @click="toggleExposure()">
-                                                        </v-simple-checkbox>
-                                                    </v-list-item-icon>
-                                                </v-list-item>
-                                                <v-list-item dense @click="toggleJoin()">
-                                                    <v-list-item-title>joined</v-list-item-title>
-                                                    <v-list-item-icon>
-                                                        <v-simple-checkbox :value="subject?.isTeaching"
-                                                            @click="toggleJoin()">
-                                                        </v-simple-checkbox>
-                                                    </v-list-item-icon>
-                                                </v-list-item>
-                                            </span>
-                                        </template>
-                                        <span style="font-size: small;">
-                                            An exposed graph is not shown to student,<br> if instructor do not join
-                                            the
-                                            couse.<br>
-                                        </span>
-                                    </v-tooltip>
-                                    <v-divider></v-divider>
                                     <v-list-item dense>
                                         <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
                                     </v-list-item>
@@ -671,7 +660,7 @@
         </kcube-entity-form>
     </v-dialog>
     <v-dialog v-model="coursePlanDialogue" content-class="coursePlanPage" transition="slide-x-reverse-transition"
-        hide-overlay no-click-animation persistent :retain-focus="false">
+        hide-overlay no-click-animation persistent :retain-focus="false" eager>
         <v-card style="height: 100%; width:100%">
             <v-btn block color="error" plain @click="coursePlanDialogue = false" small elevation="2">
                 dismiss
@@ -926,11 +915,12 @@
                                 }
                             })
                             this.rootName = body.workspace.name
-                            let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
-                                .rootName +
-                                '"]')
+                            // let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
+                            //     .rootName +
+                            //     '"]')
                             this.redoLayout()
                             this.edgeStatistic()
+
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting draft information.')
@@ -987,7 +977,7 @@
 
                         }
                     })
-                Promise.all([workspacePromise, relationshipPromise, entityPromise]).then(_ => {
+                return Promise.all([workspacePromise, relationshipPromise, entityPromise]).then(_ => {
                     this.$root.progress.show = false
                 })
             },
@@ -1088,9 +1078,9 @@
                                     cy.add(workspaceEdgeFactory(triple))
                                 }
                                 cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
-                                let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
-                                    .rootName +
-                                    '"]')
+                                // let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
+                                //     .rootName +
+                                //     '"]')
                                 if (newNodes.length != 0 && oldNodes.length != 0) {
                                     newNodes.forEach(node => {
                                         node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
@@ -1237,12 +1227,15 @@
                     return
                 }
                 this.$root.progress.show = true
-                fetch("{{ url_for('RESTful.triple.deleteUnreachable', deltaGraphId=deltaGraphId) }}", {
+                fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
                     method: 'DELETE',
                     cache: 'no-store',
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    body: JSON.stringify({
+                        unreachable: true,
+                    })
                 })
                     .then(response => {
                         try {
@@ -1418,21 +1411,21 @@
             showCommitExposeDialogue() {
                 this.commitExposeDialogue = true
             },
-            toggleExposure() {
-                this.$root.actionDisplay("You are " + (this.subject.isExposed ? "hiding" : "exposing") + " patch " + this.subject.tag, "sure", () => {
+            toggleExposure(graph) {
+                this.$root.actionDisplay("You are " + (graph.isExposed ? "hiding" : "exposing") + " workspace " + graph.tag, "sure", () => {
                     if (this.$root.progress.show == true) {
                         this.$root.bePatientSnackBar.show = true
                         return
                     }
                     this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
+                    fetch("{{ url_for('RESTful.graph.patch') }}" + graph.deltaGraphId, {
                         method: 'PATCH',
                         cache: 'no-store',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify({
-                            isExposed: !this.subject.isExposed,
+                            isExposed: !graph.isExposed,
                         })
                     })
                         .then(response => {
@@ -1444,7 +1437,8 @@
                                 'update failed for unknown reason.',
                                 () => {
                                     this.$root.actionSnackBar.show = false
-                                    this.subject.isExposed = !this.subject.isExposed
+                                    graph.isExposed = !graph.isExposed
+                                    this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-exposureToggle', payload: this.workspace }, '*')
                                 })
                         })
                 })
@@ -1636,7 +1630,7 @@
                 })
             },
             reloadCoursePlan(activity) {
-                this.$refs.iframe.contentWindow.postMessage(activity, '*')
+                this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-activity', payload: activity }, '*')
             },
             tutorial() {
                 let node = cy.nodes()[0]
@@ -1665,7 +1659,7 @@
                     })
                 }
                 if (this.$refs["shepherd-openTripleFormField"]) {
-                    let text = this.tripleBottomSheet == true?'Triple form is already opened<br>':''
+                    let text = this.tripleBottomSheet == true ? 'Triple form is already opened<br>' : ''
                     this._tour.addStep({
                         attachTo: { element: this.$refs["shepherd-openTripleFormField"], on: 'top' },
                         text: text + 'Step 2:  Choose corresponding head and tail entity',
@@ -1729,13 +1723,84 @@
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]
             })
             self = this
+            let loadDataPromise = this.loadData()
             window.addEventListener('message', (event) => {
-                if (event.data.method == "update") {
-                    this.$refs.entityForm.updateEntity(event.data.entity)
+                console.log(event.data)
+                if (event.data.message == "update-entity") {
+                    this.$refs.entityForm.updateEntity(event.data.payload)
                 }
-                else if (event.data.method == "open") {
-                    this.$refs.entityForm.loadData(event.data.entity.name)
+                else if (event.data.message == "open-entity") {
+                    this.$refs.entityForm.loadData(event.data.payload.name)
                     this.entityDialogue = true
+                }
+                else if (event.data.message == "coursePlan-mount") {
+                    loadDataPromise.then((_) => {
+                        this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-workspace', payload: this.workspace }, '*')
+                    })
+                }
+                else if (event.data.message == "coursePlan-exclusiveHeadTriple") {
+                    let triple = event.data.payload
+                    let newNodes = cy.collection();
+                    let oldNodes = cy.collection();
+                    let removed_edge = cy.edges('[workspace_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
+                    removed_edge.data({
+                        workspace_value: "undefined"
+                    })
+                    let false_edge = cy.edges('[workspace_value = "undefined"][subject_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
+                    false_edge.data({
+                        workspace_value: "false"
+                    })
+                    cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
+                        .remove()
+                    cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
+                        "tempory");
+                    [triple.h_name, triple.t_name].forEach(
+                        name => {
+                            let eles = cy.getElementById(name)
+                            if (eles.length == 0) {
+                                newNodes = newNodes.union(cy.add(nodeFactory(name)))
+                            }
+                            else {
+                                oldNodes = oldNodes.union(eles)
+                            }
+                            if (!this.concepts.includes(name)) this.concepts.push(name)
+                        })
+                    let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                        triple.t_name))[0]
+
+                    if (edge) {
+                        edge.data({
+                            workspace_value: triple.r_value ? 'true' : 'false'
+                        })
+                    } else {
+                        cy.add(workspaceEdgeFactory(triple))
+                    }
+                    cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
+                    if (newNodes.length != 0 && oldNodes.length != 0) {
+                        newNodes.forEach(node => {
+                            node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
+                        })
+                    }
+
+                    if (!this.isPhysicsRunning) {
+                        cy.nodes().lock()
+                        newNodes.unlock()
+                        let initOption = { ...colaLayoutOptions }
+                        initOption.maxSimulationTime = 2000
+                        initOption.infinite = false
+                        initOption.refresh = 1000
+                        initOption.convergenceThreshold = 0
+                        cyLayout = cy.layout(initOption)
+                        cyLayout.one('layoutstop', () => {
+                            cy.nodes().unlock()
+                        })
+                        cyLayout.run()
+                    } else {
+                        this.physics(this.isPhysicsRunning)
+                    }
+                    this.edgeStatistic()
+                    this.determineTripleOptions()
+
                 }
             })
             cy.on('tap', 'node', (event) => {
@@ -1849,7 +1914,6 @@
             let isPhysicsRunning = localStorage.getItem("{{deltaGraphId}}_isPhysicsRunning")
             if (isPhysicsRunning != null)
                 this.isPhysicsRunning = isPhysicsRunning === 'true'
-            this.loadData()
         },
         template: '#content',
         delimiters: ['${', '}'],

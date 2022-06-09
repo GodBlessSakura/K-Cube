@@ -96,7 +96,7 @@ def patch(deltaGraphId):
                 return jsonify(
                     {
                         "success": True,
-                        "branch": get_api_driver().branch.set_isExposed(
+                        "branch": get_api_driver().graph.set_isExposed(
                             deltaGraphId=deltaGraphId,
                             userId=g.user["userId"],
                         ),
@@ -106,7 +106,7 @@ def patch(deltaGraphId):
                 return jsonify(
                     {
                         "success": True,
-                        "branch": get_api_driver().branch.unset_isExposed(
+                        "branch": get_api_driver().graph.unset_isExposed(
                             deltaGraphId=deltaGraphId,
                             userId=g.user["userId"],
                         ),

@@ -66,3 +66,30 @@ def get(deltaGraphId):
             ),
         }
     )
+
+@graph.patch("/", defaults={"deltaGraphId": None})
+@graph.patch("/<deltaGraphId>")
+def patch(deltaGraphId):
+    if deltaGraphId is not None:
+        if "isExposed" in request.json:
+            if request.json["isExposed"]:
+                return jsonify(
+                    {
+                        "success": True,
+                        "graph": get_api_driver().graph.set_isExposed(
+                            deltaGraphId=deltaGraphId,
+                            userId=g.user["userId"],
+                        ),
+                    }
+                )
+            else:
+                return jsonify(
+                    {
+                        "success": True,
+                        "graph": get_api_driver().graph.unset_isExposed(
+                            deltaGraphId=deltaGraphId,
+                            userId=g.user["userId"],
+                        ),
+                    }
+                )
+    return jsonify({"success": False, "message": "incomplete request"})
