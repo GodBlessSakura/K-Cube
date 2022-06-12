@@ -12,7 +12,7 @@ UNION
     MATCH (course)<-[:BRANCH_DESCRIBE{userId: user.userId}]-(workspace:Workspace)-[oldWork:WORK_ON]->(subject)
     WITH DISTINCT workspace, subject
     MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(wt:GraphConcept)
-    WITH wr, wh, wt, subject
+    WITH wr, wh, wt, subject, workspace
     CALL{
         WITH wr, wh, wt, subject
         OPTIONAL MATCH (wh)-[sr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: subject.deltaGraphId}]->(wt)
@@ -24,6 +24,7 @@ UNION
                 ELSE sr
                 END as sr
         WHERE
+            wr.value <> false AND
             wr.value <> sr.value AND
             NOT (
                 wr.value = false AND 
@@ -31,9 +32,9 @@ UNION
                 )
         RETURN wh.name as h_name, wr.name as r_name, wt.name as t_name, wr.value as r_value
     UNION
-        WITH wr, subject
+        WITH workspace, subject
         MATCH (sh:GraphConcept)-[sr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: subject.deltaGraphId}]->(st:GraphConcept)
-        WHERE not EXISTS((sh)-[wr]->(st))
+        WHERE not EXISTS((sh)-[:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(st)) 
         RETURN sh.name as h_name, sr.name as r_name, st.name as t_name, sr.value as r_value
     }
     RETURN h_name, r_name, t_name, r_value

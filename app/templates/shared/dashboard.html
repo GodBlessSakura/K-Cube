@@ -69,7 +69,7 @@
         background: grey !important;
     }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/vue-grid-layout@2.3.12/dist/vue-grid-layout.umd.min.js"></script>
+{{ layout.vueGridLayout()}}
 <script>
     var layoutName = "{{request.blueprint}}" + '-dashboard-layout'
     Vue.component('app-content', {

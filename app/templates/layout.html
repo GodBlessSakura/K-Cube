@@ -587,6 +587,7 @@
         KCube_initialize()
         Vue.use(Vuetify)
         Vue.use(VueShepherd)
+        Vue.prototype.$bus = new Vue();
     </script>
     <script type="text/x-template" id="content">
         {% block VueComponent %} {% endblock %}
@@ -968,6 +969,10 @@
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/cytoscape-cola@2.5.1/cytoscape-cola.js">
     </script>
     {% endmacro %}
+    {% macro vueGridLayout() %}
+    <script src="https://cdn.jsdelivr.net/npm/vue-grid-layout@2.3.12/dist/vue-grid-layout.umd.min.js"></script>
+    {% endmacro %}
+
     {% block body %}{% endblock %}
 
 </body>
