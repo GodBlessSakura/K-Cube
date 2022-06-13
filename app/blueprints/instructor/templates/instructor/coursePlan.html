@@ -42,8 +42,8 @@
 
             </v-col>
             <v-col cols="auto">
-                <kcube-schedule-item root v-if="tree" :node="tree" @showDetails="showDetails($event[0],$event[1])"
-                    @change="changes += $event">
+                <kcube-schedule-item ref="root" root v-if="tree" :node="tree"
+                    @showDetails="showDetails($event[0],$event[1])" @change="changes += $event">
                 </kcube-schedule-item>
             </v-col>
             <v-col>
@@ -71,28 +71,53 @@
 
 {% block VueComponentScript %}
 <script type="text/x-template" id="kcube-schedule-item">
-<v-card style="float:left" @dragstart.self="dragging=true" @dragend.self="dragging=false" :data-name="node.name"
-    :data-desc="node.desc" @dragleave="showAction = false;collapseWeeks($event)"
-    @contextmenu.stop="$emit('showDetails',[$event,node])">
-    <v-list-item v-if="!root" v-show="!showAction"  @dragover="showAction = dragging?false:true">
+<v-card st v-ripple="{ class: 'primary--text' }" style="float:left; margin:5px" @dragstart.self="dragging=true"
+    @dragend.self="dragging=false" :data-name="node.name" :data-desc="node.desc" @mouseover="hovering = true"
+    @mouseleave="hovering = false" @contextmenu.stop="$emit('showDetails',[$event,node])"
+    v-bind:id="'entity:'+node.name">
+    <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging?false:true">
         <v-icon small class="handle">drag_indicator</v-icon>
         <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
             @change="patchEntity(node)"></v-text-field>
+        <v-list-item-action style="margin: unset" v-show="hovering && !dragging">
+            <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
+                <v-icon x-small>arrow_drop_up</v-icon>
+            </v-btn>
+            <v-btn icon x-small @click="climb(1)" v-show="node.week < weekInSemester">
+                <v-icon x-small>arrow_drop_down</v-icon>
+            </v-btn>
+        </v-list-item-action>
     </v-list-item>
-    <v-list-item v-if="!root" v-show="showAction" @dragover="expandWeeks($event)" >
-        <v-icon small>add</v-icon>
-        <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc" disabled
-            @change="patchEntity(node)"></v-text-field>
+    <v-list-item v-if="!root" v-show="showAction" @dragleave="showAction=false">
+        <v-row no-gutters>
+            <v-col>
+                <v-icon small>add</v-icon>
+            </v-col>
+            <v-col>
+                <draggable v-model="node.schedule[node.week]" :key="keys[node.week]"
+                    :group="{name:'schedule', put: true}" handle=".handle" @add="add($event, node.week)"
+                    @change="render($event); showAction=false"
+                    style="height: 100%; background: content-box grey; overflow: hidden; width: 186px" animation="200" @dragover="showAction = dragging?false:true"
+                    swapThreshold="0.6">
+                    <kcube-schedule-item ref="children" v-for="child of node.schedule[node.week]" :node="child"
+                        :key="child.name" @showDetails="$emit('showDetails',$event)" @change="$emit('change',$event)">
+                    </kcube-schedule-item>
+                </draggable>
+            </v-col>
+        </v-row>
     </v-list-item>
-    <v-row v-for="week in weeks" v-show="!dragging">
-        <v-col cols="auto">
-            <v-list-item style="padding:unset" dense>week ${week + 1} </v-list-item>
+    <v-row v-for="week in weeks" v-if="!root || node.schedule[week].length > 0" v-show="!dragging" no-gutters>
+        <v-col v-if="!root || node.schedule[week].filter(child=> child.children.length == 0).length > 0" cols="auto">
+            <v-list-item style="padding:unset" dense>week ${week} </v-list-item>
         </v-col>
         <v-col>
-            <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:'schedule', put: true}" handle=".handle" @add="add($event, week)" @change="render($event)"
-                @remove="remove($event, week)" :style="draggableStyle" animation="200" swapThreshold="0.6">
-                    <kcube-schedule-item v-for="child of node.schedule[week]" :node="child"  :key="child.name"@showDetails="$emit('showDetails',$event)" @change="$emit('change',$event)" >
-                    </kcube-schedule-item>
+            <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:'schedule', put: true}"
+                handle=".handle" @add="add($event, week)" @change="render($event)" @dragover="showAction = dragging?false:true"
+                style="height: 100%; background: content-box grey; overflow: hidden" animation="200"
+                swapThreshold="0.6">
+                <kcube-schedule-item ref="children" v-for="child of node.schedule[week]" :node="child" :key="child.name"
+                    @showDetails="$emit('showDetails',$event)" @change="$emit('change',$event)">
+                </kcube-schedule-item>
             </draggable>
         </v-col>
     </v-row>
@@ -107,24 +132,17 @@
             },
             root: Boolean
         },
-        watch: {
-            node: function (newVal, oldVal) {
-                this.render()
-            }
-        },
-        computed: {
-            draggableStyle() {
-                return {
-                    height: '100%',
-                    background: 'content-box grey',
-                    overflow: 'hidden',
-                }
-            }
-        },
+        // watch: {
+        //     node: function (newVal, oldVal) {
+        //         this.render()
+        //     }
+        // },
         data: () => ({
             parentHovered: false,
             showAction: false,
             dragging: false,
+            hovering: false,
+            weekInSemester: weekInSemester,
             weeks: [],
             keys: {}
         }),
@@ -172,43 +190,6 @@
                             }
                         })
             },
-            remove(event, week) {
-                let entity = {
-                    name: event.item.dataset.name,
-                    desc: event.item.dataset.desc,
-                    week: week,
-                }
-            },
-            expandWeeks(event) {
-                if (this.weeks.length > 0) {
-                    if (this.node.schedule[this.weeks[0]].length > 0 && this.weeks[0] > 0) {
-                        this.weeks.unshift(this.weeks[0] - 1)
-                        this.node.schedule[this.weeks[0]] = []
-                    }
-                    if (this.node.schedule[this.weeks[this.weeks.length - 1]].length > 0 && this.weeks[this.weeks.length] < weekInSemester) {
-                        this.weeks.push(this.weeks[this.weeks.length - 1] + 1)
-                        this.node.schedule[this.weeks[this.weeks.length - 1]] = []
-                    }
-                }
-                else {
-                    this.weeks = [0, 1]
-                    this.weeks.forEach(week => this.node.schedule[week] = [])
-                }
-
-            },
-            collapseWeeks(event) {
-                for (let i = 0; i < this.weeks.length; i++) {
-                    if (this.node.schedule[this.weeks[i]].length > 0) break
-                    delete this.node.schedule[this.weeks[i]]
-                    this.weeks.shift()
-                }
-                for (let i = this.weeks.length - 1; i >= 0; i--) {
-                    if (this.node.schedule[this.weeks[i]].length > 0) break
-                    delete this.node.schedule[this.weeks[i]]
-                    this.weeks.pop()
-                }
-
-            },
             patchEntity(entity) {
                 this.$emit('change', 1)
                 fetch(
@@ -222,7 +203,7 @@
                     },
                     body: JSON.stringify({
                         desc: entity.desc,
-                        week: entity.week + 1
+                        week: entity.week
                     })
                 })
                     .then(response => {
@@ -243,9 +224,10 @@
                                     throw ''
                                 }
                             } catch (e) {
+                                let { _vue, parent, children, schedule, ...orphan } = entity
                                 window.parent.postMessage({
                                     message: 'update-entity',
-                                    payload: entity
+                                    payload: orphan
                                 }, '*')
                             }
                         } else {
@@ -256,27 +238,75 @@
 
             },
             render() {
+                console.log(this.node.name)
                 if (this.node.schedule) {
+                    this.weeks = []
                     let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length > 0).map(week => Number(week))
                     if (week.length > 0) {
                         let max = Math.max(...week)
                         let min = Math.min(...week)
                         this.weeks = [...Array(max - min + 1).keys()].map(week => week + min)
-
                     }
-                    for (const week in this.weeks) {
+                    this.keys = {}
+                    for (const week of this.weeks) {
+                        this.keys[week] = week + ';'
                         if (this.node.schedule[week] && this.node.schedule[week].length > 0) {
-                            this.keys[week] = this.node.schedule[week].map(node => node.name).join(';')
+                            this.keys[week] += this.node.schedule[week].map(node => node.name).join(';')
                         }
                         else {
-                            this.keys[week] = ';' + week
                             if (!(week in this.node.schedule)) this.node.schedule[week] = []
                         }
                     }
+                    if (!(this.node.week in this.node.schedule)) this.node.schedule[this.node.week] = []
                 }
-            }
+            },
+            climb(offset) {
+                let newWeek = this.node.week + offset
+                if (newWeek > 0 && newWeek <= weekInSemester) {
+                    let { _vue, parent, children, schedule, ...orphan } = this.node
+                    orphan.week = newWeek
+                    this.node.parent._vue.patchEntity(orphan)
+                    this.node.parent._vue.updateActivity(orphan)
+                }
+            },
+            updateActivity(activity) {
+                let foundChild = Object.keys(this.node.schedule).reduce((previous, current) => {
+                    return previous.concat(this.node.schedule[current])
+                }, []).find(child => child.name == activity.name)
+                if (foundChild) {
+                    let index = this.node.schedule[foundChild.week].findIndex(sibling => sibling.name == foundChild.name)
+                    let newWeek = Number(activity.week)
+                    this.node.schedule[foundChild.week].splice(index, 1)
+                    if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
+                    this.node.schedule[newWeek].push(foundChild)
+                    foundChild.desc = activity.desc
+                    foundChild.week = newWeek
+                    this.render()
+                    setTimeout(() => {
+                        let el = this.$refs.children.find(child => child.node.name == activity.name).$el
+                        el.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        })
+                        let ev = new Event("mousedown")
+                        let offset = el.getBoundingClientRect()
+                        ev.clientX = offset.left + offset.width / 2
+                        ev.clientY = offset.top + offset.height / 2
+                        el.dispatchEvent(ev)
+                        this.$nextTick(function () {
+                            el.dispatchEvent(new Event("mouseup"))
+                        })
+                    }, 500)
+                }
+                else {
+                    if (this.$refs.children)
+                        this.$refs.children.forEach(child => child.updateActivity(activity))
+                }
+            },
         },
         mounted: function () {
+            console.log("mount " + this.node.name)
+            this.node._vue = this
             this.render()
             this.$nextTick(() =>
                 this.node.children.filter(node => node.isAllocatingWeek).forEach(node => this.patchEntity(node)))
@@ -315,6 +345,10 @@
             preview: false,
             graph: null,
             workspace: null,
+            activityWeekRules: [v => !!v || 'week is required',
+            v => (v && v > 0 && v < 14) ||
+                'Week should be between 1 and 13',
+            ],
         }),
 
         methods: {
@@ -391,12 +425,18 @@
                         name: name,
                         desc: activity.length > 0 ? activity[0].desc : name,
                         week: activity.length > 0 ?
-                            (Number.isInteger(Number(activity[0].week)) ? Number(activity[0].week) - 1 : null) : null,
+                            (Number.isInteger(Number(activity[0].week)) ? Number(activity[0].week) : null) : null,
                         children: []
                     }
                     triples = triples.filter(triple => {
                         if (triple.t_name == name) {
                             node.children.push(triple.h_name)
+                            return false
+                        }
+                        return true
+                    })
+                    triples = triples.filter(triple => {
+                        if (node.children.includes(triple.h_name)) {
                             return false
                         }
                         return true
@@ -408,6 +448,7 @@
                     else {
                         node.children = node.children.map(child => traversal(child))
                         node.children = node.children.sort((childA, childB) => childB.numItem - childA.numItem)
+                        node.children.forEach(child => child.parent = node)
                         node.numUnassignedItem = node.children.map(child => child.numUnassignedItem).reduce((previous, current) => previous + current)
                         node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
 
@@ -419,7 +460,7 @@
                 function allocate(node, slot) {
                     if (node.week === null) {
                         node.isAllocatingWeek = true
-                        node.week = Math.min(Math.round(slot * weekInSemester), weekInSemester - 1)
+                        node.week = Math.min(Math.round(slot * weekInSemester) + 1, weekInSemester)
                         if (node.children.length == 0) {
                             slot = slot + 1 / totalItem
                         }
@@ -440,18 +481,9 @@
                     return slot
                 }
                 allocate(this.tree, 0)
-                function weekify(node) {
-                }
                 console.log(this.tree)
-                //this.plan = assign_timeslot(triples, activities, "{{courseCode}}")
-                this.preview = preview
-                if (preview) {
-
-                } else {
-                    this.submitTable()
-                }
             },
-            submitTable() {
+            submitTable() {// redo
                 this.preview = false
                 for (week in this.plan) {
                     for (index in this.plan[week]) {
@@ -465,12 +497,54 @@
                     }
                 }
             },
-
+            setActivity(event) {
+                if (this.$refs.activityControl.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    this.$root.customizedFetch(
+                        "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
+                        encodeURIComponent(
+                            this.details.name), {
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            desc: this.details.desc,
+                            week: this.details.week
+                        })
+                    }, () => { this.syned = false })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.activity) {
+                                body.activity.name = this.details.name
+                                this.$refs.root.updateActivity(body.activity)
+                            } else {
+                                throw new Error(body.message)
+                            }
+                        })
+                }
+            },
             showDetails(event, entity) {
                 event.preventDefault()
                 this.x = event.clientX
                 this.y = event.clientY
-                this.details = entity
+                let { _vue, parent, children, schedule, ...orphan } = entity
+                this.details = orphan
+                delete this.details._vue
                 this.$nextTick(() => {
                     this.showMenu = true
                 })
@@ -512,35 +586,7 @@
                     } = e.data
 
                     if (message == "graphEditor-activity") {
-                        for (week in this.plan) {
-                            for (index in this.plan[week]) {
-                                if (this.plan[week][index].name == payload.name) {
-                                    let entity = this.plan[week][index]
-                                    entity.desc = payload.desc
-                                    entity.week = payload.week
-                                    this.plan[week].splice(index, 1)
-                                    this.plan[entity.week].push(entity)
-                                    this.$nextTick(
-                                        () => {
-                                            let listEle = document.getElementById('entity:' +
-                                                payload.name)
-                                            listEle.scrollIntoView({
-                                                behavior: "smooth",
-                                                block: "center"
-                                            })
-                                            let ev = new Event("mousedown")
-                                            let offset = listEle.getBoundingClientRect()
-                                            ev.clientX = offset.left + offset.width / 2
-                                            ev.clientY = offset.top + offset.height / 2
-                                            listEle.dispatchEvent(ev)
-                                            this.$nextTick(function () {
-                                                listEle.dispatchEvent(new Event("mouseup"))
-                                            })
-                                        }
-                                    )
-                                }
-                            }
-                        }
+                        this.$refs.root.updateActivity(payload)
                     } else if (message == "graphEditor-workspace") {
                         this.workspace = payload
 

@@ -21,9 +21,6 @@
                     </v-text-field>
                 </v-col>
                 <v-col cols="auto">
-                    <v-checkbox v-model="activityIsMetaTopic" @change="setActivity" label="outline"></v-checkbox>
-                </v-col>
-                <v-col cols="auto">
                     <v-icon v-if="syned">sync</v-icon>
                     <v-icon v-else @click="setActivity">sync_problem</v-icon>
                 </v-col>
@@ -88,7 +85,6 @@
             syned: true,
             activityDesc: null,
             activityWeek: null,
-            activityIsMetaTopic: null,
             activityDescRules: [v => !!v || 'Description is required',
             v => (v && v.length > 1 && v.length < 99) ||
                 'Description should be anything between 1 and 99 charactors',
@@ -178,8 +174,7 @@
             },
             getActivity(activity) {
                 this.activityDesc = activity.desc
-                this.activityIsMetaTopic = activity.week % 1 != 0
-                this.activityWeek = this.activityIsMetaTopic ? Number(activity.week) + .5 : activity.week
+                this.activityWeek = activity.week
                 console.log(activity.week)
             },
             submitMaterial() {
@@ -264,7 +259,7 @@
                         },
                         body: JSON.stringify({
                             desc: this.activityDesc,
-                            week: this.activityIsMetaTopic ? this.activityWeek - .5 : this.activityWeek
+                            week: this.activityWeek
                         })
                     }, () => { this.syned = false })
                         .then(response => {
@@ -279,7 +274,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.activity) {
-                                this.$emit('activity-change', { name: this.name, desc: this.activityDesc, week: this.activityIsMetaTopic ? this.activityWeek - 0.5 : this.activityWeek })
+                                this.$emit('activity-change', { name: this.name, desc: this.activityDesc, week: this.activityWeek })
                             } else {
                                 throw new Error(body.message)
                             }
