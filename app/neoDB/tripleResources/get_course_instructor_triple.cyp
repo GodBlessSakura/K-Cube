@@ -25,7 +25,6 @@ UNION
                 END as sr
         WHERE
             wr.value <> false AND
-            wr.value <> sr.value AND
             NOT (
                 wr.value = false AND 
                 sr.value = 'null'

@@ -75,7 +75,7 @@
     @dragend.self="dragging=false" :data-name="node.name" :data-desc="node.desc" @mouseover="hovering = true"
     @mouseleave="hovering = false" @contextmenu.stop="$emit('showDetails',[$event,node])"
     v-bind:id="'entity:'+node.name">
-    <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging?false:true">
+    <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging || weeks.length>0?false:true">
         <v-icon small class="handle">drag_indicator</v-icon>
         <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
             @change="patchEntity(node)"></v-text-field>
@@ -107,7 +107,8 @@
         </v-row>
     </v-list-item>
     <v-row v-for="week in weeks" v-if="!root || node.schedule[week].length > 0" v-show="!dragging" no-gutters>
-        <v-col v-if="!root || node.schedule[week].filter(child=> child.children.length == 0).length > 0" cols="auto">
+        <!-- v-if="!root || node.schedule[week].filter(child=> child.children.length == 0).length > 0" -->
+        <v-col  cols="auto">
             <v-list-item style="padding:unset" dense>week ${week} </v-list-item>
         </v-col>
         <v-col>
@@ -238,7 +239,6 @@
 
             },
             render() {
-                console.log(this.node.name)
                 if (this.node.schedule) {
                     this.weeks = []
                     let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length > 0).map(week => Number(week))
@@ -305,7 +305,6 @@
             },
         },
         mounted: function () {
-            console.log("mount " + this.node.name)
             this.node._vue = this
             this.render()
             this.$nextTick(() =>
@@ -435,12 +434,12 @@
                         }
                         return true
                     })
-                    triples = triples.filter(triple => {
-                        if (node.children.includes(triple.h_name)) {
-                            return false
-                        }
-                        return true
-                    })
+                    // triples = triples.filter(triple => {
+                    //     if (node.children.includes(triple.h_name)) {
+                    //         return false
+                    //     }
+                    //     return true
+                    // })
                     node.numItem = 1
                     if (node.children.length == 0) {
                         node.numUnassignedItem = node.week != null ? 0 : 1
