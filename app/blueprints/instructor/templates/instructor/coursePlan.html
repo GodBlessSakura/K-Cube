@@ -20,8 +20,6 @@
             </v-col>
             <v-col>
                 <v-card-subtitle>
-                    ${changes?changes+' unsave changes':''}
-                    <v-icon v-if="changes">sync</v-icon>
                     ${details == null?'right-click on item for details' :''}
                 </v-card-subtitle>
             </v-col>
@@ -43,7 +41,7 @@
             </v-col>
             <v-col cols="auto">
                 <kcube-schedule-item ref="root" root v-if="tree" :node="tree"
-                    @showDetails="showDetails($event[0],$event[1])" @change="changes += $event">
+                    @showDetails="showDetails($event[0],$event[1])">
                 </kcube-schedule-item>
             </v-col>
             <v-col>
@@ -63,6 +61,9 @@
                 <v-btn text color="primary" v-if="inIframe" @click="postMessage('open-entity', details, '*')">
                     open entity editor
                 </v-btn>
+                <v-btn text color="primary" v-show="details?.notSync" @click="$refs.root.sync(details)">
+                    sync
+                </v-btn>
             </v-card-actions>
         </v-card>
     </v-menu>
@@ -70,59 +71,66 @@
 {% endblock %}
 
 {% block VueComponentScript %}
+{% macro kcubeScheduleItem() %}<v-badge overlap icon="sync_problem" :value="node.notSync && !root" color="error">
+    <v-card v-bind:id="'entity:'+node.name" st v-ripple="{ class: 'primary--text' }" style="float:left; margin:5px 8px"
+        @dragstart.self="dragging=true" :key="node.name" @dragend.self="dragging=false" @dragleave="showAction=false"
+        @contextmenu.stop="$emit('showDetails',[$event,node])">
+        <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging || weeks.length>0?false:true"
+            @mouseenter="hovering = true" @mouseleave="hovering = false">
+            <v-icon small class="handle">drag_indicator</v-icon>
+            <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
+                @change="patchEntity(node)"></v-text-field>
+            <v-list-item-action style="margin: unset" v-show="hovering && !dragging">
+                <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
+                    <v-icon x-small>arrow_drop_up</v-icon>
+                </v-btn>
+                <v-btn icon x-small @click="climb(1)" v-show="node.week < weekInSemester">
+                    <v-icon x-small>arrow_drop_down</v-icon>
+                </v-btn>
+            </v-list-item-action>
+        </v-list-item>
+        <v-list-item v-if="!root && weeks.length== 0 && node.schedule[node.week]?.length == 0" v-show="showAction"
+            @drop="showAction=false">
+            <v-row no-gutters>
+                <v-col style="align-items: center;display: flex;">
+                    <v-icon small>add</v-icon>
+                </v-col>
+                <v-col>
+                    <draggable v-model="node.schedule[node.week]" :key="keys[node.week]"
+                        :group="{name:'schedule', put: true}" handle=".handle" @add="add($event, node.week)"
+                        @change="render($event); showAction=false"
+                        style="height: 100%; background: content-box grey; width: 186px" animation="300"
+                        @dragover="showAction = dragging?false:true" swapThreshold="0.6">
+                    </draggable>
+                </v-col>
+                <v-col style="align-items: center;display: flex;">
+                    <v-icon small style="color:transparent">add</v-icon>
+                </v-col>
+            </v-row>
+        </v-list-item>
+        <div style="padding: 5px;" v-show="weeks.length>0">
+            <v-row v-for="week in weeks" v-show="(!root || node.schedule[week]?.length > 0) && !dragging" no-gutters>
+                <!-- v-if="!root || node.schedule[week].filter(child=> child.children.length == 0).length > 0" -->
+                <v-col cols="auto">
+                    <v-list-item style="padding:unset; width:50px" dense>week ${week} </v-list-item>
+                </v-col>
+                <v-col>
+                    <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:'schedule', put: true}"
+                        handle=".handle" @add="add($event, week)" @change="render($event)"
+                        @dragover="showAction = dragging?false:true" style="height: 100%; background: content-box grey"
+                        animation="300" swapThreshold="0.2">
+                        <kcube-schedule-item ref="children" v-for="child of node.schedule[week]" :node="child"
+                            @showDetails="$emit('showDetails',$event)">
+                        </kcube-schedule-item>
+                    </draggable>
+                </v-col>
+            </v-row>
+        </div>
+    </v-card>
+</v-badge>
+{% endmacro %}
 <script type="text/x-template" id="kcube-schedule-item">
-<v-card st v-ripple="{ class: 'primary--text' }" style="float:left; margin:5px" @dragstart.self="dragging=true"
-    @dragend.self="dragging=false" :data-name="node.name" :data-desc="node.desc" @mouseover="hovering = true"
-    @mouseleave="hovering = false" @contextmenu.stop="$emit('showDetails',[$event,node])"
-    v-bind:id="'entity:'+node.name">
-    <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging || weeks.length>0?false:true">
-        <v-icon small class="handle">drag_indicator</v-icon>
-        <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
-            @change="patchEntity(node)"></v-text-field>
-        <v-list-item-action style="margin: unset" v-show="hovering && !dragging">
-            <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
-                <v-icon x-small>arrow_drop_up</v-icon>
-            </v-btn>
-            <v-btn icon x-small @click="climb(1)" v-show="node.week < weekInSemester">
-                <v-icon x-small>arrow_drop_down</v-icon>
-            </v-btn>
-        </v-list-item-action>
-    </v-list-item>
-    <v-list-item v-if="!root" v-show="showAction" @dragleave="showAction=false">
-        <v-row no-gutters>
-            <v-col>
-                <v-icon small>add</v-icon>
-            </v-col>
-            <v-col>
-                <draggable v-model="node.schedule[node.week]" :key="keys[node.week]"
-                    :group="{name:'schedule', put: true}" handle=".handle" @add="add($event, node.week)"
-                    @change="render($event); showAction=false"
-                    style="height: 100%; background: content-box grey; overflow: hidden; width: 186px" animation="200" @dragover="showAction = dragging?false:true"
-                    swapThreshold="0.6">
-                    <kcube-schedule-item ref="children" v-for="child of node.schedule[node.week]" :node="child"
-                        :key="child.name" @showDetails="$emit('showDetails',$event)" @change="$emit('change',$event)">
-                    </kcube-schedule-item>
-                </draggable>
-            </v-col>
-        </v-row>
-    </v-list-item>
-    <v-row v-for="week in weeks" v-if="!root || node.schedule[week].length > 0" v-show="!dragging" no-gutters>
-        <!-- v-if="!root || node.schedule[week].filter(child=> child.children.length == 0).length > 0" -->
-        <v-col  cols="auto">
-            <v-list-item style="padding:unset" dense>week ${week} </v-list-item>
-        </v-col>
-        <v-col>
-            <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:'schedule', put: true}"
-                handle=".handle" @add="add($event, week)" @change="render($event)" @dragover="showAction = dragging?false:true"
-                style="height: 100%; background: content-box grey; overflow: hidden" animation="200"
-                swapThreshold="0.6">
-                <kcube-schedule-item ref="children" v-for="child of node.schedule[week]" :node="child" :key="child.name"
-                    @showDetails="$emit('showDetails',$event)" @change="$emit('change',$event)">
-                </kcube-schedule-item>
-            </draggable>
-        </v-col>
-    </v-row>
-</v-card>
+    {{ kcubeScheduleItem()}}
 </script>
 <script>
     Vue.component('kcube-schedule-item', {
@@ -133,11 +141,12 @@
             },
             root: Boolean
         },
-        // watch: {
-        //     node: function (newVal, oldVal) {
-        //         this.render()
-        //     }
-        // },
+        watch: {
+            node: function (newVal, oldVal) {
+                this.node._vue = this
+                this.render()
+            }
+        },
         data: () => ({
             parentHovered: false,
             showAction: false,
@@ -149,50 +158,52 @@
         }),
         methods: {
             add(event, week) {
-                let entity = {
-                    name: event.item.dataset.name,
-                    desc: event.item.dataset.desc,
-                    week: week,
+                let entity = this.node.schedule[week][event.newIndex]
+                if (entity.week != week) {
+                    entity.week = week
+                    this.patchEntity(entity)
                 }
-                this.patchEntity(entity)
-                if (workspaceDeltagraphId)
-                    fetch("{{ url_for('RESTful.triple.put') }}" + workspaceDeltagraphId, {
-                        method: 'PUT',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            h_name: entity.name,
-                            r_name: tree_edge_name,
-                            t_name: this.node.name,
-                            r_value: true,
-                            exclusive_head: true,
+                if (this.node.name != entity.parent.name) {
+                    if (workspaceDeltagraphId)
+                        fetch("{{ url_for('RESTful.triple.put') }}" + workspaceDeltagraphId, {
+                            method: 'PUT',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: entity.name,
+                                r_name: tree_edge_name,
+                                t_name: this.node.name,
+                                r_value: true,
+                                exclusive_head: true,
+                            })
                         })
-                    })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            if (body.triple) {
-                                window.parent.postMessage({
-                                    message: 'coursePlan-exclusiveHeadTriple',
-                                    payload: body.triple
-                                }, '*')
-                            } else {
-                                this.$root.errorDisplay(body,
-                                    'Unexpected error when deleted triple.')
-                            }
-                        })
+                            .then(response => {
+                                try {
+                                    return response.json()
+                                } catch {
+                                    this.$root.progress.show = false
+                                    this.$root.errorDisplay({},
+                                        'Unexpected error occured.')
+                                }
+                            })
+                            .then(body => {
+                                if (body.triple) {
+                                    entity.parent = this.node
+                                    window.parent.postMessage({
+                                        message: 'coursePlan-exclusiveHeadTriple',
+                                        payload: body.triple
+                                    }, '*')
+                                } else {
+                                    this.$root.errorDisplay(body,
+                                        'Unexpected error when deleted triple.')
+                                }
+                            })
+                }
             },
-            patchEntity(entity) {
-                this.$emit('change', 1)
+            patchEntity(entity, callback = null) {
+                entity.notSync = true
                 fetch(
                     "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
                     encodeURIComponent(
@@ -219,7 +230,8 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.activity) {
-                            this.$emit('change', -1)
+                            entity.notSync = false
+                            entity._vue.$forceUpdate()
                             try {
                                 if (window.self !== window.top) {
                                     throw ''
@@ -238,7 +250,7 @@
                     })
 
             },
-            render() {
+            render(event = null) {
                 if (this.node.schedule) {
                     this.weeks = []
                     let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length > 0).map(week => Number(week))
@@ -261,6 +273,7 @@
                 }
             },
             climb(offset) {
+                console.log(this.node.parent)
                 let newWeek = this.node.week + offset
                 if (newWeek > 0 && newWeek <= weekInSemester) {
                     let { _vue, parent, children, schedule, ...orphan } = this.node
@@ -303,12 +316,26 @@
                         this.$refs.children.forEach(child => child.updateActivity(activity))
                 }
             },
+            sync(target = null) {
+                if (target != null) {
+                    if (target.name == this.node.name) {
+                        this.sync()
+                    }
+                    else {
+                        if (this.$refs.children)
+                            this.$refs.children.forEach(child => child.sync(target))
+                    }
+                }
+                else {
+                    if (this.node.notSync) {
+                        this.patchEntity(this.node)
+                    }
+                }
+            }
         },
         mounted: function () {
             this.node._vue = this
             this.render()
-            this.$nextTick(() =>
-                this.node.children.filter(node => node.isAllocatingWeek).forEach(node => this.patchEntity(node)))
         },
         template: '#kcube-schedule-item',
         delimiters: ['${', '}'],
@@ -335,7 +362,6 @@
     Vue.component('app-content', {
         data: () => ({
             tree: null,
-            changes: 0,
             x: null,
             y: null,
             details: null,
@@ -418,6 +444,8 @@
                 })
             },
             constructTimetable(triples, activities, preview = false) {
+                this.preview = preview
+                triples = [...triples]
                 function traversal(name) {
                     let activity = activities.filter(a => a.name == name)
                     let node = {
@@ -434,35 +462,43 @@
                         }
                         return true
                     })
-                    // triples = triples.filter(triple => {
-                    //     if (node.children.includes(triple.h_name)) {
-                    //         return false
-                    //     }
-                    //     return true
-                    // })
-                    node.numItem = 1
+                    triples = triples.filter(triple => { // do for remove mutli path
+                        if (node.children.includes(triple.h_name)) {
+                            return false
+                        }
+                        return true
+                    })
+                    node.children = node.children.map(child => traversal(child))
+                    return node
+                }
+                function sortChildren(node) {
                     if (node.children.length == 0) {
+                        node.numItem = 1
                         node.numUnassignedItem = node.week != null ? 0 : 1
                     }
                     else {
-                        node.children = node.children.map(child => traversal(child))
-                        node.children = node.children.sort((childA, childB) => childB.numItem - childA.numItem)
+                        node.children.forEach(child => (sortChildren(child)))
+                        node.children = node.children.sort((childA, childB) => {
+                            if (childA.week != null && childB.week != null) { return childA.week - childB.week }
+                            else if (childA.week != null & childB.week == null) { return -1 }
+                            else if (childA.week == null & childB.week != null) { return 1 }
+                            else { return childB.numItem - childA.numItem }
+                        })
                         node.children.forEach(child => child.parent = node)
-                        node.numUnassignedItem = node.children.map(child => child.numUnassignedItem).reduce((previous, current) => previous + current)
                         node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
-
                     }
-                    return node
                 }
                 this.tree = traversal("{{courseCode}}")
-                let totalItem = this.tree.numUnassignedItem
+                sortChildren(this.tree)
+                let totalItem = this.tree.numItem
                 function allocate(node, slot) {
+                    node.notSync = false
                     if (node.week === null) {
-                        node.isAllocatingWeek = true
+                        node.notSync = true
                         node.week = Math.min(Math.round(slot * weekInSemester) + 1, weekInSemester)
-                        if (node.children.length == 0) {
-                            slot = slot + 1 / totalItem
-                        }
+                    }
+                    if (node.children.length == 0) {
+                        slot = slot + 1 / totalItem
                     }
                     node.children.forEach(child => {
                         slot = allocate(child, slot)
@@ -481,61 +517,18 @@
                 }
                 allocate(this.tree, 0)
                 console.log(this.tree)
+                if (!preview)
+                    this.$nextTick(() => { this.submitTable() })
             },
-            submitTable() {// redo
+            submitTable() {
                 this.preview = false
-                for (week in this.plan) {
-                    for (index in this.plan[week]) {
-                        if (this.plan[week][index].week) {
-
-                        } else {
-                            this.dropEntity({
-                                newIndex: index
-                            }, week)
-                        }
+                function recursiveSubmit(node) {
+                    if (node.notSync) {
+                        node._vue.sync()
                     }
+                    node.children.filter(node => node.notSync).forEach(child => recursiveSubmit(child))
                 }
-            },
-            setActivity(event) {
-                if (this.$refs.activityControl.validate()) {
-                    if (this.$root.progress.show == true) {
-                        this.$root.bePatientSnackBar.show = true
-                        return
-                    }
-                    this.$root.progress.show = true
-                    this.$root.customizedFetch(
-                        "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
-                        encodeURIComponent(
-                            this.details.name), {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            desc: this.details.desc,
-                            week: this.details.week
-                        })
-                    }, () => { this.syned = false })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            this.$root.progress.show = false
-                            if (body.activity) {
-                                body.activity.name = this.details.name
-                                this.$refs.root.updateActivity(body.activity)
-                            } else {
-                                throw new Error(body.message)
-                            }
-                        })
-                }
+                recursiveSubmit(this.tree)
             },
             showDetails(event, entity) {
                 event.preventDefault()
@@ -554,13 +547,27 @@
                     payload: payload
                 }, domain)
 
+            },
+            countNotSync() {
+                function countNotSync(previous, node) {
+                    let children = Object.keys(node.schedule).reduce((previous, current) => {
+                        return previous.concat(node.schedule[current])
+                    }, [])
+                    let count = node.notSync ? 1 : 0
+                    if (children.length > 0) {
+                        count += children.reduce(countNotSync, 0)
+                    }
+                    return count
+                }
+                return this.tree.children.reduce(countNotSync, 0)
             }
         },
         mounted: function () {
             window.addEventListener('beforeunload', (e) => {
-                if (this.changes) {
+                let notSyncCount = this.countNotSync()
+                if (notSyncCount > 0) {
                     e.preventDefault()
-                    e.returnValue = this.changes + 'changes are still uploading';
+                    e.returnValue = notSyncCount + 'changes are still uploading';
                 }
             });
             try {
@@ -570,9 +577,9 @@
             } catch (e) {
                 this.inIframe = true
                 window.parent.addEventListener('beforeunload', (e) => {
-                    if (this.changes) {
+                    if (notSyncCount > 0) {
                         e.preventDefault()
-                        e.returnValue = this.changes + 'changes are still uploading';
+                        e.returnValue = notSyncCount + 'changes are still uploading';
                     }
                 });
             }
