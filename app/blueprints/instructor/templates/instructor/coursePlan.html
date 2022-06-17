@@ -219,7 +219,7 @@
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error on setting courses plan information.')
-                                throw 'error'
+                                throw ''
                             }
                         }))
                 }
@@ -258,7 +258,7 @@
                                 } else {
                                     this.$root.errorDisplay(body,
                                         'Unexpected error when deleted triple.')
-                                    throw 'error'
+                                    throw ''
                                 }
                             }))
                 }
@@ -301,20 +301,28 @@
                 if (newWeek > 0 && newWeek <= weekInSemester) {
                     let { _vue, parent, children, schedule, ...orphan } = this.node
                     orphan.week = newWeek
+                    this.node.parent._vue.updateActivity(orphan, this.node.week)
                     this.node.parent._vue.patchEntity(this.node, newWeek)
-                    this.node.parent._vue.updateActivity(orphan)
                 }
             },
-            updateActivity(activity) {
+            updateActivity(activity, oldWeek = null) {
                 let foundChild = flattenSchedule(this.node.schedule).find(child => child.name == activity.name)
                 if (foundChild) {
-                    let index = this.node.schedule[foundChild.week].findIndex(sibling => sibling.name == foundChild.name)
+                    let isOldWeekNull = oldWeek == null
+                    if (isOldWeekNull) {
+                        oldWeek = foundChild.week
+                    }
+                    let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild.name)
                     let newWeek = Number(activity.week)
-                    this.node.schedule[foundChild.week].splice(index, 1)
+                    this.node.schedule[oldWeek].splice(index, 1)
                     if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
                     this.node.schedule[newWeek].push(foundChild)
-                    foundChild.desc = activity.desc
-                    foundChild.week = newWeek
+                    if (isOldWeekNull) {
+                        foundChild.desc = activity.desc
+                        foundChild.week = newWeek
+                    }
+                    console.log(oldWeek)
+                    console.log(this.node.schedule)
                     this.render()
                     setTimeout(() => {
                         let el = this.$refs.children.find(child => child.node.name == activity.name).$el
