@@ -7,12 +7,12 @@
             ${courseCode}
         </v-card-title>
     </v-row>
-    <v-row>
+    <v-row v-if="!hideGraph">
         <v-card-title>
             Public graph provided by:
         </v-card-title>
     </v-row>
-    <v-row v-for="row in rows">
+    <v-row v-for="row in rows" v-if="!hideGraph">
         <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
             <v-card v-if="col.userName" :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId !=
             null ? '/' + col.userId : '')">
@@ -41,17 +41,27 @@
             </v-btn>
             <v-btn v-else @click="openWorkspaceDialogue()">create workspace</v-btn>
         </v-col>
-        <v-col v-if="lastModifiedWorkspace">
+        <v-col v-if="lastModifiedWorkspace" cols="auto">
             <v-card-subtitle>
                 workspace tag: ${lastModifiedWorkspace.tag}
             </v-card-subtitle>
+        </v-col>
+        <v-col cols="auto">
+            <v-card-subtitle>
+                Create workspace:
+            </v-card-subtitle>
+        </v-col>
+        <v-col cols="auto">
+            <v-btn @click="openWorkspaceDialogue()">create workspace <v-icon>add_box</v-icon>
+            </v-btn>
         </v-col>
     </v-row>
     <v-row>
         <v-col cols="auto">
             <v-card-subtitle>
                 Duty-status:
-            </v-card-subtitle></v-col>
+            </v-card-subtitle>
+        </v-col>
         <v-col cols="auto">
             <v-btn :outlined="!isTeaching" :color="isTeaching?'success':'grey'"
                 @click="isTeaching?quit(courseCode):join(courseCode)">
@@ -60,19 +70,23 @@
             </v-btn>
         </v-col>
     </v-row>
-    {% endif %}
-    <v-dialog v-model="workspaceDialogue" max-width="500px">
+    <v-dialog v-model="workspaceDialogue" max-width="500px" eager>
         <kcube-workspace-form ref="workspaceForm"></kcube-workspace-form>
     </v-dialog>
+    {% endif %}
 </v-container>
 {% endblock %}
 {% block VueComponentScript %}
+{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+{% include "instructor/components/workspaceForm.html" %}
+{% endif %}
 <script>
     Vue.component('app-content', {
         data: () => ({
             rows: [
                 []
             ],
+            hideGraph: new URLSearchParams(window.location.search).get('hideGraph') != null,
             courseCode: "{{courseCode}}",
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             lastModifiedWorkspace: undefined,

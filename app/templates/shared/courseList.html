@@ -374,7 +374,7 @@
     <v-dialog v-model="workspaceDialogue" max-width="500px" eager>
         <kcube-workspace-form ref="workspaceForm"></kcube-workspace-form>
     </v-dialog>
-    <v-dialog v-model="coursePreviewDialogue" max-width="80vw" eager>
+    <v-dialog v-model="coursePreviewDialogue" max-width="80vw" max-height="70vh" eager>
         <iframe :src="coursePreviewUrl" style="height: 50vh; width:100%" frameBorder="0" scrolling="no"></iframe>
     </v-dialog>
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
@@ -462,7 +462,6 @@
 </v-container>
 {% endblock %}
 {% block VueComponentScript %}
-
 {% if request.blueprint == "instructor" %}
 {% include "instructor/components/workspaceForm.html" %}
 {% endif %}
@@ -477,7 +476,7 @@
             colPerRow: 3,
             allCourses: [],
             courses: [],
-            searchText: "",
+            searchText: new URLSearchParams(window.location.search).get('search') ? new URLSearchParams(window.location.search).get('search') : "",
             course: null,
             // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
             num_courses_wo_filter: null,

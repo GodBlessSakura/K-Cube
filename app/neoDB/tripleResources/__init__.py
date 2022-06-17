@@ -96,7 +96,6 @@ class tripleDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-
     def remove_workspace_triple(self, deltaGraphId, userId, h_name, r_name, t_name):
         fname = sys._getframe().f_code.co_name
 
@@ -230,8 +229,11 @@ class tripleDAO:
                 _ = [record["userId"] for record in result][0]
             except Exception as exception:
                 from ..resourcesGuard import InvalidRequest
+                from flask import g
 
-                raise InvalidRequest("Course graph from this instructor not exists")
+                if g.user["userId"] == userId:
+                    raise InvalidRequest("You are not on-duty for course " + courseCode)
+                raise InvalidRequest("This instructor is not teaching this course")
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:

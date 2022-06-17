@@ -10,28 +10,27 @@
                     course plan
                 </v-card-title>
             </v-col>
-            <v-col v-show="graph">
+            <v-col>
                 <v-card-text>
-                    <v-btn v-show="workspace == null || graph?.deltaGraphId != workspace?.deltaGraphId" small text
-                        :href="'{{url_for('instructor.workspace')}}' + graph?.deltaGraphId">open exposed
+                    <v-btn v-show="graph && (workspace == null || graph?.deltaGraphId != workspace?.deltaGraphId)" small
+                        text :href="'{{url_for('instructor.workspace')}}' + graph?.deltaGraphId">open exposed
                         graph in ${workspace?'another':'the'} editor<v-icon>open_in_new</v-icon>
+                    </v-btn>
+                    <v-btn v-show="workspace == null && graph == null" small text
+                        href="{{ url_for('course', courseCode = courseCode)}}?hideGraph">
+                        create/expose a workspace<v-icon>work</v-icon>
                     </v-btn>
                 </v-card-text>
             </v-col>
-            <v-col>
-                <v-card-subtitle>
-                    ${details == null?'right-click on item for details' :''}
-                </v-card-subtitle>
-            </v-col>
         </v-row>
-        <v-row>
+        <v-row v-if="graph">
             <v-col cols="auto">
                 <v-btn @click="constructTimetable(triples,[],true)">recompute</v-btn>
             </v-col>
-            <v-col cols="auto" v-if="preview">
+            <v-col cols="auto" v-show="preview || unsyncedCount > 0">
                 <v-btn color="success" @click="submitTable()">submit</v-btn>
             </v-col>
-            <v-col cols="auto" v-if="preview">
+            <v-col cols="auto" v-show="preview">
                 <v-btn color="error" @click="loadData()">undo</v-btn>
             </v-col>
         </v-row>
@@ -41,7 +40,7 @@
             </v-col>
             <v-col cols="auto">
                 <kcube-schedule-item ref="root" root v-if="tree" :node="tree"
-                    @showDetails="showDetails($event[0],$event[1])">
+                    @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)">
                 </kcube-schedule-item>
             </v-col>
             <v-col>
@@ -67,19 +66,30 @@
             </v-card-actions>
         </v-card>
     </v-menu>
+    <v-snackbar style="z-index:0;" :value="showMenuTips" timeout="-1">
+        ${unsyncedCount?'There are '+ unsyncedCount + ' unsynced item'+ (unsyncedCount>1?'s':'') +
+        '. You may right-click on them for syncing':
+        'You may right-click on item for details'}
+    </v-snackbar>
 </div>
 {% endblock %}
 
 {% block VueComponentScript %}
-{% macro kcubeScheduleItem() %}<v-badge overlap icon="sync_problem" :value="node.notSync && !root" color="error">
-    <v-card v-bind:id="'entity:'+node.name" st v-ripple="{ class: 'primary--text' }" style="float:left; margin:5px 8px"
-        @dragstart.self="dragging=true" :key="node.name" @dragend.self="dragging=false" @dragleave="showAction=false"
-        @contextmenu.stop="$emit('showDetails',[$event,node])">
+{% macro kcubeScheduleItem() %}
+<v-badge :icon="node.syncError?'sync_problem':'sync'" :value="node.notSync && !root"
+    :color="node.syncError?'error':'primary'" v-ripple="!root?{ class: 'primary--text' }:null"
+    style="padding: unset; float:left; margin:5px 8px">
+    <v-card v-bind:id="'entity:'+node.name" @dragstart.self="dragging=true" :key="node.name"
+        @dragend.self="dragging=false" @dragleave="showAction=false"
+        @contextmenu.stop="!root?$emit('showDetails',[$event,node]):null">
+        <div>
+
+        </div>
         <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging || weeks.length>0?false:true"
             @mouseenter="hovering = true" @mouseleave="hovering = false">
             <v-icon small class="handle">drag_indicator</v-icon>
             <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
-                @change="patchEntity(node)"></v-text-field>
+                @change="node.notSync=true;patchEntity(node, node.week)"></v-text-field>
             <v-list-item-action style="margin: unset" v-show="hovering && !dragging">
                 <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
                     <v-icon x-small>arrow_drop_up</v-icon>
@@ -110,7 +120,6 @@
         </v-list-item>
         <div style="padding: 5px;" v-show="weeks.length>0">
             <v-row v-for="week in weeks" v-show="(!root || node.schedule[week]?.length > 0) && !dragging" no-gutters>
-                <!-- v-if="!root || node.schedule[week].filter(child=> child.children.length == 0).length > 0" -->
                 <v-col cols="auto">
                     <v-list-item style="padding:unset; width:50px" dense>week ${week} </v-list-item>
                 </v-col>
@@ -120,7 +129,7 @@
                         @dragover="showAction = dragging?false:true" style="height: 100%; background: content-box grey"
                         animation="300" swapThreshold="0.2">
                         <kcube-schedule-item ref="children" v-for="child of node.schedule[week]" :node="child"
-                            @showDetails="$emit('showDetails',$event)">
+                            @showDetails="$emit('showDetails',$event)" @countNotSync="$emit('countNotSync',$event)">
                         </kcube-schedule-item>
                     </draggable>
                 </v-col>
@@ -133,6 +142,11 @@
     {{ kcubeScheduleItem()}}
 </script>
 <script>
+    function flattenSchedule(schedule) {
+        return Object.keys(schedule).reduce((previous, current) => {
+            return previous.concat(schedule[current])
+        }, [])
+    }
     Vue.component('kcube-schedule-item', {
         props: {
             node: {
@@ -145,7 +159,7 @@
             node: function (newVal, oldVal) {
                 this.node._vue = this
                 this.render()
-            }
+            },
         },
         data: () => ({
             parentHovered: false,
@@ -159,13 +173,59 @@
         methods: {
             add(event, week) {
                 let entity = this.node.schedule[week][event.newIndex]
-                if (entity.week != week) {
+                this.patchEntity(entity, week)
+            },
+            patchEntity(entity, week) {
+                let promises = []
+                if (entity.notSync || entity.week != week) {
                     entity.week = week
-                    this.patchEntity(entity)
+                    promises.push(fetch(
+                        "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
+                        encodeURIComponent(
+                            entity.name), {
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            desc: entity.desc,
+                            week: entity.week
+                        })
+                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            if (body.activity) {
+                                try {
+                                    if (window.self !== window.top) {
+                                        throw ''
+                                    }
+                                } catch (e) {
+                                    let { _vue, parent, children, schedule, ...orphan } = entity
+                                    window.parent.postMessage({
+                                        message: 'update-entity',
+                                        payload: orphan
+                                    }, '*')
+                                }
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error on setting courses plan information.')
+                                throw 'error'
+                            }
+                        }))
                 }
-                if (this.node.name != entity.parent.name) {
+                if (entity.parent && this.node.name != entity.parent.name && this.node.name != entity.name) {
                     if (workspaceDeltagraphId)
-                        fetch("{{ url_for('RESTful.triple.put') }}" + workspaceDeltagraphId, {
+                        promises.push(fetch("{{ url_for('RESTful.triple.put') }}" + workspaceDeltagraphId, {
                             method: 'PUT',
                             cache: 'no-store',
                             headers: {
@@ -198,57 +258,20 @@
                                 } else {
                                     this.$root.errorDisplay(body,
                                         'Unexpected error when deleted triple.')
+                                    throw 'error'
                                 }
-                            })
+                            }))
                 }
-            },
-            patchEntity(entity, callback = null) {
-                entity.notSync = true
-                fetch(
-                    "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
-                    encodeURIComponent(
-                        entity.name), {
-                    method: 'POST',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        desc: entity.desc,
-                        week: entity.week
-                    })
+                if (promises.length > 0) { entity.notSync = true }
+                Promise.all(promises).then(data => {
+                    entity.notSync = false
+                    this.$emit('countNotSync', { scroll: false })
+                }).catch((reason) => {
+                    entity.syncError = true
+                    this.$emit('countNotSync', { scroll: true })
+                }).finally(() => {
+                    entity._vue.$forceUpdate()
                 })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
-                            this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        this.$root.progress.show = false
-                        if (body.activity) {
-                            entity.notSync = false
-                            entity._vue.$forceUpdate()
-                            try {
-                                if (window.self !== window.top) {
-                                    throw ''
-                                }
-                            } catch (e) {
-                                let { _vue, parent, children, schedule, ...orphan } = entity
-                                window.parent.postMessage({
-                                    message: 'update-entity',
-                                    payload: orphan
-                                }, '*')
-                            }
-                        } else {
-                            this.$root.errorDisplay(body,
-                                'Unexpected error on setting courses plan information.')
-                        }
-                    })
-
             },
             render(event = null) {
                 if (this.node.schedule) {
@@ -278,14 +301,12 @@
                 if (newWeek > 0 && newWeek <= weekInSemester) {
                     let { _vue, parent, children, schedule, ...orphan } = this.node
                     orphan.week = newWeek
-                    this.node.parent._vue.patchEntity(orphan)
+                    this.node.parent._vue.patchEntity(this.node, newWeek)
                     this.node.parent._vue.updateActivity(orphan)
                 }
             },
             updateActivity(activity) {
-                let foundChild = Object.keys(this.node.schedule).reduce((previous, current) => {
-                    return previous.concat(this.node.schedule[current])
-                }, []).find(child => child.name == activity.name)
+                let foundChild = flattenSchedule(this.node.schedule).find(child => child.name == activity.name)
                 if (foundChild) {
                     let index = this.node.schedule[foundChild.week].findIndex(sibling => sibling.name == foundChild.name)
                     let newWeek = Number(activity.week)
@@ -303,8 +324,8 @@
                         })
                         let ev = new Event("mousedown")
                         let offset = el.getBoundingClientRect()
-                        ev.clientX = offset.left + offset.width / 2
-                        ev.clientY = offset.top + offset.height / 2
+                        ev.clientX = offset.left + 1
+                        ev.clientY = offset.top + 1
                         el.dispatchEvent(ev)
                         this.$nextTick(function () {
                             el.dispatchEvent(new Event("mouseup"))
@@ -328,7 +349,7 @@
                 }
                 else {
                     if (this.node.notSync) {
-                        this.patchEntity(this.node)
+                        this.patchEntity(this.node, this.node.week)
                     }
                 }
             }
@@ -364,6 +385,9 @@
             tree: null,
             x: null,
             y: null,
+            showMenuTips: false,
+            showMenuTipsInterval: null,
+            unsyncedCount: 0,
             details: null,
             showMenu: false,
             inIframe: false,
@@ -426,7 +450,8 @@
                         this.$root.progress.show = false
                         if (body.course && body.triples) {
                             this.graph = body.graph
-                            workspaceDeltagraphId = this.graph.deltaGraphId
+                            console.log(this.graph)
+                            workspaceDeltagraphId = this.graph ? this.graph.deltaGraphId : null
                             return body.triples
                         } else {
                             this.$root.errorDisplay(body,
@@ -440,7 +465,7 @@
                     this.triples = triples
                     this.activities = activities
                     this.constructTimetable(triples, activities)
-
+                    this.countNotSync()
                 })
             },
             constructTimetable(triples, activities, preview = false) {
@@ -513,6 +538,7 @@
                             }
                             return previous
                         }, Object.create(null))
+                    delete node.children
                     return slot
                 }
                 allocate(this.tree, 0)
@@ -526,7 +552,7 @@
                     if (node.notSync) {
                         node._vue.sync()
                     }
-                    node.children.filter(node => node.notSync).forEach(child => recursiveSubmit(child))
+                    flattenSchedule(node.schedule).filter(node => node.notSync).forEach(child => recursiveSubmit(child))
                 }
                 recursiveSubmit(this.tree)
             },
@@ -540,6 +566,10 @@
                 this.$nextTick(() => {
                     this.showMenu = true
                 })
+                this.showMenuTips = this.unsyncedCount ? true : false
+                this.wheelInterval ? clearInterval(this.wheelInterval) : null
+                this.wheelInterval = setInterval(() => { this.showMenuTips = true }, 10000)
+
             },
             postMessage(message, payload, domain) {
                 window.parent.postMessage({
@@ -548,26 +578,46 @@
                 }, domain)
 
             },
-            countNotSync() {
+            countNotSync(option = {}) {
+                let firstNotSync
                 function countNotSync(previous, node) {
-                    let children = Object.keys(node.schedule).reduce((previous, current) => {
-                        return previous.concat(node.schedule[current])
-                    }, [])
-                    let count = node.notSync ? 1 : 0
+                    let children = flattenSchedule(node.schedule)
+                    let count = previous + (node.notSync ? 1 : 0)
+                    if (node.notSync && firstNotSync == undefined) {
+                        firstNotSync = node
+                    }
                     if (children.length > 0) {
                         count += children.reduce(countNotSync, 0)
                     }
                     return count
                 }
-                return this.tree.children.reduce(countNotSync, 0)
-            }
+                this.unsyncedCount = flattenSchedule(this.tree.schedule).reduce(countNotSync, 0)
+                if (this.unsyncedCount > 0) {
+                    this.showMenuTips = true
+                }
+                if (firstNotSync && option.scroll) {
+                    let el = firstNotSync._vue.$el
+                    el.scrollIntoView({
+                        behavior: "smooth",
+                        block: "center"
+                    })
+                    let ev = new Event("mousedown")
+                    let offset = el.getBoundingClientRect()
+                    ev.clientX = offset.left + 1
+                    ev.clientY = offset.top + 1
+                    el.dispatchEvent(ev)
+                    this.$nextTick(function () {
+                        el.dispatchEvent(new Event("mouseup"))
+                    })
+                }
+            },
         },
         mounted: function () {
             window.addEventListener('beforeunload', (e) => {
-                let notSyncCount = this.countNotSync()
-                if (notSyncCount > 0) {
+                this.countNotSync()
+                if (this.unsyncedCount > 0) {
                     e.preventDefault()
-                    e.returnValue = notSyncCount + 'changes are still uploading';
+                    e.returnValue = this.unsyncedCount + 'changes are still uploading';
                 }
             });
             try {
@@ -577,9 +627,10 @@
             } catch (e) {
                 this.inIframe = true
                 window.parent.addEventListener('beforeunload', (e) => {
-                    if (notSyncCount > 0) {
+                    this.countNotSync()
+                    if (this.unsyncedCount > 0) {
                         e.preventDefault()
-                        e.returnValue = notSyncCount + 'changes are still uploading';
+                        e.returnValue = this.unsyncedCount + 'changes are still uploading';
                     }
                 });
             }
@@ -608,7 +659,7 @@
             this.$root.$on('post-activities', function (activities) {
 
             })
-
+            this.wheelInterval = setInterval(() => { this.showMenuTips = true }, 10000)
         },
         template: '#content',
         delimiters: ['${', '}'],
