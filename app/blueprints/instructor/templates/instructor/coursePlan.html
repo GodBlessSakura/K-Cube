@@ -41,7 +41,7 @@
             <v-col cols="auto">
                 <draggable v-model="deck" :group="{name:'schedule', put: false}" handle=".handle"
                     style="height: 100%; background: content-box grey">
-                    <kcube-schedule-item v-for="child of deck" :node="child">
+                    <kcube-schedule-item v-for="child of deck" :node="child" deck>
                     </kcube-schedule-item>
                 </draggable>
             </v-col>
@@ -75,6 +75,9 @@
                 <v-btn text color="primary" v-show="details?.notSync" @click="$refs.root.sync(details)">
                     sync
                 </v-btn>
+                <v-btn text color="error" @click="decapitate(details)">
+                    delete
+                </v-btn>
             </v-card-actions>
         </v-card>
     </v-menu>
@@ -88,7 +91,7 @@
 
 {% block VueComponentScript %}
 {% macro kcubeScheduleItem() %}
-<v-badge :icon="node.syncError?'sync_problem':'sync'" :value="node.notSync && !root"
+<v-badge :icon="deck?null:node.syncError?'sync_problem':'sync'" :content="deck?node.numItem:null" :value="deck || (node.notSync && !root)"
     :color="node.syncError?'error':'primary'" v-ripple="!root?{ class: 'primary--text' }:null"
     style="padding: unset; float:left; margin:5px 8px">
     <v-card v-bind:id="'entity:'+node.name" :key="node.name" @dragleave="showAction=false"
@@ -96,13 +99,14 @@
         <div>
 
         </div>
-        <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = (dragging || weeks.length>0)?false:true"
-            @mouseenter="hovering = true" @mouseleave="hovering = false">
-            <v-icon small class="handle" draggable="true" @dragend="dragging=false"
-                @dragstart="dragging=true">drag_indicator</v-icon>
+        <v-list-item v-if="!root" v-show="!showAction || deck"
+            @dragover="showAction = (dragging || weeks.length>0)?false:true" @mouseenter="hovering = true"
+            @mouseleave="hovering = false">
+            <v-icon small class="handle" draggable="true" @dragend="dragging=false" @dragstart="dragging=true">
+                drag_indicator</v-icon>
             <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
                 @change="node.notSync=true;patchEntity(node, node.week)"></v-text-field>
-            <v-list-item-action style="margin: unset" v-show="hovering && !dragging">
+            <v-list-item-action style="margin: unset" v-show="hovering && !dragging && !deck">
                 <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
                     <v-icon x-small>arrow_drop_up</v-icon>
                 </v-btn>
@@ -111,8 +115,8 @@
                 </v-btn>
             </v-list-item-action>
         </v-list-item>
-        <v-list-item v-if="!root && weeks.length== 0 && node.schedule[node.week]?.length == 0" v-show="showAction"
-            @drop="showAction=false">
+        <v-list-item v-if="!root && weeks.length== 0 && node.schedule[node.week]?.length == 0"
+            v-show="showAction && !deck" @drop="showAction=false">
             <v-row no-gutters>
                 <v-col style="align-items: center;display: flex;">
                     <v-icon small>add</v-icon>
@@ -130,7 +134,7 @@
                 </v-col>
             </v-row>
         </v-list-item>
-        <div style="padding: 5px;" v-show="weeks.length>0">
+        <div style="padding: 5px;" v-show="weeks.length>0 && !deck">
             <v-row v-for="week in weeks" v-show="(!root || node.schedule[week]?.length > 0) && !dragging" no-gutters>
                 <v-col cols="auto">
                     <v-list-item style="padding:unset; width:50px" dense>week ${week} </v-list-item>
@@ -161,6 +165,9 @@
     }
     Vue.component('kcube-schedule-item', {
         props: {
+            deck: {
+                type: Boolean
+            },
             node: {
                 type: Object,
                 required: true
@@ -235,7 +242,8 @@
                             }
                         }))
                 }
-                if (entity.parent && this.node.name != entity.parent.name && this.node.name != entity.name) {
+                console.log(entity)
+                if (entity.parent === undefined || (entity.parent && this.node.name != entity.parent.name && this.node.name != entity.name)) {
                     if (workspaceDeltagraphId)
                         promises.push(fetch("{{ url_for('RESTful.triple.put') }}" + workspaceDeltagraphId, {
                             method: 'PUT',
@@ -400,6 +408,72 @@
     }
 </style>
 <script>
+    function traversal(name, triples, activities) {
+        let activity = activities.filter(a => a.name == name)
+        let node = {
+            name: name,
+            desc: activity.length > 0 ? activity[0].desc : name,
+            week: activity.length > 0 ?
+                (Number.isInteger(Number(activity[0].week)) ? Number(activity[0].week) : null) : null,
+            children: []
+        }
+        triples = triples.filter(triple => {
+            if (triple.t_name == name) {
+                node.children.push(triple.h_name)
+                return false
+            }
+            return true
+        })
+        triples = triples.filter(triple => { // do for remove mutli path
+            if (node.children.includes(triple.h_name)) {
+                return false
+            }
+            return true
+        })
+        node.children = node.children.map(child => traversal(child, triples, activities))
+        return node
+    }
+    function sortChildren(node) {
+        if (node.children.length == 0) {
+            node.numItem = 1
+        }
+        else {
+            node.children.forEach(child => (sortChildren(child)))
+            node.children = node.children.sort((childA, childB) => {
+                if (childA.week != null && childB.week != null) { return childA.week - childB.week }
+                else if (childA.week != null & childB.week == null) { return -1 }
+                else if (childA.week == null & childB.week != null) { return 1 }
+                else { return childB.numItem - childA.numItem }
+            })
+            node.children.forEach(child => child.parent = node)
+            node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
+        }
+    }
+    function allocate(node, slot, totalItem) {
+        node.notSync = false
+        if (node.week === null) {
+            node.notSync = true
+            node.week = Math.min(Math.round(slot * weekInSemester) + 1, weekInSemester)
+        }
+        if (node.children.length == 0) {
+            slot = slot + 1 / totalItem
+        }
+        node.children.forEach(child => {
+            slot = allocate(child, slot, totalItem)
+        })
+        node.schedule = node.children.reduce(
+            (previous, child) => {
+                if (previous[child.week]) {
+                    previous[child.week].push(child)
+                }
+                else {
+                    previous[child.week] = [child]
+                }
+                return previous
+            }, Object.create(null))
+        delete node.children
+        return slot
+    }
     let tree_edge_name = "Subtopic in"
     let workspaceDeltagraphId
     let weekInSemester = 13
@@ -502,76 +576,9 @@
             constructTimetable(triples, activities, preview = false) {
                 this.preview = preview
                 triples = [...triples]
-                function traversal(name) {
-                    let activity = activities.filter(a => a.name == name)
-                    let node = {
-                        name: name,
-                        desc: activity.length > 0 ? activity[0].desc : name,
-                        week: activity.length > 0 ?
-                            (Number.isInteger(Number(activity[0].week)) ? Number(activity[0].week) : null) : null,
-                        children: []
-                    }
-                    triples = triples.filter(triple => {
-                        if (triple.t_name == name) {
-                            node.children.push(triple.h_name)
-                            return false
-                        }
-                        return true
-                    })
-                    triples = triples.filter(triple => { // do for remove mutli path
-                        if (node.children.includes(triple.h_name)) {
-                            return false
-                        }
-                        return true
-                    })
-                    node.children = node.children.map(child => traversal(child))
-                    return node
-                }
-                function sortChildren(node) {
-                    if (node.children.length == 0) {
-                        node.numItem = 1
-                    }
-                    else {
-                        node.children.forEach(child => (sortChildren(child)))
-                        node.children = node.children.sort((childA, childB) => {
-                            if (childA.week != null && childB.week != null) { return childA.week - childB.week }
-                            else if (childA.week != null & childB.week == null) { return -1 }
-                            else if (childA.week == null & childB.week != null) { return 1 }
-                            else { return childB.numItem - childA.numItem }
-                        })
-                        node.children.forEach(child => child.parent = node)
-                        node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
-                    }
-                }
-                this.tree = traversal("{{courseCode}}")
+                this.tree = traversal("{{courseCode}}", triples, activities)
                 sortChildren(this.tree)
-                let totalItem = this.tree.numItem
-                function allocate(node, slot) {
-                    node.notSync = false
-                    if (node.week === null) {
-                        node.notSync = true
-                        node.week = Math.min(Math.round(slot * weekInSemester) + 1, weekInSemester)
-                    }
-                    if (node.children.length == 0) {
-                        slot = slot + 1 / totalItem
-                    }
-                    node.children.forEach(child => {
-                        slot = allocate(child, slot)
-                    })
-                    node.schedule = node.children.reduce(
-                        (previous, child) => {
-                            if (previous[child.week]) {
-                                previous[child.week].push(child)
-                            }
-                            else {
-                                previous[child.week] = [child]
-                            }
-                            return previous
-                        }, Object.create(null))
-                    delete node.children
-                    return slot
-                }
-                allocate(this.tree, 0)
+                allocate(this.tree, 0, this.tree.numItem)
                 console.log(this.tree)
                 if (!preview)
                     this.$nextTick(() => { this.submitTable() })
@@ -641,17 +648,64 @@
                     })
                 }
             },
+            decapitate(entity) {
+                fetch("{{ url_for('RESTful.triple.post') }}" + workspaceDeltagraphId, {
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        h_name: entity.name,
+                        r_name: tree_edge_name,
+                        decapitate: true,
+                    })
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.triples) {
+                            this.triples = this.triples.filter(triple => {
+                                return body.triples.filter(removed => triple.h_name == removed.h_name &&
+                                    triple.r_name == removed.r_name &&
+                                    triple.t_name == removed.t_name).length == 0
+                            })
+                            this.constructTimetable(this.triples, this.activities)
+                            window.parent.postMessage({
+                                message: 'coursePlan-decapitate',
+                                payload: body.triples
+                            }, '*')
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error when deleted triple.')
+                            throw ''
+                        }
+                    })
+            },
             createEntity() {
                 if (this.$refs.entityForm.validate()) {
-                    this.deck = [{
-                        name: this.entity_name,
-                        desc: this.entity_name,
-                        notSync: false,
-                        numItem: 1,
-                        parent: { name: null },
-                        schedule: [],
-                        week: -1,
-                    }]
+                    let entity = traversal(this.entity_name, [...this.triples], this.activities)
+                    sortChildren(entity)
+                    allocate(entity, 0, entity)
+                    entity.notSync = false
+                    this.deck = [entity
+                        // {
+                        //     name: this.entity_name,
+                        //     desc: this.entity_name,
+                        //     notSync: false,
+                        //     numItem: 1,
+                        //     parent: { name: null },
+                        //     schedule: [],
+                        //     week: -1,
+                        // }
+                    ]
                 }
             }
         },

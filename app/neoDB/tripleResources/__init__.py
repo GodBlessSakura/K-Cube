@@ -293,16 +293,17 @@ class tripleDAO:
             query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
-                return [
-                    {
-                        "h_name": record["h.name"],
-                        "r_name": record["r.name"],
-                        "t_name": record["t.name"],
-                        "r_value": record["r.value"],
-                        "trunkVote": record["trunkVote"],
-                    }
-                    for record in result
-                ]
+                return 
+                # [
+                #     {
+                #         "h_name": record["h.name"],
+                #         "r_name": record["r.name"],
+                #         "t_name": record["t.name"],
+                #         "r_value": record["r.value"],
+                #         "trunkVote": record["trunkVote"],
+                #     }
+                #     for record in result
+                # ]
             except Exception as exception:
                 raise exception
 
@@ -322,9 +323,15 @@ class tripleDAO:
                 r_name=r_name,
             )
             try:
-                #row = [record for record in result][0]
-                return {
-                }
+                return [
+                    {
+                        "h_name": record["h_name"],
+                        "r_name": record["r_name"],
+                        "t_name": record["t_name"],
+                        "r_value": record["r_value"],
+                    }
+                    for record in result
+                ]
             except Exception as exception:
                 raise exception
 

@@ -1815,6 +1815,30 @@
                     this.determineTripleOptions()
 
                 }
+                else if (event.data.message == "coursePlan-decapitate") {
+                    let triples = event.data.payload
+                    triples.forEach(triple => {
+                        if (triple.r_value === true) {
+                            return
+                        }
+                        let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                            triple.t_name))[0]
+                        if (edge) {
+                            edge.data({
+                                workspace_value: triple.r_value === false ? 'false' : 'undefined'
+                            })
+                        } else {
+                            cy.add(workspaceEdgeFactory(triple))
+                        }
+
+                    })
+                    cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
+                        .remove()
+                    cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
+                        "tempory")
+                    this.edgeStatistic()
+                    this.determineTripleOptions()
+                }
             })
             cy.on('tap', 'node', (event) => {
                 this.$refs.entityForm.loadData(event.target.data("id"))

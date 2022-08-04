@@ -89,7 +89,7 @@ def post(deltaGraphId):
             return jsonify(
                 {
                     "success": True,
-                    "triple": get_api_driver().triple.set_workspace_decapitate(
+                    "triples": get_api_driver().triple.set_workspace_decapitate(
                         deltaGraphId=deltaGraphId,
                         userId=g.user["userId"],
                         h_name=request.json["h_name"],
