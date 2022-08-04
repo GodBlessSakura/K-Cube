@@ -41,6 +41,7 @@ def getCourse(courseCode, userId):
 
     return jsonify({"success": False, "message": "incomplete request"})
 
+
 @triple.put("/", defaults={"deltaGraphId": None})
 @triple.put("<deltaGraphId>")
 @authorize_RESTful_with(["canWriteTeachingCourseBranch"])
@@ -61,7 +62,7 @@ def put(deltaGraphId):
                     t_name=request.json["t_name"],
                     r_value=request.json["r_value"],
                 )
-            else:    
+            else:
                 result = get_api_driver().triple.set_workspace_triple(
                     deltaGraphId=deltaGraphId,
                     userId=g.user["userId"],
@@ -75,6 +76,30 @@ def put(deltaGraphId):
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
 
+@triple.post("/", defaults={"deltaGraphId": None})
+@triple.post("<deltaGraphId>")
+@authorize_RESTful_with(["canWriteTeachingCourseBranch"])
+def post(deltaGraphId):
+    if (
+        "h_name" in request.json
+        and "r_name" in request.json
+        and "decapitate" in request.json
+    ):
+        try:
+            return jsonify(
+                {
+                    "success": True,
+                    "triple": get_api_driver().triple.set_workspace_decapitate(
+                        deltaGraphId=deltaGraphId,
+                        userId=g.user["userId"],
+                        h_name=request.json["h_name"],
+                        r_name=request.json["r_name"],
+                    ),
+                }
+            )
+        except Exception as e:
+            raise e
+    return jsonify({"success": False, "message": "incomplete request"})
 
 @triple.delete("<deltaGraphId>")
 @authorize_RESTful_with(["canWriteTeachingCourseBranch"])

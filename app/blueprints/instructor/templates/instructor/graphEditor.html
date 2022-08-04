@@ -9,9 +9,10 @@
     transform: translate(-50%,-50%) rotate(45deg);" @click="fullScreenMode = !fullScreenMode">
     </v-btn>
     <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small
-        v-if="fullScreenMode">north_east
+        v-if="fullScreenMode" @click="fullScreenMode = !fullScreenMode">north_east
     </v-icon>
-    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else>
+    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else
+        @click="fullScreenMode = !fullScreenMode">
         north_east</v-icon>
 
     <v-row no-gutters>
@@ -427,7 +428,7 @@
                                 <v-tooltip top v-if="canDeleteEdge">
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on"
-                                            @click="tripledelete()" :disabled="!canDeleteEdge || !canUpdateEdge">
+                                            @click="deleteTriple()" :disabled="!canDeleteEdge || !canUpdateEdge">
                                             defer decision
                                         </v-btn>
                                     </template>
@@ -1053,6 +1054,11 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
+                                if (r_value) {
+                                    this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-createTriple', payload: body.triple }, '*')
+                                } else {
+                                    this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-deleteTriple', payload: body.triple }, '*')
+                                }
                                 let triple = body.triple;
                                 let newNodes = cy.collection();
                                 let oldNodes = cy.collection();
@@ -1111,7 +1117,7 @@
                         })
                 }
             },
-            tripledelete() {
+            deleteTriple() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
                     return
@@ -1146,6 +1152,13 @@
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple.t_name))[0]
+
+                                if (edge.data("subject_value") ==
+                                    "true") {
+                                    this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-createTriple', payload: body.triple }, '*')
+                                } else {
+                                    this.$refs.iframe.contentWindow.postMessage({ message: 'graphEditor-deleteTriple', payload: body.triple }, '*')
+                                }
                                 edge.data({
                                     workspace_value: "undefined"
                                 })
@@ -1193,7 +1206,7 @@
                             this.createTriple(true)
                         } else if (edge.data("workspace_value") != "undefined" && edge.data("subject_value") ==
                             "true") {
-                            this.tripledelete()
+                            this.deleteTriple(true)
                         }
                     } else {
                         this.createTriple(true)
@@ -1211,7 +1224,7 @@
                             this.createTriple(false)
                         } else if (edge.data("workspace_value") != "undefined" && edge.data("subject_value") !=
                             "true") {
-                            this.tripledelete()
+                            this.deleteTriple(false)
                         }
                     }
                 } else { }

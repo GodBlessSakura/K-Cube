@@ -23,15 +23,27 @@
                 </v-card-text>
             </v-col>
         </v-row>
-        <v-row v-if="graph">
-            <v-col cols="auto">
+        <v-row v-if="graph" no-gutters>
+            <v-col>
                 <v-btn @click="constructTimetable(triples,[],true)">recompute</v-btn>
+                <v-btn v-show="preview || unsyncedCount > 0" color="success" @click="submitTable()">submit</v-btn>
+                <v-btn v-show="preview" color="error" @click="loadData()">undo</v-btn>
             </v-col>
-            <v-col cols="auto" v-show="preview || unsyncedCount > 0">
-                <v-btn color="success" @click="submitTable()">submit</v-btn>
+            <v-col cols="auto">
+                <v-form ref="entityForm">
+                    <v-text-field :rules="nameRules" label="create entity" dense flat solo v-model="entity_name">
+                    </v-text-field>
+                </v-form>
             </v-col>
-            <v-col cols="auto" v-show="preview">
-                <v-btn color="error" @click="loadData()">undo</v-btn>
+            <v-col cols="auto">
+                <v-btn @click="createEntity()">create</v-btn>
+            </v-col>
+            <v-col cols="auto">
+                <draggable v-model="deck" :group="{name:'schedule', put: false}" handle=".handle"
+                    style="height: 100%; background: content-box grey">
+                    <kcube-schedule-item v-for="child of deck" :node="child">
+                    </kcube-schedule-item>
+                </draggable>
             </v-col>
         </v-row>
         <v-row>
@@ -66,7 +78,7 @@
             </v-card-actions>
         </v-card>
     </v-menu>
-    <v-snackbar style="z-index:0;" :value="showMenuTips" timeout="-1">
+    <v-snackbar right top style="z-index:5;" :value="showMenuTips" timeout="-1">
         ${unsyncedCount?'There are '+ unsyncedCount + ' unsynced item'+ (unsyncedCount>1?'s':'') +
         '. You may right-click on them for syncing':
         'You may right-click on item for details'}
@@ -79,15 +91,15 @@
 <v-badge :icon="node.syncError?'sync_problem':'sync'" :value="node.notSync && !root"
     :color="node.syncError?'error':'primary'" v-ripple="!root?{ class: 'primary--text' }:null"
     style="padding: unset; float:left; margin:5px 8px">
-    <v-card v-bind:id="'entity:'+node.name" @dragstart.self="dragging=true" :key="node.name"
-        @dragend.self="dragging=false" @dragleave="showAction=false"
+    <v-card v-bind:id="'entity:'+node.name" :key="node.name" @dragleave="showAction=false"
         @contextmenu.stop="!root?$emit('showDetails',[$event,node]):null">
         <div>
 
         </div>
-        <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = dragging || weeks.length>0?false:true"
+        <v-list-item v-if="!root" v-show="!showAction" @dragover="showAction = (dragging || weeks.length>0)?false:true"
             @mouseenter="hovering = true" @mouseleave="hovering = false">
-            <v-icon small class="handle">drag_indicator</v-icon>
+            <v-icon small class="handle" draggable="true" @dragend="dragging=false"
+                @dragstart="dragging=true">drag_indicator</v-icon>
             <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
                 @change="node.notSync=true;patchEntity(node, node.week)"></v-text-field>
             <v-list-item-action style="margin: unset" v-show="hovering && !dragging">
@@ -360,6 +372,9 @@
                         this.patchEntity(this.node, this.node.week)
                     }
                 }
+            },
+            test(s = "test") {
+                console.log(s)
             }
         },
         mounted: function () {
@@ -406,6 +421,14 @@
             v => (v && v > 0 && v < 14) ||
                 'Week should be between 1 and 13',
             ],
+            nameRules: [v => !!v || 'Name is required',
+            v => (v && v.length > 1 && v.length) < 99 ||
+                'Name should be anything between 2 and 99 charactors',
+            v => (v && /{{regExpRules["name"]}}/.test(v)) ||
+                'Name can only contains alphanumeric characters and space.'
+            ],
+            entity_name: '',
+            deck: []
         }),
 
         methods: {
@@ -507,7 +530,6 @@
                 function sortChildren(node) {
                     if (node.children.length == 0) {
                         node.numItem = 1
-                        node.numUnassignedItem = node.week != null ? 0 : 1
                     }
                     else {
                         node.children.forEach(child => (sortChildren(child)))
@@ -619,6 +641,19 @@
                     })
                 }
             },
+            createEntity() {
+                if (this.$refs.entityForm.validate()) {
+                    this.deck = [{
+                        name: this.entity_name,
+                        desc: this.entity_name,
+                        notSync: false,
+                        numItem: 1,
+                        parent: { name: null },
+                        schedule: [],
+                        week: -1,
+                    }]
+                }
+            }
         },
         mounted: function () {
             window.addEventListener('beforeunload', (e) => {
@@ -658,6 +693,17 @@
                     } else if (message == "graphEditor-exposureToggle") {
                         this.loadData()
 
+                    } else if (message == "graphEditor-createTriple") {
+                        this.triples.push(payload)
+                        this.constructTimetable(this.triples, this.activities)
+
+                    } else if (message == "graphEditor-deleteTriple") {
+                        this.triples = this.triples.filter(triple => {
+                            return triple.h_name != payload.h_name ||
+                                triple.r_name != payload.r_name ||
+                                triple.t_name != payload.t_name
+                        })
+                        this.constructTimetable(this.triples, this.activities)
                     }
                 }
             }

@@ -308,3 +308,25 @@ class tripleDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def set_workspace_decapitate(self, deltaGraphId, userId, h_name, r_name):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                deltaGraphId=deltaGraphId,
+                userId=userId,
+                h_name=h_name,
+                r_name=r_name,
+            )
+            try:
+                #row = [record for record in result][0]
+                return {
+                }
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
