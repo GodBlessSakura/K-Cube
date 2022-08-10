@@ -138,10 +138,12 @@
         <div style="padding: 5px;" v-show="weeks.length>0 && !deck">
             <v-row v-for="week in weeks" v-show="(!root || node.schedule[week]?.length > 0) && !dragging" no-gutters>
                 <v-col cols="auto">
-                    <v-list-item style="padding:unset; width:50px" dense>week ${week} </v-list-item>
+                    <v-list-item style="padding:unset; width:50px" dense>week ${week}
+                        ${root&&spans[week] > week?(' - week ' + spans[week]) :''}
+                    </v-list-item>
                 </v-col>
                 <v-col>
-                    <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:'schedule', put: true}"
+                    <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:' schedule', put: true}"
                         handle=".handle" @add="add($event, week)" @change="render($event)"
                         @dragover="showAction = dragging?false:true" style="height: 100%; background: content-box grey"
                         animation="300" swapThreshold="0.2">
@@ -189,6 +191,7 @@
             hovering: false,
             weekInSemester: weekInSemester,
             weeks: [],
+            spans: {},
             keys: {}
         }),
         methods: {
@@ -300,6 +303,7 @@
             render(event = null) {
                 if (this.node.schedule) {
                     this.weeks = []
+                    this.spans = {}
                     let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length > 0).map(week => Number(week))
                     if (week.length > 0) {
                         let max = Math.max(...week)
@@ -308,9 +312,16 @@
                     }
                     this.keys = {}
                     for (const week of this.weeks) {
+                        function flatten(nodes) {
+                            return [...nodes, ...nodes.flatMap(n => {
+                                let children = flattenSchedule(n.schedule)
+                                return [...children, ...children.length > 0 ? flatten(children) : []]
+                            })]
+                        }
                         this.keys[week] = week + ';'
                         if (this.node.schedule[week] && this.node.schedule[week].length > 0) {
                             this.keys[week] += this.node.schedule[week].map(node => node.name).join(';')
+                            this.spans[week] = Math.max(...flatten(this.node.schedule[week]).map(n => n.week).filter(w => Number.isInteger(w)))
                         }
                         else {
                             if (!(week in this.node.schedule)) this.node.schedule[week] = []
