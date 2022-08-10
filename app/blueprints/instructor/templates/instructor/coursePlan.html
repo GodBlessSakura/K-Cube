@@ -52,7 +52,8 @@
             </v-col>
             <v-col cols="auto">
                 <kcube-schedule-item ref="root" root v-if="tree" :node="tree"
-                    @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)">
+                    @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)"
+                    @exclusiveHeadTriple="exclusiveHeadTriple($event)">
                 </kcube-schedule-item>
             </v-col>
             <v-col>
@@ -91,9 +92,9 @@
 
 {% block VueComponentScript %}
 {% macro kcubeScheduleItem() %}
-<v-badge :icon="deck?null:node.syncError?'sync_problem':'sync'" :content="deck?node.numItem:null" :value="deck || (node.notSync && !root)"
-    :color="node.syncError?'error':'primary'" v-ripple="!root?{ class: 'primary--text' }:null"
-    style="padding: unset; float:left; margin:5px 8px">
+<v-badge :icon="deck?null:node.syncError?'sync_problem':'sync'" :content="deck?node.numItem:null"
+    :value="deck || (node.notSync && !root)" :color="node.syncError?'error':'primary'"
+    v-ripple="!root?{ class: 'primary--text' }:null" style="padding: unset; float:left; margin:5px 8px">
     <v-card v-bind:id="'entity:'+node.name" :key="node.name" @dragleave="showAction=false"
         @contextmenu.stop="!root?$emit('showDetails',[$event,node]):null">
         <div>
@@ -145,7 +146,8 @@
                         @dragover="showAction = dragging?false:true" style="height: 100%; background: content-box grey"
                         animation="300" swapThreshold="0.2">
                         <kcube-schedule-item ref="children" v-for="child of node.schedule[week]" :node="child"
-                            @showDetails="$emit('showDetails',$event)" @countNotSync="$emit('countNotSync',$event)">
+                            @showDetails="$emit('showDetails',$event)" @countNotSync="$emit('countNotSync',$event)"
+                            @exclusiveHeadTriple="$emit('exclusiveHeadTriple',$event)">
                         </kcube-schedule-item>
                     </draggable>
                 </v-col>
@@ -271,6 +273,7 @@
                             .then(body => {
                                 if (body.triple) {
                                     entity.parent = this.node
+                                    this.$emit('exclusiveHeadTriple', body.triple)
                                     window.parent.postMessage({
                                         message: 'coursePlan-exclusiveHeadTriple',
                                         payload: body.triple
@@ -285,6 +288,7 @@
                 if (promises.length > 0) { entity.notSync = true }
                 Promise.all(promises).then(data => {
                     entity.notSync = false
+                    this.$emit('countNotSync', { scroll: false })
                     this.$emit('countNotSync', { scroll: false })
                 }).catch((reason) => {
                     entity.syncError = true
@@ -647,6 +651,12 @@
                         el.dispatchEvent(new Event("mouseup"))
                     })
                 }
+            },
+            exclusiveHeadTriple(payload) {
+                this.triples = this.triples.filter(triple => {
+                    return triple.h_name != payload.h_name
+                })
+                this.triples.push(payload)
             },
             decapitate(entity) {
                 fetch("{{ url_for('RESTful.triple.post') }}" + workspaceDeltagraphId, {
