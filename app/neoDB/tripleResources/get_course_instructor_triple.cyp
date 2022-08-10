@@ -4,8 +4,8 @@ WITH course, user
 CALL{
     WITH course, user
     MATCH (course)<-[:BRANCH_DESCRIBE{userId: user.userId}]-(workspace:Workspace)-[oldWork:WORK_ON]->(subject)
-    WITH DISTINCT subject
-    MATCH (h:GraphConcept)-[r:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: subject.deltaGraphId}]->(t:GraphConcept)
+    WITH DISTINCT workspace
+    MATCH (h:GraphConcept)-[r:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(t:GraphConcept)
     RETURN h.name as h_name, r.name as r_name, t.name as t_name, r.value as r_value
 UNION
     WITH course, user
