@@ -118,6 +118,7 @@
         </v-list-item>
         <v-list-item v-if="!root && weeks.length== 0 && node.schedule[node.week]?.length == 0"
             v-show="showAction && !deck" @drop="showAction=false">
+            <v-chip x-small style="position: absolute; top:0; transform: translateY(-50%)">${node.desc}</v-chip>
             <v-row no-gutters>
                 <v-col style="align-items: center;display: flex;">
                     <v-icon small>add</v-icon>
@@ -139,7 +140,7 @@
             <v-row v-for="week in weeks" v-show="(!root || node.schedule[week]?.length > 0) && !dragging" no-gutters>
                 <v-col cols="auto">
                     <v-list-item style="padding:unset; width:50px" dense>week ${week}
-                        ${root&&spans[week] > week?(' - week ' + spans[week]) :''}
+                        ${spans[week] > week?(' - week ' + spans[week]) :''}
                     </v-list-item>
                 </v-col>
                 <v-col>
@@ -594,6 +595,7 @@
                 this.tree = traversal("{{courseCode}}", triples, activities)
                 sortChildren(this.tree)
                 allocate(this.tree, 0, this.tree.numItem)
+                this.tree.parent = null
                 console.log(this.tree)
                 if (!preview)
                     this.$nextTick(() => { this.submitTable() })
