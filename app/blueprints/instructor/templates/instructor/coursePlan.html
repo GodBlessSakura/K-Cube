@@ -93,7 +93,7 @@
 {% block VueComponentScript %}
 {% macro kcubeScheduleItem() %}
 <v-badge :icon="deck?null:node.syncError?'sync_problem':'sync'" :content="deck?node.numItem:null"
-    :value="deck || (node.notSync && !root)" :color="node.syncError?'error':'primary'"
+    :value="(deck) || (node.notSync && !root)" :color="node.syncError?'error':'primary'"
     v-ripple="!root?{ class: 'primary--text' }:null" style="padding: unset; float:left; margin:5px 8px">
     <v-card v-bind:id="'entity:'+node.name" :key="node.name" @dragleave="showAction=false"
         @contextmenu.stop="!root?$emit('showDetails',[$event,node]):null">
@@ -137,7 +137,8 @@
             </v-row>
         </v-list-item>
         <div style="padding: 5px;" v-show="weeks.length>0 && !deck">
-            <v-row v-for="week in weeks" v-show="(!root || node.schedule[week]?.length > 0) && !dragging" no-gutters>
+            <v-row v-for="week in weeks"
+                v-show="(!root || node.schedule[week]?.length > 0 || week == weeks[0]) && !dragging" no-gutters>
                 <v-col cols="auto">
                     <v-list-item style="padding:unset; width:50px" dense>week ${week}
                         ${spans[week] > week?(' - week ' + spans[week]) :''}
@@ -146,11 +147,12 @@
                 <v-col>
                     <draggable v-model="node.schedule[week]" :key="keys[week]" :group="{name:' schedule', put: true}"
                         handle=".handle" @add="add($event, week)" @change="render($event)"
-                        @dragover="showAction = dragging?false:true" style="height: 100%; background: content-box grey"
-                        animation="300" swapThreshold="0.2">
+                        @dragover="showAction = dragging?false:true"
+                        style="height: 100%; background: content-box grey; min-width: 5vw;" animation="300"
+                        swapThreshold="0.2">
                         <kcube-schedule-item ref="children" v-for="child of node.schedule[week]" :node="child"
                             @showDetails="$emit('showDetails',$event)" @countNotSync="$emit('countNotSync',$event)"
-                            @exclusiveHeadTriple="$emit('exclusiveHeadTriple',$event)">
+                            @exclusiveHeadTriple="$emit('exclusiveHeadTriple',$event)" @spanChanged="render()">
                         </kcube-schedule-item>
                     </draggable>
                 </v-col>
@@ -168,6 +170,88 @@
             return previous.concat(schedule[current])
         }, [])
     }
+    function recursiveSearch(tree, name) {
+        if (tree.name == name) return tree
+        for (const child of flattenSchedule(tree.schedule)) {
+            let value = recursiveSearch(child, name)
+            if (value != null) return value
+        }
+        return null
+    }
+    function traversal(name, triples, activities) {
+        let activity = activities.filter(a => a.name == name)
+        let node = {
+            name: name,
+            desc: activity.length > 0 ? activity[0].desc : name,
+            week: activity.length > 0 ?
+                (Number.isInteger(Number(activity[0].week)) ? Number(activity[0].week) : null) : null,
+            children: []
+        }
+        triples = triples.filter(triple => {
+            if (triple.t_name == name) {
+                node.children.push(triple.h_name)
+                return false
+            }
+            return true
+        })
+        triples = triples.filter(triple => { // do for remove mutli path
+            if (node.children.includes(triple.h_name)) {
+                return false
+            }
+            return true
+        })
+        node.children = node.children.map(child => traversal(child, triples, activities))
+        return node
+    }
+    function flattenListOfNode(nodes) {
+        return [...nodes, ...nodes.flatMap(n => {
+            let children = flattenSchedule(n.schedule)
+            return [...children, ...children.length > 0 ? flattenListOfNode(children) : []]
+        })]
+    }
+    function sortChildren(node) {
+        if (node.children.length == 0) {
+            node.numItem = 1
+        }
+        else {
+            node.children.forEach(child => (sortChildren(child)))
+            node.children = node.children.sort((childA, childB) => {
+                if (childA.week != null && childB.week != null) { return childA.week - childB.week }
+                else if (childA.week != null & childB.week == null) { return -1 }
+                else if (childA.week == null & childB.week != null) { return 1 }
+                else { return childB.numItem - childA.numItem }
+            })
+            node.children.forEach(child => child.parent = node)
+            node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
+        }
+    }
+    function allocate(node, slot, totalItem) {
+        node.notSync = false
+        if (node.week === null) {
+            node.notSync = true
+            node.week = Math.min(Math.round(slot * weekInSemester) + 1, weekInSemester)
+        }
+        if (node.children.length == 0) {
+            slot = slot + 1 / totalItem
+        }
+        node.children.forEach(child => {
+            slot = allocate(child, slot, totalItem)
+        })
+        node.schedule = node.children.reduce(
+            (previous, child) => {
+                if (previous[child.week]) {
+                    previous[child.week].push(child)
+                }
+                else {
+                    previous[child.week] = [child]
+                }
+                return previous
+            }, Object.create(null))
+        delete node.children
+        return slot
+    }
+</script>
+<script>
     Vue.component('kcube-schedule-item', {
         props: {
             deck: {
@@ -290,7 +374,7 @@
                             }))
                 }
                 if (promises.length > 0) { entity.notSync = true }
-                Promise.all(promises).then(data => {
+                return Promise.all(promises).then(data => {
                     entity.notSync = false
                     this.$emit('countNotSync', { scroll: false })
                     this.$emit('countNotSync', { scroll: false })
@@ -303,6 +387,8 @@
             },
             render(event = null) {
                 if (this.node.schedule) {
+                    let oldSpanMin = Math.min(...this.weeks, ...Object.values(this.spans))
+                    let oldSpanMax = Math.max(...this.weeks, ...Object.values(this.spans))
                     this.weeks = []
                     this.spans = {}
                     let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length > 0).map(week => Number(week))
@@ -313,22 +399,19 @@
                     }
                     this.keys = {}
                     for (const week of this.weeks) {
-                        function flatten(nodes) {
-                            return [...nodes, ...nodes.flatMap(n => {
-                                let children = flattenSchedule(n.schedule)
-                                return [...children, ...children.length > 0 ? flatten(children) : []]
-                            })]
-                        }
                         this.keys[week] = week + ';'
                         if (this.node.schedule[week] && this.node.schedule[week].length > 0) {
                             this.keys[week] += this.node.schedule[week].map(node => node.name).join(';')
-                            this.spans[week] = Math.max(...flatten(this.node.schedule[week]).map(n => n.week).filter(w => Number.isInteger(w)))
+                            this.spans[week] = Math.max(...flattenListOfNode(this.node.schedule[week]).map(n => n.week).filter(w => Number.isInteger(w)))
                         }
                         else {
                             if (!(week in this.node.schedule)) this.node.schedule[week] = []
                         }
                     }
                     if (!(this.node.week in this.node.schedule)) this.node.schedule[this.node.week] = []
+                    if (this.root && this.weeks.length == 0) this.weeks = [this.node.week]
+                    if (oldSpanMin != Math.min(...this.weeks, ...Object.values(this.spans)) || oldSpanMax != Math.max(...this.weeks, ...Object.values(this.spans)))
+                        this.$emit('spanChanged')
                 }
             },
             climb(offset) {
@@ -337,44 +420,47 @@
                 if (newWeek > 0 && newWeek <= weekInSemester) {
                     let { _vue, parent, children, schedule, ...orphan } = this.node
                     orphan.week = newWeek
-                    this.node.parent._vue.updateActivity(orphan, this.node.week)
-                    this.node.parent._vue.patchEntity(this.node, newWeek)
+                    this.node.parent._vue.updateActivity(orphan, true)
                 }
             },
-            updateActivity(activity, oldWeek = null) {
+            updateActivity(activity, needPatch = false) {
                 let foundChild = flattenSchedule(this.node.schedule).find(child => child.name == activity.name)
                 if (foundChild) {
-                    let isOldWeekNull = oldWeek == null
-                    if (isOldWeekNull) {
-                        oldWeek = foundChild.week
-                    }
-                    let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild.name)
+                    let oldWeek = foundChild.week
                     let newWeek = Number(activity.week)
-                    this.node.schedule[oldWeek].splice(index, 1)
-                    if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
-                    this.node.schedule[newWeek].push(foundChild)
-                    if (isOldWeekNull) {
-                        foundChild.desc = activity.desc
-                        foundChild.week = newWeek
+                    manipulateAndHighlight = () => {
+                        let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild.name)
+                        this.node.schedule[oldWeek].splice(index, 1)
+                        if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
+                        this.node.schedule[newWeek].push(foundChild)
+                        console.log(oldWeek)
+                        console.log(this.node.schedule)
+                        this.render()
+                        setTimeout(() => {
+                            let el = this.$refs.children.find(child => child.node.name == activity.name).$el
+                            el.scrollIntoView({
+                                behavior: "smooth",
+                                block: "center"
+                            })
+                            let ev = new Event("mousedown")
+                            let offset = el.getBoundingClientRect()
+                            ev.clientX = offset.left + 1
+                            ev.clientY = offset.top + 1
+                            el.dispatchEvent(ev)
+                            this.$nextTick(function () {
+                                el.dispatchEvent(new Event("mouseup"))
+                            })
+                        }, 500)
                     }
-                    console.log(oldWeek)
-                    console.log(this.node.schedule)
-                    this.render()
-                    setTimeout(() => {
-                        let el = this.$refs.children.find(child => child.node.name == activity.name).$el
-                        el.scrollIntoView({
-                            behavior: "smooth",
-                            block: "center"
+                    if (needPatch) {
+                        this.patchEntity(foundChild, newWeek).then(result => {
+                            manipulateAndHighlight()
                         })
-                        let ev = new Event("mousedown")
-                        let offset = el.getBoundingClientRect()
-                        ev.clientX = offset.left + 1
-                        ev.clientY = offset.top + 1
-                        el.dispatchEvent(ev)
-                        this.$nextTick(function () {
-                            el.dispatchEvent(new Event("mouseup"))
-                        })
-                    }, 500)
+                    }
+                    else {
+                        foundChild.week = newWeek
+                        manipulateAndHighlight()
+                    }
                 }
                 else {
                     if (this.$refs.children)
@@ -424,72 +510,6 @@
     }
 </style>
 <script>
-    function traversal(name, triples, activities) {
-        let activity = activities.filter(a => a.name == name)
-        let node = {
-            name: name,
-            desc: activity.length > 0 ? activity[0].desc : name,
-            week: activity.length > 0 ?
-                (Number.isInteger(Number(activity[0].week)) ? Number(activity[0].week) : null) : null,
-            children: []
-        }
-        triples = triples.filter(triple => {
-            if (triple.t_name == name) {
-                node.children.push(triple.h_name)
-                return false
-            }
-            return true
-        })
-        triples = triples.filter(triple => { // do for remove mutli path
-            if (node.children.includes(triple.h_name)) {
-                return false
-            }
-            return true
-        })
-        node.children = node.children.map(child => traversal(child, triples, activities))
-        return node
-    }
-    function sortChildren(node) {
-        if (node.children.length == 0) {
-            node.numItem = 1
-        }
-        else {
-            node.children.forEach(child => (sortChildren(child)))
-            node.children = node.children.sort((childA, childB) => {
-                if (childA.week != null && childB.week != null) { return childA.week - childB.week }
-                else if (childA.week != null & childB.week == null) { return -1 }
-                else if (childA.week == null & childB.week != null) { return 1 }
-                else { return childB.numItem - childA.numItem }
-            })
-            node.children.forEach(child => child.parent = node)
-            node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
-        }
-    }
-    function allocate(node, slot, totalItem) {
-        node.notSync = false
-        if (node.week === null) {
-            node.notSync = true
-            node.week = Math.min(Math.round(slot * weekInSemester) + 1, weekInSemester)
-        }
-        if (node.children.length == 0) {
-            slot = slot + 1 / totalItem
-        }
-        node.children.forEach(child => {
-            slot = allocate(child, slot, totalItem)
-        })
-        node.schedule = node.children.reduce(
-            (previous, child) => {
-                if (previous[child.week]) {
-                    previous[child.week].push(child)
-                }
-                else {
-                    previous[child.week] = [child]
-                }
-                return previous
-            }, Object.create(null))
-        delete node.children
-        return slot
-    }
     let tree_edge_name = "Subtopic in"
     let workspaceDeltagraphId
     let weekInSemester = 13
@@ -714,21 +734,28 @@
             },
             createEntity() {
                 if (this.$refs.entityForm.validate()) {
-                    let entity = traversal(this.entity_name, [...this.triples], this.activities)
-                    sortChildren(entity)
-                    allocate(entity, 0, entity)
-                    entity.notSync = false
-                    this.deck = [entity
-                        // {
-                        //     name: this.entity_name,
-                        //     desc: this.entity_name,
-                        //     notSync: false,
-                        //     numItem: 1,
-                        //     parent: { name: null },
-                        //     schedule: [],
-                        //     week: -1,
-                        // }
-                    ]
+                    if (flattenListOfNode([this.tree]).map(n => n.name).includes(this.entity_name)) {
+                        let node = recursiveSearch(this.tree, this.entity_name)
+                        let el = node._vue.$el
+                        el.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
+                        })
+                        let ev = new Event("mousedown")
+                        let offset = el.getBoundingClientRect()
+                        ev.clientX = offset.left + 1
+                        ev.clientY = offset.top + 1
+                        el.dispatchEvent(ev)
+                        el.dispatchEvent(new Event("mouseup"))
+                    }
+                    else {
+                        let entity = traversal(this.entity_name, [...this.triples], this.activities)
+                        sortChildren(entity)
+                        allocate(entity, 0, entity)
+                        entity.notSync = false
+                        this.deck = [entity]
+
+                    }
                 }
             }
         },
