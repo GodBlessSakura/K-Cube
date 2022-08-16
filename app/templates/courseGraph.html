@@ -10,7 +10,16 @@
     </v-bottom-sheet>
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
-            <v-btn absolute style="bottom:3vh;left:3vh" fab v-on="on" @click="metricsBottomSheet = true">
+            <v-btn absolute style="bottom:3vh;left:3vh" fab v-on="on"
+                href="{{ url_for('coursePlan', courseCode = courseCode, userId = userId) }}">
+                <v-icon>calendar_today</v-icon>
+            </v-btn>
+        </template>
+        course plan
+    </v-tooltip>
+    <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+            <v-btn absolute style="bottom:3vh;left:12vh" fab v-on="on" @click="metricsBottomSheet = true">
                 <v-icon>insights</v-icon>
             </v-btn>
         </template>
@@ -20,7 +29,7 @@
         <template v-slot:activator="{ on: menu, attrs }">
             <v-tooltip top>
                 <template v-slot:activator="{ on: tooltip }">
-                    <v-btn absolute style="bottom:3vh;left:12vh" fab v-bind="attrs" v-on="{ ...tooltip, ...menu }">
+                    <v-btn absolute style="bottom:3vh;left:21vh" fab v-bind="attrs" v-on="{ ...tooltip, ...menu }">
                         <v-icon>palette</v-icon>
                     </v-btn>
                 </template>
@@ -177,7 +186,7 @@
                                 }
                             })
                             cy.elements().style('visibility', 'hidden')
-                            
+
                             let cyLayout = cy.layout({
                                 ...concentricLayoutOptions,
                                 // concentric: function (node) {

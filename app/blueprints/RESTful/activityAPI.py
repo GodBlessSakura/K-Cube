@@ -8,13 +8,13 @@ activity = Blueprint("activity", __name__, url_prefix="activity")
 
 @activity.get("/")
 def query():
-    if request.args.get("ofUser") and request.args.get("courseCode"):
-        return activityOfUser(g.user["userId"], request.args.get("courseCode"))
-
     if request.args.get("userId") and request.args.get("courseCode"):
         return activityOfUser(
             request.args.get("userId"), request.args.get("courseCode")
         )
+    if request.args.get("ofUser") and request.args.get("courseCode"):
+        return activityOfUser(g.user["userId"], request.args.get("courseCode"))
+
     return jsonify({"success": False, "message": "incomplete request"})
 
 
