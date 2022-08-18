@@ -20,7 +20,8 @@
                 drag_indicator</v-icon>
             {% endif %}
             <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
-                @change="node.notSync=true;patchEntity(node, node.week)" :readonly="{{'false' if request.blueprint == "instructor"else'true'}}"></v-text-field>
+                @change="node.notSync=true;patchEntity(node, node.week)"
+                :readonly="{{'false' if request.blueprint == 'instructor' else'true'}}"></v-text-field>
             {% if request.blueprint == "instructor" %}
             <v-list-item-action style="margin: unset" v-show="hovering && !dragging && !deck">
                 <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
@@ -97,6 +98,7 @@
             },
         },
         data: () => ({
+            editor_bc: new BroadcastChannel("{{courseCode}}-editor"),
             parentHovered: false,
             showAction: false,
             dragging: false,
@@ -142,17 +144,12 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.activity) {
-                                try {
-                                    if (window.self !== window.top) {
-                                        throw ''
-                                    }
-                                } catch (e) {
-                                    let { _vue, parent, children, schedule, ...orphan } = entity
-                                    window.parent.postMessage({
-                                        message: 'update-entity',
-                                        payload: orphan
-                                    }, '*')
-                                }
+                                let { _vue, parent, children, schedule, ...orphan } = entity
+                                this.editor_bc.postMessage({
+                                    message: 'update-entity',
+                                    payload: orphan
+                                }, '*')
+
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error on setting courses plan information.')
@@ -189,7 +186,7 @@
                                 if (body.triple) {
                                     entity.parent = this.node
                                     this.$emit('exclusiveHeadTriple', body.triple)
-                                    window.parent.postMessage({
+                                    this.editor_bc.postMessage({
                                         message: 'coursePlan-exclusiveHeadTriple',
                                         payload: body.triple
                                     }, '*')
@@ -218,51 +215,47 @@
                 if (newWeek > 0 && newWeek <= weekInSemester) {
                     let { _vue, parent, children, schedule, ...orphan } = this.node
                     orphan.week = newWeek
-                    this.node.parent._vue.updateActivity(orphan, true)
+                    this.node.parent._vue.updateActivity(this.node, orphan, true)
                 }
             },
-            updateActivity(activity, needPatch = false) {
-                let foundChild = flattenSchedule(this.node.schedule).find(child => child.name == activity.name)
-                if (foundChild) {
-                    let oldWeek = foundChild.week
-                    let newWeek = Number(activity.week)
-                    manipulateAndHighlight = () => {
-                        let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild.name)
-                        this.node.schedule[oldWeek].splice(index, 1)
-                        if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
-                        this.node.schedule[newWeek].push(foundChild)
-                        console.log(oldWeek)
-                        console.log(this.node.schedule)
-                        this.render()
-                        setTimeout(() => {
-                            let el = this.$refs.children.find(child => child.node.name == activity.name).$el
-                            el.scrollIntoView({
-                                behavior: "smooth",
-                                block: "center"
-                            })
-                            let ev = new Event("mousedown")
-                            let offset = el.getBoundingClientRect()
-                            ev.clientX = offset.left + 1
-                            ev.clientY = offset.top + 1
-                            el.dispatchEvent(ev)
-                            this.$nextTick(function () {
-                                el.dispatchEvent(new Event("mouseup"))
-                            })
-                        }, 500)
-                    }
-                    if (needPatch) {
-                        this.patchEntity(foundChild, newWeek).then(result => {
-                            manipulateAndHighlight()
+            updateActivity(foundChild, activity, needPatch = false) {
+                console.log(foundChild)
+                console.log(this.node)
+                let oldWeek = foundChild.week
+                let newWeek = Number(activity.week)
+                manipulateAndHighlight = () => {
+                    let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild.name)
+                    this.node.schedule[oldWeek].splice(index, 1)
+                    if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
+                    this.node.schedule[newWeek].push(foundChild)
+                    this.render()
+                    setTimeout(() => {
+                        let el = foundChild._vue.$el
+                        el.scrollIntoView({
+                            behavior: "smooth",
+                            block: "center"
                         })
-                    }
-                    else {
-                        foundChild.week = newWeek
+                        let ev = new Event("mousedown")
+                        let offset = el.getBoundingClientRect()
+                        ev.clientX = offset.left + 1
+                        ev.clientY = offset.top + 1
+                        el.dispatchEvent(ev)
+                        this.$nextTick(function () {
+                            el.dispatchEvent(new Event("mouseup"))
+                        })
+                    }, 500)
+                }
+                if (needPatch) {
+                    foundChild.notSync = foundChild.desc == activity.desc
+                    foundChild.desc = activity.desc
+                    this.patchEntity(foundChild, newWeek).then(result => {
                         manipulateAndHighlight()
-                    }
+                    })
                 }
                 else {
-                    if (this.$refs.children)
-                        this.$refs.children.forEach(child => child.updateActivity(activity))
+                    foundChild.week = newWeek
+                    foundChild.desc = activity.desc
+                    manipulateAndHighlight()
                 }
             },
             sync(target = null) {
@@ -315,6 +308,17 @@
         mounted: function () {
             this.node._vue = this
             this.render()
+            this.editor_bc.onmessage = (e) => {
+                if (e.data) {
+                    const {
+                        message,
+                        payload
+                    } = e.data
+                    if (message == "entityEditor-activity-" + this.node.name) {
+                        this.node.parent._vue.updateActivity(this.node, payload)
+                    }
+                }
+            }
         },
         template: '#kcube-schedule-item',
         delimiters: ['${', '}'],

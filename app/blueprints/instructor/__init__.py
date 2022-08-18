@@ -114,7 +114,9 @@ def versionTree(courseCode):
 @instructor.route("/coursePlan/<courseCode>")
 def coursePlan(courseCode):
     if courseCode is not None:
-        return render_template("shared/coursePlan/coursePlan.html", courseCode=courseCode)
+        return render_template(
+            "shared/coursePlan/coursePlan.html", courseCode=courseCode
+        )
     abort(404)
 
 
@@ -223,6 +225,7 @@ def repositoryVersions(courseCode, id):
         "instructor/repositoryVersions.html", courseCode=courseCode, id=id
     )
 
+
 @instructor.route("/disambiguation", defaults={"courseCode": None})
 @instructor.route("/disambiguation/<courseCode>")
 def disambiguation(courseCode):
@@ -230,7 +233,7 @@ def disambiguation(courseCode):
 
     return render_template(
         "instructor/disambiguation.html",
-        courseCode= courseCode if courseCode is not None else '',
+        courseCode=courseCode if courseCode is not None else "",
         courseCodes=[
             c["concept"]["name"]
             for c in get_api_driver().course.list_internal_course(
@@ -238,4 +241,17 @@ def disambiguation(courseCode):
             )
         ],
         names=[e["concept"]["name"] for e in get_api_driver().entity.list_entity()],
+    )
+
+
+@instructor.route("/entityEditor", defaults={"courseCode": None, "name": None})
+@instructor.route("/entityEditor/<courseCode>/", defaults={"name": None})
+@instructor.route("/entityEditor/<courseCode>/<path:name>")
+def entityEditor(courseCode, name):
+    from app.api_driver import get_api_driver
+
+    return render_template(
+        "instructor/entityEditor.html",
+        courseCode=courseCode,
+        name=name,
     )

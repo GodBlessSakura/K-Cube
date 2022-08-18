@@ -57,3 +57,7 @@ RESTful.register_blueprint(metagraph)
 from .activityAPI import activity
 
 RESTful.register_blueprint(activity)
+
+from .courseEventAPI import courseEvent
+
+RESTful.register_blueprint(courseEvent)

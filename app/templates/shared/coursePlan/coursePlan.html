@@ -76,7 +76,7 @@
             </v-card-subtitle>
             {% if request.blueprint == "instructor" %}
             <v-card-actions>
-                <v-btn text color="primary" v-if="inIframe" @click="postMessage('open-entity', details, '*')">
+                <v-btn text color="primary" @click="openEntityEditor">
                     open entity editor
                 </v-btn>
                 <v-btn text color="primary" v-show="details?.notSync" @click="$refs.root.sync(details)">
@@ -94,6 +94,17 @@
         '. You may right-click on them for syncing':
         'You may right-click on item for course material and details'}
     </v-snackbar>
+    <v-tooltip top>
+        <template v-slot:activator="{ on, attrs }">
+            <v-fab-transition>
+                <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on"
+                    @click="editor_bc.postMessage({message:'entityEditor-focus'})" fixed bottom right fab>
+                    <v-icon>edit</v-icon>
+                </v-btn>
+            </v-fab-transition>
+        </template>
+        back to opened concept editor
+    </v-tooltip>
 </div>
 {% endblock %}
 
@@ -120,12 +131,13 @@
     //{{ courseTreeAlgo.script() }}
 </script>
 <script>
-
     let tree_edge_name = "Subtopic in"
     let workspaceDeltagraphId
     let weekInSemester = 13
     Vue.component('app-content', {
         data: () => ({
+            editor_bc: new BroadcastChannel("{{courseCode}}-editor"),
+            isEntityEditorVisible: true,
             tree: null,
             x: null,
             y: null,
@@ -272,13 +284,6 @@
                 }
                 recursiveSubmit(this.tree)
             },
-            postMessage(message, payload, domain) {
-                window.parent.postMessage({
-                    message: message,
-                    payload: payload
-                }, domain)
-
-            },
             countNotSync(option = {}) {
                 let firstNotSync
                 function countNotSync(previous, node) {
@@ -348,7 +353,7 @@
                                     triple.t_name == removed.t_name).length == 0
                             })
                             this.constructTimetable(this.triples, this.activities)
-                            window.parent.postMessage({
+                            this.editor_bc.postMessage({
                                 message: 'coursePlan-decapitate',
                                 payload: body.triples
                             }, '*')
@@ -384,7 +389,16 @@
 
                     }
                 }
-            }
+            },
+            openEntityEditor() {
+                let width = 0.35 * document.documentElement.clientWidth
+                let left = (1 - 0.35) * document.documentElement.clientWidth
+                window.open("{{url_for('instructor.entityEditor')}}/" +
+                    "{{courseCode}}/" +
+                    encodeURIComponent(this.details.name),
+                    "entity_editor",
+                    "popup=true,resizable=no, width=" + width + ",left=" + left)
+            },
             // {% endif %}
         },
         mounted: function () {
@@ -396,35 +410,21 @@
                     e.returnValue = this.unsyncedCount + 'changes are still uploading';
                 }
             });
-            try {
-                if (window.self !== window.top) {
-                    throw ''
-                }
-            } catch (e) {
-                this.inIframe = true
-                window.parent.addEventListener('beforeunload', (e) => {
-                    this.countNotSync()
-                    if (this.unsyncedCount > 0) {
-                        e.preventDefault()
-                        e.returnValue = this.unsyncedCount + 'changes are still uploading';
-                    }
-                });
-            }
-            window.onmessage = (e) => {
+            this.editor_bc.onmessage = (e) => {
                 if (e.data) {
                     const {
                         message,
                         payload
                     } = e.data
-
-                    if (message == "graphEditor-activity") {
-                        this.$refs.root.updateActivity(payload)
-                    } else if (message == "graphEditor-workspace") {
+                    console.log(e.data)
+                    if (message == "entityEditor-window") {
+                        payload.focus()
+                    }
+                    else if (message == "graphEditor-workspace") {
                         this.workspace = payload
 
                     } else if (message == "graphEditor-exposureToggle") {
                         this.loadData()
-
                     } else if (message == "graphEditor-createTriple") {
                         this.triples.push(payload)
                         this.constructTimetable(this.triples, this.activities)
@@ -436,15 +436,36 @@
                                 triple.t_name != payload.t_name
                         })
                         this.constructTimetable(this.triples, this.activities)
+                    } else if (message == "entityEditor-visibility") {
+                        this.isEntityEditorVisible = payload
                     }
                 }
             }
-            window.parent.postMessage({
-                message: 'coursePlan-mount'
+            this.editor_bc.postMessage({
+                message: 'entityEditor-isVisible'
             }, '*')
+
+
             // {% endif %}
             let loadDataPromise = this.loadData()
             this.wheelInterval = setInterval(() => { this.showMenuTips = true }, 10000)
+            try {
+                if (window.self !== window.top) {
+                    throw ''
+                }
+            } catch (e) {
+                this.inIframe = true
+                this.editor_bc.postMessage({
+                    message: 'coursePlan-mount'
+                }, '*')
+                window.parent.addEventListener('beforeunload', (e) => {
+                    this.countNotSync()
+                    if (this.unsyncedCount > 0) {
+                        e.preventDefault()
+                        e.returnValue = this.unsyncedCount + 'changes are still uploading';
+                    }
+                });
+            }
         },
         template: '#content',
         delimiters: ['${', '}'],
