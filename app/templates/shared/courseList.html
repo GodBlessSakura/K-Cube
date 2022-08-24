@@ -593,9 +593,14 @@
                 this.courseCode = course.courseCode
                 this.$refs.coursePreviewIframe.onload = () => {
                     this.coursePreviewDialogue = true;
-                    this.$refs.coursePreviewIframe.removeAttr("onload")
+                    this.$refs.coursePreviewIframe.onload = null
                 }
-                this.coursePreviewUrl = "{{ url_for('course')}}" + encodeURIComponent(this.courseCode)
+                let newUrl = "{{ url_for('course')}}" + encodeURIComponent(this.courseCode)
+                if (this.coursePreviewUrl == newUrl) {
+                    this.$refs.coursePreviewIframe.contentWindow.location.reload()
+                } else {
+                    this.coursePreviewUrl = "{{ url_for('course')}}" + encodeURIComponent(this.courseCode)
+                }
             },
             openWorkspaceDialogue(course) {
                 this.courseCode = course.courseCode
