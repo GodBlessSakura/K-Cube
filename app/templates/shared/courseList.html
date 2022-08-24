@@ -88,10 +88,10 @@
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-card v-if="courses[row*colPerRow + col]">
+            <v-card v-if="courses[row*colPerRow + col]" @click="openCoursePreview(courses[row * colPerRow + col])">
                 <v-list-item three-line>
                     <v-list-item-content>
-                        <div style="cursor: pointer;" @click="openCoursePreview(courses[row * colPerRow + col])">
+                        <div style="cursor: pointer;">
                             <v-list-item-title>
                                 ${courses[row*colPerRow + col].courseCode}
                                 {% if request.blueprint == "instructor" %}
@@ -213,7 +213,7 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
-                                            @click="courseAssignment(courses[row*colPerRow + col])" icon>
+                                            @click.stop="courseAssignment(courses[row*colPerRow + col])" icon>
                                             <v-icon>assignment_ind</v-icon>
                                         </v-btn>
                                     </template>
@@ -225,7 +225,7 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
-                                            @click="courseInfo(courses[row*colPerRow + col])" icon>
+                                            @click.stop="courseInfo(courses[row*colPerRow + col])" icon>
                                             <v-icon>edit</v-icon>
                                         </v-btn>
                                     </template>
@@ -237,7 +237,7 @@
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
-                                            @click="courseIsInternal(courses[row*colPerRow + col])" icon>
+                                            @click.stop="courseIsInternal(courses[row*colPerRow + col])" icon>
                                             <v-icon>${courses[row*colPerRow + col].isInternal ===
                                                 false?'public_off':'public'}
                                             </v-icon>
@@ -256,7 +256,7 @@
                     <v-tooltip bottom>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn :color="courses[row*colPerRow + col].isInternal === false?'success':'grey'"
-                                @click="courseIsInternal(courses[row*colPerRow + col])" v-bind="attrs" v-on="on"
+                                @click.stop="courseIsInternal(courses[row*colPerRow + col])" v-bind="attrs" v-on="on"
                                 outlined>
                                 <v-icon left>public</v-icon>
                                 public
@@ -313,7 +313,7 @@
                             <v-tooltip bottom>
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-listCourseInstructor"
-                                        @click="courseAssignment(courses[row*colPerRow + col])" icon>
+                                        @click.stop="courseAssignment(courses[row*colPerRow + col])" icon>
                                         <v-icon>assignment_ind</v-icon>
                                     </v-btn>
                                 </template>
@@ -329,7 +329,7 @@
                                 <v-btn :outlined="!courses[row*colPerRow + col].isTeaching" v-show="joinMode"
                                     :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs"
                                     v-on="on" ref="shepherd-joined"
-                                    @click="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
+                                    @click.stop="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
                                     <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
                                     ${courses[row*colPerRow + col].isTeaching?'on-duty':'off-duty'}
                                 </v-btn>
@@ -339,14 +339,14 @@
                     </v-tooltip>
                     <v-spacer></v-spacer>
                     <v-btn v-if="courses[row*colPerRow + col].workspaces.length == 0"
-                        @click="openWorkspaceDialogue(courses[row*colPerRow + col])">
+                        @click.stop="openWorkspaceDialogue(courses[row*colPerRow + col])">
                         create mind map &nbsp;<v-icon small>work_outline</v-icon>
                     </v-btn>
                     <div v-else>
                         <v-tooltip bottom>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn v-bind="attrs" v-on="on" color="success" style="width: 36px; min-width: unset;"
-                                    @click="openWorkspaceDialogue(courses[row*colPerRow + col])"
+                                    @click.stop="openWorkspaceDialogue(courses[row*colPerRow + col])"
                                     ref="shepherd-newWorkspace">
                                     <v-icon>
                                         add_box</v-icon>
@@ -356,7 +356,7 @@
                         </v-tooltip>
                         <v-tooltip bottom>
                             <template v-slot:activator="{ on, attrs }">
-                                <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-recentVisit"
+                                <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-recentVisit" @click.stop
                                     :href="'{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId">
                                     recent visit &nbsp;<v-icon small>work</v-icon>
                                 </v-btn>
@@ -375,7 +375,8 @@
         <kcube-workspace-form ref="workspaceForm"></kcube-workspace-form>
     </v-dialog>
     <v-dialog v-model="coursePreviewDialogue" max-width="80vw" max-height="70vh" eager>
-        <iframe :src="coursePreviewUrl" style="height: 50vh; width:100%" frameBorder="0" scrolling="no"></iframe>
+        <iframe ref="coursePreviewIframe" :src="coursePreviewUrl" style="height: 50vh; width:100%" frameBorder="0"
+            scrolling="no"></iframe>
     </v-dialog>
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
         <v-card v-if="course">
@@ -590,8 +591,11 @@
             },
             openCoursePreview(course) {
                 this.courseCode = course.courseCode
+                this.$refs.coursePreviewIframe.onload = () => {
+                    this.coursePreviewDialogue = true;
+                    this.$refs.coursePreviewIframe.removeAttr("onload")
+                }
                 this.coursePreviewUrl = "{{ url_for('course')}}" + encodeURIComponent(this.courseCode)
-                this.coursePreviewDialogue = true
             },
             openWorkspaceDialogue(course) {
                 this.courseCode = course.courseCode
