@@ -76,7 +76,7 @@
             </v-card-subtitle>
             {% if request.blueprint == "instructor" %}
             <v-card-actions>
-                <v-btn text color="primary" @click="openEntityEditor">
+                <v-btn text color="primary" @click="openEntityEditor(details.name)">
                     open entity editor
                 </v-btn>
                 <v-btn text color="primary" v-show="details?.notSync" @click="$refs.root.sync(details)">
@@ -390,14 +390,15 @@
                     }
                 }
             },
-            openEntityEditor() {
+            openEntityEditor(name) {
+                this.editor_bc.postMessage({ message: "entityEditor-close" }, '*')
                 let width = 0.35 * document.documentElement.clientWidth
                 let left = (1 - 0.35) * document.documentElement.clientWidth
                 window.open("{{url_for('instructor.entityEditor')}}/" +
                     "{{courseCode}}/" +
-                    encodeURIComponent(this.details.name),
-                    "entity_editor",
-                    "popup=true,resizable=no, width=" + width + ",left=" + left)
+                    name,
+                    "",
+                    "popup=true,resizable=no, width=" + width + ",left=" + left).focus()
             },
             // {% endif %}
         },
@@ -417,13 +418,10 @@
                         payload
                     } = e.data
                     console.log(e.data)
-                    if (message == "entityEditor-window") {
-                        payload.focus()
+                    if (message == "entityEditor-focusEcho") {
+                        this.openEntityEditor(payload)
                     }
-                    else if (message == "graphEditor-workspace") {
-                        this.workspace = payload
-
-                    } else if (message == "graphEditor-exposureToggle") {
+                    else if (message == "graphEditor-exposureToggle") {
                         this.loadData()
                     } else if (message == "graphEditor-createTriple") {
                         this.triples.push(payload)
@@ -455,7 +453,7 @@
                 }
             } catch (e) {
                 this.inIframe = true
-                this.editor_bc.postMessage({
+                window.parent.postMessage({
                     message: 'coursePlan-mount'
                 }, '*')
                 window.parent.addEventListener('beforeunload', (e) => {
@@ -465,6 +463,16 @@
                         e.returnValue = this.unsyncedCount + 'changes are still uploading';
                     }
                 });
+            }
+            window.onmessage = (e) => {
+                const {
+                    message,
+                    payload
+                } = e.data
+                if (message == "graphEditor-workspace") {
+                    this.workspace = payload
+
+                }
             }
         },
         template: '#content',

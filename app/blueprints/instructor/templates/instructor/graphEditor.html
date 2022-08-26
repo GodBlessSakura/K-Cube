@@ -47,17 +47,35 @@
                 <v-divider vertical dense></v-divider>
                 <v-col cols="auto">
                     <v-tooltip :disabled="workspace?.isExposed" bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-list-item v-bind="attrs" v-on="on" ref="shepherd-coursePlan"
-                                @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
-                                <v-list-item-subtitle>${subject?.courseCode} course plan
-                                </v-list-item-subtitle>
-                                <v-list-item-icon>
-                                    <v-icon>open_in_new</v-icon>
-                                    <v-icon v-if="!workspace?.isExposed">
-                                        error_outline</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
+                        <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
+                            <v-menu offset-y>
+                                <template v-slot:activator="{ on: menutipOn, attrs: menuAttrs }">
+                                    <v-list-item v-bind="{...tooltipAttrs,...menuAttrs}"
+                                        v-on="{...tooltipOn,...menutipOn}" ref="shepherd-coursePlan">
+                                        <v-list-item-subtitle>${subject?.courseCode} course plan
+                                        </v-list-item-subtitle>
+                                        <v-list-item-icon>
+                                            <v-icon v-if="!workspace?.isExposed">
+                                                error_outline</v-icon>
+                                        </v-list-item-icon>
+                                    </v-list-item>
+                                </template>
+                                <v-list>
+                                    <v-list-item
+                                        @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
+                                        <v-list-item-subtitle>open here
+                                        </v-list-item-subtitle>
+                                    </v-list-item>
+                                    <v-list-item
+                                        @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
+                                        <v-list-item-subtitle>open in new tab
+                                        </v-list-item-subtitle>
+                                        <v-list-item-icon>
+                                            <v-icon>open_in_new</v-icon>
+                                        </v-list-item-icon>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
                         </template>
                         <span style="font-size: small;">
                             Course plan only reflects contents on exposed graph.<br>
@@ -982,116 +1000,6 @@
                     })
                 return Promise.all([workspacePromise, relationshipPromise, entityPromise]).then(_ => {
                     this.$root.progress.show = false
-                    this.editor_bc = new BroadcastChannel(this.subject.courseCode + "-editor")
-                    this.editor_bc.onmessage = (e) => {
-
-                        const {
-                            message,
-                            payload
-                        } = e.data
-                        console.log(e.data)
-                        if (!this.workspace.isExposed && coursePlan.includes('coursePlan')) return
-                        if (message == "entityEditor-window") {
-                            payload.focus()
-                        }
-                        else if (message == "coursePlan-mount") {
-                            this.editor_bc.postMessage({ message: 'graphEditor-workspace', payload: this.workspace }, '*')
-                        }
-                        else if (message == "coursePlan-exclusiveHeadTriple") {
-                            let triple = payload
-                            let newNodes = cy.collection();
-                            let oldNodes = cy.collection();
-                            let removed_edge = cy.edges('[workspace_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
-                            removed_edge.data({
-                                workspace_value: "undefined"
-                            })
-                            let false_edge = cy.edges('[workspace_value = "undefined"][subject_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
-                            false_edge.data({
-                                workspace_value: "false"
-                            })
-                            cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
-                                .remove()
-                            cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
-                                "tempory");
-                            [triple.h_name, triple.t_name].forEach(
-                                name => {
-                                    let eles = cy.getElementById(name)
-                                    if (eles.length == 0) {
-                                        newNodes = newNodes.union(cy.add(nodeFactory(name)))
-                                    }
-                                    else {
-                                        oldNodes = oldNodes.union(eles)
-                                    }
-                                    if (!this.concepts.includes(name)) this.concepts.push(name)
-                                })
-                            let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
-                                triple.t_name))[0]
-
-                            if (edge) {
-                                edge.data({
-                                    workspace_value: triple.r_value ? 'true' : 'false'
-                                })
-                            } else {
-                                cy.add(workspaceEdgeFactory(triple))
-                            }
-                            cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
-                            if (newNodes.length != 0 && oldNodes.length != 0) {
-                                newNodes.forEach(node => {
-                                    node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
-                                })
-                            }
-
-                            if (!this.isPhysicsRunning) {
-                                cy.nodes().lock()
-                                newNodes.unlock()
-                                let initOption = { ...colaLayoutOptions }
-                                initOption.maxSimulationTime = 2000
-                                initOption.infinite = false
-                                initOption.refresh = 1000
-                                initOption.convergenceThreshold = 0
-                                cyLayout = cy.layout(initOption)
-                                cyLayout.one('layoutstop', () => {
-                                    cy.nodes().unlock()
-                                })
-                                cyLayout.run()
-                            } else {
-                                this.physics(this.isPhysicsRunning)
-                            }
-                            this.edgeStatistic()
-                            this.determineTripleOptions()
-
-                        }
-                        else if (message == "coursePlan-decapitate") {
-                            let triples = payload
-                            triples.forEach(triple => {
-                                if (triple.r_value === true) {
-                                    return
-                                }
-                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
-                                    triple.t_name))[0]
-                                if (edge) {
-                                    edge.data({
-                                        workspace_value: triple.r_value === false ? 'false' : 'undefined'
-                                    })
-                                } else {
-                                    cy.add(workspaceEdgeFactory(triple))
-                                }
-
-                            })
-                            cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
-                                .remove()
-                            cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
-                                "tempory")
-                            this.edgeStatistic()
-                            this.determineTripleOptions()
-                        }
-                        else if (message == "entityEditor-visibility") {
-                            this.isEntityEditorVisible = payload
-                        }
-                    }
-                    this.editor_bc.postMessage({
-                        message: 'entityEditor-isVisible'
-                    }, '*')
                 })
             },
             switchStyle() {
@@ -1165,63 +1073,15 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
+                            this.editor_bc.postMessage({ message: 'graphEditor-createWorkspaceTriple', payload: body.triple }, '*')
+                            this.createWorkspaceTriple(body.triple)
                             if (body.triple) {
                                 if (r_value) {
                                     if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-createTriple', payload: body.triple }, '*')
                                 } else {
                                     if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-deleteTriple', payload: body.triple }, '*')
                                 }
-                                let triple = body.triple;
-                                let newNodes = cy.collection();
-                                let oldNodes = cy.collection();
-                                [triple.h_name, triple.t_name].forEach(
-                                    name => {
-                                        let eles = cy.getElementById(name)
-                                        if (eles.length == 0) {
-                                            newNodes = newNodes.union(cy.add(nodeFactory(name)))
-                                        }
-                                        else {
-                                            oldNodes = oldNodes.union(eles)
-                                        }
-                                        if (!this.concepts.includes(name)) this.concepts.push(name)
-                                    })
-                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
-                                    triple.t_name))[0]
 
-                                if (edge) {
-                                    edge.data({
-                                        workspace_value: triple.r_value ? 'true' : 'false'
-                                    })
-                                } else {
-                                    cy.add(workspaceEdgeFactory(triple))
-                                }
-                                cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
-                                // let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
-                                //     .rootName +
-                                //     '"]')
-                                if (newNodes.length != 0 && oldNodes.length != 0) {
-                                    newNodes.forEach(node => {
-                                        node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
-                                    })
-                                }
-                                if (!this.isPhysicsRunning) {
-                                    cy.nodes().lock()
-                                    newNodes.unlock()
-                                    let initOption = { ...colaLayoutOptions }
-                                    initOption.maxSimulationTime = 2000
-                                    initOption.infinite = false
-                                    initOption.refresh = 1000
-                                    initOption.convergenceThreshold = 0
-                                    cyLayout = cy.layout(initOption)
-                                    cyLayout.one('layoutstop', () => {
-                                        cy.nodes().unlock()
-                                    })
-                                    cyLayout.run()
-                                } else {
-                                    this.physics(this.isPhysicsRunning)
-                                }
-                                this.edgeStatistic()
-                                this.determineTripleOptions()
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when creating triple.')
@@ -1260,33 +1120,91 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
+                                this.editor_bc.postMessage({ message: 'graphEditor-deleteWorkspaceTriple', payload: body.triple }, '*')
+                                this.deleteWorkspaceTriple(body.triple)
                                 let triple = body.triple
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple.t_name))[0]
-
                                 if (edge.data("subject_value") ==
                                     "true") {
                                     if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-createTriple', payload: body.triple }, '*')
                                 } else {
                                     if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-deleteTriple', payload: body.triple }, '*')
                                 }
-                                edge.data({
-                                    workspace_value: "undefined"
-                                })
-                                cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
-                                    .remove()
-                                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
-                                    "tempory")
-                                this.edgeStatistic()
-                                this.determineTripleOptions()
-                                this.physics(this.isPhysicsRunning)
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when deleted triple.')
                             }
                         })
                 }
+            },
+            createWorkspaceTriple(triple) {
+                let newNodes = cy.collection();
+                let oldNodes = cy.collection();
+                [triple.h_name, triple.t_name].forEach(
+                    name => {
+                        let eles = cy.getElementById(name)
+                        if (eles.length == 0) {
+                            newNodes = newNodes.union(cy.add(nodeFactory(name)))
+                        }
+                        else {
+                            oldNodes = oldNodes.union(eles)
+                        }
+                        if (!this.concepts.includes(name)) this.concepts.push(name)
+                    })
+                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                    triple.t_name))[0]
+
+                if (edge) {
+                    edge.data({
+                        workspace_value: triple.r_value ? 'true' : 'false'
+                    })
+                } else {
+                    cy.add(workspaceEdgeFactory(triple))
+                }
+                cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
+                // let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
+                //     .rootName +
+                //     '"]')
+                if (newNodes.length != 0 && oldNodes.length != 0) {
+                    newNodes.forEach(node => {
+                        node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
+                    })
+                }
+                if (!this.isPhysicsRunning) {
+                    cy.nodes().lock()
+                    newNodes.unlock()
+                    let initOption = { ...colaLayoutOptions }
+                    initOption.maxSimulationTime = 2000
+                    initOption.infinite = false
+                    initOption.refresh = 1000
+                    initOption.convergenceThreshold = 0
+                    cyLayout = cy.layout(initOption)
+                    cyLayout.one('layoutstop', () => {
+                        cy.nodes().unlock()
+                    })
+                    cyLayout.run()
+                } else {
+                    this.physics(this.isPhysicsRunning)
+                }
+                this.edgeStatistic()
+                this.determineTripleOptions()
+            },
+            deleteWorkspaceTriple(triple) {
+                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
+                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                    triple.t_name))[0]
+                edge.data({
+                    workspace_value: "undefined"
+                })
+                cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
+                    .remove()
+                cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
+                    "tempory")
+                this.edgeStatistic()
+                this.determineTripleOptions()
+                this.physics(this.isPhysicsRunning)
             },
             highlightEdge() {
                 cy.edges(".suppress").removeClass('suppress')
@@ -1703,6 +1621,7 @@
                                 () => {
                                     this.$root.actionSnackBar.show = false
                                     this.subject.isTeaching = !this.subject.isTeaching
+                                    this.editor_bc.postMessage({ message: 'graphEditor-joinToggle', payload: this.subject.isTeaching }, '*')
                                 })
 
                         })
@@ -1836,8 +1755,26 @@
 
                 this._tour.start();
             },
+            openEntityEditor(name) {
+                this.editor_bc.postMessage({ message: "entityEditor-close" }, '*')
+                let width = 0.35 * document.documentElement.clientWidth
+                let left = (1 - 0.35) * document.documentElement.clientWidth
+                window.open(name ? "{{url_for('instructor.entityEditor')}}/" +
+                    this.subject.courseCode + '/' + name : "",
+                    "",
+                    "popup=true,resizable=no, width=" + width + ",left=" + left).focus()
+            },
         },
         mounted: function () {
+            window.onmessage = (e) => {
+                const {
+                    message,
+                    payload
+                } = e.data
+                if (message == "coursePlan-mount") {
+                    e.source.postMessage({ message: 'graphEditor-workspace', payload: this.workspace }, '*')
+                }
+            }
             this.fullScreenMode = true
             cy.mount(document.getElementById("editor"))
             cytoscapeInstance.forEach(instance => {
@@ -1845,14 +1782,134 @@
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]
             })
             self = this
-            let loadDataPromise = this.loadData()
+            let loadDataPromise = this.loadData().then(_ => {
+                console.log
+                this.editor_bc = new BroadcastChannel(this.subject.courseCode + "-editor")
+                this.editor_bc.onmessage = (e) => {
+                    const {
+                        message,
+                        payload
+                    } = e.data
+                    console.log(e.data)
+                    //if (!this.workspace.isExposed && message.includes('coursePlan')) return
+                    if (message == "entityEditor-focusEcho") {
+                        this.openEntityEditor(payload)
+                    }
+                    else if (message == "coursePlan-exclusiveHeadTriple") {
+                        let triple = payload
+                        let newNodes = cy.collection();
+                        let oldNodes = cy.collection();
+                        let removed_edge = cy.edges('[workspace_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
+                        removed_edge.data({
+                            workspace_value: "undefined"
+                        })
+                        let false_edge = cy.edges('[workspace_value = "undefined"][subject_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
+                        false_edge.data({
+                            workspace_value: "false"
+                        })
+                        cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
+                            .remove()
+                        cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
+                            "tempory");
+                        [triple.h_name, triple.t_name].forEach(
+                            name => {
+                                let eles = cy.getElementById(name)
+                                if (eles.length == 0) {
+                                    newNodes = newNodes.union(cy.add(nodeFactory(name)))
+                                }
+                                else {
+                                    oldNodes = oldNodes.union(eles)
+                                }
+                                if (!this.concepts.includes(name)) this.concepts.push(name)
+                            })
+                        let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                            triple.t_name))[0]
+
+                        if (edge) {
+                            edge.data({
+                                workspace_value: triple.r_value ? 'true' : 'false'
+                            })
+                        } else {
+                            cy.add(workspaceEdgeFactory(triple))
+                        }
+                        cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
+                        if (newNodes.length != 0 && oldNodes.length != 0) {
+                            newNodes.forEach(node => {
+                                node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
+                            })
+                        }
+
+                        if (!this.isPhysicsRunning) {
+                            cy.nodes().lock()
+                            newNodes.unlock()
+                            let initOption = { ...colaLayoutOptions }
+                            initOption.maxSimulationTime = 2000
+                            initOption.infinite = false
+                            initOption.refresh = 1000
+                            initOption.convergenceThreshold = 0
+                            cyLayout = cy.layout(initOption)
+                            cyLayout.one('layoutstop', () => {
+                                cy.nodes().unlock()
+                            })
+                            cyLayout.run()
+                        } else {
+                            this.physics(this.isPhysicsRunning)
+                        }
+                        this.edgeStatistic()
+                        this.determineTripleOptions()
+
+                    }
+                    else if (message == "coursePlan-decapitate") {
+                        let triples = payload
+                        triples.forEach(triple => {
+                            if (triple.r_value === true) {
+                                return
+                            }
+                            let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                                triple.t_name))[0]
+                            if (edge) {
+                                edge.data({
+                                    workspace_value: triple.r_value === false ? 'false' : 'undefined'
+                                })
+                            } else {
+                                cy.add(workspaceEdgeFactory(triple))
+                            }
+
+                        })
+                        cy.edges('[workspace_value = "undefined"][subject_value = "undefined"]')
+                            .remove()
+                        cy.nodes('[[degree = 0]][id != "' + this.rootName + '"]').addClass(
+                            "tempory")
+                        this.edgeStatistic()
+                        this.determineTripleOptions()
+                    }
+                    else if (message == "entityEditor-visibility") {
+                        this.isEntityEditorVisible = payload
+                    }
+                    else if (message == "graphEditor-createWorkspaceTriple") {
+                        this.createWorkspaceTriple(payload)
+                    }
+                    else if (message == "graphEditor-deleteWorkspaceTriple") {
+                        this.deleteWorkspaceTriple(payload)
+                    }
+                    else if (message == "graphEditor-exposureToggle") {
+                        if (payload.deltaGraphId == this.workspace.deltaGraphId) {
+                            this.workspace = payload
+                        } else if (payload.isExposed) {
+                            this.workspace.isExposed = false
+                        }
+                    }
+                    else if (message == "graphEditor-joinToggle") {
+                        this.subject.isTeaching = payload
+                    }
+                }
+                this.editor_bc.postMessage({
+                    message: 'entityEditor-isVisible'
+                }, '*')
+            })
+
             cy.on('tap', 'node', (event) => {
-                let width = 0.35 * document.documentElement.clientWidth
-                let left = (1 - 0.35) * document.documentElement.clientWidth
-                console.log(encodeURIComponent(event.target.data("id")))
-                window.open("{{url_for('instructor.entityEditor')}}/" + this.subject.courseCode + '/' + event.target.data("id"),
-                    'entity_editor',
-                    "popup=true,resizable=no, width=" + width + ",left=" + left)
+                this.openEntityEditor(event.target.data("id"))
                 if (self.canUpdateEdge) {
                     self.clearForm()
                 }
@@ -1873,88 +1930,6 @@
                 self.determineTripleOptions()
             })
             cy.on('tapdrag', 'node', (event) => { })
-            // let size
-            // cy.on('select', 'node', event => {
-            //     let node = event.target[0]
-            //     size = {
-            //         height: node.height(),
-            //         width: node.width()
-            //     }
-            //     let newSize = 1.125
-            //     let newDuration = 300
-            //     let animation = node.animation({
-            //         style: {
-            //             height: size.height * newSize,
-            //             width: size.height * newSize
-            //         },
-            //         duration: newDuration
-            //     });
-            //     let loop = () => {
-
-            //         animation.reverse().rewind().play().promise().then(() => {
-            //             node.delayAnimation(newDuration).play().promise().then(() => {
-            //                 loop()
-            //             })
-            //         })
-            //     }
-            //     animation.play().promise().then(() => {
-            //         node.delayAnimation(newDuration).play().promise().then(() => {
-            //             loop()
-            //         })
-            //     })
-            // })
-            // cy.on('unselect', 'node', event => {
-            //     let node = event.target[0]
-            //     console.log('unselect')
-            //     node.stop()
-            //     node.clearQueue()
-            //     let animation = node.animation({
-            //         style: {
-            //             height: size.height,
-            //             width: size.height
-            //         },
-            //         duration: 0
-            //     });
-            //     animation.play()
-            // })
-            // let width
-            // cy.on('select', 'edge', event => {
-            //     let edge = event.target[0]
-            //     width = edge.width()
-            //     let newWidth = 2
-            //     let newDuration = 300
-            //     let animation = edge.animation({
-            //         style: {
-            //             width: width * newWidth
-            //         },
-            //         duration: newDuration
-            //     });
-            //     let loop = () => {
-            //         animation.reverse().rewind().play().promise().then(() => {
-            //             edge.delayAnimation(newDuration).play().promise().then(() => {
-            //                 loop()
-            //             })
-            //         })
-            //     }
-            //     animation.play().promise().then(() => {
-            //         edge.delayAnimation(newDuration).play().promise().then(() => {
-            //             loop()
-            //         })
-            //     })
-            // })
-            // cy.on('unselect', 'edge', event => {
-            //     let edge = event.target[0]
-            //     console.log('unselect')
-            //     edge.stop()
-            //     edge.clearQueue()
-            //     let animation = edge.animation({
-            //         style: {
-            //             width: width
-            //         },
-            //         duration: 0
-            //     });
-            //     animation.play()
-            // })
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()
             })

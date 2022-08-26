@@ -301,11 +301,14 @@
                     this.editor_bc.postMessage({ message: "entityEditor-visibility", payload: this.visible }, '*')
                 }
                 else if (message == "entityEditor-focus") {
-                    this.editor_bc.postMessage({ message: "entityEditor-window", payload: window }, '*')
+                    this.editor_bc.postMessage({ message: "entityEditor-focusEcho", payload: "{{name}}" }, '*')
                 }
                 else if (message == "update-entity" && payload.name == this.name) {
                     this.activityDesc = payload.desc
                     this.activityWeek = payload.week
+                }
+                else if (message == "entityEditor-close"){
+                    window.close()
                 }
             }
             document.addEventListener("visibilitychange", () => {
