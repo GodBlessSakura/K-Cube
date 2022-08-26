@@ -1073,7 +1073,7 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            this.editor_bc.postMessage({ message: 'graphEditor-createWorkspaceTriple', payload: body.triple }, '*')
+                            this.editor_bc.postMessage({ message: 'graphEditor-createWorkspaceTriple', payload: { ...body.triple, deltaGraphId: this.workspace.deltaGraphId } }, '*')
                             this.createWorkspaceTriple(body.triple)
                             if (body.triple) {
                                 if (r_value) {
@@ -1120,7 +1120,7 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
-                                this.editor_bc.postMessage({ message: 'graphEditor-deleteWorkspaceTriple', payload: body.triple }, '*')
+                                this.editor_bc.postMessage({ message: 'graphEditor-deleteWorkspaceTriple', payload: { ...body.triple, deltaGraphId: this.workspace.deltaGraphId } }, '*')
                                 this.deleteWorkspaceTriple(body.triple)
                                 let triple = body.triple
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
@@ -1791,7 +1791,7 @@
                         payload
                     } = e.data
                     console.log(e.data)
-                    //if (!this.workspace.isExposed && message.includes('coursePlan')) return
+                    if (!this.workspace.isExposed && message.includes('coursePlan')) return
                     if (message == "entityEditor-focusEcho") {
                         this.openEntityEditor(payload)
                     }
@@ -1887,9 +1887,11 @@
                         this.isEntityEditorVisible = payload
                     }
                     else if (message == "graphEditor-createWorkspaceTriple") {
+                        if (payload.deltaGraphId != this.workspace.deltaGraphId && message.includes('graphEditor')) return
                         this.createWorkspaceTriple(payload)
                     }
                     else if (message == "graphEditor-deleteWorkspaceTriple") {
+                        if (payload.deltaGraphId != this.workspace.deltaGraphId && message.includes('graphEditor')) return
                         this.deleteWorkspaceTriple(payload)
                     }
                     else if (message == "graphEditor-exposureToggle") {
