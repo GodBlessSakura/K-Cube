@@ -4,6 +4,7 @@ function flattenSchedule(schedule) {
         return previous.concat(schedule[current])
     }, [])
 }
+
 function recursiveSearch(tree, name) {
     if (tree.name == name) return tree
     for (const child of flattenSchedule(tree.schedule)) {
@@ -12,6 +13,7 @@ function recursiveSearch(tree, name) {
     }
     return null
 }
+
 function traversal(name, triples, activities) {
     let activity = activities.filter(a => a.name == name)
     let node = {
@@ -37,28 +39,35 @@ function traversal(name, triples, activities) {
     node.children = node.children.map(child => traversal(child, triples, activities))
     return node
 }
+
 function flattenListOfNode(nodes) {
     return [...nodes, ...nodes.flatMap(n => {
         let children = flattenSchedule(n.schedule)
         return [...children, ...children.length > 0 ? flattenListOfNode(children) : []]
     })]
 }
+
 function sortChildren(node) {
     if (node.children.length == 0) {
         node.numItem = 1
-    }
-    else {
+    } else {
         node.children.forEach(child => (sortChildren(child)))
         node.children = node.children.sort((childA, childB) => {
-            if (childA.week != null && childB.week != null) { return childA.week - childB.week }
-            else if (childA.week != null & childB.week == null) { return -1 }
-            else if (childA.week == null & childB.week != null) { return 1 }
-            else { return childB.numItem - childA.numItem }
+            if (childA.week != null && childB.week != null) {
+                return childA.week - childB.week
+            } else if (childA.week != null & childB.week == null) {
+                return -1
+            } else if (childA.week == null & childB.week != null) {
+                return 1
+            } else {
+                return childB.numItem - childA.numItem
+            }
         })
         node.children.forEach(child => child.parent = node)
         node.numItem = node.children.map(child => child.numItem).reduce((previous, current) => previous + current)
     }
 }
+
 function allocate(node, slot, totalItem) {
     node.notSync = false
     if (node.week === null) {
@@ -75,8 +84,7 @@ function allocate(node, slot, totalItem) {
         (previous, child) => {
             if (previous[child.week]) {
                 previous[child.week].push(child)
-            }
-            else {
+            } else {
                 previous[child.week] = [child]
             }
             return previous
