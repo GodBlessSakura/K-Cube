@@ -96,7 +96,6 @@
         },
         watch: {
             node: function (newVal, oldVal) {
-                console.log("watch", this.node.name)
                 this.node._vue = this
                 this.render()
             },
@@ -223,8 +222,8 @@
                     let request = data.map(r => r.request)
                     if (!request.includes("triple") && request.includes("activity")) {
                         let { _vue, parent, children, schedule, ...orphan } = entity
-                        _vue.editor_bc.postMessage({
-                            message: 'scheduleItem-itemClimbed-' + orphan.name,
+                        this.editor_bc.postMessage({
+                            message: 'scheduleItem-itemClimbed-' + this.node.name,
                             payload: orphan
                         }, '*')
                     }
@@ -244,12 +243,15 @@
                 if (newWeek > 0 && newWeek <= weekInSemester) {
                     let { _vue, parent, children, schedule, ...orphan } = this.node
                     orphan.week = newWeek
-                    this.node.parent._vue.updateActivity(this.node, orphan, true)
+                    this.node.parent._vue.updateActivity(orphan, true, this.node,)
                 }
             },
-            updateActivity(foundChild, activity, needPatch = false) {
+            updateActivity(activity, needPatch = false, foundChild = undefined) {
                 console.log(foundChild)
                 console.log(this.node)
+                if (!foundChild) {
+                    foundChild = flattenSchedule(this.node.schedule).filter(node => node.name == activity.name)[0]
+                }
                 let oldWeek = foundChild.week
                 let newWeek = Number(activity.week)
                 manipulateAndHighlight = () => {
@@ -344,7 +346,12 @@
                         payload
                     } = e.data
                     if (message == "scheduleItem-itemClimbed-" + this.node.name) {
-                        this.node.parent._vue.updateActivity(this.node, payload, false)
+                        console.log("scheduleItem-itemClimbed-", this.node.name)
+                        this.node._vue.updateActivity(payload, false)
+                    }
+                    else if (message == "entityEditor-activity-" + this.node.name) {
+                        console.log("entityEditor-activity-", this.node.name)
+                        this.node.parent._vue.updateActivity(payload, false, this.node)
                     }
                     else if (message == "scheduleItem-scheduleUpdate-" + this.node.name) {
                         function adoptChild(node) {

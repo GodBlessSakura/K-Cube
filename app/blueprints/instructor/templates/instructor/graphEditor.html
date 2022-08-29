@@ -684,7 +684,7 @@
         <template v-slot:activator="{ on, attrs }">
             <v-fab-transition>
                 <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on"
-                    @click="editor_bc.postMessage({message:'entityEditor-focus'})" fixed bottom right fab>
+                    @click="backToEntityEditor()" fixed bottom right fab>
                     <v-icon>edit</v-icon>
                 </v-btn>
             </v-fab-transition>
@@ -1764,6 +1764,18 @@
                     "",
                     "popup=true,resizable=no, width=" + width + ",left=" + left).focus()
             },
+            backToEntityEditor() {
+                this.editor_bc.addEventListener('message', (e) => {
+                    const {
+                        message,
+                        payload
+                    } = e.data
+                    if (message == "entityEditor-focusEcho") {
+                        this.openEntityEditor(payload)
+                    }
+                }, { once: true })
+                this.editor_bc.postMessage({ message: 'entityEditor-focus' })
+            }
         },
         mounted: function () {
             window.onmessage = (e) => {
@@ -1792,10 +1804,7 @@
                     } = e.data
                     console.log(e.data)
                     if (!this.workspace.isExposed && message.includes('coursePlan')) return
-                    if (message == "entityEditor-focusEcho") {
-                        this.openEntityEditor(payload)
-                    }
-                    else if (message == "coursePlan-exclusiveHeadTriple") {
+                    if (message == "coursePlan-exclusiveHeadTriple") {
                         let triple = payload
                         let newNodes = cy.collection();
                         let oldNodes = cy.collection();

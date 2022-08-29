@@ -97,8 +97,8 @@
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
             <v-fab-transition>
-                <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on"
-                    @click="editor_bc.postMessage({message:'entityEditor-focus'})" fixed bottom right fab>
+                <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on" @click="backToEntityEditor()" fixed
+                    bottom right fab>
                     <v-icon>edit</v-icon>
                 </v-btn>
             </v-fab-transition>
@@ -400,6 +400,18 @@
                     "",
                     "popup=true,resizable=no, width=" + width + ",left=" + left).focus()
             },
+            backToEntityEditor() {
+                this.editor_bc.addEventListener('message', (e) => {
+                    const {
+                        message,
+                        payload
+                    } = e.data
+                    if (message == "entityEditor-focusEcho") {
+                        this.openEntityEditor(payload)
+                    }
+                }, { once: true })
+                this.editor_bc.postMessage({ message: 'entityEditor-focus' })
+            }
             // {% endif %}
         },
         mounted: function () {
@@ -418,10 +430,7 @@
                         payload
                     } = e.data
                     console.log(e.data)
-                    if (message == "entityEditor-focusEcho") {
-                        this.openEntityEditor(payload)
-                    }
-                    else if (message == "graphEditor-exposureToggle") {
+                    if (message == "graphEditor-exposureToggle") {
                         this.loadData()
                     } else if (message == "graphEditor-createTriple") {
                         this.triples.push(payload)
