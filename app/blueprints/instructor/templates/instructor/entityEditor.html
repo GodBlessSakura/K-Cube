@@ -294,7 +294,7 @@
                     payload
                 } = e.data
                 console.log(e.data)
-                if (message == "update-entity") {
+                if (message.includes("scheduleItem-activityUpdate-")) {
                     this.updateEntity(payload)
                 }
                 else if (message == "entityEditor-isVisible") {
@@ -303,11 +303,7 @@
                 else if (message == "entityEditor-focus") {
                     this.editor_bc.postMessage({ message: "entityEditor-focusEcho", payload: "{{name}}" }, '*')
                 }
-                else if (message == "update-entity" && payload.name == this.name) {
-                    this.activityDesc = payload.desc
-                    this.activityWeek = payload.week
-                }
-                else if (message == "entityEditor-close"){
+                else if (message == "entityEditor-close") {
                     window.close()
                 }
             }

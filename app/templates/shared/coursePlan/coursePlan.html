@@ -436,6 +436,13 @@
                         this.constructTimetable(this.triples, this.activities)
                     } else if (message == "entityEditor-visibility") {
                         this.isEntityEditorVisible = payload
+                    } else if (message == "coursePlan-decapitate") {
+                        this.triples = this.triples.filter(triple => {
+                            return payload.filter(removed => triple.h_name == removed.h_name &&
+                                triple.r_name == removed.r_name &&
+                                triple.t_name == removed.t_name).length == 0
+                        })
+                        this.constructTimetable(this.triples, this.activities)
                     }
                 }
             }

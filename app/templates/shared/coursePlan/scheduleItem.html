@@ -9,9 +9,6 @@
     v-ripple="!root?{ class: 'primary--text' }:null" style="padding: unset; float:left; margin:5px 8px">
     <v-card v-bind:id="'entity:'+node.name" :key="node.name" @dragleave="showAction=false"
         @contextmenu.stop="!root?$emit('showDetails',[$event,node]):null">
-        <div>
-
-        </div>
         <v-list-item v-if="!root" v-show="!showAction || deck"
             @dragover="showAction = (dragging || weeks.length>0)?false:true" @mouseenter="hovering = true"
             @mouseleave="hovering = false">
@@ -33,7 +30,7 @@
             </v-list-item-action>
             {% endif %}
         </v-list-item>
-        <v-list-item v-if="!root && weeks.length== 0 && node.schedule[node.week]?.length == 0"
+        <v-list-item v-if="!root && weeks.length == 0 && node.schedule[node.week]?.length == 0"
             v-show="showAction && !deck" @drop="showAction=false">
             <v-chip x-small style="position: absolute; top:0; transform: translateY(-50%)">${node.desc}</v-chip>
             <v-row no-gutters>
@@ -80,6 +77,12 @@
 {% endmacro %}
 {% macro script() %}
 <script>
+    function serializeScheduleItemNode(node) {
+        return JSON.parse(JSON.stringify(node, function (k, v) {
+            if (!k.startsWith("_") && k != "parent")
+                return v;
+        }))
+    }
     Vue.component('kcube-schedule-item', {
         props: {
             deck: {
@@ -93,6 +96,7 @@
         },
         watch: {
             node: function (newVal, oldVal) {
+                console.log("watch", this.node.name)
                 this.node._vue = this
                 this.render()
             },
@@ -146,7 +150,7 @@
                             if (body.activity) {
                                 let { _vue, parent, children, schedule, ...orphan } = entity
                                 this.editor_bc.postMessage({
-                                    message: 'update-entity',
+                                    message: 'scheduleItem-activityUpdate-' + orphan.name,
                                     payload: orphan
                                 }, '*')
 
@@ -184,6 +188,18 @@
                             })
                             .then(body => {
                                 if (body.triple) {
+                                    if (entity.parent) {
+                                        let oldParent = entity.parent
+                                        console.log(oldParent)
+                                        oldParent._vue.editor_bc.postMessage({
+                                            message: 'scheduleItem-scheduleUpdate-' + oldParent.name,
+                                            payload: serializeScheduleItemNode(oldParent)
+                                        }, '*')
+                                    }
+                                    this.editor_bc.postMessage({
+                                        message: 'scheduleItem-scheduleUpdate-' + this.node.name,
+                                        payload: serializeScheduleItemNode(this.node)
+                                    }, '*')
                                     entity.parent = this.node
                                     this.$emit('exclusiveHeadTriple', body.triple)
                                     this.editor_bc.postMessage({
@@ -197,14 +213,18 @@
                                 }
                             }))
                 }
-                if (promises.length > 0) { entity.notSync = true }
+                if (promises.length > 0) {
+                    entity.notSync = true
+                    entity._vue.$forceUpdate()
+                }
                 return Promise.all(promises).then(data => {
                     entity.notSync = false
                     this.$emit('countNotSync', { scroll: false })
-                    this.$emit('countNotSync', { scroll: false })
+
                 }).catch((reason) => {
                     entity.syncError = true
                     this.$emit('countNotSync', { scroll: true })
+                    throw reason
                 }).finally(() => {
                     entity._vue.$forceUpdate()
                 })
@@ -314,8 +334,25 @@
                         message,
                         payload
                     } = e.data
-                    if (message == "entityEditor-activity-" + this.node.name) {
-                        this.node.parent._vue.updateActivity(this.node, payload)
+                    if (message == "scheduleItem-activityUpdate-" + this.node.name) {
+                        this.node.parent._vue.updateActivity(this.node, payload, false)
+                    }
+                    else if (message == "scheduleItem-scheduleUpdate-" + this.node.name) {
+                        function adoptChild(node) {
+                            for (let week in node.schedule) {
+                                node.schedule[week].forEach(child => {
+                                    child.parent = node
+                                    child.notSync = false
+                                    adoptChild(child)
+                                }
+                                )
+                            }
+                        }
+                        this.node.schedule = payload.schedule
+                        adoptChild(this.node)
+                        console.log("scheduleUpdate", this.node.name, this.node)
+                        this.$forceUpdate()
+                        this.render()
                     }
                 }
             }
