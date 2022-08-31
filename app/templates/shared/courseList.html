@@ -88,7 +88,9 @@
                 </v-list-item>
             </v-card>
             {% else %}
-            <v-card v-if="courses[row*colPerRow + col]" @click="openCoursePreview(courses[row * colPerRow + col])">
+            <v-card v-if="courses[row*colPerRow + col]" @click="openCoursePreview(courses[row * colPerRow + col])"
+                :ref="''+courses[row * colPerRow + col].courseCode"
+                :ripple="{class: courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'error--text':''}">
                 <v-list-item three-line>
                     <v-list-item-content>
                         <div style="cursor: pointer;">
@@ -106,8 +108,11 @@
                         </div>
                     </v-list-item-content>
 
-                    <v-badge bordered icon="work" offset-x="24" offset-y="24" color="info"
-                        :value="courses[row*colPerRow + col].workspaces?.length > 0">
+                    <v-badge bordered
+                        :icon="courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'priority_high':'work'"
+                        offset-x="24" offset-y="24"
+                        :color="courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'error':'info'"
+                        :value="courses[row*colPerRow + col].workspaces?.length > 0 || courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph">
                         <v-list-item-avatar tile size="96">
                             <v-img :src="courses[row*colPerRow + col].imageURL"></v-img>
                         </v-list-item-avatar>
@@ -571,10 +576,33 @@
                                     courseName: c.course.courseName,
                                     isInternal: c.course.isInternal,
                                     isTeaching: c.isTeaching,
-                                    workspaces: c.workspaces
+                                    workspaces: c.workspaces,
+                                    hasExposedGraph: c.hasExposedGraph,
                                 })
                             })
                             this.search()
+                            // {% if request.blueprint == "instructor" %}
+                            let unexposedCourse = this.allCourses.filter(course => course.isTeaching && !course.hasExposedGraph)
+                            if (unexposedCourse.length > 0) {
+                                this.$root.errorDisplay({},
+                                    unexposedCourse.length + ' course' + (unexposedCourse > 1 ? 's' : '') + ' that you are teaching has no exposed graph.')
+                                this.$nextTick(() => {
+                                    let el = this.$refs[unexposedCourse[0].courseCode][0].$el
+                                    el.scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "center"
+                                    })
+                                    let ev = new Event("mousedown")
+                                    let offset = el.getBoundingClientRect()
+                                    ev.clientX = offset.left + 1
+                                    ev.clientY = offset.top + 1
+                                    el.dispatchEvent(ev)
+                                    this.$nextTick(function () {
+                                        el.dispatchEvent(new Event("mouseup"))
+                                    })
+                                })
+                            }
+                            // {% endif %}
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')

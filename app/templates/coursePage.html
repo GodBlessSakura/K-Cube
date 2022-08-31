@@ -184,6 +184,33 @@
                                 'Unexpected error on getting workspace information.')
                         }
                     })
+                fetch("{{ url_for('RESTful.course.courseInstructor', courseCode=courseCode) }}", {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.instructors) {
+                            this.isTeaching = body.instructors.filter(instructor=>instructor.isTeaching).map(instructor => instructor.user.userId).includes("{{USER.userId}}")
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting instructor assignment information.')
+                        }
+
+                    })
                 //{% endif %}
             },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}

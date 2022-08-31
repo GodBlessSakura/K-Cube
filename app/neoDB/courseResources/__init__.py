@@ -167,6 +167,7 @@ class courseDAO:
                         "course": dict(record["course"].items()),
                         "concept": dict(record["courseConcept"].items()),
                         "isTeaching": record["isTeaching"],
+                        "hasExposedGraph": record["hasExposedGraph"],
                         "workspaces": [
                             dict(
                                 {

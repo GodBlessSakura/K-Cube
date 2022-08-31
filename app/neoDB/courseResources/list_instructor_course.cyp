@@ -5,4 +5,4 @@ OPTIONAL MATCH
 WHERE split(workspace.deltaGraphId,'.')[0] = toString(id(course))
 WITH collect(workspace) as workspaces, max(workspace.lastModified) as lastModified, user, course, courseConcept
 WITH [w IN workspaces WHERE w.lastModified = lastModified] as workspaces, user, course, courseConcept
-RETURN course, courseConcept, EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching, workspaces
+RETURN course, courseConcept, EXISTS((user)-[:USER_TEACH]->(course)) as isTeaching, workspaces, EXISTS((course)<-[:BRANCH_DESCRIBE{userId: $userId}]-()) as hasExposedGraph

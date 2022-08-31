@@ -14,12 +14,15 @@
             <v-col>
                 <v-card-text>
                     <v-btn v-show="graph && (workspace == null || graph?.deltaGraphId != workspace?.deltaGraphId)" small
-                        text :href="'{{url_for('instructor.workspace')}}' + graph?.deltaGraphId">open exposed
-                        graph in ${workspace?'another':'the'} editor<v-icon>open_in_new</v-icon>
+                        text
+                        :href="graph?.labels.includes('Workspace')?'{{url_for('instructor.workspace')}}':'{{url_for('collegue.graphView')}}' + graph?.deltaGraphId">
+                        ${graph?.labels.includes('Workspace')?'Edit':'View'} the exposed graph 
+                        <v-icon v-if="graph?.labels.includes('Workspace')">work</v-icon>
+                        <v-icon v-else>open_in_new</v-icon>
                     </v-btn>
-                    <v-btn v-show="workspace == null && graph == null && tree" small text
+                    <v-btn v-show="graph == null && tree" small text color="warning"
                         href="{{ url_for('course', courseCode = courseCode)}}?hideGraph">
-                        create/expose a workspace<v-icon>work</v-icon>
+                        create / expose a workspace<v-icon>work</v-icon>
                     </v-btn>
                 </v-card-text>
             </v-col>
@@ -55,7 +58,15 @@
 
             </v-col>
             <v-col cols="auto">
-                <kcube-schedule-item ref="root" root v-if="tree" :node="tree"
+                <v-card-text v-if="graph == null && tree">
+                    {% if request.blueprint == "instructor" %}
+                    You have not exposed a workspace or a graph version.<br>
+                    Course plan is built upond a exposed graph.
+                    {% else %}
+                    No course plan is avaliable.
+                    {% endif %}
+                </v-card-text>
+                <kcube-schedule-item ref="root" root v-else-if="tree" :node="tree"
                     @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)"
                     @exclusiveHeadTriple="exclusiveHeadTriple($event)">
                 </kcube-schedule-item>

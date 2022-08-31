@@ -100,12 +100,15 @@ class graphDAO:
             result = tx.run(query, courseCode=courseCode, userId=userId)
             try:
                 graphs = [
-                    {
-                        key: value
-                        if not isinstance(value, DateTime)
-                        else str(value.iso_format())
-                        for key, value in record["graph"].items()
-                    }
+                    dict(
+                        {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["graph"].items()
+                        },
+                        labels=list(record["graph"].labels),
+                    )
                     for record in result
                 ]
                 return graphs[0] if len(graphs) > 0 else None
