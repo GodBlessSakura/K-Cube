@@ -600,8 +600,13 @@
                 navBar: new URLSearchParams(window.location.search).get('bar') === "false" || window.location !== window.parent.location ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
+                // {% if session['user'] %} 
                 miniSync: true,
                 navHover: true,
+                // {% else %}
+                miniSync: false,
+                navHover: false,
+                // {% endif %}
                 errorSnackBar: {
                     show: false,
                     message: ''
