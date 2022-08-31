@@ -252,6 +252,44 @@ class tripleDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def get_course_instructor_lastModified_triple(self, courseCode, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            result = tx.run(
+                "MATCH (course)-[:COURSE_DESCRIBE]->(:GraphConcept{name: $courseCode})"
+                "MATCH (user:User{userId: $userId})-[:USER_TEACH]->(course)"
+                "RETURN user.userId as userId",
+                courseCode=courseCode,
+                userId=userId,
+            )
+            try:
+                _ = [record["userId"] for record in result][0]
+            except Exception as exception:
+                from ..resourcesGuard import InvalidRequest
+                from flask import g
+
+                if g.user["userId"] == userId:
+                    raise InvalidRequest("You are not on-duty for course " + courseCode)
+                raise InvalidRequest("This instructor is not teaching this course")
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, courseCode=courseCode, userId=userId)
+            try:
+                return [
+                    {
+                        "h_name": record["h_name"],
+                        "r_name": record["r_name"],
+                        "t_name": record["t_name"],
+                        "r_value": record["r_value"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def get_course_editing_triple(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 

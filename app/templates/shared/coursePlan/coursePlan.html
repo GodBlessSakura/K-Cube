@@ -15,14 +15,23 @@
                 <v-card-text>
                     <v-btn v-show="graph && (workspace == null || graph?.deltaGraphId != workspace?.deltaGraphId)" small
                         text
-                        :href="graph?.labels.includes('Workspace')?'{{url_for('instructor.workspace')}}':'{{url_for('collegue.graphView')}}' + graph?.deltaGraphId">
-                        ${graph?.labels.includes('Workspace')?'Edit':'View'} the exposed graph 
+                        :href="(graph?.labels.includes('Workspace')?'{{url_for('instructor.workspace')}}':'{{url_for('collegue.graphView')}}') + graph?.deltaGraphId">
+                        ${graph?.labels.includes('Workspace')?'Edit':'View'} the
+                        ${graph?.isExposed?'exposed':'last-modified'} graph
                         <v-icon v-if="graph?.labels.includes('Workspace')">work</v-icon>
                         <v-icon v-else>open_in_new</v-icon>
                     </v-btn>
                     <v-btn v-show="graph == null && tree" small text color="warning"
                         href="{{ url_for('course', courseCode = courseCode)}}?hideGraph">
                         create / expose a workspace<v-icon>work</v-icon>
+                    </v-btn>
+                </v-card-text>
+            </v-col>
+            <v-col v-show="graph && !graph.isExposed">
+                <v-card-text>
+                    <v-btn small text @click="exposeWorkspace()">
+                        Expose last-modified graph
+                        <v-icon>public</v-icon>
                     </v-btn>
                 </v-card-text>
             </v-col>
@@ -61,14 +70,14 @@
                 <v-card-text v-if="graph == null && tree">
                     {% if request.blueprint == "instructor" %}
                     You have not exposed a workspace or a graph version.<br>
-                    Course plan is built upond a exposed graph.
+                    No last-modified workspace was found neither.<br>
+                    Course plan is built upond a graph.
                     {% else %}
                     No course plan is avaliable.
                     {% endif %}
                 </v-card-text>
                 <kcube-schedule-item ref="root" root v-else-if="tree" :node="tree"
-                    @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)"
-                    @exclusiveHeadTriple="exclusiveHeadTriple($event)">
+                    @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)">
                 </kcube-schedule-item>
                 <v-progress-circular indeterminate v-else></v-progress-circular>
             </v-col>
@@ -212,7 +221,7 @@
                     })
                 let graphPromise = fetch(
                     // {% if request.blueprint == "instructor" %}
-                    "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = USER.userId) }}",
+                    "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = USER.userId) }}?lastModifiedIfNone=True",
                     // {% else %}
                     "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = userId) }}",
                     // {% endif %}
@@ -328,12 +337,6 @@
                     })
                 }
             },
-            exclusiveHeadTriple(payload) {
-                this.triples = this.triples.filter(triple => {
-                    return triple.h_name != payload.h_name
-                })
-                this.triples.push(payload)
-            },
             decapitate(entity) {
                 fetch("{{ url_for('RESTful.triple.post') }}" + workspaceDeltagraphId, {
                     method: 'POST',
@@ -366,7 +369,8 @@
                             this.constructTimetable(this.triples, this.activities)
                             this.editor_bc.postMessage({
                                 message: 'coursePlan-decapitate',
-                                payload: body.triples
+                                payload: body.triples,
+                                workspaceDeltagraphId: workspaceDeltagraphId
                             }, '*')
                         } else {
                             this.$root.errorDisplay(body,
@@ -422,6 +426,46 @@
                     }
                 }, { once: true })
                 this.editor_bc.postMessage({ message: 'entityEditor-focus' })
+            },
+            exposeWorkspace() {
+                this.$root.actionDisplay("You are exposing workspace:" + this.graph.tag, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.graph.patch') }}" + this.graph.deltaGraphId, {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            isExposed: true,
+                        })
+                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.actionSnackBar.show = false
+                                    this.graph.isExposed = true
+                                    this.editor_bc.postMessage({
+                                        message: 'coursePlan-exposureToggle', payload: this.graph
+                                    }, '*')
+                                })
+                        })
+                })
             }
             // {% endif %}
         },
@@ -441,9 +485,14 @@
                         payload
                     } = e.data
                     console.log(e.data)
-                    if (message == "graphEditor-exposureToggle") {
-                        this.loadData()
-                    } else if (message == "graphEditor-createTriple") {
+                    if (message == "graphEditor-exposureToggle" || message == "coursePlan-exposureToggle") {
+                        if (payload.deltaGraphId == this.graph.deltaGraphId) {
+                            this.graph = payload
+                        } else if (payload.isExposed) {
+                            this.loadData()
+                        }
+                    }
+                    else if (message == "graphEditor-createTriple") {
                         this.triples.push(payload)
                         this.constructTimetable(this.triples, this.activities)
 
@@ -463,6 +512,12 @@
                                 triple.t_name == removed.t_name).length == 0
                         })
                         this.constructTimetable(this.triples, this.activities)
+                    }
+                    else if (message == "coursePlan-exclusiveHeadTriple") {
+                        this.triples = this.triples.filter(triple => {
+                            return triple.h_name != payload.h_name
+                        })
+                        this.triples.push(payload)
                     }
                 }
             }

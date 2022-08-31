@@ -32,14 +32,33 @@ def getCourse(courseCode, userId):
             graph = get_api_driver().graph.get_course_instructor_graph(
                 courseCode=courseCode, userId=userId
             )
-            result = get_api_driver().triple.get_course_instructor_triple(
-                courseCode=courseCode, userId=userId
-            )
+            if graph == None and request.args.get("lastModifiedIfNone"):
+                return lastModifiedGraph(course, courseCode, userId)
+            else:
+                if graph:
+                    graph["isExposed"] = True
+                result = get_api_driver().triple.get_course_instructor_triple(
+                    courseCode=courseCode, userId=userId
+                )
             return jsonify(
                 {"success": True, "triples": result, "course": course, "graph": graph}
             )
 
     return jsonify({"success": False, "message": "incomplete request"})
+
+
+@authorize_RESTful_with(["canWriteTeachingCourseBranch"])
+def lastModifiedGraph(course, courseCode, userId):
+    graph = get_api_driver().graph.get_course_instructor_lastModified_graph(
+        courseCode=courseCode, userId=userId
+    )
+    graph["isExposed"] = False
+    result = get_api_driver().triple.get_course_instructor_lastModified_triple(
+        courseCode=courseCode, userId=userId
+    )
+    return jsonify(
+        {"success": True, "triples": result, "course": course, "graph": graph}
+    )
 
 
 @triple.put("/", defaults={"deltaGraphId": None})
@@ -76,6 +95,7 @@ def put(deltaGraphId):
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
 
+
 @triple.post("/", defaults={"deltaGraphId": None})
 @triple.post("<deltaGraphId>")
 @authorize_RESTful_with(["canWriteTeachingCourseBranch"])
@@ -100,6 +120,7 @@ def post(deltaGraphId):
         except Exception as e:
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
+
 
 @triple.delete("<deltaGraphId>")
 @authorize_RESTful_with(["canWriteTeachingCourseBranch"])

@@ -200,10 +200,10 @@
                                         payload: serializeScheduleItemNode(this.node)
                                     }, '*')
                                     entity.parent = this.node
-                                    this.$emit('exclusiveHeadTriple', body.triple)
                                     this.editor_bc.postMessage({
                                         message: 'coursePlan-exclusiveHeadTriple',
-                                        payload: body.triple
+                                        payload: body.triple,
+                                        workspaceDeltagraphId: workspaceDeltagraphId
                                     }, '*')
                                     return { request: "triple", espond: body.triple }
                                 } else {

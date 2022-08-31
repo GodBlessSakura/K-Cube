@@ -683,8 +683,8 @@
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
             <v-fab-transition>
-                <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on"
-                    @click="backToEntityEditor()" fixed bottom right fab>
+                <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on" @click="backToEntityEditor()" fixed
+                    bottom right fab>
                     <v-icon>edit</v-icon>
                 </v-btn>
             </v-fab-transition>
@@ -1481,7 +1481,7 @@
                                 () => {
                                     this.$root.actionSnackBar.show = false
                                     graph.isExposed = !graph.isExposed
-                                    this.editor_bc.postMessage({ message: 'graphEditor-exposureToggle', payload: this.workspace }, '*')
+                                    this.editor_bc.postMessage({ message: 'graphEditor-exposureToggle', payload: { ...this.workspace, labels: ["Workspace"] } }, '*')
                                 })
                         })
                 })
@@ -1800,11 +1800,12 @@
                 this.editor_bc.onmessage = (e) => {
                     const {
                         message,
-                        payload
+                        payload,
+                        workspaceDeltagraphId
                     } = e.data
                     console.log(e.data)
-                    if (!this.workspace.isExposed && message.includes('coursePlan')) return
                     if (message == "coursePlan-exclusiveHeadTriple") {
+                        if(this.workspace.deltaGraphId != workspaceDeltagraphId) return
                         let triple = payload
                         let newNodes = cy.collection();
                         let oldNodes = cy.collection();
@@ -1869,6 +1870,7 @@
 
                     }
                     else if (message == "coursePlan-decapitate") {
+                        if(this.workspace.deltaGraphId != workspaceDeltagraphId) return
                         let triples = payload
                         triples.forEach(triple => {
                             if (triple.r_value === true) {
@@ -1902,13 +1904,6 @@
                     else if (message == "graphEditor-deleteWorkspaceTriple") {
                         if (payload.deltaGraphId != this.workspace.deltaGraphId && message.includes('graphEditor')) return
                         this.deleteWorkspaceTriple(payload)
-                    }
-                    else if (message == "graphEditor-exposureToggle") {
-                        if (payload.deltaGraphId == this.workspace.deltaGraphId) {
-                            this.workspace = payload
-                        } else if (payload.isExposed) {
-                            this.workspace.isExposed = false
-                        }
                     }
                     else if (message == "graphEditor-joinToggle") {
                         this.subject.isTeaching = payload
