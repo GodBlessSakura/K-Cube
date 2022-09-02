@@ -488,7 +488,10 @@
                     if (message == "graphEditor-exposureToggle" || message == "coursePlan-exposureToggle") {
                         if (payload.deltaGraphId == this.graph.deltaGraphId) {
                             this.graph = payload
-                        } else if (payload.isExposed) {
+                        }
+                        if (
+                            (payload.isExposed && payload.deltaGraphId != this.graph.deltaGraphId)
+                            || !this.graph.isExposed) {
                             this.loadData()
                         }
                     }
