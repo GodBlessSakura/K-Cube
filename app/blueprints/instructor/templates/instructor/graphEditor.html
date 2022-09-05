@@ -730,7 +730,6 @@
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
-
     cy = cytoscape({
         style: cyStyles.basicEditStyle,
         wheelSensitivity: 0.15,
@@ -811,6 +810,7 @@
         }
         return output
     }
+
     function edgeIdFromNames(h_name, r_name, t_name) {
         return h_name +
             '.' + r_name + '.' + t_name
@@ -820,21 +820,24 @@
             editor_bc: null,
             isEntityEditorVisible: true,
             boundingBox: {
-                w: 0, h: 0, x1: 0, y1: 0
+                w: 0,
+                h: 0,
+                x1: 0,
+                y1: 0
             },
             commitExposeDialogue: false,
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
-            v => (v && v.length > 3 && v.length < 101) ||
+                v => (v && v.length > 3 && v.length < 101) ||
                 'Tag name should be anything between 4 and 100 charactors',
-            v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
+                v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
                 'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             relationships: [],
             nameRules: [v => !!v || 'Name is required',
-            v => (v && v.length > 1 && v.length) < 99 ||
+                v => (v && v.length > 1 && v.length) < 99 ||
                 'Name should be anything between 2 and 99 charactors',
-            v => (v && /{{regExpRules["name"]}}/.test(v)) ||
+                v => (v && /{{regExpRules["name"]}}/.test(v)) ||
                 'Name can only contains alphanumeric characters and space.'
             ],
             h_name: '',
@@ -852,7 +855,9 @@
             subject: {
                 isPatchLeaf: true
             },
-            workspace: { tag: '' },
+            workspace: {
+                tag: ''
+            },
             deleteSelectBar: false,
             edgeChip: [],
             originalPositiveEdgeCount: 0,
@@ -885,13 +890,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let workspacePromise = fetch(
-                    "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -955,31 +960,31 @@
                             'Content-Type': 'application/json'
                         },
                     })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            if (body.relationships) {
-                                this.relationships = body.relationships
-                                this.r_name = body.relationships.includes('Subtopic in') ? 'Subtopic in' : ''
-                            } else {
-                                this.$root.errorDisplay(body,
-                                    'Unexpected error on getting relationship information.')
-                            }
-                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.relationships) {
+                            this.relationships = body.relationships
+                            this.r_name = body.relationships.includes('Subtopic in') ? 'Subtopic in' : ''
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting relationship information.')
+                        }
+                    })
                 let entityPromise = fetch("{{ url_for('RESTful.entity.query', list=True) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -1019,8 +1024,7 @@
                 if (bool) {
                     cyLayout = cy.layout(colaLayoutOptions)
                     cyLayout.run()
-                }
-                else if (cyLayout) {
+                } else if (cyLayout) {
                     cyLayout.stop()
                 }
             },
@@ -1050,18 +1054,18 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple.put', deltaGraphId=deltaGraphId) }}", {
-                        method: 'PUT',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            h_name: this.h_name,
-                            r_name: this.r_name,
-                            t_name: this.t_name,
-                            r_value: r_value,
+                            method: 'PUT',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: this.h_name,
+                                r_name: this.r_name,
+                                t_name: this.t_name,
+                                r_value: r_value,
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -1073,13 +1077,25 @@
                         })
                         .then(body => {
                             this.$root.progress.show = false
-                            this.editor_bc.postMessage({ message: 'graphEditor-createWorkspaceTriple', payload: { ...body.triple, deltaGraphId: this.workspace.deltaGraphId } }, '*')
+                            this.editor_bc.postMessage({
+                                message: 'graphEditor-createWorkspaceTriple',
+                                payload: {
+                                    ...body.triple,
+                                    deltaGraphId: this.workspace.deltaGraphId
+                                }
+                            }, '*')
                             this.createWorkspaceTriple(body.triple)
                             if (body.triple) {
                                 if (r_value) {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-createTriple', payload: body.triple }, '*')
+                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                                        message: 'graphEditor-createTriple',
+                                        payload: body.triple
+                                    }, '*')
                                 } else {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-deleteTriple', payload: body.triple }, '*')
+                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                                        message: 'graphEditor-deleteTriple',
+                                        payload: body.triple
+                                    }, '*')
                                 }
 
                             } else {
@@ -1097,17 +1113,17 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
-                        method: 'DELETE',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            h_name: this.h_name,
-                            r_name: this.r_name,
-                            t_name: this.t_name,
+                            method: 'DELETE',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                h_name: this.h_name,
+                                r_name: this.r_name,
+                                t_name: this.t_name,
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -1120,7 +1136,13 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.triple) {
-                                this.editor_bc.postMessage({ message: 'graphEditor-deleteWorkspaceTriple', payload: { ...body.triple, deltaGraphId: this.workspace.deltaGraphId } }, '*')
+                                this.editor_bc.postMessage({
+                                    message: 'graphEditor-deleteWorkspaceTriple',
+                                    payload: {
+                                        ...body.triple,
+                                        deltaGraphId: this.workspace.deltaGraphId
+                                    }
+                                }, '*')
                                 this.deleteWorkspaceTriple(body.triple)
                                 let triple = body.triple
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
@@ -1128,9 +1150,15 @@
                                     triple.t_name))[0]
                                 if (edge.data("subject_value") ==
                                     "true") {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-createTriple', payload: body.triple }, '*')
+                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                                        message: 'graphEditor-createTriple',
+                                        payload: body.triple
+                                    }, '*')
                                 } else {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({ message: 'graphEditor-deleteTriple', payload: body.triple }, '*')
+                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                                        message: 'graphEditor-deleteTriple',
+                                        payload: body.triple
+                                    }, '*')
                                 }
                             } else {
                                 this.$root.errorDisplay(body,
@@ -1147,8 +1175,7 @@
                         let eles = cy.getElementById(name)
                         if (eles.length == 0) {
                             newNodes = newNodes.union(cy.add(nodeFactory(name)))
-                        }
-                        else {
+                        } else {
                             oldNodes = oldNodes.union(eles)
                         }
                         if (!this.concepts.includes(name)) this.concepts.push(name)
@@ -1169,13 +1196,18 @@
                 //     '"]')
                 if (newNodes.length != 0 && oldNodes.length != 0) {
                     newNodes.forEach(node => {
-                        node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
+                        node.position({
+                            x: oldNodes[0].position().x,
+                            y: oldNodes[0].position().y
+                        })
                     })
                 }
                 if (!this.isPhysicsRunning) {
                     cy.nodes().lock()
                     newNodes.unlock()
-                    let initOption = { ...colaLayoutOptions }
+                    let initOption = {
+                        ...colaLayoutOptions
+                    }
                     initOption.maxSimulationTime = 2000
                     initOption.infinite = false
                     initOption.refresh = 1000
@@ -1241,7 +1273,7 @@
                     } else {
                         this.createTriple(true)
                     }
-                } else { }
+                } else {}
             },
             smartUnlink() {
                 if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
@@ -1257,7 +1289,7 @@
                             this.deleteTriple(false)
                         }
                     }
-                } else { }
+                } else {}
 
             },
             disableButtons() {
@@ -1271,15 +1303,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
-                    method: 'DELETE',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        unreachable: true,
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            unreachable: true,
+                        })
                     })
-                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1296,10 +1328,10 @@
                             body.triples.forEach(triple => {
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple
-                                        .t_name)
+                                    .t_name)
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name,
                                     triple
-                                        .r_name,
+                                    .r_name,
                                     triple.t_name))[0]
                                 if (edge) {
                                     if (triple.r_value === null)
@@ -1372,8 +1404,8 @@
                         cy.edges().unselect()
                         edge.select()
                         this.canNontrivalLinkEdge = (edge.data("workspace_value") != "true" && edge
-                            .data(
-                                "subject_value") != "true") || edge.data("workspace_value") ==
+                                .data(
+                                    "subject_value") != "true") || edge.data("workspace_value") ==
                             "false"
                         this.canNontrivalRemoveEdge = edge.data("workspace_value") == "true" || (edge
                             .data(
@@ -1404,18 +1436,26 @@
             saveLayout() {
                 let layout = []
                 cy.nodes().forEach(node => {
-                    layout.push({ name: node.id(), x: node.position().x, y: node.position().y })
+                    layout.push({
+                        name: node.id(),
+                        x: node.position().x,
+                        y: node.position().y
+                    })
                 })
                 layout = JSON.stringify(layout)
                 localStorage.setItem(this.workspace.deltaGraphId + "_layout", layout)
             },
             redoLayout(useLocalStorage = true) {
                 this.graphLoading = true
-                let storedLayout = useLocalStorage ? localStorage.getItem(this.workspace.deltaGraphId + "_layout") : null
+                let storedLayout = useLocalStorage ? localStorage.getItem(this.workspace.deltaGraphId +
+                    "_layout") : null
                 if (storedLayout) {
                     storedLayout = JSON.parse(storedLayout)
                     storedLayout.forEach(node => {
-                        cy.getElementById(node.name).position({ x: node.x, y: node.y })
+                        cy.getElementById(node.name).position({
+                            x: node.x,
+                            y: node.y
+                        })
                     })
                     setTimeout(() => {
                         this.graphLoading = false
@@ -1423,7 +1463,9 @@
                     }, 0.00001)
                     this.physics(this.isPhysicsRunning)
                 } else {
-                    let initOption = { ...colaLayoutOptions }
+                    let initOption = {
+                        ...colaLayoutOptions
+                    }
                     initOption.maxSimulationTime = 5000
                     initOption.infinite = false
                     initOption.refresh = 1000
@@ -1431,7 +1473,9 @@
                     initOption.animate = false
                     cyLayout = cy.layout(initOption)
                     cyLayout.one('layoutstop', () => {
-                        let initOption = { ...colaLayoutOptions }
+                        let initOption = {
+                            ...colaLayoutOptions
+                        }
                         initOption.maxSimulationTime = 2000
                         initOption.infinite = false
                         initOption.refresh = 1000
@@ -1455,67 +1499,75 @@
                 this.commitExposeDialogue = true
             },
             toggleExposure(graph) {
-                this.$root.actionDisplay("You are " + (graph.isExposed ? "hiding" : "exposing") + " workspace " + graph.tag, "sure", () => {
-                    if (this.$root.progress.show == true) {
-                        this.$root.bePatientSnackBar.show = true
-                        return
-                    }
-                    this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.graph.patch') }}" + graph.deltaGraphId, {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            isExposed: !graph.isExposed,
-                        })
-                    })
-                        .then(response => {
-                            return response.json()
-                        })
-                        .then(body => {
-                            this.$root.progress.show = false
-                            this.$root.responseSnackBar(body,
-                                'update failed for unknown reason.',
-                                () => {
-                                    this.$root.actionSnackBar.show = false
-                                    graph.isExposed = !graph.isExposed
-                                    this.editor_bc.postMessage({ message: 'graphEditor-exposureToggle', payload: { ...this.workspace, labels: ["Workspace"] } }, '*')
+                this.$root.actionDisplay("You are " + (graph.isExposed ? "hiding" : "exposing") +
+                    " workspace " + graph.tag, "sure", () => {
+                        if (this.$root.progress.show == true) {
+                            this.$root.bePatientSnackBar.show = true
+                            return
+                        }
+                        this.$root.progress.show = true
+                        fetch("{{ url_for('RESTful.graph.patch') }}" + graph.deltaGraphId, {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    isExposed: !graph.isExposed,
                                 })
-                        })
-                })
+                            })
+                            .then(response => {
+                                return response.json()
+                            })
+                            .then(body => {
+                                this.$root.progress.show = false
+                                this.$root.responseSnackBar(body,
+                                    'update failed for unknown reason.',
+                                    () => {
+                                        this.$root.actionSnackBar.show = false
+                                        graph.isExposed = !graph.isExposed
+                                        this.editor_bc.postMessage({
+                                            message: 'graphEditor-exposureToggle',
+                                            payload: {
+                                                ...this.workspace,
+                                                labels: ["Workspace"]
+                                            }
+                                        }, '*')
+                                    })
+                            })
+                    })
             },
             toggleCanPull() {
-                this.$root.actionDisplay("You are " + (this.subject.canPull ? "unsubmitting" : "submitting") + " patch " + this.subject.tag, "sure", () => {
-                    if (this.$root.progress.show == true) {
-                        this.$root.bePatientSnackBar.show = true
-                        return
-                    }
-                    this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            canPull: !this.subject.canPull
-                        })
-                    })
-                        .then(response => {
-                            return response.json()
-                        })
-                        .then(body => {
-                            this.$root.progress.show = false
-                            this.$root.responseSnackBar(body,
-                                'update failed for unknown reason.',
-                                () => {
-                                    this.$root.actionSnackBar.show = false
-                                    this.subject.canPull = !this.subject.canPull
+                this.$root.actionDisplay("You are " + (this.subject.canPull ? "unsubmitting" : "submitting") +
+                    " patch " + this.subject.tag, "sure", () => {
+                        if (this.$root.progress.show == true) {
+                            this.$root.bePatientSnackBar.show = true
+                            return
+                        }
+                        this.$root.progress.show = true
+                        fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    canPull: !this.subject.canPull
                                 })
-                        })
-                })
+                            })
+                            .then(response => {
+                                return response.json()
+                            })
+                            .then(body => {
+                                this.$root.progress.show = false
+                                this.$root.responseSnackBar(body,
+                                    'update failed for unknown reason.',
+                                    () => {
+                                        this.$root.actionSnackBar.show = false
+                                        this.subject.canPull = !this.subject.canPull
+                                    })
+                            })
+                    })
             },
             commitExpose() {
                 if (this.$root.progress.show == true) {
@@ -1524,17 +1576,18 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.branch.post', overwriterId=deltaGraphId) }}", {
-                    method: 'POST',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        tag: this.tag,
-                        action: this.subject.isPatchLeaf && this.subject.isOwner && this.subject.labels.includes("Branch") ? "patch" : "fork",
-                        expose: true
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            tag: this.tag,
+                            action: this.subject.isPatchLeaf && this.subject.isOwner && this.subject
+                                .labels.includes("Branch") ? "patch" : "fork",
+                            expose: true
+                        })
                     })
-                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1560,15 +1613,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.workspace.patch', deltaGraphId=deltaGraphId) }}", {
-                    method: 'PATCH',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        sync: true
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            sync: true
+                        })
                     })
-                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1588,44 +1641,48 @@
                     })
             },
             toggleJoin() {
-                this.$root.actionDisplay("You are " + (this.subject.isTeaching ? "quiting" : "joining") + " " + this.subject.courseCode, "sure", () => {
-                    if (this.$root.progress.show == true) {
-                        this.$root.bePatientSnackBar.show = true
-                        return
-                    }
-                    this.$root.progress.show = true
-                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.subject.
-                        courseCode), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            join: !this.subject.isTeaching
-                        })
-                    })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            this.$root.progress.show = false
-                            this.$root.responseSnackBar(body,
-                                'update failed for unknown reason.',
-                                () => {
-                                    this.$root.actionSnackBar.show = false
-                                    this.subject.isTeaching = !this.subject.isTeaching
-                                    this.editor_bc.postMessage({ message: 'graphEditor-joinToggle', payload: this.subject.isTeaching }, '*')
+                this.$root.actionDisplay("You are " + (this.subject.isTeaching ? "quiting" : "joining") + " " +
+                    this.subject.courseCode, "sure", () => {
+                        if (this.$root.progress.show == true) {
+                            this.$root.bePatientSnackBar.show = true
+                            return
+                        }
+                        this.$root.progress.show = true
+                        fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.subject
+                                .courseCode), {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    join: !this.subject.isTeaching
                                 })
+                            })
+                            .then(response => {
+                                try {
+                                    return response.json()
+                                } catch {
+                                    this.$root.progress.show = false
+                                    this.$root.errorDisplay({},
+                                        'Unexpected error occured.')
+                                }
+                            })
+                            .then(body => {
+                                this.$root.progress.show = false
+                                this.$root.responseSnackBar(body,
+                                    'update failed for unknown reason.',
+                                    () => {
+                                        this.$root.actionSnackBar.show = false
+                                        this.subject.isTeaching = !this.subject.isTeaching
+                                        this.editor_bc.postMessage({
+                                            message: 'graphEditor-joinToggle',
+                                            payload: this.subject.isTeaching
+                                        }, '*')
+                                    })
 
-                        })
-                })
+                            })
+                    })
             },
             workspaceDelete() {
                 if (this.$root.progress.show == true) {
@@ -1634,12 +1691,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.workspace.delete', deltaGraphId=deltaGraphId) }}", {
-                    method: 'DELETE',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -1685,28 +1742,33 @@
                             enabled: true
                         },
                         canClickTarget: false,
-                        buttons: [
-                            {
-                                text: 'Next',
-                                action: () => this._tour.next()
-                            }
-                        ],
+                        buttons: [{
+                            text: 'Next',
+                            action: () => this._tour.next()
+                        }],
                     }
                 })
                 if (this.$refs["shepherd-openTripleFormBtn"] && this.tripleBottomSheet == false) {
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["shepherd-openTripleFormBtn"].$el, on: 'top' },
+                        attachTo: {
+                            element: this.$refs["shepherd-openTripleFormBtn"].$el,
+                            on: 'top'
+                        },
                         text: 'Step 1:  Click to manipulate triples',
                     })
                 }
                 if (this.$refs["shepherd-openTripleFormField"]) {
                     let text = this.tripleBottomSheet == true ? 'Triple form is already opened<br>' : ''
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["shepherd-openTripleFormField"], on: 'top' },
+                        attachTo: {
+                            element: this.$refs["shepherd-openTripleFormField"],
+                            on: 'top'
+                        },
                         text: text + 'Step 2:  Choose corresponding head and tail entity',
                         beforeShowPromise: () =>
                             new Promise((resolve, reject) => {
-                                this.$refs["shepherd-openTripleFormBtn"].$el.dispatchEvent(new MouseEvent("click"))
+                                this.$refs["shepherd-openTripleFormBtn"].$el.dispatchEvent(
+                                    new MouseEvent("click"))
                                 setTimeout(() => {
                                     resolve();
                                 }, 200);
@@ -1715,20 +1777,29 @@
                 }
                 if (this.$refs["shepherd-openTripleFormLinkBtn"]) {
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["shepherd-openTripleFormLinkBtn"], on: 'top' },
+                        attachTo: {
+                            element: this.$refs["shepherd-openTripleFormLinkBtn"],
+                            on: 'top'
+                        },
                         text: 'Step 3: Link to form a triple, Unlink to break a triple',
                     })
                 }
                 if (this.$refs["shepherd-graphNode"]) {
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["shepherd-graphNode"], on: 'bottom' },
+                        attachTo: {
+                            element: this.$refs["shepherd-graphNode"],
+                            on: 'bottom'
+                        },
                         text: 'For editing concept information<br>Step 1: Click the corresponding node',
                     })
                 }
                 console.log(this.$refs["entityForm"].$refs)
                 if (this.$refs["entityForm"].$refs["activityControl"]) {
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["entityForm"].$refs["activityControl"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: this.$refs["entityForm"].$refs["activityControl"].$el,
+                            on: 'bottom'
+                        },
                         text: 'Step 2: Click to change arrangements',
                         beforeShowPromise: () =>
                             new Promise((resolve, reject) => {
@@ -1741,13 +1812,19 @@
                 }
                 if (this.$refs["entityForm"].$refs["shepherd-materialFormOpenBtn"]) {
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["entityForm"].$refs["shepherd-materialFormOpenBtn"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: this.$refs["entityForm"].$refs["shepherd-materialFormOpenBtn"].$el,
+                            on: 'bottom'
+                        },
                         text: 'Step 3: Click to add materals\' link',
                     })
                 }
                 if (this.$refs["shepherd-coursePlan"]) {
                     this._tour.addStep({
-                        attachTo: { element: this.$refs["shepherd-coursePlan"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: this.$refs["shepherd-coursePlan"].$el,
+                            on: 'bottom'
+                        },
                         text: 'Click to open the course plan',
                     })
                 }
@@ -1756,7 +1833,9 @@
                 this._tour.start();
             },
             openEntityEditor(name) {
-                this.editor_bc.postMessage({ message: "entityEditor-close" }, '*')
+                this.editor_bc.postMessage({
+                    message: "entityEditor-close"
+                }, '*')
                 let width = 0.35 * document.documentElement.clientWidth
                 let left = (1 - 0.35) * document.documentElement.clientWidth
                 window.open(name ? "{{url_for('instructor.entityEditor')}}/" +
@@ -1773,8 +1852,12 @@
                     if (message == "entityEditor-focusEcho") {
                         this.openEntityEditor(payload)
                     }
-                }, { once: true })
-                this.editor_bc.postMessage({ message: 'entityEditor-focus' })
+                }, {
+                    once: true
+                })
+                this.editor_bc.postMessage({
+                    message: 'entityEditor-focus'
+                })
             }
         },
         mounted: function () {
@@ -1784,7 +1867,10 @@
                     payload
                 } = e.data
                 if (message == "coursePlan-mount") {
-                    e.source.postMessage({ message: 'graphEditor-workspace', payload: this.workspace }, '*')
+                    e.source.postMessage({
+                        message: 'graphEditor-workspace',
+                        payload: this.workspace
+                    }, '*')
                 }
             }
             this.fullScreenMode = true
@@ -1805,15 +1891,18 @@
                     } = e.data
                     console.log(e.data)
                     if (message == "coursePlan-exclusiveHeadTriple") {
-                        if(this.workspace.deltaGraphId != workspaceDeltagraphId) return
+                        if (this.workspace.deltaGraphId != workspaceDeltagraphId) return
                         let triple = payload
                         let newNodes = cy.collection();
                         let oldNodes = cy.collection();
-                        let removed_edge = cy.edges('[workspace_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
+                        let removed_edge = cy.edges('[workspace_value = "true"]').filter(edge =>
+                            edge.source().data('id') == triple.h_name)
                         removed_edge.data({
                             workspace_value: "undefined"
                         })
-                        let false_edge = cy.edges('[workspace_value = "undefined"][subject_value = "true"]').filter(edge => edge.source().data('id') == triple.h_name)
+                        let false_edge = cy.edges(
+                                '[workspace_value = "undefined"][subject_value = "true"]')
+                            .filter(edge => edge.source().data('id') == triple.h_name)
                         false_edge.data({
                             workspace_value: "false"
                         })
@@ -1826,13 +1915,13 @@
                                 let eles = cy.getElementById(name)
                                 if (eles.length == 0) {
                                     newNodes = newNodes.union(cy.add(nodeFactory(name)))
-                                }
-                                else {
+                                } else {
                                     oldNodes = oldNodes.union(eles)
                                 }
                                 if (!this.concepts.includes(name)) this.concepts.push(name)
                             })
-                        let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                        let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
+                            .r_name,
                             triple.t_name))[0]
 
                         if (edge) {
@@ -1845,14 +1934,19 @@
                         cy.nodes('.tempory[[degree > 0]]').removeClass("tempory")
                         if (newNodes.length != 0 && oldNodes.length != 0) {
                             newNodes.forEach(node => {
-                                node.position({ x: oldNodes[0].position().x, y: oldNodes[0].position().y })
+                                node.position({
+                                    x: oldNodes[0].position().x,
+                                    y: oldNodes[0].position().y
+                                })
                             })
                         }
 
                         if (!this.isPhysicsRunning) {
                             cy.nodes().lock()
                             newNodes.unlock()
-                            let initOption = { ...colaLayoutOptions }
+                            let initOption = {
+                                ...colaLayoutOptions
+                            }
                             initOption.maxSimulationTime = 2000
                             initOption.infinite = false
                             initOption.refresh = 1000
@@ -1868,19 +1962,20 @@
                         this.edgeStatistic()
                         this.determineTripleOptions()
 
-                    }
-                    else if (message == "coursePlan-decapitate") {
-                        if(this.workspace.deltaGraphId != workspaceDeltagraphId) return
+                    } else if (message == "coursePlan-decapitate") {
+                        if (this.workspace.deltaGraphId != workspaceDeltagraphId) return
                         let triples = payload
                         triples.forEach(triple => {
                             if (triple.r_value === true) {
                                 return
                             }
-                            let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                            let edge = cy.getElementById(edgeIdFromNames(triple.h_name,
+                                triple.r_name,
                                 triple.t_name))[0]
                             if (edge) {
                                 edge.data({
-                                    workspace_value: triple.r_value === false ? 'false' : 'undefined'
+                                    workspace_value: triple.r_value === false ?
+                                        'false' : 'undefined'
                                 })
                             } else {
                                 cy.add(workspaceEdgeFactory(triple))
@@ -1893,20 +1988,27 @@
                             "tempory")
                         this.edgeStatistic()
                         this.determineTripleOptions()
-                    }
-                    else if (message == "entityEditor-visibility") {
+                    } else if (message == "entityEditor-visibility") {
                         this.isEntityEditorVisible = payload
-                    }
-                    else if (message == "graphEditor-createWorkspaceTriple") {
-                        if (payload.deltaGraphId != this.workspace.deltaGraphId && message.includes('graphEditor')) return
+                    } else if (message == "graphEditor-createWorkspaceTriple") {
+                        if (payload.deltaGraphId != this.workspace.deltaGraphId && message
+                            .includes('graphEditor')) return
                         this.createWorkspaceTriple(payload)
-                    }
-                    else if (message == "graphEditor-deleteWorkspaceTriple") {
-                        if (payload.deltaGraphId != this.workspace.deltaGraphId && message.includes('graphEditor')) return
+                    } else if (message == "graphEditor-deleteWorkspaceTriple") {
+                        if (payload.deltaGraphId != this.workspace.deltaGraphId && message
+                            .includes('graphEditor')) return
                         this.deleteWorkspaceTriple(payload)
-                    }
-                    else if (message == "graphEditor-joinToggle") {
+                    } else if (message == "graphEditor-joinToggle") {
                         this.subject.isTeaching = payload
+                    } else if (message == "graphEditor-exposureToggle" || message ==
+                        "coursePlan-exposureToggle") {
+                        if (payload.deltaGraphId == this.workspace.deltaGraphId) {
+                            this.workspace = payload
+                        }
+                        if (payload.isExposed && payload.deltaGraphId != this.workspace
+                            .deltaGraphId) {
+                            this.workspace.isExposed = false
+                        }
                     }
                 }
                 this.editor_bc.postMessage({
@@ -1935,7 +2037,7 @@
                 self.t_name = event.target.target().data("id")
                 self.determineTripleOptions()
             })
-            cy.on('tapdrag', 'node', (event) => { })
+            cy.on('tapdrag', 'node', (event) => {})
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()
             })

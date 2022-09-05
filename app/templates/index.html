@@ -2,72 +2,46 @@
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
-    <v-card elevation="5"
-        style="position: absolute; top: 2.5%; left: 10%; right: 10%; z-index: 2; background-color: rgba(255,255,255,0.75);">
-        <v-container no-gutters>
-            <v-row no-gutters>
-                <v-col>
-                    <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%" append-icon=""
-                        :menu-props="{ ...(!search && {value:false}) }" :search-input.sync="search"
-                        label="bring me to ...(course code / course name)" clearable :items="items" item-text="text"
-                        item-value="value" @change="focus($event)">
-                    </v-autocomplete>
-                </v-col>
-                <v-col cols="auto">
-                    <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" v-bind="attrs" v-on="on"
-                                :disabled="$refs?.searchBar?.$data.selectedItems.length==0"
-                                @click="focus($refs.searchBar.$data.selectedItems[0].text)">
-                                <v-icon>manage_search</v-icon>
-                            </v-btn>
-                        </template>
-                        bring me to
-                    </v-tooltip>
-                </v-col>
-                <v-col cols="auto">
-                    <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')">
-                                <v-icon>zoom_out_map</v-icon>
-                            </v-btn>
-                        </template>
-                        show all
-                    </v-tooltip>
-                </v-col>
-                <v-col cols="auto">
-                    <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToFocusedNode()">
-                                <v-icon>loupe</v-icon>
-                            </v-btn>
-                        </template>
-                        back to selected
-                    </v-tooltip>
-                </v-col>
-            </v-row>
-            <v-row>
-                <v-subheader>Recent visit</v-subheader>
-                <v-chip-group>
-                    <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
-                        ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
-                        'department':name.split("_").slice(1).join('_'))}
-                    </v-chip>
-                </v-chip-group>
-            </v-row>
-        </v-container>
-    </v-card>
-    <div id="cy" style="height: 99%; width: 99%;"></div>
+    <v-container style="height: 100%; width: 100%;">
+        <v-row style="height: 20%;">
+            <v-col></v-col>
+            <v-col cols="auto">
+                <v-card elevation="5" style="background-color: rgba(255,255,255,0.75);">
+                    <v-container no-gutters>
+                        <v-row no-gutters>
+                            <v-col>
+                                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
+                                    append-icon="" :menu-props="{ ...(!search && {value:false}) }"
+                                    :search-input.sync="search" label="bring me to ...(course code / course name)"
+                                    clearable :items="items" item-text="text" item-value="value"
+                                    @change="gotoPage($event)">
+                                </v-autocomplete>
+                            </v-col>
+
+                        </v-row>
+                        <v-row>
+                            <v-subheader>Recent visit</v-subheader>
+                            <v-chip-group>
+                                <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
+                                    ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
+                                    'department':name.split("_").slice(1).join('_'))}
+                                </v-chip>
+                            </v-chip-group>
+                        </v-row>
+                    </v-container>
+                </v-card>
+            </v-col>
+            <v-col></v-col>
+        </v-row>
+        <v-row style="height: 80%;">
+            <div id="cy" style="height: 99%; width: 99%;"></div>
+        </v-row>
+    </v-container>
     <v-bottom-sheet style="text-align: center;" :retain-focus="false" hide-overlay persistent inset no-click-animation
         :value="url">
         <v-btn color="success" style="text-transform: none;" x-large block :href="url">
             ${url?'Proceed to ' + url.split('/').reverse()[0] + '\'s page':''}</v-btn>
     </v-bottom-sheet>
-    <v-snackbar style="z-index:0; bottom:10vh" :value="idleWheel" timeout="-1">
-        <v-icon>mouse</v-icon> scroll, <v-icon>ads_click</v-icon> click or <v-icon>open_with</v-icon> use arrow key to
-        roam around available courseces and career. <v-icon>
-            attractions</v-icon>
-    </v-snackbar>
     <v-snackbar style="z-index:0; bottom:10vh" right :color="edgeColor" v-model="focusingEdge" timeout="-1">
         <v-row no-gutters>
             <v-col cols="auto">
@@ -81,113 +55,89 @@
             </v-col>
         </v-row>
     </v-snackbar>
-    <v-btn @click="setZoom(0.2)"
-        style="position: absolute; left:5vw; bottom: 5vw; border-radius: 100px 100px 0px 0px; height: 50px; width:100px; transform: translate(-50%, -50%); min-width: unset;">
-        <v-icon>add</v-icon>
-    </v-btn>
-    <v-btn @click="setZoom(-0.2)"
-        style="position: absolute; left:5vw; bottom: 5vw; border-radius: 0px 0px 100px 100px; height: 50px; width:100px; transform: translate(-50%, 50%); min-width: unset;">
-        <v-icon>remove</v-icon>
-    </v-btn>
-    <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="backToFocusedNode()"
-                style="position: absolute; left:calc(5vw - 50px); bottom: calc(5vw + 50px); transform: translate(-50%, -50%);">
-                <v-icon>loupe</v-icon>
-            </v-btn>
-        </template>
-        back to selected
-    </v-tooltip>
-    <v-tooltip bottom>
-        <template v-slot:activator="{ on, attrs }">
-            <v-btn icon color="primary" v-bind="attrs" v-on="on" @click="focus('')"
-                style="position: absolute; left:calc(5vw - 50px); bottom: calc(5vw - 50px); transform: translate(-50%, 50%);">
-                <v-icon>zoom_out_map</v-icon>
-            </v-btn>
-        </template>
-        show all
-    </v-tooltip>
-    <span
-        style="position: absolute; left:5vw; bottom: 5vw; transform: translate(-50%, -50%); pointer-events: none;">${zoom.toFixed(1)}</span>
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
+<script src="https://unpkg.com/klayjs@0.4.1/klay.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
 <script>
     cy = cytoscape({
         style: [{
-            selector: 'core',
-            style: {
-                "active-bg-size": 0
-            }
-        },
-        {
-            selector: 'node',
-            style: {
-                'width': 135,
-                'height': 135,
-                'background-color': 'white',
-                'border-width': 1,
-                'border-color': 'grey',
-                'text-wrap': 'wrap',
-                'text-max-width': 60,
-                'line-height': 1.5,
-                'label': 'data(label)',
-                'text-outline-color': 'white',
-                'text-outline-width': 2,
-                'font-size': 35,
-                'background-image': 'data(imageURL)',
-                'background-fit': 'cover'
+                selector: 'core',
+                style: {
+                    "active-bg-size": 0
+                }
+            },
+            {
+                selector: 'node',
+                style: {
+                    'width': 135,
+                    'height': 135,
+                    'background-color': 'white',
+                    'border-width': 1,
+                    'border-color': 'grey',
+                    'text-wrap': 'wrap',
+                    'text-max-width': 60,
+                    'line-height': 1.5,
+                    'label': 'data(label)',
+                    'text-outline-color': 'white',
+                    'text-outline-width': 2,
+                    'font-size': 35,
+                    'background-image': 'data(imageURL)',
+                    'background-fit': 'cover'
 
-            }
-        }, {
-            selector: 'node:selected',
-            style: {
-                'background-color': 'white',
-                'border-width': 3,
+                }
+            }, {
+                selector: 'node:selected',
+                style: {
+                    'background-color': 'white',
+                    'border-width': 3,
 
-            }
-        }, {
-            selector: 'node.course',
-            style: {}
-        }, {
-            selector: 'edge',
-            style: {
-                'width': 8,
-                'line-color': 'grey',
-                'curve-style': 'bezier',
-                'z-index': 100,
-            }
-        },
-        {
-            selector: 'edge.irrelevant',
-            style: {
-                'opacity': 0.25
-            }
-        }, {
-            selector: 'edge.relevant',
-            style: {}
-        }, {
-            selector: 'edge:selected',
-            style: {
-                'width': 12,
-                'underlay-color': "data(color)",
-                'underlay-padding': 2.75,
-                'underlay-opacity': 1,
-                'opacity': 1,
-            }
-        },
-        {
-            selector: 'edge.pad',
-            style: {
-                'width': 2,
-                'opacity': 0.25,
-                'z-index': 0,
-                'overlay-opacity': 0,
-                'underlay-padding': 0,
-                'underlay-opacity': 0,
-            }
-        },
+                }
+            }, {
+                selector: 'edge',
+                style: {
+                    'width': 4,
+                    'line-color': 'grey',
+                    'curve-style': 'bezier',
+                    'z-index': 100,
+                }
+            },
+            {
+                selector: 'edge.irrelevant',
+                style: {
+                    'opacity': 0.25
+                }
+            }, {
+                selector: 'edge.relevant',
+                style: {}
+            }, {
+                selector: 'edge:selected',
+                style: {
+                    'width': 8,
+                    'underlay-color': "data(color)",
+                    'underlay-padding': 2.75,
+                    'underlay-opacity': 1,
+                    'opacity': 1,
+                }
+            },
+            {
+                selector: 'edge.pad',
+                style: {
+                    'width': 2,
+                    'opacity': 0.25,
+                    'z-index': 0,
+                    'overlay-opacity': 0,
+                    'underlay-padding': 0,
+                    'underlay-opacity': 0,
+                }
+            }, {
+                selector: 'node:parent',
+                style: {
+                    'label': ''
+                }
+            },
         ],
         userZoomingEnabled: false,
         userPanningEnabled: false,
@@ -196,13 +146,10 @@
 
     })
 
-    function nodeFactory(node, classes) {
+    function nodeFactory(data, classes) {
         let output = {
             group: 'nodes',
-            data: {
-                id: node.id,
-                tag: node.tag,
-            },
+            data: data,
             classes: classes,
             grabbable: false,
             pannable: false,
@@ -226,11 +173,10 @@
     var focusedNode = null
     var animation = null
     var duration = null
+    var numRow = 5
     Vue.component('app-content', {
         data: () => ({
             url: null,
-            wheelInterval: null,
-            idleWheel: true,
             focusingNode: false,
             focusingEdge: false,
             edgeSource: "",
@@ -238,7 +184,6 @@
             edgeEnd: "",
             edgeColor: "",
             search: "",
-            zoom: 0,
             items: [],
             visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
@@ -246,13 +191,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let coursePromise = fetch(
-                    "{{ url_for('RESTful.course.query', list=True) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
+                        "{{ url_for('RESTful.course.query', list=True) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -265,6 +210,7 @@
                     .then(body => {
                         this.$root.progress.show = false
                         this.items = []
+                        var x, y, level;
                         if (body.courses) {
                             body.courses.sort((a, b) => {
                                 if (a.concept.name < b.concept.name) {
@@ -283,15 +229,31 @@
                                     text: c.course.courseName,
                                     value: c.course.courseName
                                 })
+                                if (level != c.concept.name[4] || y > numRow) {
+                                    x++
+                                    y = 0
+                                }
+                                level = c.concept.name[4]
+                                if (cy.getElementById(level).length == 0) {
+                                    cy.add({
+                                        group: 'nodes',
+                                        data: {
+                                            id: level
+                                        }
+                                    })
+                                }
                                 cy.add(nodeFactory({
-                                    id: c.concept.name,
-                                    tag: c.course.courseName
-                                }, ["course"])).data(
-                                    'imageURL',
-                                    c.course.imageURL,
-                                ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
-                                    .concept.name))
+                                        id: c.concept.name,
+                                        tag: c.course.courseName,
+                                        parent: level
+                                    }, ["course"])).data(
+                                        'imageURL',
+                                        c.course.imageURL,
+                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
+                                        .concept.name))
                                     .data("label", c.concept.name)
+                                    .data("row", y).data("col", x)
+                                y++
 
                             })
                             cy.elements().style('visibility', 'hidden')
@@ -301,12 +263,12 @@
                         }
                     })
                 let relationshipPromise = fetch("{{ url_for('RESTful.metagraph.query', triples=True) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         return response.json()
                     })
@@ -351,47 +313,37 @@
                             classes: [triple.r_name]
                         })).data("tag", triple.r_name).style("line-color", color)
                     })
-                    for (let i = cy.nodes().length; i < 20; i++) {
-                        cy.add(nodeFactory({
-                            id: i,
-                            tag: ''
-                        }, ["pad"])).style("overlay-opacity", 0)
 
-                    }
-                    let numberOfNode = cy.nodes().length
-                    let space = parseInt(numberOfNode / 5)
-                    let padding = parseInt(numberOfNode * 0.2)
-                    cy.nodes().forEach((a, i) => {
-                        [...cy.nodes().slice(i + 1), ...cy.nodes().slice(0, i)].forEach((b,
-                            j) => {
-                            if (j % space != 0) return
-                            if (j < padding || j > numberOfNode - padding) return
-                            if (cy.edges().filter(edge => {
-                                return edge.source().data("id") == b.data(
-                                    "id") && edge.target().data("id") ==
-                                    a
-                                        .data("id")
-                            }).length > 0) return
-                            cy.add(edgeFactory({
-                                start: a.data('id'),
-                                end: b.data('id'),
-                                color: "grey",
-                                classes: ["pad"]
-                            }))
-                        })
-                    })
                     cy.elements().style('visibility', 'hidden')
                     let cyLayout = cy.layout({
-                        name: 'circle',
-                        fit: true,
-                        sweep: undefined,
-                        startAngle: 1.5 * Math.PI,
-                        padding: document.documentElement.clientHeight * 0.15,
-                        radius: 800,
-
+                        name: 'grid',
+                        position: (node) => {
+                            return {
+                                row: node.data('row'),
+                                col: node.data('col')
+                            }
+                        },
+                        nodeDimensionsIncludeLabels: true,
                     })
                     cyLayout.one('layoutstop', () => {
-                        cy.elements().style('visibility', 'visible')
+                        let cyLayout = cy.layout({
+                            name: 'klay',
+                            fit: true,
+                            klay: {
+                                compactComponents: true,
+                                //direction: 'DOWN',
+                                layoutHierarchy: true,
+                                //nodeLayering: "INTERACTIVE",
+                                //crossingMinimization: "INTERACTIVE",
+                                nodePlacement: "INTERACTIVE",
+                                spacing: 40
+                            }
+                        })
+                        cyLayout.one('layoutstop', () => {
+                            cy.elements().style('visibility', 'visible')
+                        })
+                        cyLayout.run()
+                        //cy.elements().style('visibility', 'visible')
                     })
                     cyLayout.run()
                     this.$root.progress.show = false
@@ -400,37 +352,21 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            focus(id, d = 1000) {
-                cy.stop()
-                cy.clearQueue()
-                duration = d
+            focus(id) {
                 if (id) {
-                    cy.nodes().unselect()
                     let node = cy.getElementById(id)
                     focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
                     this.focusingNode = true
-                    focusedNode.select()
-                    cy.edges().addClass('irrelevant')
-                    focusedNode.connectedEdges().removeClass('irrelevant')
-                    focusedNode.connectedEdges().addClass('relevant')
-                    animation = cy.animation({
-                        fit: {
-                            eles: focusedNode,
-                            padding: document.documentElement.clientHeight * (0.35 - this.zoom * 0.095)
-                        },
-                        duration: duration
-                    })
                     this.url = focusedNode.data("url")
-                } else {
-                    animation = cy.animation({
-                        fit: {
-                            padding: document.documentElement.clientHeight * (0.15 - this.zoom * 0.225)
-                        },
-                        duration: duration
-                    })
                 }
+            },
+            gotoPage(id) {
+                if (id) {
+                    let node = cy.getElementById(id)
+                    focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
+                    location.href = focusedNode.data("url")
 
-                animation.play()
+                }
             },
             backToFocusedNode() {
                 if (focusedNode) this.focus(focusedNode.data("id"), 500)
@@ -449,11 +385,8 @@
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
                 // if (event.target.classes().includes("pad")) return
-                this.idleWheel = false
-                this.wheelInterval ? clearInterval(this.wheelInterval) : null
-                this.wheelInterval = setInterval(() => { this.idleWheel = true }, 10000)
                 if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
-                    this.focus(event.target[0].data('id'), 500)
+                    this.gotoPage(event.target[0].data('id'))
                     this.focusingEdge = false
                 }
             })
@@ -481,44 +414,10 @@
             })
             this.loadData()
             scroll = (delta) => {
-                this.idleWheel = false
-                this.wheelInterval ? clearInterval(this.wheelInterval) : null
-                this.wheelInterval = setInterval(() => { this.idleWheel = true }, 10000)
-                if (!focusedNode) {
-                    if (cy.nodes(':selected').length > 0) {
-                        this.focus(cy.nodes(':selected').data("id"), 500)
-                    } else {
-                        this.focus(cy.nodes()[0].data("id"), 500)
-                    }
-                    return
-                }
-                if (cy.animated()) {
-                    if (duration == 150) animation.progress(animation.progress() + 0.25)
-                    return
-                }
-                let index = undefined
-                cy.nodes().forEach((node, i) => {
-                    if (node.data("id") == focusedNode.data("id")) index = i
-                })
-                this.focus(cy.nodes()[((index + delta) % cy.nodes().length + cy.nodes().length) % cy
-                    .nodes().length].data("id"), 150)
+
 
             }
-            window.addEventListener('wheel', (event) => {
-                let delta = event.deltaY < 0 ? -1 : 1
-                scroll(delta)
-            });
-            window.addEventListener('keydown', (event) => {
-                let delta = event.key == "ArrowLeft" || event.key == "ArrowUp" ? -1 : event.key ==
-                    "ArrowRight" ||
-                    event.key == "ArrowDown" ? 1 : null;
-                if (delta) { scroll(delta) }
-                else {
-                    if (event.key == "Escape") {
-                        this.focus('')
-                    }
-                }
-            })
+
         },
         template: '#content',
         delimiters: ['${', '}'],
