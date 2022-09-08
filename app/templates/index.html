@@ -1,5 +1,6 @@
-{% set layout = 'Compound' %}
-{% if layout == 'Concentric'%}
+{% if layout == 'Circular'%}
+{% extends "indexCircular.html" %}
+{% elif layout == 'Concentric'%}
 {% extends "indexConcentric.html" %}
 {% elif layout == 'Compound'%}
 {% extends "indexCompound.html" %}
