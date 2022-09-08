@@ -173,7 +173,6 @@
     var focusedNode = null
     var animation = null
     var duration = null
-    var numRow = 5
     Vue.component('app-content', {
         data: () => ({
             url: null,
@@ -229,9 +228,9 @@
                                     text: c.course.courseName,
                                     value: c.course.courseName
                                 })
-                                if (level != c.concept.name[4] || y > numRow) {
-                                    x++
-                                    y = 0
+                                if (level != c.concept.name[4]) {
+                                    y++
+                                    x = 0
                                 }
                                 level = c.concept.name[4]
                                 if (cy.getElementById(level).length == 0) {
@@ -253,7 +252,7 @@
                                         .concept.name))
                                     .data("label", c.concept.name)
                                     .data("row", y).data("col", x)
-                                y++
+                                x++
 
                             })
                             cy.elements().style('visibility', 'hidden')
@@ -323,6 +322,7 @@
                                 col: node.data('col')
                             }
                         },
+                        spacing: 20,
                         nodeDimensionsIncludeLabels: true,
                     })
                     cyLayout.one('layoutstop', () => {
@@ -331,12 +331,12 @@
                             fit: true,
                             klay: {
                                 compactComponents: true,
-                                //direction: 'DOWN',
+                                direction: 'DOWN',
                                 layoutHierarchy: true,
                                 //nodeLayering: "INTERACTIVE",
                                 //crossingMinimization: "INTERACTIVE",
                                 nodePlacement: "INTERACTIVE",
-                                spacing: 40
+                                spacing: 5
                             }
                         })
                         cyLayout.one('layoutstop', () => {
