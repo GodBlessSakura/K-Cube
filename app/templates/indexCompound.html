@@ -315,35 +315,19 @@
 
                     cy.elements().style('visibility', 'hidden')
                     let cyLayout = cy.layout({
-                        name: 'grid',
-                        position: (node) => {
-                            return {
-                                row: node.data('row'),
-                                col: node.data('col')
-                            }
-                        },
-                        spacing: 20,
                         nodeDimensionsIncludeLabels: true,
+                        name: 'klay',
+                        fit: true,
+                        klay: {
+                            compactComponents: true,
+                            direction: 'DOWN',
+                            layoutHierarchy: true,
+                            nodePlacement: "INTERACTIVE",
+                            spacing: 5
+                        }
                     })
                     cyLayout.one('layoutstop', () => {
-                        let cyLayout = cy.layout({
-                            name: 'klay',
-                            fit: true,
-                            klay: {
-                                compactComponents: true,
-                                direction: 'DOWN',
-                                layoutHierarchy: true,
-                                //nodeLayering: "INTERACTIVE",
-                                //crossingMinimization: "INTERACTIVE",
-                                nodePlacement: "INTERACTIVE",
-                                spacing: 5
-                            }
-                        })
-                        cyLayout.one('layoutstop', () => {
-                            cy.elements().style('visibility', 'visible')
-                        })
-                        cyLayout.run()
-                        //cy.elements().style('visibility', 'visible')
+                        cy.elements().style('visibility', 'visible')
                     })
                     cyLayout.run()
                     this.$root.progress.show = false
