@@ -59,6 +59,8 @@
 {% endblock %}
 {% block VueComponentScript %}
 {{ layout.cytoscapeCDN() }}
+<script src="https://unpkg.com/klayjs@0.4.1/klay.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/cytoscape-klay@3.1.4/cytoscape-klay.min.js"></script>
 <script>
     cy = cytoscape({
         style: [{
@@ -130,11 +132,18 @@
                     'underlay-padding': 0,
                     'underlay-opacity': 0,
                 }
+            }, {
+                selector: 'node:parent',
+                style: {
+                    'label': ''
+                }
             },
         ],
         userZoomingEnabled: false,
         userPanningEnabled: false,
         boxSelectionEnabled: false,
+
+
     })
 
     function nodeFactory(data, classes) {
@@ -164,7 +173,7 @@
     var focusedNode = null
     var animation = null
     var duration = null
-    var numRow = 4
+    var numRow = 5
     Vue.component('app-content', {
         data: () => ({
             url: null,
@@ -202,7 +211,15 @@
                         this.$root.progress.show = false
                         this.items = []
                         if (body.courses) {
-                            body.courses.forEach(c => {
+                            body.courses.sort((a, b) => {
+                                if (a.concept.name < b.concept.name) {
+                                    return -1;
+                                }
+                                if (a.concept.name > b.concept.name) {
+                                    return 1;
+                                }
+                                return 0;
+                            }).forEach(c => {
                                 this.items.push({
                                     text: c.concept.name,
                                     value: c.concept.name
@@ -223,7 +240,6 @@
 
                             })
                             cy.elements().style('visibility', 'hidden')
-                            return body
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
@@ -280,85 +296,20 @@
                             classes: [triple.r_name]
                         })).data("tag", triple.r_name).style("line-color", color)
                     })
-                    var x = 0,
-                        y = 0,
-                        level;
-                    sorter = (a, b) => {
-                        if (a.data('id')[4] < b.data('id')[4]) {
-                            return -1;
-                        }
-                        if (a.data('id')[4] > b.data('id')[4]) {
-                            return 1;
-                        }
-                        if (a.connectedEdges().length > b.connectedEdges().length) {
-                            return -1;
-                        }
-                        if (a.connectedEdges().length < b.connectedEdges().length) {
-                            return 1;
-                        }
-                        if (a.data('id') < b.data('id')) {
-                            return -1;
-                        }
-                        if (a.data('id') > b.data('id')) {
-                            return 1;
-                        }
-                        return 0;
-                    }
-                    cy.nodes().sort(sorter).forEach(node => {
-                        if (level != node.data('id')[4] || y >= numRow) {
-                            x++
-                            if (level != node.data('id')[4]) x++
-                            y = 0
-                        }
-                        level = node.data('id')[4]
-                        node.data("row", y).data("col", x)
-                        y++
-                    })
-                    cy.nodes().sort(sorter).forEach(node => {
-                        node.connectedEdges().forEach(edge => {
-                            console.log(edge.data())
-                            let x1, x2, y1, y2
-                            if (edge.source().data('col') < edge.target().data('col')) {
-                                x1 = edge.source().data('col')
-                                x2 = edge.target().data('col')
-                                y1 = edge.source().data('row')
-                                y2 = edge.target().data('row')
-                            } else {
-                                x1 = edge.target().data('col')
-                                x2 = edge.source().data('col')
-                                y1 = edge.target().data('row')
-                                y2 = edge.source().data('row')
-                            }
-                            const m = (y2 - y1) / (x2 - x1)
-                            const c = y1 - x1 * m
-                            x1 = x1 + 1
-                            y1 = m * x1 + c
-                            while (x1 < x2 && (y1 < y2 || m == 0)) {
-                                if (Number.isInteger(y1) && cy.nodes("[col=" + x1 +
-                                        "][row=" + y1 + "]").length > 0) {
-                                    console.log(cy.nodes("[col=" + x1 +
-                                            "][row=" + y1 + "]").data(), edge
-                                        .source().data(), edge.target().data())
-                                    cy.nodes("[col=" + x1 + "][row>=" + y1 + "]")
-                                        .forEach(node => {
-                                            node.data("row", node.data("row") + 1)
-                                        })
-                                }
-                                x1 = x1 + 1
-                                y1 = m * x1 + c
-                            }
-                        })
-                    })
+
                     cy.elements().style('visibility', 'hidden')
                     let cyLayout = cy.layout({
-                        name: 'grid',
-                        position: (node) => {
-                            return {
-                                row: node.data('row'),
-                                col: node.data('col')
-                            }
+                        name: 'concentric',
+                        concentric: (node) => {
+                            return -node.data('id')[4] 
+
                         },
-                        fit: true,
+                        levelWidth: (node) => {
+                            let sameLevelCourse = cy.nodes("[id^='COMP" + node.data('id')[
+                                4] + "']")
+                            return 1 / (sameLevelCourse.length)
+
+                        },
                         nodeDimensionsIncludeLabels: true,
                     })
                     cyLayout.one('layoutstop', () => {
