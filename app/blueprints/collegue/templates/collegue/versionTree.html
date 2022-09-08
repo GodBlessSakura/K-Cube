@@ -111,7 +111,7 @@
                                         <v-btn style="text-transform: none;" outlined
                                             v-if="focusedNode?.classes.includes('isOwner')"
                                             @click="selectFocusedNode();toggleExposure(_focusedNode)">
-                                            Toggle exposure
+                                            Toggle publishment
                                         </v-btn>
                                         <v-btn style="text-transform: none;" outlined
                                             v-if="focusedNode?.classes.includes('isOwner')"
@@ -212,7 +212,7 @@
             <v-subheader v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">status
             </v-subheader>
             <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="toggleExposure(_selectedNode)">
-                <v-list-item-title>Toggle exposure</v-list-item-title>
+                <v-list-item-title>Toggle publishment</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('isOwner')" @click="readyToPush(_selectedNode)">
                 <v-list-item-title>Toggle ready-to-pull</v-list-item-title>

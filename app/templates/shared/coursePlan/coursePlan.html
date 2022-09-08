@@ -17,7 +17,7 @@
                         text
                         :href="(graph?.labels.includes('Workspace')?'{{url_for('instructor.workspace')}}':'{{url_for('collegue.graphView')}}') + graph?.deltaGraphId">
                         ${graph?.labels.includes('Workspace')?'Edit':'View'} the
-                        ${graph?.isExposed?'exposed':'last-modified'} graph
+                        ${graph?.isExposed?'published':'last-modified'} graph
                         <v-icon v-if="graph?.labels.includes('Workspace')">work</v-icon>
                         <v-icon v-else>open_in_new</v-icon>
                     </v-btn>
@@ -447,7 +447,7 @@
                 })
             },
             exposeWorkspace() {
-                this.$root.actionDisplay("You are exposing workspace:" + this.graph.tag, "sure", () => {
+                this.$root.actionDisplay("You are publishing workspace:" + this.graph.tag, "sure", () => {
                     if (this.$root.progress.show == true) {
                         this.$root.bePatientSnackBar.show = true
                         return
