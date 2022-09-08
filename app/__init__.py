@@ -116,9 +116,10 @@ def create_app(config_string):
                 return redirect("/DLTC/courseList")
         return render_template("index.html")
 
-    @app.route("/index")
-    def index():
-        return render_template("index.html")
+    @app.route("/index", defaults={"layout": None})
+    @app.route("/index/<layout>")
+    def index(layout):
+        return render_template("index.html", layout= layout)
 
     @app.route("/comprehensive")
     def comprehensive():
@@ -147,7 +148,9 @@ def create_app(config_string):
     def coursePlan(courseCode, userId):
         if courseCode is not None and userId is not None:
             return render_template(
-                "shared/coursePlan/coursePlan.html", courseCode=courseCode, userId=userId
+                "shared/coursePlan/coursePlan.html",
+                courseCode=courseCode,
+                userId=userId,
             )
         abort(404)
 
