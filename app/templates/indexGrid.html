@@ -13,8 +13,7 @@
                                 <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
                                     append-icon="" :menu-props="{ ...(!search && {value:false}) }"
                                     :search-input.sync="search" label="bring me to ...(course code / course name)"
-                                    clearable :items="items" item-text="text" item-value="value"
-                                    @change="gotoPage($event)">
+                                    clearable :items="items" @change="showAllPath($event)">
                                 </v-autocomplete>
                             </v-col>
 
@@ -37,21 +36,28 @@
             <div id="cy" style="height: 99%; width: 99%;"></div>
         </v-row>
     </v-container>
-    <v-bottom-sheet style="text-align: center;" :retain-focus="false" hide-overlay persistent inset no-click-animation
-        :value="url">
-        <v-btn color="success" style="text-transform: none;" x-large block :href="url">
-            ${url?'Proceed to ' + url.split('/').reverse()[0] + '\'s page':''}</v-btn>
+    <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation
+        :value="paths?paths.length>0:false">
+        <v-container>
+            <v-row no-gutters v-for="path in paths">
+                <v-col cols="auto" v-for="ele in path">
+                    <v-btn v-if="ele.id" @click="gotoPage(ele.id)" style="text-transform: none;">${ele.id}</v-btn>
+                    <v-btn v-else depressed tile style="pointer-events: none; text-transform: none;"
+                        :style="{backgroundColor: ele.color, color: 'white'}">${ele.id?'':ele.tag}</v-btn>
+                </v-col>
+            </v-row>
+        </v-container>
     </v-bottom-sheet>
     <v-snackbar style="z-index:0; bottom:10vh" right :color="edgeColor" v-model="focusingEdge" timeout="-1">
         <v-row no-gutters>
             <v-col cols="auto">
-                <v-btn color="primary" style="text-transform: none;" @click="focus(edgeSource)">${edgeSource}</v-btn>
+                <v-btn color="primary" style="text-transform: none;">${edgeSource}</v-btn>
             </v-col>
             <v-col style="text-align: center">
                 <v-btn style="pointer-events: none" text>${edgeTag}</v-btn>
             </v-col>
             <v-col cols="auto">
-                <v-btn color="primary" style="text-transform: none;" @click="focus(edgeEnd)">${edgeEnd}</v-btn>
+                <v-btn color="primary" style="text-transform: none;">${edgeEnd}</v-btn>
             </v-col>
         </v-row>
     </v-snackbar>
@@ -161,13 +167,12 @@
         return output
 
     }
-    var focusedNode = null
     var animation = null
     var duration = null
     var numRow = 4
     Vue.component('app-content', {
         data: () => ({
-            url: null,
+            paths: undefined,
             focusingNode: false,
             focusingEdge: false,
             edgeSource: "",
@@ -316,7 +321,6 @@
                     })
                     cy.nodes().sort(sorter).forEach(node => {
                         node.connectedEdges().forEach(edge => {
-                            console.log(edge.data())
                             let x1, x2, y1, y2
                             if (edge.source().data('col') < edge.target().data('col')) {
                                 x1 = edge.source().data('col')
@@ -336,9 +340,6 @@
                             while (x1 < x2 && (y1 < y2 || m == 0)) {
                                 if (Number.isInteger(y1) && cy.nodes("[col=" + x1 +
                                         "][row=" + y1 + "]").length > 0) {
-                                    console.log(cy.nodes("[col=" + x1 +
-                                            "][row=" + y1 + "]").data(), edge
-                                        .source().data(), edge.target().data())
                                     cy.nodes("[col=" + x1 + "][row>=" + y1 + "]")
                                         .forEach(node => {
                                             node.data("row", node.data("row") + 1)
@@ -371,32 +372,101 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            focus(id) {
-                if (id) {
-                    let node = cy.getElementById(id)
-                    focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
-                    this.focusingNode = true
-                    this.url = focusedNode.data("url")
-                }
-            },
             gotoPage(id) {
                 if (id) {
                     let node = cy.getElementById(id)
-                    focusedNode = node.length > 0 ? node : cy.nodes('node[tag="' + id + '"]')
-                    location.href = focusedNode.data("url")
+                    location.href = node.data("url")
 
                 }
             },
-            backToFocusedNode() {
-                if (focusedNode) this.focus(focusedNode.data("id"), 500)
+            showAllPath(tagOrid) {
+                console.log(tagOrid)
+                if (tagOrid) {
+                    let node = cy.getElementById(tagOrid)
+                    if (node.length == 0) {
+                        node = cy.nodes("[tag='" + tagOrid + "']")
+                    }
+                    let successors = node.successors("edge")
+                    let predecessors = node.predecessors("edge")
+                    this.paths = []
+                    successors.forEach(edge => {
+                        let path = this.paths.filter(p => p[p.length - 1].id == edge.source().data(
+                            'id'))
+                        if (path.length > 0) {
+                            path = path[path.length - 1]
+                            path.push({
+                                tag: edge.data('tag'),
+                                color: edge.data('color')
+                            })
+                            path.push({
+                                id: edge.target().data('id')
+                            })
+                        } else {
+                            if (edge.source().data('id') == node.data('id')) {
+                                this.paths.push([{
+                                        id: edge.source().data('id')
+                                    },
+                                    {
+                                        tag: edge.data('tag'),
+                                        color: edge.data('color')
+                                    },
+                                    {
+                                        id: edge.target().data('id')
+                                    }
+                                ])
+                            } else {
+                                let copy = this.paths.filter(p => p.map(e => e.id)
+                                    .includes(edge.source()
+                                        .data('id')))
+                                if (copy.length > 0) {
+                                    this.paths.push([...copy[0].slice(0, copy[0].indexOf(e => e.id ==
+                                            edge.source()
+                                            .data('id'))), {
+                                            id: edge.source().data('id')
+                                        },
+                                        {
+                                            tag: edge.data('tag'),
+                                            color: edge.data('color')
+                                        },
+                                        {
+                                            id: edge.target().data('id')
+                                        }
+                                    ])
+                                }
 
+                            }
+                        }
+                    })
+                    predecessors.forEach(edge => {
+                        let path = this.paths.filter(p =>
+                            p[0].id == edge.target().data('id')
+                        )
+                        if (path.length > 0) {
+                            path = path[0]
+                            path.unshift({
+                                tag: edge.data('tag'),
+                                color: edge.data('color')
+                            })
+                            path.unshift({
+                                id: edge.source().data('id')
+                            })
+                        } else {
+                            this.paths.push([{
+                                    id: edge.source().data('id')
+                                },
+                                {
+                                    tag: edge.data('tag'),
+                                    color: edge.data('color')
+                                },
+                                {
+                                    id: edge.target().data('id')
+                                }
+                            ])
+                        }
+                    })
+
+                }
             },
-            setZoom(value) {
-                this.zoom = this.zoom + value
-                this.zoom = Math.min(this.zoom, 1)
-                this.zoom = Math.max(this.zoom, -1)
-                this.focus(focusedNode ? focusedNode.data('id') : null, 200)
-            }
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))
@@ -404,10 +474,8 @@
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
                 // if (event.target.classes().includes("pad")) return
-                if (!focusedNode || event.target[0].data('id') != focusedNode.data('id')) {
-                    this.gotoPage(event.target[0].data('id'))
-                    this.focusingEdge = false
-                }
+                this.showAllPath(event.target[0].data('id'))
+                this.focusingEdge = false
             })
             cy.on('select', 'edge', (event) => {
                 if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
@@ -418,13 +486,14 @@
                 this.edgeTag = edge.data("tag")
                 this.edgeColor = edge.data("color")
                 this.focusingEdge = true
+                this.paths = undefined
             })
 
             cy.on('tap', (event) => {
                 if (event.target == event.cy) {
                     cy.edges().removeClass('irrelevant')
                     this.focusingEdge = false
-
+                    this.paths = undefined
                 }
             })
             cy.on('unselect', 'edge', (event) => {
