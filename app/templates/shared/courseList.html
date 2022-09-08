@@ -585,7 +585,7 @@
                             let unexposedCourse = this.allCourses.filter(course => course.isTeaching && !course.hasExposedGraph)
                             if (unexposedCourse.length > 0) {
                                 this.$root.errorDisplay({},
-                                    unexposedCourse.length + ' course' + (unexposedCourse > 1 ? 's' : '') + ' that you are teaching has no exposed graph.')
+                                    unexposedCourse.length + ' course' + (unexposedCourse > 1 ? 's' : '') + ' that you are teaching has no published graph.')
                                 this.$nextTick(() => {
                                     let el = this.$refs[unexposedCourse[0].courseCode][0].$el
                                     el.scrollIntoView({

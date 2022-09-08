@@ -78,8 +78,8 @@
                             </v-menu>
                         </template>
                         <span style="font-size: small;">
-                            Course plan only reflects contents on exposed graph.<br>
-                            The workspace is not exposed.<br>
+                            Course plan only reflects contents on published graph.<br>
+                            The workspace is not published.<br>
                         </span>
                     </v-tooltip>
                 </v-col>
@@ -94,7 +94,7 @@
                                 </v-list-item-icon>
                             </v-list-item>
                         </template>
-                        <span style="font-size:small"> An exposed graph is not shown to student,<br> if instructor
+                        <span style="font-size:small"> An published graph is not shown to student,<br> if instructor
                             is off-duty.</span>
                     </v-tooltip>
                 </v-col>
@@ -103,7 +103,7 @@
                     <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
                         <template v-slot:activator="{ on }">
                             <v-list-item @click="toggleExposure(workspace)">
-                                <v-list-item-title>exposed</v-list-item-title>
+                                <v-list-item-title>published</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-simple-checkbox :value="workspace?.isExposed" @click="toggleExposure(workspace)">
                                     </v-simple-checkbox>
@@ -111,8 +111,8 @@
                             </v-list-item>
                         </template>
                         <span style="font-size:small">
-                            Course plan only reflects contents on exposed graph.<br>
-                            The workspace is not exposed.<br>
+                            Course plan only reflects contents on published graph.<br>
+                            The workspace is not published.<br>
                         </span>
                     </v-tooltip>
                 </v-col>
@@ -134,7 +134,7 @@
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?
                                     null:showCommitExposeDialogue()" v-bind="attrs" v-on="on">
-                                        <v-list-item-title>commit and expose</v-list-item-title>
+                                        <v-list-item-title>commit and publish</v-list-item-title>
                                     </v-list-item>
                                 </template>
                                 <span style="font-size: small;">
@@ -186,7 +186,7 @@
                                         </v-list-item-icon>
                                     </template>
                                     <span style="font-size: small;">
-                                        Student can only view exposed graph from <br>
+                                        Student can only view published graph from <br>
                                         instructors who had joined that course.
                                     </span>
                                 </v-tooltip>
@@ -1499,7 +1499,7 @@
                 this.commitExposeDialogue = true
             },
             toggleExposure(graph) {
-                this.$root.actionDisplay("You are " + (graph.isExposed ? "hiding" : "exposing") +
+                this.$root.actionDisplay("You are " + (graph.isExposed ? "hiding" : "publishing") +
                     " workspace " + graph.tag, "sure", () => {
                         if (this.$root.progress.show == true) {
                             this.$root.bePatientSnackBar.show = true

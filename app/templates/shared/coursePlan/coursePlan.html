@@ -23,14 +23,14 @@
                     </v-btn>
                     <v-btn v-show="graph == null && tree" small text color="warning"
                         href="{{ url_for('course', courseCode = courseCode)}}?hideGraph">
-                        create / expose a workspace<v-icon>work</v-icon>
+                        create / publish a workspace<v-icon>work</v-icon>
                     </v-btn>
                 </v-card-text>
             </v-col>
             <v-col v-show="graph && !graph.isExposed">
                 <v-card-text>
                     <v-btn small text @click="exposeWorkspace()">
-                        Expose last-modified graph
+                        Publish last-modified graph
                         <v-icon>public</v-icon>
                     </v-btn>
                 </v-card-text>
@@ -69,7 +69,7 @@
             <v-col cols="auto">
                 <v-card-text v-if="graph == null && tree">
                     {% if request.blueprint == "instructor" %}
-                    You have not exposed a workspace or a graph version.<br>
+                    You have not published a workspace or a graph version.<br>
                     No last-modified workspace was found neither.<br>
                     Course plan is built upond a graph.
                     {% else %}
