@@ -18,14 +18,18 @@
                             </v-col>
 
                         </v-row>
-                        <v-row>
-                            <v-subheader>Recent visit</v-subheader>
-                            <v-chip-group>
-                                <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
-                                    ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
-                                    'department':name.split("_").slice(1).join('_'))}
-                                </v-chip>
-                            </v-chip-group>
+                        <v-row no-gutters>
+                            <v-col cols="auto">
+                                <v-subheader>Recent visit</v-subheader>
+                            </v-col>
+                            <v-col cols="auto">
+                                <v-chip-group style="width: 80vw">
+                                    <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
+                                        ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
+                                        'department':name.split("_").slice(1).join('_'))}
+                                    </v-chip>
+                                </v-chip-group>
+                            </v-col>
                         </v-row>
                     </v-container>
                 </v-card>
