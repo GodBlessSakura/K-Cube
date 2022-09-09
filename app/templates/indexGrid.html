@@ -12,7 +12,7 @@
                             <v-col>
                                 <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
                                     append-icon="" :menu-props="{ ...(!search && {value:false}) }"
-                                    :search-input.sync="search" label="bring me to ...(course code / course name)"
+                                    :search-input.sync="search" label="Show info of ...(course code / course name)"
                                     clearable :items="items" @change="showAllPath($event)">
                                 </v-autocomplete>
                             </v-col>
@@ -36,12 +36,25 @@
             <div id="cy" style="height: 99%; width: 99%;"></div>
         </v-row>
     </v-container>
-    <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation
+    <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation inset
         :value="paths?paths.length>0:false">
-        <v-container>
+        <v-container v-if="paths" style="max-height: 40vh; overflow: auto; width: 100%; background-color: white;">
+            <v-row no-gutters>
+                <v-col cols="auto">
+                    Related course of <v-btn text color="primary" :href="paths[0].filter(ele=>ele.highlight)[0].url">
+                        ${paths[0].filter(ele=>ele.highlight)[0].tag}</v-btn>: (you may click the course code for
+                    entering course page)
+                </v-col>
+            </v-row>
             <v-row no-gutters v-for="path in paths">
                 <v-col cols="auto" v-for="ele in path">
-                    <v-btn v-if="ele.id" @click="gotoPage(ele.id)" style="text-transform: none;">${ele.id}</v-btn>
+                    <v-tooltip v-if="ele.id" top :disabled="ele.highlight">
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn text v-on="on" :color="ele.highlight?'primary':''" :href="ele.url"
+                                style="text-transform: none;">${ele.id}</v-btn>
+                        </template>
+                        ${ele.tag}
+                    </v-tooltip>
                     <v-btn v-else depressed tile style="pointer-events: none; text-transform: none;"
                         :style="{backgroundColor: ele.color, color: 'white'}">${ele.id?'':ele.tag}</v-btn>
                 </v-col>
@@ -51,13 +64,15 @@
     <v-snackbar style="z-index:0; bottom:10vh" right :color="edgeColor" v-model="focusingEdge" timeout="-1">
         <v-row no-gutters>
             <v-col cols="auto">
-                <v-btn color="primary" style="text-transform: none;">${edgeSource}</v-btn>
+                <v-btn color="primary" text style="text-transform: none; background-color: white;"
+                    @click="showAllPath(edgeSource);focusingEdge=false">${edgeSource}</v-btn>
             </v-col>
             <v-col style="text-align: center">
                 <v-btn style="pointer-events: none" text>${edgeTag}</v-btn>
             </v-col>
             <v-col cols="auto">
-                <v-btn color="primary" style="text-transform: none;">${edgeEnd}</v-btn>
+                <v-btn color="primary" text style="text-transform: none; background-color: white;"
+                    @click="showAllPath(edgeEnd);focusingEdge=false">${edgeEnd}</v-btn>
             </v-col>
         </v-row>
     </v-snackbar>
@@ -372,13 +387,6 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            gotoPage(id) {
-                if (id) {
-                    let node = cy.getElementById(id)
-                    location.href = node.data("url")
-
-                }
-            },
             showAllPath(tagOrid) {
                 console.log(tagOrid)
                 if (tagOrid) {
@@ -388,9 +396,9 @@
                     }
                     let successors = node.successors("edge")
                     let predecessors = node.predecessors("edge")
-                    this.paths = []
+                    successorsPath = []
                     successors.forEach(edge => {
-                        let path = this.paths.filter(p => p[p.length - 1].id == edge.source().data(
+                        let path = successorsPath.filter(p => p[p.length - 1].id == edge.source().data(
                             'id'))
                         if (path.length > 0) {
                             path = path[path.length - 1]
@@ -399,37 +407,41 @@
                                 color: edge.data('color')
                             })
                             path.push({
-                                id: edge.target().data('id')
+                                id: edge.target().data('id'),
+                                tag: edge.target().data('tag'),
+                                url: edge.target().data("url"),
                             })
                         } else {
                             if (edge.source().data('id') == node.data('id')) {
-                                this.paths.push([{
-                                        id: edge.source().data('id')
+                                successorsPath.push([{
+                                        id: edge.source().data('id'),
+                                        tag: edge.source().data('tag'),
+                                        url: edge.source().data("url"),
+                                        highlight: true,
                                     },
                                     {
                                         tag: edge.data('tag'),
                                         color: edge.data('color')
                                     },
                                     {
-                                        id: edge.target().data('id')
+                                        id: edge.target().data('id'),
+                                        tag: edge.target().data('tag'),
+                                        url: edge.target().data("url"),
                                     }
                                 ])
                             } else {
-                                let copy = this.paths.filter(p => p.map(e => e.id)
+                                let copy = successorsPath.filter(p => p.map(e => e.id)
                                     .includes(edge.source()
                                         .data('id')))
                                 if (copy.length > 0) {
-                                    this.paths.push([...copy[0].slice(0, copy[0].indexOf(e => e.id ==
+                                    successorsPath.push([...copy[0].slice(0, copy[0].indexOf(ee => e
+                                            .id ==
                                             edge.source()
-                                            .data('id'))), {
-                                            id: edge.source().data('id')
-                                        },
+                                            .data('id'))),
                                         {
-                                            tag: edge.data('tag'),
-                                            color: edge.data('color')
-                                        },
-                                        {
-                                            id: edge.target().data('id')
+                                            id: edge.target().data('id'),
+                                            tag: edge.target().data('tag'),
+                                            url: edge.target().data("url"),
                                         }
                                     ])
                                 }
@@ -437,8 +449,9 @@
                             }
                         }
                     })
+                    let predecessorsPath = []
                     predecessors.forEach(edge => {
-                        let path = this.paths.filter(p =>
+                        let path = predecessorsPath.filter(p =>
                             p[0].id == edge.target().data('id')
                         )
                         if (path.length > 0) {
@@ -448,23 +461,38 @@
                                 color: edge.data('color')
                             })
                             path.unshift({
-                                id: edge.source().data('id')
+                                id: edge.source().data('id'),
+                                tag: edge.source().data('tag'),
+                                url: edge.source().data("url"),
                             })
                         } else {
-                            this.paths.push([{
-                                    id: edge.source().data('id')
+                            predecessorsPath.push([{
+                                    id: edge.source().data('id'),
+                                    tag: edge.source().data('tag'),
+                                    url: edge.source().data("url"),
                                 },
                                 {
                                     tag: edge.data('tag'),
                                     color: edge.data('color')
                                 },
                                 {
-                                    id: edge.target().data('id')
+                                    id: edge.target().data('id'),
+                                    tag: edge.target().data('tag'),
+                                    highlight: edge.target().data('id') == node.data('id'),
+                                    url: edge.target().data("url"),
                                 }
                             ])
                         }
                     })
-
+                    this.paths = [...successorsPath, ...predecessorsPath]
+                    this.paths = this.paths.length > 0 ? this.paths : [
+                        [{
+                            id: node.data('id'),
+                            tag: node.data('tag'),
+                            url: node.data("url"),
+                            highlight: true,
+                        }]
+                    ]
                 }
             },
         },
