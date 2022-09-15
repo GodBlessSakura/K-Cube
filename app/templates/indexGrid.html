@@ -13,17 +13,46 @@
                                 <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
                                     append-icon="" :menu-props="{ ...(!search && {value:false}) }"
                                     :search-input.sync="search" label="Show info of ...(course code / course name)"
-                                    clearable :items="items" @change="showAllPath($event)">
+                                    clearable :items="items"
+                                    @change="showingEdgeTag.length > 0?showAllPath($event):gotoPage($event)">
                                 </v-autocomplete>
                             </v-col>
-
                         </v-row>
                         <v-row no-gutters>
+                            <v-col cols="auto">
+                                <v-select style="width: 10vw" v-model="showingEdgeTag" :items="[...edgeTags]"
+                                    label="Show relation" multiple @change="runLayout(500)">
+                                    <template v-slot:prepend-item>
+                                        <v-list-item @click="showingEdgeTag=[];runLayout(500)">
+                                            <v-list-item-content>
+                                                <v-list-item-title>
+                                                    Hide All
+                                                </v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                        <v-divider class="mt-2"></v-divider>
+                                        <v-list-item @click="showingEdgeTag=[...edgeTags];runLayout(500)">
+                                            <v-list-item-content>
+                                                <v-list-item-title>
+                                                    Select All
+                                                </v-list-item-title>
+                                            </v-list-item-content>
+                                        </v-list-item>
+                                        <v-divider class="mt-2"></v-divider>
+                                    </template>
+                                    <template v-slot:selection="{ item, index }">
+                                        <span class="grey--text text-caption" v-if="index === 1">
+                                            ${showingEdgeTag.length == 1? showingEdgeTag[0]:
+                                            showingEdgeTag.length+' relation selected'}
+                                        </span>
+                                    </template>
+                                </v-select>
+                            </v-col>
                             <v-col cols="auto">
                                 <v-subheader>Recent visit</v-subheader>
                             </v-col>
                             <v-col cols="auto">
-                                <v-chip-group style="width: 80vw">
+                                <v-chip-group style="width: 60vw">
                                     <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
                                         ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') == "None"?
                                         'department':name.split("_").slice(1).join('_'))}
@@ -69,14 +98,14 @@
         <v-row no-gutters>
             <v-col cols="auto">
                 <v-btn color="primary" text style="text-transform: none; background-color: white;"
-                    @click="showAllPath(edgeSource);focusingEdge=false">${edgeSource}</v-btn>
+                    @click="showAllPath(edgeSource,[edgeTag]);focusingEdge=false">${edgeSource}</v-btn>
             </v-col>
             <v-col style="text-align: center">
                 <v-btn style="pointer-events: none" text>${edgeTag}</v-btn>
             </v-col>
             <v-col cols="auto">
                 <v-btn color="primary" text style="text-transform: none; background-color: white;"
-                    @click="showAllPath(edgeEnd);focusingEdge=false">${edgeEnd}</v-btn>
+                    @click="showAllPath(edgeEnd,[edgeTag]);focusingEdge=false">${edgeEnd}</v-btn>
             </v-col>
         </v-row>
     </v-snackbar>
@@ -199,6 +228,8 @@
             edgeEnd: "",
             edgeColor: "",
             search: "",
+            edgeTags: new Set(),
+            showingEdgeTag: [],
             items: [],
             visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
@@ -272,6 +303,7 @@
                         }
                     })
                 Promise.all([coursePromise, relationshipPromise]).then(bodies => {
+                    this.edgeTags = new Set(bodies[1].triples.map(t => t.r_name))
                     let relationship = [...new Set(bodies[1].triples.map(t => t.r_name))]
                     let colorMap = [
                         [0.1216, 0.4667, 0.5059],
@@ -304,42 +336,56 @@
                             classes: [triple.r_name]
                         })).data("tag", triple.r_name).style("line-color", color)
                     })
-                    var x = 0,
-                        y = 0,
-                        level;
-                    sorter = (a, b) => {
-                        if (a.data('id')[4] < b.data('id')[4]) {
-                            return -1;
-                        }
-                        if (a.data('id')[4] > b.data('id')[4]) {
-                            return 1;
-                        }
-                        if (a.connectedEdges().length > b.connectedEdges().length) {
-                            return -1;
-                        }
-                        if (a.connectedEdges().length < b.connectedEdges().length) {
-                            return 1;
-                        }
-                        if (a.data('id') < b.data('id')) {
-                            return -1;
-                        }
-                        if (a.data('id') > b.data('id')) {
-                            return 1;
-                        }
-                        return 0;
-                    }
-                    cy.nodes().sort(sorter).forEach(node => {
-                        if (level != node.data('id')[4] || y >= numRow) {
-                            x++
-                            if (level != node.data('id')[4]) x++
-                            y = 0
-                        }
-                        level = node.data('id')[4]
-                        node.data("row", y).data("col", x)
-                        y++
+                    cy.elements().style('visibility', 'hidden')
+                    this.runLayout(0, () => {
+                        cy.elements().style('visibility', 'visible')
+                        cy.edges().style('opacity', 0)
                     })
+                    this.$root.progress.show = false
+                })
+            },
+            runLayout(duration = 500, layoutDone = () => {}) {
+                let selector = this.showingEdgeTag.map(tag => "[tag='" + tag + "']").join(',')
+                cy.elements().stop(true, false)
+                var x = 0,
+                    y = 0,
+                    level;
+                sorter = (a, b) => {
+                    if (a.data('id')[4] < b.data('id')[4]) {
+                        return -1;
+                    }
+                    if (a.data('id')[4] > b.data('id')[4]) {
+                        return 1;
+                    }
+                    if (this.showingEdgeTag.length > 0) {
+                        if (a.connectedEdges(selector).length > b.connectedEdges(selector).length) {
+                            return -1;
+                        }
+                        if (a.connectedEdges(selector).length < b.connectedEdges(selector).length) {
+                            return 1;
+                        }
+                    }
+                    if (a.data('id') < b.data('id')) {
+                        return -1;
+                    }
+                    if (a.data('id') > b.data('id')) {
+                        return 1;
+                    }
+                    return 0;
+                }
+                cy.nodes().sort(sorter).forEach(node => {
+                    if (level != node.data('id')[4] || y >= numRow) {
+                        x++
+                        if (level != node.data('id')[4]) x++
+                        y = 0
+                    }
+                    level = node.data('id')[4]
+                    node.data("row", y).data("col", x)
+                    y++
+                })
+                if (this.showingEdgeTag.length > 0) {
                     cy.nodes().sort(sorter).forEach(node => {
-                        node.connectedEdges().forEach(edge => {
+                        node.connectedEdges(selector).forEach(edge => {
                             let x1, x2, y1, y2
                             if (edge.source().data('col') < edge.target().data('col')) {
                                 x1 = edge.source().data('col')
@@ -369,37 +415,69 @@
                             }
                         })
                     })
-                    cy.elements().style('visibility', 'hidden')
-                    let cyLayout = cy.layout({
-                        name: 'grid',
-                        position: (node) => {
-                            return {
-                                row: node.data('row'),
-                                col: node.data('col')
-                            }
+                    let edges = cy.edges(selector)
+                    edges.animate({
+                        style: {
+                            'opacity': 1
                         },
-                        fit: true,
-                        nodeDimensionsIncludeLabels: true,
+                    }, {
+                        duration: duration
                     })
-                    cyLayout.one('layoutstop', () => {
-                        cy.elements().style('visibility', 'visible')
+                    cy.edges().subtract(edges).animate({
+                        style: {
+                            'opacity': 0
+                        }
+                    }, {
+                        duration: duration
                     })
-                    cyLayout.run()
-                    this.$root.progress.show = false
+                } else {
+                    cy.edges().animate({
+                        style: {
+                            'opacity': 0
+                        }
+                    }, {
+                        duration: duration
+                    })
+                }
+                let cyLayout = cy.layout({
+                    name: 'grid',
+                    position: (node) => {
+                        return {
+                            row: node.data('row'),
+                            col: node.data('col')
+                        }
+                    },
+                    animationDuration: duration,
+                    animate: true,
+                    fit: true,
                 })
+                cyLayout.one('layoutstop', () => {
+                    layoutDone()
+                })
+                cyLayout.run()
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            showAllPath(tagOrid) {
-                console.log(tagOrid)
-                if (tagOrid) {
-                    let node = cy.getElementById(tagOrid)
+            gotoPage(tagOrId) {
+                if (tagOrId) {
+                    let node = cy.getElementById(tagOrId)
                     if (node.length == 0) {
-                        node = cy.nodes("[tag='" + tagOrid + "']")
+                        node = cy.nodes("[tag='" + tagOrId + "']")
                     }
-                    let successors = node.successors("edge")
-                    let predecessors = node.predecessors("edge")
+                    location.href = node.data("url")
+
+                }
+            },
+            showAllPath(tagOrId, edgeTag = this.showingEdgeTag) {
+                let selector = edgeTag.map(tag => "edge[tag='" + tag + "']").join(',')
+                if (tagOrId) {
+                    let node = cy.getElementById(tagOrId)
+                    if (node.length == 0) {
+                        node = cy.nodes("[tag='" + tagOrId + "']")
+                    }
+                    let successors = node.successors(selector)
+                    let predecessors = node.predecessors(selector)
                     successorsPath = []
                     successors.forEach(edge => {
                         let path = successorsPath.filter(p => p[p.length - 1].id == edge.source().data(
@@ -506,7 +584,9 @@
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
                 // if (event.target.classes().includes("pad")) return
-                this.showAllPath(event.target[0].data('id'))
+                this.showingEdgeTag.length > 0 ? this.showAllPath(event.target[0].data('id')) : this
+                    .gotoPage(
+                        event.target[0].data('id'))
                 this.focusingEdge = false
             })
             cy.on('select', 'edge', (event) => {
