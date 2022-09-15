@@ -66,7 +66,7 @@
             <v-col></v-col>
         </v-row>
         <v-row style="height: 80%;">
-            <div id="cy" style="height: 99%; width: 99%;"></div>
+            <div id="graph" style="height: 99%; width: 99%;"></div>
         </v-row>
     </v-container>
     <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation inset
@@ -112,111 +112,15 @@
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
-{{ layout.cytoscapeCDN() }}
+<script src="//unpkg.com/three"></script>
+<script src="//unpkg.com/three-spritetext"></script>
+<script src="//unpkg.com/3d-force-graph"></script>
 <script>
-    cy = cytoscape({
-        style: [{
-                selector: 'core',
-                style: {
-                    "active-bg-size": 0
-                }
-            },
-            {
-                selector: 'node',
-                style: {
-                    'width': 135,
-                    'height': 135,
-                    'background-color': 'white',
-                    'border-width': 1,
-                    'border-color': 'grey',
-                    'text-wrap': 'wrap',
-                    'text-max-width': 60,
-                    'line-height': 1.5,
-                    'label': 'data(label)',
-                    'text-outline-color': 'white',
-                    'text-outline-width': 2,
-                    'font-size': 35,
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover'
+    const graph = ForceGraph3D({
 
-                }
-            }, {
-                selector: 'node:selected',
-                style: {
-                    'background-color': 'white',
-                    'border-width': 3,
-
-                }
-            }, {
-                selector: 'edge',
-                style: {
-                    'width': 4,
-                    'line-color': 'grey',
-                    'curve-style': 'bezier',
-                    'z-index': 100,
-                }
-            },
-            {
-                selector: 'edge.irrelevant',
-                style: {
-                    'opacity': 0.25
-                }
-            }, {
-                selector: 'edge.relevant',
-                style: {}
-            }, {
-                selector: 'edge:selected',
-                style: {
-                    'width': 8,
-                    'underlay-color': "data(color)",
-                    'underlay-padding': 2.75,
-                    'underlay-opacity': 1,
-                    'opacity': 1,
-                }
-            },
-            {
-                selector: 'edge.pad',
-                style: {
-                    'width': 2,
-                    'opacity': 0.25,
-                    'z-index': 0,
-                    'overlay-opacity': 0,
-                    'underlay-padding': 0,
-                    'underlay-opacity': 0,
-                }
-            },
-        ],
-        userZoomingEnabled: false,
-        userPanningEnabled: false,
-        boxSelectionEnabled: false,
     })
-
-    function nodeFactory(data, classes) {
-        let output = {
-            group: 'nodes',
-            data: data,
-            classes: classes,
-            grabbable: false,
-            pannable: false,
-        }
-        return output
-    }
-
-    function edgeFactory(edge) {
-        let output = {
-            group: 'edges',
-            data: {
-                source: edge.start,
-                target: edge.end,
-                color: edge.color,
-            },
-            classes: edge.classes,
-        }
-        return output
-
-    }
-    var animation = null
-    var duration = null
+    const nodesData = {}
+    const linksData = {}
     Vue.component('app-content', {
         data: () => ({
             paths: undefined,
@@ -265,31 +169,40 @@
                                     text: c.course.courseName,
                                     value: c.course.courseName
                                 })
-                                cy.add(nodeFactory({
+                                const {
+                                    nodes,
+                                    links
+                                } = graph.graphData();
+                                let dataObject = {
+                                    tag: c.course.courseName,
+                                    imageURL: c.course.imageURL,
+                                    url: "{{ url_for('course')}}" +
+                                        encodeURIComponent(c.concept.name)
+                                }
+                                graph.graphData({
+                                    nodes: [...nodes, {
                                         id: c.concept.name,
-                                        tag: c.course.courseName,
-                                    }, ["course"])).data(
-                                        'imageURL',
-                                        c.course.imageURL,
-                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
-                                        .concept.name))
-                                    .data("label", c.concept.name)
-
+                                        ...dataObject
+                                    }],
+                                    links: links
+                                })
+                                nodesData[c.concept.name] = dataObject
+                                nodesData[c.course.courseName] = dataObject
                             })
-                            cy.elements().style('visibility', 'hidden')
                             return body
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
                         }
                     })
-                let relationshipPromise = fetch("{{ url_for('RESTful.metagraph.query', triples=True) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                let relationshipPromise = fetch(
+                        "{{ url_for('RESTful.metagraph.query', triples=True) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
                     .then(response => {
                         return response.json()
                     })
@@ -315,12 +228,13 @@
                         [0.498, 0.498, 0.498],
                         [0.7373, 0.7412, 0.1333],
                         [0.0902, 0.7451, 0.8118]
-                    ].map(rgb => rgb.map(c => Math.floor(c * 255))).map(rgb => "rgb(" + rgb.join(
-                        ',') + ")")
+                    ].map(rgb => rgb.map(c => Math.floor(c * 255))).map(rgb => "rgb(" + rgb
+                        .join(
+                            ',') + ")")
                     bodies[1].triples.forEach(triple => {
                         let bothCourseExists = true
                         for (let name of [triple.h_name, triple.t_name]) {
-                            if (cy.getElementById(name).length == 0) {
+                            if (!(name in nodesData)) {
                                 bothCourseExists = false
                                 break
                             }
@@ -328,144 +242,36 @@
                         if (!bothCourseExists) return
                         let color = colorMap[relationship.indexOf(triple.r_name) % colorMap
                             .length]
-                        cy.add(edgeFactory({
-                            start: triple.h_name,
-                            end: triple.t_name,
+                        const {
+                            nodes,
+                            links
+                        } = graph.graphData();
+                        let dataObject = {
                             color: color,
-                            classes: [triple.r_name]
-                        })).data("tag", triple.r_name).style("line-color", color)
-                    })
-                    cy.elements().style('visibility', 'hidden')
-                    this.runLayout(0, () => {
-                        cy.elements().style('visibility', 'visible')
-                        cy.edges().style('opacity', 0)
+                        }
+                        graph.graphData({
+                            nodes: nodes,
+                            links: [...links, {
+                                source: triple.h_name,
+                                target: triple.t_name,
+                                ...dataObject
+                            }]
+                        })
+                        if (!(triple.h_name in linksData)) linksData[triple.h_name] = {}
+                        linksData[triple.h_name][triple.t_name] = dataObject
                     })
                     this.$root.progress.show = false
                 })
             },
             runLayout(duration = 500, layoutDone = () => {}) {
-                let selector = this.showingEdgeTag.map(tag => "[tag='" + tag + "']").join(',')
-                cy.elements().stop(true, false)
-                var x = 0,
-                    y = 0,
-                    level;
-                sorter = (a, b) => {
-                    if (a.data('id')[4] < b.data('id')[4]) {
-                        return -1;
-                    }
-                    if (a.data('id')[4] > b.data('id')[4]) {
-                        return 1;
-                    }
-                    if (this.showingEdgeTag.length > 0) {
-                        if (a.connectedEdges(selector).length > b.connectedEdges(selector).length) {
-                            return -1;
-                        }
-                        if (a.connectedEdges(selector).length < b.connectedEdges(selector).length) {
-                            return 1;
-                        }
-                    }
-                    if (a.data('id') < b.data('id')) {
-                        return -1;
-                    }
-                    if (a.data('id') > b.data('id')) {
-                        return 1;
-                    }
-                    return 0;
-                }
-                cy.nodes().sort(sorter).forEach(node => {
-                    if (level != node.data('id')[4]) {
-                        x++
-                        if (level != node.data('id')[4]) x++
-                        y = 0
-                    }
-                    level = node.data('id')[4]
-                    node.data("row", y).data("col", x)
-                    y++
-                })
-                if (this.showingEdgeTag.length > 0) {
-                    cy.nodes().sort(sorter).forEach(node => {
-                        node.connectedEdges(selector).forEach(edge => {
-                            let x1, x2, y1, y2
-                            if (edge.source().data('col') < edge.target().data('col')) {
-                                x1 = edge.source().data('col')
-                                x2 = edge.target().data('col')
-                                y1 = edge.source().data('row')
-                                y2 = edge.target().data('row')
-                            } else {
-                                x1 = edge.target().data('col')
-                                x2 = edge.source().data('col')
-                                y1 = edge.target().data('row')
-                                y2 = edge.source().data('row')
-                            }
-                            const m = (y2 - y1) / (x2 - x1)
-                            const c = y1 - x1 * m
-                            x1 = x1 + 1
-                            y1 = m * x1 + c
-                            while (x1 < x2 && (y1 < y2 || m == 0)) {
-                                if (Number.isInteger(y1) && cy.nodes("[col=" + x1 +
-                                        "][row=" + y1 + "]").length > 0) {
-                                    cy.nodes("[col=" + x1 + "][row>=" + y1 + "]")
-                                        .forEach(node => {
-                                            node.data("row", node.data("row") + 1)
-                                        })
-                                }
-                                x1 = x1 + 1
-                                y1 = m * x1 + c
-                            }
-                        })
-                    })
-                    let edges = cy.edges(selector)
-                    edges.animate({
-                        style: {
-                            'opacity': 1
-                        },
-                    }, {
-                        duration: duration
-                    })
-                    cy.edges().subtract(edges).animate({
-                        style: {
-                            'opacity': 0
-                        }
-                    }, {
-                        duration: duration
-                    })
-                } else {
-                    cy.edges().animate({
-                        style: {
-                            'opacity': 0
-                        }
-                    }, {
-                        duration: duration
-                    })
-                }
-                let cyLayout = cy.layout({
-                    name: 'concentric',
-                    concentric: (node) => {
-                        return -node.data('id')[4]
-
-                    },
-                    levelWidth: (node) => {
-                        let sameLevelCourse = cy.nodes("[id^='COMP" + node.data('id')[
-                            4] + "']")
-                        return 1 / (sameLevelCourse.length)
-                    },
-                    fit: true,
-                })
-                cyLayout.one('layoutstop', () => {
-                    layoutDone()
-                })
-                cyLayout.run()
+                // set edge visibility
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
             gotoPage(tagOrId) {
                 if (tagOrId) {
-                    let node = cy.getElementById(tagOrId)
-                    if (node.length == 0) {
-                        node = cy.nodes("[tag='" + tagOrId + "']")
-                    }
-                    location.href = node.data("url")
+                    location.href = nodesData[tagOrId].url
 
                 }
             },
@@ -480,8 +286,9 @@
                     let predecessors = node.predecessors(selector)
                     successorsPath = []
                     successors.forEach(edge => {
-                        let path = successorsPath.filter(p => p[p.length - 1].id == edge.source().data(
-                            'id'))
+                        let path = successorsPath.filter(p => p[p.length - 1].id == edge
+                            .source().data(
+                                'id'))
                         if (path.length > 0) {
                             path = path[path.length - 1]
                             path.push({
@@ -516,7 +323,8 @@
                                     .includes(edge.source()
                                         .data('id')))
                                 if (copy.length > 0) {
-                                    successorsPath.push([...copy[0].slice(0, copy[0].indexOf(ee => e
+                                    successorsPath.push([...copy[0].slice(0, copy[0].indexOf(
+                                            ee => e
                                             .id ==
                                             edge.source()
                                             .data('id'))),
@@ -560,7 +368,8 @@
                                 {
                                     id: edge.target().data('id'),
                                     tag: edge.target().data('tag'),
-                                    highlight: edge.target().data('id') == node.data('id'),
+                                    highlight: edge.target().data('id') == node.data(
+                                        'id'),
                                     url: edge.target().data("url"),
                                 }
                             ])
@@ -579,38 +388,60 @@
             },
         },
         mounted: function () {
-            cy.mount(document.getElementById("cy"))
+            graph(document.getElementById("graph"))
+            graph.nodeThreeObject((node) => {
+                const textSprite = new SpriteText(node.id);
+                textSprite.material.depthWrite = false;
+                textSprite.color = "black";
+                textSprite.textHeight = 8;
+                const imgTexture = new THREE.TextureLoader().load(nodesData[node.id].imageURL);
+
+                const material = new THREE.SpriteMaterial({
+                    map: imgTexture
+                });
+                const sprite = new THREE.Sprite(material);
+                sprite.scale.set(12, 12);
+                const group = new THREE.Group();
+                textSprite.position.copy(new THREE.Vector3(0, 12, 0))
+                group.add(textSprite);
+                group.add(sprite);
+                return group;
+            })
+
+            function vh(percent) {
+                var h = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+                return (percent * h) / 100;
+            }
+
+            function vw(percent) {
+                var w = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+                return (percent * w) / 100;
+            }
+
+            graph.width(vw(90))
+            graph.height(vh(70))
+            graph.backgroundColor("white")
+            graph.nodeLabel("tag")
+            graph.linkColor("color")
             self = this
-            cy.on('tap', 'node', (event) => {
-                if (event.target == event.cy) return
-                // if (event.target.classes().includes("pad")) return
-                this.showingEdgeTag.length > 0 ? this.showAllPath(event.target[0].data('id')) : this
-                    .gotoPage(
-                        event.target[0].data('id'))
+            graph.onNodeClick((node) => {
+                this.showingEdgeTag.length > 0 ? this.showAllPath(node.id) :
+                    this
+                    .gotoPage(node.id)
                 this.focusingEdge = false
             })
-            cy.on('select', 'edge', (event) => {
-                if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
-                let edge = event.target[0]
-                if (edge.classes().includes("pad")) return
-                this.edgeSource = edge.source().data("id")
-                this.edgeEnd = edge.target().data("id")
-                this.edgeTag = edge.data("tag")
-                this.edgeColor = edge.data("color")
+            graph.onLinkClick((link) => {
+                this.edgeSource = link.source
+                this.edgeEnd = link.target
+                this.edgeTag = linksData[link.source][link.target].tag
+                this.edgeColor = linksData[link.source][link.target].tag
                 this.focusingEdge = true
                 this.paths = undefined
             })
-
-            cy.on('tap', (event) => {
-                if (event.target == event.cy) {
-                    cy.edges().removeClass('irrelevant')
-                    this.focusingEdge = false
-                    this.paths = undefined
-                }
-            })
-            cy.on('unselect', 'edge', (event) => {
-                if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
+            graph.onBackgroundClick((event) => {
                 this.focusingEdge = false
+                this.paths = undefined
+
             })
             this.loadData()
             scroll = (delta) => {
