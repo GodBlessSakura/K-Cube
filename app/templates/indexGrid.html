@@ -580,7 +580,18 @@
             },
         },
         mounted: function () {
-            cy.mount(document.getElementById("cy"))
+            let element = document.getElementById("cy")
+            cy.mount(element)
+            element.onmousedown = (e) => {
+                if (e.which == 2) {
+                    let node = cy.nodes().filter(node => {
+                        let box = node.renderedBoundingbox()
+                        return e.layerX >= box.x1 && e.layerX < box.x2 && e.layerY >= box.y1 &&
+                            e.layerY < box.y2
+                    })[0]
+                    this.newTab(node.data("url"))
+                }
+            }
             self = this
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
@@ -590,10 +601,11 @@
                         event.target[0].data('id'))
                 this.focusingEdge = false
             })
+
             cy.on('select', 'edge', (event) => {
                 if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
                 let edge = event.target[0]
-                if (edge.classes().includes("pad")) return
+                if (!(edge.data("tag") in this.showingEdgeTag)) return
                 this.edgeSource = edge.source().data("id")
                 this.edgeEnd = edge.target().data("id")
                 this.edgeTag = edge.data("tag")
