@@ -517,7 +517,7 @@
                                     .includes(edge.source()
                                         .data('id')))
                                 if (copy.length > 0) {
-                                    successorsPath.push([...copy[0].slice(0, copy[0].indexOf(ee => e
+                                    successorsPath.push([...copy[0].slice(0, copy[0].indexOf(e => e
                                             .id ==
                                             edge.source()
                                             .data('id'))),
@@ -605,7 +605,7 @@
             cy.on('select', 'edge', (event) => {
                 if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
                 let edge = event.target[0]
-                if (!(edge.data("tag") in this.showingEdgeTag)) return
+                if (!this.showingEdgeTag.includes(edge.data("tag"))) return
                 this.edgeSource = edge.source().data("id")
                 this.edgeEnd = edge.target().data("id")
                 this.edgeTag = edge.data("tag")
