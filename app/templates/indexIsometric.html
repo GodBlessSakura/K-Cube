@@ -21,9 +21,9 @@
                         <v-row no-gutters>
                             <v-col cols="auto">
                                 <v-select style="width: 10vw" v-model="showingEdgeTag" :items="[...edgeTags]"
-                                    label="Show relation" multiple @change="runLayout(500)">
+                                    label="Show relation" multiple>
                                     <template v-slot:prepend-item>
-                                        <v-list-item @click="showingEdgeTag=[];runLayout(500)">
+                                        <v-list-item @click="showingEdgeTag=[];">
                                             <v-list-item-content>
                                                 <v-list-item-title>
                                                     Hide All
@@ -31,7 +31,7 @@
                                             </v-list-item-content>
                                         </v-list-item>
                                         <v-divider class="mt-2"></v-divider>
-                                        <v-list-item @click="showingEdgeTag=[...edgeTags];runLayout(500)">
+                                        <v-list-item @click="showingEdgeTag=[...edgeTags];">
                                             <v-list-item-content>
                                                 <v-list-item-title>
                                                     Select All
@@ -41,7 +41,7 @@
                                         <v-divider class="mt-2"></v-divider>
                                     </template>
                                     <template v-slot:selection="{ item, index }">
-                                        <span class="grey--text text-caption" v-if="index === 1">
+                                        <span class="grey--text text-caption" v-if="index === 0">
                                             ${showingEdgeTag.length == 1? showingEdgeTag[0]:
                                             showingEdgeTag.length+' relation selected'}
                                         </span>
@@ -66,7 +66,9 @@
             <v-col></v-col>
         </v-row>
         <v-row style="height: 80%;">
-            <div id="canvas" style="height: 99%; width: 99%;"></div>
+            <div style="height: 99%; width: 99%;">
+                <canvas id="canvas" style="height: 99%; width: 99%;"></canvas>
+            </div>
         </v-row>
     </v-container>
     <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation inset
@@ -89,7 +91,9 @@
                         ${ele.tag}
                     </v-tooltip>
                     <v-btn v-else depressed tile style="pointer-events: none; text-transform: none;"
-                        :style="{backgroundColor: ele.color, color: 'white'}">${ele.id?'':ele.tag}</v-btn>
+                        :style="{backgroundColor: 'rgb(' + ele.color.map(c => Math.floor(c * 255)).join(',') + ')', color: 'white'}">
+                        ${ele.id?'':ele.tag}
+                    </v-btn>
                 </v-col>
             </v-row>
         </v-container>
@@ -114,9 +118,103 @@
 {% block VueComponentScript %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/graphology/0.24.1/graphology.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/graphology-library@0.7.1/dist/graphology-library.min.js"></script>
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+<script src="https://cdn.babylonjs.com/gui/babylon.gui.js"></script>
 <script>
+    sceneGenerateConfig = {
+        spacing: 2,
+        chipThickness: 0.25
+    }
+
+    function layout2position(attr) {
+        return new BABYLON.Vector3(attr.x * -sceneGenerateConfig.spacing, 0, attr.y * sceneGenerateConfig.spacing)
+    }
+
+    factoriesFactory = (scene) => {
+        factories = {}
+        factories.legFactory = function (width) {
+            const points = [
+                [new BABYLON.Vector3(width / 2, 0, 0),
+                    new BABYLON.Vector3(width / 2, 0, sceneGenerateConfig.chipThickness / 2),
+                    new BABYLON.Vector3(width / 2, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.spacing / 16),
+                    new BABYLON.Vector3(width / 2, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.spacing / 8)
+                ],
+                [new BABYLON.Vector3(-width / 2, 0, 0),
+                    new BABYLON.Vector3(-width / 2, 0, sceneGenerateConfig.chipThickness / 2),
+                    new BABYLON.Vector3(-width / 2, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.spacing / 16),
+                    new BABYLON.Vector3(-width / 2, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.spacing / 8)
+                ],
+            ];
+            let legMaterial = new BABYLON.StandardMaterial("ground", scene);
+            legMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            legMaterial.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            //legMaterial.emissiveColor = new BABYLON.Color3(0.9, 0.9, 0.1);
+            legMaterial.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7);
+            let leg = BABYLON.MeshBuilder.CreateRibbon("leg", {
+                pathArray: points,
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE
+            }, scene)
+            leg.material = legMaterial
+            return leg
+        }
+        factories.chipFactory = function (node) {
+            let mesh = new BABYLON.TransformNode(node);
+            let chipMaterial = new BABYLON.StandardMaterial("ground", scene);
+            chipMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            chipMaterial.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            chipMaterial.emissiveColor = new BABYLON.Color3(0.1, 0.1, 0.1);
+            let chip = BABYLON.MeshBuilder.CreateBox("chip", {
+                size: 1,
+                height: sceneGenerateConfig.chipThickness
+            }, scene);
+            chip.position.y = -0.75 / 2
+            chip.parent = mesh
+            chip.material = chipMaterial
+            let numLegs = 10
+            for (let i = 0; i < 4; i++) {
+                let side = new BABYLON.TransformNode("side");
+                side.parent = mesh
+                for (let j = 0; j < numLegs; j++) {
+                    let slot = numLegs * 2 + 1
+                    let slotWidth = 1 / slot
+                    let leg = factories.legFactory(slotWidth)
+                    leg.parent = side
+                    let firstSlotOffset = Math.floor(slot / 2) - 0.5 + slot % 2 * 0.5
+                    firstSlotOffset *= slotWidth
+                    leg.position.x = -firstSlotOffset + slotWidth * (j * 2 + 1)
+                }
+                side.position.y = -0.75 / 2
+                side.position.x = Math.sin(Math.PI / 2 * i) * .5
+                side.position.z = Math.cos(Math.PI / 2 * i) * .5
+                side.rotation.y = Math.PI / 2 * i
+
+            }
+            var plane = BABYLON.Mesh.CreatePlane("namePlane", 2);
+            plane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+            plane.parent = chip;
+            plane.position.y = 1;
+            var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(
+                plane);
+            var textblock = new BABYLON.GUI.TextBlock();
+            textblock.text = node;
+            textblock.fontSize = 120;
+            textblock.top = -100;
+            textblock.color = "white";
+            advancedTexture.addControl(textblock);
+            return mesh
+        }
+        return factories
+    }
     const graph = new graphology.MultiGraph();
+    graph.setAttribute("animateDuration", 500)
+    let engine
     var numRow = 4
+
     Vue.component('app-content', {
         data: () => ({
             paths: undefined,
@@ -212,8 +310,7 @@
                         [0.498, 0.498, 0.498],
                         [0.7373, 0.7412, 0.1333],
                         [0.0902, 0.7451, 0.8118]
-                    ].map(rgb => rgb.map(c => Math.floor(c * 255))).map(rgb => "rgb(" + rgb.join(
-                        ',') + ")")
+                    ]
                     bodies[1].triples.forEach(triple => {
                         let bothCourseExists = true
                         for (let name of [triple.h_name, triple.t_name]) {
@@ -231,10 +328,202 @@
                         })
                     })
                     this.runLayout()
+                    graph.setAttribute("animate", false)
+                    let scene = new BABYLON.Scene(engine);
+                    let factories = factoriesFactory(scene)
+                    scene.onPointerObservable.add((pointerInfo) => {
+                        switch (pointerInfo.type) {
+                            case BABYLON.PointerEventTypes.POINTERDOWN:
+                                if (!pointerInfo.pickInfo.pickedMesh) {
+                                    this.paths = undefined
+                                    return
+                                }
+                                let mesh = pointerInfo.pickInfo.pickedMesh
+                                while(mesh.parent){
+                                    mesh = mesh.parent
+                                }
+                                let id = mesh.name
+                                if (graph.hasNode(id)) {
+                                    if (pointerInfo.event.button == 0) {
+                                        this.showingEdgeTag.length > 0 ? this.showAllPath(id) :
+                                            this
+                                            .gotoPage(id)
+
+                                        this.focusingEdge = false
+                                    } else if (pointerInfo.event.button == 1) {
+                                        let url = graph.getNodeAttribute(id, "url")
+                                        if (url) this.newTab(url)
+                                    }
+                                } else if (graph.hasEdge(id)) {
+                                    let source = graph.source(id)
+                                    let target = graph.target(id)
+                                    let attr = graph.getEdgeAttributes(id)
+                                    this.edgeSource = source
+                                    this.edgeEnd = target
+                                    this.edgeTag = attr.tag
+                                    this.edgeColor = attr.color
+                                    this.focusingEdge = true
+                                    this.paths = undefined
+
+                                } else {
+                                    this.paths = undefined
+                                }
+                                break;
+                        }
+                    })
+                    let light = new BABYLON.HemisphericLight(
+                        "light1",
+                        new BABYLON.Vector3(0, 1, 0),
+                        scene
+                    );
+                    graph.nodes().forEach(node => {
+                        let chip = factories.chipFactory(node)
+                        chip.position = layout2position(graph.getNodeAttributes(node))
+                    })
+                    let attrs = graph.nodes().map(id => graph.getNodeAttributes(id))
+                    let xmin = Math.max(...attrs.map(a => a.x)) * -sceneGenerateConfig.spacing
+                    let xmax = Math.min(...attrs.map(a => a.x)) * -sceneGenerateConfig.spacing
+                    let ymin = Math.min(...attrs.map(a => a.y)) * sceneGenerateConfig.spacing
+                    let ymax = Math.max(...attrs.map(a => a.y)) * sceneGenerateConfig.spacing
+                    let groundMaterial = new BABYLON.StandardMaterial("ground", scene);
+                    groundMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+                    groundMaterial.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+                    groundMaterial.emissiveColor = new BABYLON.Color3(0.025, 0.25, 0.025);
+                    let ground = BABYLON.MeshBuilder.CreateBox('base', {
+                        height: 0.5,
+                        width: Math.abs(xmax - xmin) + 2,
+                        depth: Math.abs(ymax - ymin) + 2
+                    }, scene);
+                    ground.material = groundMaterial
+                    ground.position.x = (xmin + xmax) / 2
+                    ground.position.z = (ymin + ymax) / 2
+                    ground.position.y = -0.75 - 0.001
+                    let camera = new BABYLON.ArcRotateCamera(
+                        "camera1",
+                        3 * Math.PI / 4,
+                        Math.PI / 4,
+                        500,
+                        ground.position,
+                        scene
+                    )
+                    camera.attachControl(true);
+                    sensibility_ratio = 2.5
+                    camera.angularSensibilityX *= sensibility_ratio
+                    camera.angularSensibilityY *= sensibility_ratio
+                    camera.mode = BABYLON.Camera.ORTHOGRAPHIC_CAMERA
+                    const rect = engine.getRenderingCanvasClientRect();
+                    const aspect = rect.height / rect.width;
+                    let width = Math.abs(xmax - xmin)
+                    let height = Math.abs(ymax - ymin)
+                    const viewScaling = 2.9 * height
+                    camera.orthoTop = (viewScaling + viewScaling * 0.1) * aspect;
+                    camera.orthoBottom = -(viewScaling - viewScaling * 0.1) * aspect;
+                    camera.orthoLeft = -viewScaling;
+                    camera.orthoRight = viewScaling;
+                    engine.runRenderLoop(function () {
+                        scene.render();
+                    })
+                    scene.registerBeforeRender(() => {
+                        let now = new Date().getTime()
+                        if (graph.getAttribute("animate")) {
+                            let start = graph.getAttribute("animateStart")
+                            let duration = graph.getAttribute("animateDuration")
+                            if (start != undefined) {
+                                if (now <= (start + duration)) {
+                                    graph.nodes().forEach(node => {
+                                        let attr = graph.getNodeAttributes(node)
+                                        let mesh = scene.getNodeByName(node)
+                                        mesh.position = attr.oldposition.add(
+                                            layout2position(
+                                                attr).subtract(attr.oldposition)
+                                            .scale((now - start) / duration))
+                                    })
+                                } else {
+                                    graph.nodes().forEach(node => {
+                                        let attr = graph.getNodeAttributes(node)
+                                        let mesh = scene.getNodeByName(node)
+                                        mesh.position =
+                                            layout2position(attr)
+                                    })
+                                    graph.setAttribute("animate", false)
+                                    graph.removeAttribute("animateStart")
+                                }
+                                edgeFilter = (attr) => this.showingEdgeTag.includes(attr
+                                    .tag)
+                                graph.edges().forEach(edge => {
+
+                                    let attr = graph.getEdgeAttributes(edge)
+                                    let mesh = attr.mesh
+                                    if (mesh && edgeFilter(attr)) {
+                                        let source = graph.source(edge)
+                                        let target = graph.target(edge)
+                                        let sourceMesh = scene.getNodeByName(source)
+                                        let targetMesh = scene.getNodeByName(target)
+                                        const options = {
+                                            points: [sourceMesh.position,
+                                                targetMesh.position
+                                            ],
+                                            updatable: true,
+                                            instance: mesh
+                                        }
+                                        let lines = BABYLON.MeshBuilder.CreateLines(
+                                            edge, options, scene);
+                                        graph.setEdgeAttribute(edge, "mesh", lines)
+                                    }
+                                })
+                            } else {
+                                graph.setAttribute("animateStart", now)
+                                edgeFilter = (attr) => this.showingEdgeTag.includes(attr.tag)
+                                graph.edges().forEach(edge => {
+                                    let mesh = scene.getNodeByName(edge)
+                                    let attr = graph.getEdgeAttributes(edge)
+                                    if (edgeFilter(attr)) {
+                                        if (mesh) {
+
+                                        } else {
+                                            let source = graph.source(edge)
+                                            let target = graph.target(edge)
+                                            let sourceMesh = scene.getNodeByName(source)
+                                            let targetMesh = scene.getNodeByName(target)
+                                            const options = {
+                                                points: [sourceMesh.position,
+                                                    targetMesh.position
+                                                ],
+                                                updatable: true
+                                            }
+                                            let lines = BABYLON.MeshBuilder.CreateLines(
+                                                edge, options, scene);
+                                            lines.color = new BABYLON.Color3(attr.color[
+                                                0], attr.color[1], attr.color[
+                                                2])
+                                            graph.setEdgeAttribute(edge, "mesh", lines)
+                                        }
+                                    } else {
+                                        if (mesh) {
+                                            mesh.dispose()
+                                        }
+                                    }
+                                })
+                                graph.nodes().forEach(node => {
+                                    let attr = graph.getNodeAttributes(node)
+                                    graph.setNodeAttribute(node, 'oldposition',
+                                        layout2position({
+                                            x: attr.oldx,
+                                            y: attr.oldy
+                                        }))
+                                })
+                            }
+                        }
+                    });
                     this.$root.progress.show = false
                 })
             },
             runLayout(duration = 500, layoutDone = () => {}) {
+                graph.nodes().forEach(node => {
+                    let attr = graph.getNodeAttributes(node)
+                    graph.setNodeAttribute(node, 'oldx', attr.x)
+                    graph.setNodeAttribute(node, 'oldy', attr.y)
+                })
                 var x = 0,
                     y = 0,
                     level;
@@ -244,17 +533,6 @@
                     }
                     if (a[4] > b[4]) {
                         return 1;
-                    }
-                    if (this.showingEdgeTag.length > 0) {
-                        edgeFilter = (id, attr) => attr.tag in this.showingEdgeTag
-                        if (graph.filterNeighbors(a, edgeFilter).length > graph.filterNeighbors(b,
-                                edgeFilter).length) {
-                            return -1;
-                        }
-                        if (graph.filterNeighbors(a, edgeFilter).length < graph.filterNeighbors(b,
-                                edgeFilter).length) {
-                            return 1;
-                        }
                     }
                     if (a < b) {
                         return -1;
@@ -276,26 +554,27 @@
                     y++
                 })
                 if (this.showingEdgeTag.length > 0) {
+                    edgeFilter = (id, attr) => this.showingEdgeTag.includes(attr.tag)
                     graph.nodes().sort(sorter).forEach(node => {
-                        edgeFilter = (id, attr) => attr.tag in this.showingEdgeTag
                         graph.filterEdges(node, edgeFilter).forEach(edge => {
                             let x1, x2, y1, y2
-                            if (graph.getNodeAttributes(graph.source(edge), 'x') < graph
-                                .getNodeAttributes(graph.target(edge), 'x')) {
-                                x1 = graph.getNodeAttributes(graph.source(edge), 'x')
-                                x2 = graph.getNodeAttributes(graph.target(edge), 'x')
-                                y1 = graph.getNodeAttributes(graph.source(edge), 'y')
-                                y2 = graph.getNodeAttributes(graph.target(edge), 'y')
+                            let sourceAttr = graph.getNodeAttributes(graph.source(edge))
+                            let targetAttr = graph.getNodeAttributes(graph.target(edge))
+                            if (sourceAttr.x < targetAttr.x) {
+                                x1 = sourceAttr.x
+                                x2 = targetAttr.x
+                                y1 = sourceAttr.y
+                                y2 = targetAttr.y
                             } else {
-                                x1 = graph.getNodeAttributes(graph.target(edge), 'x')
-                                x2 = graph.getNodeAttributes(graph.source(edge), 'x')
-                                y1 = graph.getNodeAttributes(graph.target(edge), 'y')
-                                y2 = graph.getNodeAttributes(graph.source(edge), 'y')
+                                x1 = targetAttr.x
+                                x2 = sourceAttr.x
+                                y1 = targetAttr.y
+                                y2 = sourceAttr.y
                             }
                             const m = (y2 - y1) / (x2 - x1)
-                            const c = y1 - x1 * m
-                            x1 = x1 + 1
-                            y1 = m * x1 + c
+                            const c = y1 - x1 * m;
+                            x1 = x1 + 1;
+                            y1 = m * x1 + c;
                             while (x1 < x2 && (y1 < y2 || m == 0)) {
                                 if (Number.isInteger(y1) && graph.filterNodes((id, attr) => attr
                                         .x == x1 && attr.y == y1).length > 0) {
@@ -382,7 +661,6 @@
                                                     edge)
                                             )
                                         }
-                                        console.log(source, target, predecessorsPath.length)
                                     }))
                                 })
                         }, {
@@ -408,7 +686,6 @@
                                                     .id == source && p[2].id == target && p[
                                                         1].tag == tag && source == id)
                                                 .length != 0) {
-                                                console.log("exists")
                                                 return
                                             }
                                             if (source == id) {
@@ -430,7 +707,7 @@
                                                     successorsPath.push([...copy[0].slice(0,
                                                         copy[0].indexOf(
                                                             e => e.id == source)
-                                                        ), {
+                                                    ), {
                                                         ...graph
                                                         .getNodeAttributes(
                                                             target)
@@ -447,7 +724,6 @@
                                                 }
                                             )
                                         }
-                                        console.log(source, target, successorsPath.length)
                                     }))
                                 })
                         }, {
@@ -468,6 +744,7 @@
         },
         mounted: function () {
             let element = document.getElementById("canvas")
+            engine = new BABYLON.Engine(element, true);
             self = this
             onNodeClick = (event) => {
                 this.showingEdgeTag.length > 0 ? this.showAllPath(event.target[0].data('id')) : this
