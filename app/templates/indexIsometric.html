@@ -98,7 +98,9 @@
             </v-row>
         </v-container>
     </v-bottom-sheet>
-    <v-snackbar style="z-index:0; bottom:10vh" right :color="edgeColor" v-model="focusingEdge" timeout="-1">
+    <v-snackbar style="z-index:0; bottom:10vh" right
+        :color="edgeColor?'rgb(' + edgeColor.map(c => Math.floor(c * 255)).join(',') + ')':''" v-model="focusingEdge"
+        timeout="-1">
         <v-row no-gutters>
             <v-col cols="auto">
                 <v-btn color="primary" text style="text-transform: none; background-color: white;"
@@ -123,31 +125,42 @@
 <script src="https://cdn.babylonjs.com/gui/babylon.gui.js"></script>
 <script>
     sceneGenerateConfig = {
-        spacing: 2,
-        chipThickness: 0.25
+        rowSpacing: 2,
+        colSpacing: 2,
+        chipThickness: 0.25,
+        numRow: 4,
+        socketLength: 0.25,
+        maxNumWire: 10,
+        graoundOffset: -0.75,
+        groundThickness: 0.5
+    }
+
+    function levelOf(courseCode) {
+        return courseCode[4]
     }
 
     function layout2position(attr) {
-        return new BABYLON.Vector3(attr.x * -sceneGenerateConfig.spacing, 0, attr.y * sceneGenerateConfig.spacing)
+        return new BABYLON.Vector3(attr.x, 0, attr.y)
     }
 
     factoriesFactory = (scene) => {
         factories = {}
         factories.legFactory = function (width) {
-            const points = [
-                [new BABYLON.Vector3(width / 2, 0, 0),
-                    new BABYLON.Vector3(width / 2, 0, sceneGenerateConfig.chipThickness / 2),
-                    new BABYLON.Vector3(width / 2, -sceneGenerateConfig.chipThickness / 2,
-                        sceneGenerateConfig.spacing / 16),
-                    new BABYLON.Vector3(width / 2, -sceneGenerateConfig.chipThickness / 2,
-                        sceneGenerateConfig.spacing / 8)
+            let widthOffset = width / 2
+            const pathArray = [
+                [new BABYLON.Vector3(widthOffset, 0, 0),
+                    new BABYLON.Vector3(widthOffset, 0, sceneGenerateConfig.chipThickness / 2),
+                    new BABYLON.Vector3(widthOffset, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.socketLength / 2),
+                    new BABYLON.Vector3(widthOffset, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.socketLength)
                 ],
-                [new BABYLON.Vector3(-width / 2, 0, 0),
-                    new BABYLON.Vector3(-width / 2, 0, sceneGenerateConfig.chipThickness / 2),
-                    new BABYLON.Vector3(-width / 2, -sceneGenerateConfig.chipThickness / 2,
-                        sceneGenerateConfig.spacing / 16),
-                    new BABYLON.Vector3(-width / 2, -sceneGenerateConfig.chipThickness / 2,
-                        sceneGenerateConfig.spacing / 8)
+                [new BABYLON.Vector3(-widthOffset, 0, 0),
+                    new BABYLON.Vector3(-widthOffset, 0, sceneGenerateConfig.chipThickness / 2),
+                    new BABYLON.Vector3(-widthOffset, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.socketLength / 2),
+                    new BABYLON.Vector3(-widthOffset, -sceneGenerateConfig.chipThickness / 2,
+                        sceneGenerateConfig.socketLength)
                 ],
             ];
             let legMaterial = new BABYLON.StandardMaterial("ground", scene);
@@ -156,7 +169,7 @@
             //legMaterial.emissiveColor = new BABYLON.Color3(0.9, 0.9, 0.1);
             legMaterial.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.7);
             let leg = BABYLON.MeshBuilder.CreateRibbon("leg", {
-                pathArray: points,
+                pathArray: pathArray,
                 sideOrientation: BABYLON.Mesh.DOUBLESIDE
             }, scene)
             leg.material = legMaterial
@@ -172,48 +185,134 @@
                 size: 1,
                 height: sceneGenerateConfig.chipThickness
             }, scene);
-            chip.position.y = -0.75 / 2
+            chip.position.y = sceneGenerateConfig.graoundOffset + sceneGenerateConfig.groundThickness / 2 +
+                sceneGenerateConfig.chipThickness / 2
             chip.parent = mesh
             chip.material = chipMaterial
-            let numLegs = 10
             for (let i = 0; i < 4; i++) {
                 let side = new BABYLON.TransformNode("side");
                 side.parent = mesh
-                for (let j = 0; j < numLegs; j++) {
-                    let slot = numLegs * 2 + 1
+                for (let j = 0; j < sceneGenerateConfig.maxNumWire; j++) {
+                    let slot = sceneGenerateConfig.maxNumWire * 2 + 1
                     let slotWidth = 1 / slot
                     let leg = factories.legFactory(slotWidth)
                     leg.parent = side
-                    let firstSlotOffset = Math.floor(slot / 2) - 0.5 + slot % 2 * 0.5
-                    firstSlotOffset *= slotWidth
+                    let firstSlotOffset = (Math.floor(slot / 2) - 0.5 + slot % 2 * 0.5) * slotWidth
                     leg.position.x = -firstSlotOffset + slotWidth * (j * 2 + 1)
                 }
-                side.position.y = -0.75 / 2
+                side.position.y = sceneGenerateConfig.graoundOffset + sceneGenerateConfig.groundThickness / 2 +
+                    sceneGenerateConfig.chipThickness / 2
                 side.position.x = Math.sin(Math.PI / 2 * i) * .5
                 side.position.z = Math.cos(Math.PI / 2 * i) * .5
                 side.rotation.y = Math.PI / 2 * i
 
             }
-            var plane = BABYLON.Mesh.CreatePlane("namePlane", 2);
-            plane.billboardMode = BABYLON.AbstractMesh.BILLBOARDMODE_ALL;
+            var plane = BABYLON.Mesh.CreatePlane("namePlane", 1);
             plane.parent = chip;
-            plane.position.y = 1;
+            plane.position.y = sceneGenerateConfig.chipThickness * 0.5
+            plane.rotation.y = Math.PI
+            plane.rotation.x = Math.PI / 2
             var advancedTexture = BABYLON.GUI.AdvancedDynamicTexture.CreateForMesh(
                 plane);
             var textblock = new BABYLON.GUI.TextBlock();
-            textblock.text = node;
-            textblock.fontSize = 120;
+            textblock.text = node.slice(0, 4) + '\n'
+            textblock.fontSize = 350;
             textblock.top = -100;
             textblock.color = "white";
+            textblock.outlineColor = "white";
+            textblock.fontFamily = "Arial";
+            advancedTexture.addControl(textblock);
+            textblock = new BABYLON.GUI.TextBlock();
+            textblock.text = '\n' + node.slice(4, node.length);
+            textblock.fontSize = 400;
+            textblock.top = -100;
+            textblock.color = "white";
+            textblock.outlineColor = "white";
+            textblock.fontStyle = "bold";
+            textblock.fontFamily = "Arial";
             advancedTexture.addControl(textblock);
             return mesh
         }
+        factories.wireFactory = (edge) => {
+            let mesh = new BABYLON.TransformNode(edge);
+            let start = graph.source(edge)
+            let end = graph.target(edge)
+            let attr = graph.getEdgeAttributes(edge) // startOrder outgoingOrder incomingOrder endOrder
+            //missing busOrder
+            if (levelOf(start) > levelOf(end)) {
+                let tmp = start
+                start = end
+                end = start
+            }
+            let startTransformNode = scene.getNodeByName(start)
+            let endTransformNode = scene.getNodeByName(end)
+            let yOffset = (sceneGenerateConfig.graoundOffset + sceneGenerateConfig
+                .groundThickness / 2) - startTransformNode.position.y
+            let slot = sceneGenerateConfig.maxNumWire * 2 + 1
+            let slotWidth = 1 / slot
+            let firstSlotOffset = (Math.floor(slot / 2) - 0.5 + slot % 2 * 0.5) * slotWidth
+            let startOffset = -firstSlotOffset + slotWidth * (attr
+                .startOrder * 2 + 1)
+            let outgoingOffset = -sceneGenerateConfig.socketLength * 2 - slotWidth - slotWidth * (attr
+                .outgoingOrder * 2 + 1)
+            let incomingOffset = +sceneGenerateConfig.socketLength * 2 + slotWidth + slotWidth * (attr
+                .incomingOrder * 2 + 1)
+            let endOrder = firstSlotOffset - slotWidth * (attr.endOrder * 2 + 1)
+            let points = [
+                startTransformNode.position.add(
+                    new BABYLON.Vector3(
+                        Math.sin(Math.PI / 2 * 3) * .5 - sceneGenerateConfig.socketLength,
+                        yOffset,
+                        Math.cos(Math.PI / 2 * 3) * .5 + startOffset)
+                ),
+                startTransformNode.position.add(
+                    new BABYLON.Vector3(
+                        Math.sin(Math.PI / 2 * 3) * .5 + outgoingOffset,
+                        yOffset,
+                        Math.cos(Math.PI / 2 * 3) * .5 + startOffset)
+                ),
+                endTransformNode.position.add(
+                    new BABYLON.Vector3(
+                        Math.sin(Math.PI / 2) * .5 + incomingOffset,
+                        yOffset,
+                        Math.cos(Math.PI / 2) * .5 + endOrder)
+                ),
+                endTransformNode.position.add(
+                    new BABYLON.Vector3(
+                        Math.sin(Math.PI / 2) * .5 + sceneGenerateConfig.socketLength,
+                        yOffset,
+                        Math.cos(Math.PI / 2) * .5 + endOrder)
+                )
+            ]
+            let wireMaterial = new BABYLON.StandardMaterial("ground", scene);
+            wireMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            wireMaterial.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
+            wireMaterial.emissiveColor = new BABYLON.Color3(0.9, 0.9, 0.1);
+            let wire = BABYLON.MeshBuilder.CreateRibbon("wire", {
+                pathArray: pathify(points, slotWidth),
+                sideOrientation: BABYLON.Mesh.DOUBLESIDE
+            }, scene)
+            wire.parent = mesh
+            wire.material = wireMaterial
+            return mesh
+
+        }
         return factories
+    }
+
+    function pathify(points, width) {
+        let pathArray = []
+        points.map((vector, index) => {
+            let path = index != (points.length - 1) ? vector.subtract(points[index + 1]) : points[index - 1]
+                .subtract(vector)
+            let offset = path.cross(BABYLON.Vector3.Up()).normalize().scale(width / 2)
+            pathArray.push([vector.add(offset), vector.subtract(offset)])
+        })
+        return pathArray
     }
     const graph = new graphology.MultiGraph();
     graph.setAttribute("animateDuration", 500)
     let engine
-    var numRow = 4
 
     Vue.component('app-content', {
         data: () => ({
@@ -331,18 +430,23 @@
                     graph.setAttribute("animate", false)
                     let scene = new BABYLON.Scene(engine);
                     let factories = factoriesFactory(scene)
+                    let hoveringMesh = null
                     scene.onPointerObservable.add((pointerInfo) => {
                         switch (pointerInfo.type) {
+                            case BABYLON.PointerEventTypes.POINTERMOVE:
+                                console.log(pointerInfo)
+                                break
                             case BABYLON.PointerEventTypes.POINTERDOWN:
                                 if (!pointerInfo.pickInfo.pickedMesh) {
                                     this.paths = undefined
                                     return
                                 }
-                                let mesh = pointerInfo.pickInfo.pickedMesh
-                                while(mesh.parent){
-                                    mesh = mesh.parent
+                                let pickedMesh = pointerInfo.pickInfo.pickedMesh
+                                while (pickedMesh.parent) {
+                                    pickedMesh = pickedMesh.parent
                                 }
-                                let id = mesh.name
+                                let id = pickedMesh.name
+                                console.log(id)
                                 if (graph.hasNode(id)) {
                                     if (pointerInfo.event.button == 0) {
                                         this.showingEdgeTag.length > 0 ? this.showAllPath(id) :
@@ -380,24 +484,27 @@
                         let chip = factories.chipFactory(node)
                         chip.position = layout2position(graph.getNodeAttributes(node))
                     })
+                    graph.edges().forEach(edge => {
+                        let path = factories.wireFactory(edge)
+                    })
                     let attrs = graph.nodes().map(id => graph.getNodeAttributes(id))
-                    let xmin = Math.max(...attrs.map(a => a.x)) * -sceneGenerateConfig.spacing
-                    let xmax = Math.min(...attrs.map(a => a.x)) * -sceneGenerateConfig.spacing
-                    let ymin = Math.min(...attrs.map(a => a.y)) * sceneGenerateConfig.spacing
-                    let ymax = Math.max(...attrs.map(a => a.y)) * sceneGenerateConfig.spacing
+                    let xmin = Math.max(...attrs.map(a => a.x))
+                    let xmax = Math.min(...attrs.map(a => a.x))
+                    let ymin = Math.min(...attrs.map(a => a.y))
+                    let ymax = Math.max(...attrs.map(a => a.y))
                     let groundMaterial = new BABYLON.StandardMaterial("ground", scene);
                     groundMaterial.diffuseColor = new BABYLON.Color3(0.4, 0.4, 0.4);
                     groundMaterial.specularColor = new BABYLON.Color3(0.4, 0.4, 0.4);
                     groundMaterial.emissiveColor = new BABYLON.Color3(0.025, 0.25, 0.025);
                     let ground = BABYLON.MeshBuilder.CreateBox('base', {
-                        height: 0.5,
+                        height: sceneGenerateConfig.groundThickness,
                         width: Math.abs(xmax - xmin) + 2,
                         depth: Math.abs(ymax - ymin) + 2
                     }, scene);
                     ground.material = groundMaterial
                     ground.position.x = (xmin + xmax) / 2
                     ground.position.z = (ymin + ymax) / 2
-                    ground.position.y = -0.75 - 0.001
+                    ground.position.y = sceneGenerateConfig.graoundOffset - 0.001
                     let camera = new BABYLON.ArcRotateCamera(
                         "camera1",
                         3 * Math.PI / 4,
@@ -430,88 +537,14 @@
                             let duration = graph.getAttribute("animateDuration")
                             if (start != undefined) {
                                 if (now <= (start + duration)) {
-                                    graph.nodes().forEach(node => {
-                                        let attr = graph.getNodeAttributes(node)
-                                        let mesh = scene.getNodeByName(node)
-                                        mesh.position = attr.oldposition.add(
-                                            layout2position(
-                                                attr).subtract(attr.oldposition)
-                                            .scale((now - start) / duration))
-                                    })
+                                    // update
                                 } else {
-                                    graph.nodes().forEach(node => {
-                                        let attr = graph.getNodeAttributes(node)
-                                        let mesh = scene.getNodeByName(node)
-                                        mesh.position =
-                                            layout2position(attr)
-                                    })
-                                    graph.setAttribute("animate", false)
-                                    graph.removeAttribute("animateStart")
+                                    // animation end
                                 }
-                                edgeFilter = (attr) => this.showingEdgeTag.includes(attr
-                                    .tag)
-                                graph.edges().forEach(edge => {
-
-                                    let attr = graph.getEdgeAttributes(edge)
-                                    let mesh = attr.mesh
-                                    if (mesh && edgeFilter(attr)) {
-                                        let source = graph.source(edge)
-                                        let target = graph.target(edge)
-                                        let sourceMesh = scene.getNodeByName(source)
-                                        let targetMesh = scene.getNodeByName(target)
-                                        const options = {
-                                            points: [sourceMesh.position,
-                                                targetMesh.position
-                                            ],
-                                            updatable: true,
-                                            instance: mesh
-                                        }
-                                        let lines = BABYLON.MeshBuilder.CreateLines(
-                                            edge, options, scene);
-                                        graph.setEdgeAttribute(edge, "mesh", lines)
-                                    }
-                                })
+                                // animation update & end
                             } else {
                                 graph.setAttribute("animateStart", now)
-                                edgeFilter = (attr) => this.showingEdgeTag.includes(attr.tag)
-                                graph.edges().forEach(edge => {
-                                    let mesh = scene.getNodeByName(edge)
-                                    let attr = graph.getEdgeAttributes(edge)
-                                    if (edgeFilter(attr)) {
-                                        if (mesh) {
-
-                                        } else {
-                                            let source = graph.source(edge)
-                                            let target = graph.target(edge)
-                                            let sourceMesh = scene.getNodeByName(source)
-                                            let targetMesh = scene.getNodeByName(target)
-                                            const options = {
-                                                points: [sourceMesh.position,
-                                                    targetMesh.position
-                                                ],
-                                                updatable: true
-                                            }
-                                            let lines = BABYLON.MeshBuilder.CreateLines(
-                                                edge, options, scene);
-                                            lines.color = new BABYLON.Color3(attr.color[
-                                                0], attr.color[1], attr.color[
-                                                2])
-                                            graph.setEdgeAttribute(edge, "mesh", lines)
-                                        }
-                                    } else {
-                                        if (mesh) {
-                                            mesh.dispose()
-                                        }
-                                    }
-                                })
-                                graph.nodes().forEach(node => {
-                                    let attr = graph.getNodeAttributes(node)
-                                    graph.setNodeAttribute(node, 'oldposition',
-                                        layout2position({
-                                            x: attr.oldx,
-                                            y: attr.oldy
-                                        }))
-                                })
+                                // initialize parameter
                             }
                         }
                     });
@@ -519,19 +552,11 @@
                 })
             },
             runLayout(duration = 500, layoutDone = () => {}) {
-                graph.nodes().forEach(node => {
-                    let attr = graph.getNodeAttributes(node)
-                    graph.setNodeAttribute(node, 'oldx', attr.x)
-                    graph.setNodeAttribute(node, 'oldy', attr.y)
-                })
-                var x = 0,
-                    y = 0,
-                    level;
                 sorter = (a, b) => {
-                    if (a[4] < b[4]) {
+                    if (levelOf(a) < levelOf(b)) {
                         return -1;
                     }
-                    if (a[4] > b[4]) {
+                    if (levelOf(a) > levelOf(b)) {
                         return 1;
                     }
                     if (a < b) {
@@ -542,57 +567,98 @@
                     }
                     return 0;
                 }
+                var x = 0,
+                    y = 0,
+                    level;
                 graph.nodes().sort(sorter).forEach(node => {
-                    if (level != node[4] || y >= numRow) {
-                        x++
-                        if (level != node[4]) x++
+                    if (level != levelOf(node) || y >= sceneGenerateConfig.numRow * sceneGenerateConfig
+                        .rowSpacing) {
+                        x -= sceneGenerateConfig.colSpacing
                         y = 0
+                        level = levelOf(node)
                     }
-                    level = node[4]
                     graph.setNodeAttribute(node, 'y', y)
                     graph.setNodeAttribute(node, 'x', x)
-                    y++
+                    y += sceneGenerateConfig.rowSpacing
                 })
-                if (this.showingEdgeTag.length > 0) {
-                    edgeFilter = (id, attr) => this.showingEdgeTag.includes(attr.tag)
-                    graph.nodes().sort(sorter).forEach(node => {
-                        graph.filterEdges(node, edgeFilter).forEach(edge => {
-                            let x1, x2, y1, y2
-                            let sourceAttr = graph.getNodeAttributes(graph.source(edge))
-                            let targetAttr = graph.getNodeAttributes(graph.target(edge))
-                            if (sourceAttr.x < targetAttr.x) {
-                                x1 = sourceAttr.x
-                                x2 = targetAttr.x
-                                y1 = sourceAttr.y
-                                y2 = targetAttr.y
-                            } else {
-                                x1 = targetAttr.x
-                                x2 = sourceAttr.x
-                                y1 = targetAttr.y
-                                y2 = sourceAttr.y
-                            }
-                            const m = (y2 - y1) / (x2 - x1)
-                            const c = y1 - x1 * m;
-                            x1 = x1 + 1;
-                            y1 = m * x1 + c;
-                            while (x1 < x2 && (y1 < y2 || m == 0)) {
-                                if (Number.isInteger(y1) && graph.filterNodes((id, attr) => attr
-                                        .x == x1 && attr.y == y1).length > 0) {
-                                    graph.filterNodes((id, attr) => attr
-                                            .x == x1 && attr.y >= y1)
-                                        .forEach(node => {
-                                            graph.updateNodeAttributes(node, attr => ({
-                                                ...attr,
-                                                y: attr.y + 1
-                                            }));
-                                        })
-                                }
-                                x1 = x1 + 1
-                                y1 = m * x1 + c
-                            }
+                let colSet = [...new Set(graph.nodes().map(node => graph.getNodeAttribute(node, 'x')))]
+                let colOutgoing = {}
+                let colIncoming = {}
+                colSet.forEach(col => {
+                    let colNode = graph.filterNodes(node => graph.getNodeAttribute(node, 'x') ==
+                        col)
+                    colOutgoing[col] = 0
+                    colIncoming[col] = 0
+                    let outGoingOrder = 0
+                    let incomingOrder = 0
+                    colNode.forEach(node => {
+                        let outgoing = graph.filterNeighbors(node, neighbor => levelOf(
+                                neighbor) > levelOf(
+                                node) ||
+                            (levelOf(neighbor) == levelOf(node) &&
+                                graph.getNodeAttribute(neighbor, 'x') > graph
+                                .getNodeAttribute(node,
+                                    'x')))
+                        let incoming = graph.filterNeighbors(node, neighbor => levelOf(
+                                neighbor) < levelOf(
+                                node) ||
+                            (levelOf(neighbor) == levelOf(node) &&
+                                graph.getNodeAttribute(neighbor, 'x') < graph
+                                .getNodeAttribute(node,
+                                    'x')))
+                        let order = 0
+                        outgoing.forEach(neighbor => {
+                            graph.filterEdges(edge =>
+                                (graph.source(edge) == node && graph.target(
+                                    edge) == neighbor) ||
+                                (graph.target(edge) == node && graph.source(
+                                    edge) == neighbor)
+                            ).forEach(edge => {
+                                graph.setEdgeAttribute(edge, 'startOrder',
+                                    order)
+                                graph.setEdgeAttribute(edge, 'outgoingOrder',
+                                    outGoingOrder)
+                                order++
+                                incomingOrder++
+                            })
                         })
+                        order = 0
+                        incoming.forEach(neighbor => {
+                            graph.filterEdges(edge =>
+                                (graph.source(edge) == node && graph.target(
+                                    edge) == neighbor) ||
+                                (graph.target(edge) == node && graph.source(
+                                    edge) == neighbor)
+                            ).forEach(edge => {
+                                graph.setEdgeAttribute(edge, 'endOrder',
+                                    order)
+                                graph.setEdgeAttribute(edge, 'incomingOrder',
+                                    outGoingOrder)
+                                order++
+                                incomingOrder++
+                            })
+                        })
+                        colOutgoing[col] += outgoing.length
+                        colIncoming[col] += incoming.length
                     })
-                } else {}
+                })
+                let offset = 0
+                colSet.sort((a, b) => b - a).forEach(col => {
+                    let colPaddingLeft = Math.ceil(colIncoming[col] / sceneGenerateConfig.maxNumWire)
+                    let colPaddingRight = Math.ceil(colOutgoing[col] / sceneGenerateConfig.maxNumWire)
+                    graph.filterNodes(node => graph.getNodeAttribute(node, 'x') <=
+                        col + offset).forEach(node => {
+                        graph.setNodeAttribute(node, 'x', graph.getNodeAttribute(node, 'x') -
+                            sceneGenerateConfig.colSpacing * colPaddingLeft)
+                    })
+                    offset -= colPaddingLeft * sceneGenerateConfig.colSpacing
+                    graph.filterNodes(node => graph.getNodeAttribute(node, 'x') <
+                        col + offset).forEach(node => {
+                        graph.setNodeAttribute(node, 'x', graph.getNodeAttribute(node, 'x') -
+                            sceneGenerateConfig.colSpacing * colPaddingRight)
+                    })
+                    offset -= colPaddingRight * sceneGenerateConfig.colSpacing
+                })
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
@@ -606,8 +672,6 @@
                         if (ids.length > 0)
                             location.href = graph.getNodeAttribute(ids[0], "url")
                     }
-
-
                 }
             },
             showAllPath(tagOrId, edgeTag = this.showingEdgeTag) {
@@ -746,21 +810,6 @@
             let element = document.getElementById("canvas")
             engine = new BABYLON.Engine(element, true);
             self = this
-            onNodeClick = (event) => {
-                this.showingEdgeTag.length > 0 ? this.showAllPath(event.target[0].data('id')) : this
-                    .gotoPage(
-                        event.target[0].data('id'))
-                this.focusingEdge = false
-            }
-            onEdgeClick = (event) => {
-                if (!(edge.data("tag") in this.showingEdgeTag)) return
-                this.edgeSource = edge.source().data("id")
-                this.edgeEnd = edge.target().data("id")
-                this.edgeTag = edge.data("tag")
-                this.edgeColor = edge.data("color")
-                this.focusingEdge = true
-                this.paths = undefined
-            }
 
             this.loadData()
             scroll = (delta) => {
