@@ -130,7 +130,7 @@
         chipThickness: 0.25,
         numRow: 4,
         socketLength: 0.25,
-        maxNumWire: 10,
+        maxNumWire: 8,
         graoundOffset: -0.75,
         groundThickness: 0.5
     }
@@ -303,10 +303,32 @@
     function pathify(points, width) {
         let pathArray = []
         points.map((vector, index) => {
-            let path = index != (points.length - 1) ? vector.subtract(points[index + 1]) : points[index - 1]
-                .subtract(vector)
-            let offset = path.cross(BABYLON.Vector3.Up()).normalize().scale(width / 2)
-            pathArray.push([vector.add(offset), vector.subtract(offset)])
+            if (index == points.length - 1 || index == 0) {
+                let offset
+                if (index == points.length - 1) {
+                    let path = vector.subtract(points[index - 1])
+                    offset = path.cross(BABYLON.Vector3.Up()).normalize().scale(width / 2)
+                } else if (index == 0) {
+                    let path = points[index + 1].subtract(vector)
+                    offset = path.cross(BABYLON.Vector3.Up()).normalize().scale(width / 2)
+                }
+                pathArray.push([vector.add(offset), vector.subtract(offset)])
+            } else {
+                let path1 = vector.subtract(points[index - 1])
+                let path2 = vector.subtract(points[index + 1])
+                let orientation = points[index + 1].subtract(points[index - 1]).normalize()
+                orientation = BABYLON.Vector3.Dot(orientation, (new BABYLON.Vector3(path1.z, path1.y, -path1.x))
+                    .normalize())
+                let angle = Math.acos(BABYLON.Vector3.Dot(path1.normalize(), path2.normalize())) / 2
+                console.log(index, orientation > 0)
+                let offset = path1.add(path2).normalize().scale(width / 2)
+                pathArray.push([
+                    orientation > 0 ? vector.add(offset.scale(1 / Math.sin(angle))) : vector.subtract(
+                        offset),
+                    orientation > 0 ? vector.subtract(offset) : vector.add(offset.scale(1 / Math.sin(
+                        angle)))
+                ])
+            }
         })
         return pathArray
     }
@@ -433,9 +455,9 @@
                     let hoveringMesh = null
                     scene.onPointerObservable.add((pointerInfo) => {
                         switch (pointerInfo.type) {
-                            case BABYLON.PointerEventTypes.POINTERMOVE:
-                                console.log(pointerInfo)
-                                break
+                            // case BABYLON.PointerEventTypes.POINTERMOVE:
+                            //     console.log(pointerInfo)
+                            //     break
                             case BABYLON.PointerEventTypes.POINTERDOWN:
                                 if (!pointerInfo.pickInfo.pickedMesh) {
                                     this.paths = undefined
@@ -477,7 +499,7 @@
                     })
                     let light = new BABYLON.HemisphericLight(
                         "light1",
-                        new BABYLON.Vector3(0, 1, 0),
+                        new BABYLON.Vector3(1, 1, 0),
                         scene
                     );
                     graph.nodes().forEach(node => {
@@ -522,7 +544,7 @@
                     const aspect = rect.height / rect.width;
                     let width = Math.abs(xmax - xmin)
                     let height = Math.abs(ymax - ymin)
-                    const viewScaling = 2.9 * height
+                    const viewScaling = 3.5 * height
                     camera.orthoTop = (viewScaling + viewScaling * 0.1) * aspect;
                     camera.orthoBottom = -(viewScaling - viewScaling * 0.1) * aspect;
                     camera.orthoLeft = -viewScaling;
