@@ -1,4 +1,8 @@
-{% if layout == 'Isometric'%}
+{% if layout == 'CiSE'%}
+{% extends "indexCiSE.html" %}
+{% elif layout == 'Force'%}
+{% extends "indexForce.html" %}
+{% elif layout == 'Isometric'%}
 {% extends "indexIsometric.html" %}
 {% elif layout == 'Circular'%}
 {% extends "indexCircular.html" %}

@@ -325,7 +325,7 @@
                 pathArray.push([
                     orientation > 0 ? vector.add(offset.scale(1 / Math.sin(angle))) : vector.subtract(
                         offset),
-                    orientation > 0 ? vector.subtract(offset) : vector.add(offset.scale(1 / Math.sin(
+                    orientation > 0 ? vector.subtract(offset) : vector.add(offset.scale(1 / Math.tan(
                         angle)))
                 ])
             }
@@ -472,9 +472,7 @@
                                 if (graph.hasNode(id)) {
                                     if (pointerInfo.event.button == 0) {
                                         this.showingEdgeTag.length > 0 ? this.showAllPath(id) :
-                                            this
-                                            .gotoPage(id)
-
+                                            this.gotoPage(id)
                                         this.focusingEdge = false
                                     } else if (pointerInfo.event.button == 1) {
                                         let url = graph.getNodeAttribute(id, "url")
