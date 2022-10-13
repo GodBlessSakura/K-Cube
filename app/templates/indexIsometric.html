@@ -66,8 +66,8 @@
             <v-col></v-col>
         </v-row>
         <v-row style="height: 80%;">
-            <div style="height: 99%; width: 99%;">
-                <canvas id="canvas" style="height: 99%; width: 99%;"></canvas>
+            <div style="height: 100%; width: 100%; position: relative">
+                <canvas id="canvas"></canvas>
             </div>
         </v-row>
     </v-container>
@@ -828,15 +828,12 @@
         },
         mounted: function () {
             let element = document.getElementById("canvas")
+            element.style.width = element.parentElement.offsetWidth + "px"
+            element.style.height = element.parentElement.offsetHeight + "px"
             engine = new BABYLON.Engine(element, true);
             self = this
 
             this.loadData()
-            scroll = (delta) => {
-
-
-            }
-
         },
         template: '#content',
         delimiters: ['${', '}'],

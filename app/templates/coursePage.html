@@ -3,8 +3,11 @@
 {% block VueComponent %}
 <v-container>
     <v-row>
+        <v-img contain :src="course?.imageURL" height="200px"></v-img>
+    </v-row>
+    <v-row>
         <v-card-title>
-            ${courseCode}
+            ${courseCode} - ${course?.courseName}
         </v-card-title>
     </v-row>
     <v-row v-if="!hideGraph">
@@ -83,6 +86,7 @@
 <script>
     Vue.component('app-content', {
         data: () => ({
+            course: null,
             rows: [
                 []
             ],
@@ -98,19 +102,20 @@
             loadData() {
                 this.$root.progress.show = true
                 this.lastModifiedWorkspace = undefined
-                fetch(
-                    "{{ url_for('RESTful.course.query', graphs=True, courseCode = courseCode) | safe }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
+                let promises = []
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.course.query', graphs=True, courseCode = courseCode) | safe }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
                     .then(response => {
                         try {
                             return response.json()
                         } catch {
-                            this.$root.progress.show = false
                             this.$root.errorDisplay({},
                                 'Unexpected error occured.')
                         }
@@ -119,12 +124,12 @@
                         this.rows = [
                             []
                         ]
-                        this.$root.progress.show = false
                         let colPerRow = 4
                         if (body.instructors) {
                             console.log(body.instructors.map(instructor => instructor.userId))
                             console.log("{{USER.userId}}")
-                            this.isTeaching = body.instructors.map(instructor => instructor.userId).includes("{{USER.userId}}")
+                            this.isTeaching = body.instructors.map(instructor => instructor.userId)
+                                .includes("{{USER.userId}}")
                             body.instructors.forEach(instructor => {
                                 let lastRow = this.rows[this.rows.length - 1]
                                 if (lastRow.length == colPerRow) {
@@ -151,32 +156,57 @@
                                 'Unexpected error on getting courses information.')
                         }
                     })
-                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
-                fetch(
-                    "{{ url_for('RESTful.workspace.query', lastModified=True, courseCode = courseCode) | safe }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
+                )
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.course.get',  courseCode = courseCode) | safe }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
                     .then(response => {
                         try {
                             return response.json()
                         } catch {
-                            this.$root.progress.show = false
                             this.$root.errorDisplay({},
                                 'Unexpected error occured.')
                         }
                     })
                     .then(body => {
-                        this.$root.progress.show = false
+                        if (body.course) {
+                            this.course = body.course
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+                )
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.workspace.query', lastModified=True, courseCode = courseCode) | safe }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
                         let colPerRow = 4
                         if (body.workspaces) {
                             if (body.workspaces.length > 0) {
                                 this.lastModifiedWorkspace = body.workspaces[0]
-                            }
-                            else {
+                            } else {
                                 this.lastModifiedWorkspace = null
                             }
                         } else {
@@ -184,26 +214,28 @@
                                 'Unexpected error on getting workspace information.')
                         }
                     })
-                fetch("{{ url_for('RESTful.course.courseInstructor', courseCode=courseCode) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                )
+                promises.push(
+                    fetch("{{ url_for('RESTful.course.courseInstructor', courseCode=courseCode) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
                         } catch {
-                            this.$root.progress.show = false
                             this.$root.errorDisplay({},
                                 'Unexpected error occured.')
                         }
                     })
                     .then(body => {
-                        this.$root.progress.show = false
                         if (body.instructors) {
-                            this.isTeaching = body.instructors.filter(instructor=>instructor.isTeaching).map(instructor => instructor.user.userId).includes("{{USER.userId}}")
+                            this.isTeaching = body.instructors.filter(instructor => instructor
+                                    .isTeaching)
+                                .map(instructor => instructor.user.userId).includes("{{USER.userId}}")
 
                         } else {
                             this.$root.errorDisplay(body,
@@ -211,7 +243,13 @@
                         }
 
                     })
+                )
                 //{% endif %}
+                Promise.all(promises).then(bodies => {
+
+                }).finally(() => {
+                    this.$root.progress.show = false
+                })
             },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             openWorkspaceDialogue() {
@@ -227,15 +265,15 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(courseCode), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            join: true
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: true
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -265,15 +303,15 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(courseCode), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            join: false
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: false
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()

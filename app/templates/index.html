@@ -1,16 +1,18 @@
-{% if layout == 'CiSE'%}
+{% if layout == None %}
+{% extends "indexGrid.html" %}
+{% elif layout.lower() == 'CiSE'.lower()%}
 {% extends "indexCiSE.html" %}
-{% elif layout == 'Force'%}
+{% elif layout.lower() == 'Force'.lower()%}
 {% extends "indexForce.html" %}
-{% elif layout == 'Isometric'%}
+{% elif layout.lower() == 'Isometric'.lower()%}
 {% extends "indexIsometric.html" %}
-{% elif layout == 'Circular'%}
+{% elif layout.lower() == 'Circular'.lower()%}
 {% extends "indexCircular.html" %}
-{% elif layout == 'Concentric'%}
+{% elif layout.lower() == 'Concentric'.lower()%}
 {% extends "indexConcentric.html" %}
-{% elif layout == '3D'%}
+{% elif layout.lower() == '3D'.lower()%}
 {% extends "index3D.html" %}
-{% elif layout == 'Compound'%}
+{% elif layout.lower() == 'Compound'.lower()%}
 {% extends "indexCompound.html" %}
 {% else %}
 {% extends "indexGrid.html" %}

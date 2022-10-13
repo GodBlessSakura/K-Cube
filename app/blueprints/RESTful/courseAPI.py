@@ -97,6 +97,20 @@ def courseInstructor(courseCode):
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
 
+@course.get("/<courseCode>")
+def get(courseCode):
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "course": get_api_driver().course.get_course(
+                    courseCode=courseCode
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})
+
 
 def courseInstructorGraph(courseCode):
     try:
