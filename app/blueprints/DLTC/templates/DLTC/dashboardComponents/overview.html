@@ -1,0 +1,80 @@
+{% macro componentContent() %}
+<div style="height: 100%; width: 100%;">
+    <div ref="canvas" style="height: 99%; width: 99%;"></div>
+</div>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="kcube-DLTC-overview">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<script src="https://unpkg.com/vue-iro-color-picker@2.0.0/dist/VueIroColorPicker.umd.min.js"></script>
+<script>
+    (() => {
+        widgetName = 'overview'
+        widgetComponentName = 'kcube-DLTC-overview'
+        KCube.widgetName.push(widgetName)
+        KCube.widgetOptions[widgetName] = {
+            component: widgetComponentName,
+            requests: [{
+                url: "{{ url_for('RESTful.branch.query', pullSummary=True) }}",
+                method: "GET",
+            }, ]
+        }
+    })();
+    Vue.component(widgetComponentName, {
+        props: ['responds'],
+        watch: {
+            "responds": {
+                handler(newVal, oldVal) {
+                    let element = this.$refs.canvas
+                    let chart = echarts.init(element);
+                    let dates = newVal["{{ url_for('RESTful.branch.query', pullSummary=True) }}"]
+                        .branches
+                        .filter(branch => branch.canPullDate).map(branch => new Date(branch.canPullDate
+                            .split('T')[0]))
+                    let today = new Date()
+                    let firstDay = Math.min(...dates)
+                    firstDay = new Date(firstDay)
+                    let days = []
+                    for(;firstDay<today;firstDay.setDate(firstDay.getDate() + 1)){
+                        days.push(firstDay.toLocaleDateString())
+                    }
+                    let option = {
+                        xAxis: {
+                            data: days,
+                        },
+                        yAxis: {},
+                        series: [{
+                            type: 'line',
+                            data: dates.map(date =>
+                                    date.toLocaleDateString()
+                                ).reduce((data, canPullDate) => {
+                                    let slot = data.filter(d => d[0] == canPullDate)
+                                    if (slot.length == 0) {
+                                        data.push([canPullDate, 1])
+                                    } else {
+                                        slot[0][1]++
+                                    }
+                                    return data
+                                }, []),
+                        }]
+                    };
+                    console.log(option)
+                    chart.setOption(option)
+                },
+                deep: true
+            }
+
+        },
+        data: () => ({}),
+        methods: {},
+        template: '#' + widgetComponentName,
+        delimiters: ['${', '}'],
+        mounted: function () {},
+    })
+</script>
+{% endmacro %}
+{{ component() }}
+{{ script() }}

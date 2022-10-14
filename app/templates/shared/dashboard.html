@@ -37,7 +37,7 @@
             </v-bottom-sheet>
         </v-col>
     </v-row>
-    <v-row>
+    <v-row v-if="layout">
         <grid-layout style="width:100%" :layout.sync="layout" :col-num="3" :row-height="300" :is-draggable="true"
             :is-resizable="true" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
             @layout-updated="setLocal">
@@ -47,11 +47,11 @@
                 <v-card style="height:100%;width:100%">
                     <v-app-bar class="vue-draggable-handle" flat dense>
                         <v-spacer></v-spacer>
-                        <v-icon right @click="removeWidget(component2name(item.i))">close
+                        <v-icon small right @click="removeWidget(component2name(item.i))">close
                         </v-icon>
                     </v-app-bar>
                     <v-card-text style="width:100%; height: calc(100% - 48px);">
-                        <component class="no-drag" v-bind:is="item.i"></component>
+                        <component class="no-drag" v-bind:is="item.i" :responds="responds"></component>
                     </v-card-text>
                 </v-card>
             </grid-item>
@@ -75,11 +75,14 @@
     var layoutName = "{{request.blueprint}}" + '-dashboard-layout'
     Vue.component('app-content', {
         data: () => ({
+            responds: {
+                "{{ url_for('RESTful.branch.query', pullSummary=True) }}": {}
+            },
             layout: [],
             chosenWidget: []
         }),
         methods: {
-            getLocal() {
+            initializeLayout() {
                 let option = localStorage.getItem(layoutName)
                 if (option != null) this.layout = JSON.parse(option)
             },
@@ -95,45 +98,85 @@
             },
             updageWidget() {
                 //remove obsolete widget
-                let validComponent = Object.keys(KCube.widgetOptions).map(name => KCube.widgetOptions[name].component)
+                let validComponent = Object.keys(KCube.widgetOptions).map(name => KCube.widgetOptions[name]
+                    .component)
                 this.layout = this.layout.filter(widget => validComponent.includes(widget.i))
                 //remove widget from layoute that is not in chosenWidget
                 KCube.widgetName.filter(name => !this.chosenWidget.includes(name)).forEach(name => {
-                    this.layout = this.layout.filter(widget => widget.i != KCube.widgetOptions[name].component)
+                    this.layout = this.layout.filter(widget => widget.i != KCube.widgetOptions[name]
+                        .component)
                 })
                 //add widget to layout that is in chosenWidget but not in layout
                 this.chosenWidget.filter(name => this.layout.filter(widget => widget.i ==
                     KCube.widgetOptions[name].component).length == 0).forEach(name => {
-                        let option = {
-                            x: 0,
-                            y: 0,
-                            w: 1,
-                            h: 1,
-                            i: KCube.widgetOptions[name].component
-                        }
-                        option = { ...option, ...KCube.widgetOptions[name] }
-                        console.log(option)
-                        this.layout.push(option)
-                    })
+                    let option = {
+                        x: 0,
+                        y: 0,
+                        w: KCube.widgetOptions[name].minW ? KCube.widgetOptions[name].minW : 1,
+                        h: KCube.widgetOptions[name].minH ? KCube.widgetOptions[name].minH : 1,
+                        i: KCube.widgetOptions[name].component
+                    }
+                    option = {
+                        ...option,
+                        ...KCube.widgetOptions[name]
+                    }
+                    this.layout.push(option)
+                })
                 this.setLocal()
             },
             component2name(component) {
-                return Object.keys(KCube.widgetOptions).filter(name => KCube.widgetOptions[name].component == component)[0]
+                return Object.keys(KCube.widgetOptions).filter(name => KCube.widgetOptions[name].component ==
+                    component)[0]
+            },
+            fetchLayoutData() {
+                this.layout.map(l => l.requests).forEach(requests => requests.forEach(request => {
+                    fetch(request.url, {
+                            method: request.method,
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                ...request.headers
+                            },
+                            body: request.body
+
+                        }).then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            request.handler ? request.handler(body) : null
+                            this.responds[request.url] = body
+                            this.responds = this.responds
+                        })
+
+                }))
             }
         },
         mounted() {
-            this.getLocal()
+            this.initializeLayout()
             //remove obsolete widget
-            let validComponent = Object.keys(KCube.widgetOptions).map(name => KCube.widgetOptions[name].component)
+            let validComponent = Object.keys(KCube.widgetOptions).map(name => KCube.widgetOptions[name]
+                .component)
             this.layout = this.layout.filter(widget => validComponent.includes(widget.i))
 
             //update widget option, specifically minW minH maxW maxH
             this.layout = this.layout.map(widget => {
-                let name = Object.keys(KCube.widgetOptions).filter(n => KCube.widgetOptions[n].component == widget.i)[0]
-                let option = { ...KCube.widgetOptions[name] }
-                delete option.w
-                delete option.h
-                widget = { ...widget, ...option }
+                let name = Object.keys(KCube.widgetOptions).filter(n => KCube.widgetOptions[n]
+                    .component == widget.i)[0]
+                let {
+                    w,
+                    h,
+                    ...option
+                } = KCube.widgetOptions[name]
+                widget = {
+                    ...widget,
+                    ...option
+                }
                 if (widget.minW) widget.w = Math.max(widget.w, widget.minW)
                 if (widget.minH) widget.h = Math.max(widget.h, widget.minH)
                 if (widget.maxW) widget.w = Math.min(widget.w, widget.maxW)
@@ -144,6 +187,7 @@
             this.chosenWidget = this.layout.map(widget => widget.i).map(component =>
                 this.component2name(component)
             )
+            this.fetchLayoutData()
         },
         template: '#content',
         delimiters: ['${', '}'],

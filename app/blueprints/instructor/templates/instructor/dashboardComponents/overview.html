@@ -19,11 +19,18 @@
         minH: 2,
         minW: 3,
         maxH: 2,
-        maxW: 3
+        maxW: 3,
+        requests: [{
+            url: "{{ url_for('RESTful.relationship.query', pullSummary=True) }}",
+            method: "GET",
+        }, ]
     }
     Vue.component(widgetComponentName, {
         data: () => ({
-            el: { offsetHeight: 0, offsetWidth: 0 }
+            el: {
+                offsetHeight: 0,
+                offsetWidth: 0
+            }
         }),
         methods: {
             resize() {

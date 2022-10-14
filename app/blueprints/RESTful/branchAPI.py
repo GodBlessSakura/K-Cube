@@ -5,6 +5,16 @@ from app.authorizer import authorize_RESTful_with
 
 branch = Blueprint("branch", __name__, url_prefix="branch")
 
+@branch.get("/")
+def query():
+    if request.args.get("pullSummary"):
+        return jsonify(
+            {
+                "success": True,
+                "branches": get_api_driver().branch.get_canPullSummary(),
+            }
+        )
+    return jsonify({"success": False, "message": "incomplete request"})
 
 @branch.post("/", defaults={"overwriterId": None, "overwriteeId": None})
 @branch.post("/<overwriterId>/", defaults={"overwriteeId": None})

@@ -126,6 +126,7 @@ class branchDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
     # not implemented
     # increment produce update summary, e.g. diff in number of triple
     def increment_pull_as_fork(self, overwriterId, overwriteeId, userId, tag):
@@ -232,6 +233,30 @@ class branchDAO:
                     }
                     for record in result
                 ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def get_canPullSummary(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+            )
+            try:
+                return [
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["branch"].items()
+                    }
+                    for record in result
+                ]
             except Exception as exception:
                 raise exception
 
