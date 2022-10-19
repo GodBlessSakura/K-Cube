@@ -12,15 +12,26 @@
             <v-divider style="top: 40%; position: relative;"></v-divider>
         </v-col>
         <v-col cols="auto" style="padding-top: 0px; padding-bottom: 0px;">
+            <v-tooltip top>
+                <template v-slot:activator="{ on: tooltip }">
+                    <v-btn icon v-on="tooltip" @click="move = !move">
+                        <v-icon v-show="move">domain_verification</v-icon>
+                        <v-icon v-show="!move">web_asset</v-icon>
+                    </v-btn>
+                </template>
+                Drag or resize widget
+            </v-tooltip>
+        </v-col>
+        <v-col cols="auto" style="padding-top: 0px; padding-bottom: 0px;">
             <v-bottom-sheet inset>
                 <template v-slot:activator="{ on: sheet, attrs }">
                     <v-tooltip top>
                         <template v-slot:activator="{ on: tooltip }">
                             <v-btn icon v-bind="attrs" v-on="{...sheet,...tooltip}">
-                                <v-icon>settings</v-icon>
+                                <v-icon>widgets</v-icon>
                             </v-btn>
                         </template>
-                        Add widget to the dashboard
+                        Add or remove widget
                     </v-tooltip>
                 </template>
                 <v-sheet>
@@ -41,17 +52,21 @@
         <grid-layout style="width:100%" :layout.sync="layout" :col-num="3" :row-height="300" :is-draggable="true"
             :is-resizable="true" :vertical-compact="true" :margin="[10, 10]" :use-css-transforms="true"
             @layout-updated="setLocal">
-            <grid-item drag-allow-from=".vue-draggable-handle" drag-ignore-from=".no-drag" v-for="item in layout"
-                :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i" :max-w="item?.maxW"
-                :max-h="item?.maxH" :min-w="item?.minW" :min-h="item?.minH">
+            <grid-item :resizeOption="{edges: {left: false, right: true, bottom: true, top: false }}"
+                :isResizable="move" drag-allow-from=".vue-draggable-handle" drag-ignore-from=".no-drag"
+                v-for="item in layout" :x="item.x" :y="item.y" :w="item.w" :h="item.h" :i="item.i" :key="item.i"
+                :max-w="item?.maxW" :max-h="item?.maxH" :min-w="item?.minW" :min-h="item?.minH">
                 <v-card style="height:100%;width:100%">
-                    <v-app-bar class="vue-draggable-handle" flat dense>
-                        <v-spacer></v-spacer>
-                        <v-icon small right @click="removeWidget(component2name(item.i))">close
-                        </v-icon>
-                    </v-app-bar>
+                    <span style="position: absolute; z-index: 500; pointer-events: none;">${item.widgetName}</span>
+                    <v-expand-transition>
+                        <v-app-bar dense class="vue-draggable-handle" flat dense v-show="move">
+                            <v-spacer></v-spacer>
+                            <v-icon small right @click="removeWidget(component2name(item.i))">close
+                            </v-icon>
+                        </v-app-bar>
+                    </v-expand-transition>
                     <v-card-text style="width:100%; height: calc(100% - 48px);">
-                        <component class="no-drag" v-bind:is="item.i" :responds="responds"></component>
+                        <component class="no-drag" v-bind:is="item.i"></component>
                     </v-card-text>
                 </v-card>
             </grid-item>
@@ -60,6 +75,12 @@
 </v-container>
 {% endblock %}
 {% block VueComponentScript %}
+<script>
+    var dashboardOption = {
+        cacheMode: "default",
+        cacheControl: "max-age=300"
+    }
+</script>
 {% block widget %} {% endblock %}
 {{ layout.echartsCDN() }}
 {% import 'component/myFavorite.html' as myFavorite %}
@@ -75,10 +96,8 @@
     var layoutName = "{{request.blueprint}}" + '-dashboard-layout'
     Vue.component('app-content', {
         data: () => ({
-            responds: {
-                "{{ url_for('RESTful.branch.query', pullSummary=True) }}": {}
-            },
             layout: [],
+            move: false,
             chosenWidget: []
         }),
         methods: {
@@ -125,37 +144,10 @@
                 this.setLocal()
             },
             component2name(component) {
-                return Object.keys(KCube.widgetOptions).filter(name => KCube.widgetOptions[name].component ==
+                return Object.keys(KCube.widgetOptions).filter(name => KCube.widgetOptions[name]
+                    .component ==
                     component)[0]
             },
-            fetchLayoutData() {
-                this.layout.map(l => l.requests).forEach(requests => requests.forEach(request => {
-                    fetch(request.url, {
-                            method: request.method,
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                ...request.headers
-                            },
-                            body: request.body
-
-                        }).then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            request.handler ? request.handler(body) : null
-                            this.responds[request.url] = body
-                            this.responds = this.responds
-                        })
-
-                }))
-            }
         },
         mounted() {
             this.initializeLayout()
@@ -187,7 +179,6 @@
             this.chosenWidget = this.layout.map(widget => widget.i).map(component =>
                 this.component2name(component)
             )
-            this.fetchLayoutData()
         },
         template: '#content',
         delimiters: ['${', '}'],

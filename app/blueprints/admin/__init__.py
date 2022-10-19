@@ -5,11 +5,12 @@ from flask import (
     url_for,
     session,
     redirect,
-    abort,
+    jsonify,
 )
 import os
 from app.authorizer import authorize_with
 from app.blueprints.collaborate import collaborate
+from app.api_driver import get_api_driver
 
 admin = Blueprint("admin", __name__, template_folder="templates")
 
@@ -65,6 +66,18 @@ def dashboard():
                 )
             )
         ],
+    )
+
+
+@admin.get("db_statistic")
+def getDBStatistic():
+    driver = get_api_driver()
+    return jsonify(
+        {
+            "success": True,
+            "node": driver.admin.node_statistic(),
+            "edge": driver.admin.edge_statistic(),
+        }
     )
 
 

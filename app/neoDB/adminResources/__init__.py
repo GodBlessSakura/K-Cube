@@ -115,3 +115,43 @@ class adminDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def node_statistic(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {
+                        "NodeType": record["NodeType"],
+                        "NumberOfNodes": record["NumberOfNodes"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def edge_statistic(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {
+                        "RelationshipName": record["RelationshipName"],
+                        "RelationshipNumber": record["RelationshipNumber"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

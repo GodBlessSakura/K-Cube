@@ -427,8 +427,7 @@
                     icon: "co_present",
                     name: "instructor",
                     title: "Instructor's space",
-                    list: [
-                        {
+                    list: [{
                             title: "Dashboard",
                             icon: "dashboard",
                             url: "{{ url_for('instructor.dashboard') }}",
@@ -466,8 +465,7 @@
                     icon: "groups",
                     name: "DLTC",
                     title: "DLTC",
-                    list: [
-                        {
+                    list: [{
                             title: "Dashboard",
                             icon: "dashboard",
                             url: "{{ url_for('DLTC.dashboard') }}",
@@ -495,13 +493,11 @@
                     icon: "school",
                     name: "student",
                     title: "Student",
-                    list: [
-                        {
-                            title: "Dashboard",
-                            icon: "dashboard",
-                            url: "{{ url_for('student.dashboard') }}",
-                        },
-                    ]
+                    list: [{
+                        title: "Dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('student.dashboard') }}",
+                    }, ]
                 },
                 //{% endif %}
                 /*{% if PERMISSION 
@@ -548,8 +544,7 @@
                     icon: "admin_panel_settings",
                     name: "admin",
                     title: "Admin",
-                    list: [
-                        {
+                    list: [{
                             title: "Dashboard",
                             icon: "dashboard",
                             url: "{{ url_for('admin.dashboard') }}",
@@ -568,7 +563,8 @@
             if (KCube.currentBlueprint == "None" && KCube.navigationListGroup.length > 0) {
                 KCube.currentBlueprint = KCube.navigationListGroup[0].name
             }
-            KCube.view = KCube.roleTab.map(t => t.name).includes(KCube.currentBlueprint) ? KCube.currentBlueprint : localStorage.getItem('lastView')
+            KCube.view = KCube.roleTab.map(t => t.name).includes(KCube.currentBlueprint) ? KCube.currentBlueprint :
+                localStorage.getItem('lastView')
             localStorage.setItem('lastView', KCube.view)
             if (KCube.roleTab.length > 0) {
                 // initialize values
@@ -579,8 +575,10 @@
 
                 if (KCube.currentTabIndex != undefined) {
                     // hide roleTab item if they don't have page with title same as current page
-                    KCube.currentTabName = KCube.currentTabIndex != undefined ? KCube.tabs[KCube.currentTabIndex].title : undefined
-                    KCube.roleTab = KCube.roleTab.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName).length > 0)
+                    KCube.currentTabName = KCube.currentTabIndex != undefined ? KCube.tabs[KCube.currentTabIndex]
+                        .title : undefined
+                    KCube.roleTab = KCube.roleTab.filter(r => r.tabs.filter(t => t.title == KCube.currentTabName)
+                        .length > 0)
                 }
             }
         }
@@ -596,8 +594,10 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
-                appBar: new URLSearchParams(window.location.search).get('bar') === "false" || window.location !== window.parent.location ? false : true,
-                navBar: new URLSearchParams(window.location.search).get('bar') === "false" || window.location !== window.parent.location ? false : true,
+                appBar: new URLSearchParams(window.location.search).get('bar') === "false" || window
+                    .location !== window.parent.location ? false : true,
+                navBar: new URLSearchParams(window.location.search).get('bar') === "false" || window
+                    .location !== window.parent.location ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
                 // {% if session['user'] %} 
@@ -619,7 +619,7 @@
                     show: false,
                     message: '',
                     actionName: '',
-                    action: () => { }
+                    action: () => {}
                 },
                 bePatientSnackBar: {
                     show: false
@@ -639,27 +639,27 @@
                     idRules: [
                         v => !!v || 'UserId is required',
                         v => (v && v.length > 3 && v.length < 101) ||
-                            'UserId should be anything between 4 and 100 charactors',
+                        'UserId should be anything between 4 and 100 charactors',
                         v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
-                            'UserId can only contains alphanumeric characters.',
+                        'UserId can only contains alphanumeric characters.',
                         v => (v && /{{regExpRules["userId"]}}/.test(v)) ||
-                            'UserId must start with alphabetic characters.'
+                        'UserId must start with alphabetic characters.'
                     ],
                     name: '',
                     nameRules: [
                         v => !!v || 'Name is required',
                         v => (v && v.length > 3 && v.length < 101) ||
-                            'Name should be anything between 4 and 100 charactors',
+                        'Name should be anything between 4 and 100 charactors',
                         v => (v && /{{regExpRules["userName"]}}/.test(v)) ||
-                            'Name can only contains alphanumeric characters and space.'
+                        'Name can only contains alphanumeric characters and space.'
                     ],
                     email: '',
                     emailRules: [
                         v => !!v || 'E-mail is required',
                         v => (v && v.length < 320) ||
-                            'A valid email should have less then 320 characters',
+                        'A valid email should have less then 320 characters',
                         v => (v && /{{regExpRules["email"]}}/.test(v)) ||
-                            'E-mail must be in valid format',
+                        'E-mail must be in valid format',
                     ],
                     password: '',
                     passwordRules: [
@@ -669,7 +669,7 @@
                     password2Rules: [
                         v => !!v || 'Password is required',
                         v => (v && v == app._data.registerForm.password) ||
-                            'Two password are different'
+                        'Two password are different'
                     ],
                 },
                 loginForm: {
@@ -677,11 +677,11 @@
                     idRules: [
                         v => !!v || 'UserId is required',
                         v => (v && v.length > 3 && v.length < 101) ||
-                            'UserId should be anything between 4 and 100 charactors',
+                        'UserId should be anything between 4 and 100 charactors',
                         v => (v && /^[a-zA-Z0-9]{4,100}$/.test(v)) ||
-                            'UserId can only contains alphanumeric characters.',
+                        'UserId can only contains alphanumeric characters.',
                         v => (v && /{{regExpRules["userId"]}}/.test(v)) ||
-                            'UserId must start with alphabetic characters.'
+                        'UserId must start with alphabetic characters.'
                     ],
                     password: '',
                     passwordRules: [
@@ -696,10 +696,10 @@
                     this.userIdAvaliableChecking = true
                     if (this.$refs.registerFormUserIdControl.valid) {
                         fetch("{{ url_for('user.isUserIdAvaliable') }}?userId=" +
-                            this.$refs.registerFormUserIdControl.value, {
-                            method: 'GET',
-                            cache: 'no-store',
-                        })
+                                this.$refs.registerFormUserIdControl.value, {
+                                    method: 'GET',
+                                    cache: 'no-store',
+                                })
                             .then(response => response.json())
                             .then(body => {
                                 this.registerForm.isUserIdAvaliable = body.avaliable
@@ -716,18 +716,18 @@
                     if (this.$refs.registerFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.register') }}", {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userId: this.registerForm.id,
-                                password: this.registerForm.password,
-                                email: this.registerForm.email,
-                                userName: this.registerForm.name
+                                method: 'POST',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    userId: this.registerForm.id,
+                                    password: this.registerForm.password,
+                                    email: this.registerForm.email,
+                                    userName: this.registerForm.name
+                                })
                             })
-                        })
                             .then(response => {
                                 try {
                                     return response.json()
@@ -752,15 +752,15 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('user.forgotPassword') }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            userId: this.loginForm.id,
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userId: this.loginForm.id,
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -779,17 +779,17 @@
                     if (this.$refs.loginFormControl.validate()) {
                         this.progress.show = true
                         fetch("{{ url_for('user.login') }}", {
-                            method: 'POST',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                userId: this.loginForm.id,
-                                password: this.loginForm.password
-                            })
+                                method: 'POST',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    userId: this.loginForm.id,
+                                    password: this.loginForm.password
+                                })
 
-                        })
+                            })
                             .then(response => {
                                 try {
                                     return response.json()
@@ -804,15 +804,14 @@
                                 this.responseSnackBar(body, 'incorrect username or password', () => {
                                     if (body.url && (window.location == "{{ url_for('index') }}")) {
                                         window.location.href = body.url
-                                    }
-                                    else {
+                                    } else {
                                         window.location.reload()
                                     }
                                 })
                             })
                     }
                 },
-                responseSnackBar(body, defaultMessage, onSuccess = () => { }) {
+                responseSnackBar(body, defaultMessage, onSuccess = () => {}) {
                     if (body.success) {
                         if (body.message) {
                             this.completeSnackBar.message = body.message
@@ -850,17 +849,20 @@
                     tab = role.tabs[this.tabIndex]
                     window.location.href = tab ? tab.url : role.tabs[0].url
                 },
-                customizedFetch(resources, options, errorHandler = () => { }) {
+                customizedFetch(resources, options, errorHandler = () => {}) {
                     return fetch(resources, options)
                         .catch(error => {
                             this.progress.show = false
                             errorHandler(error);
                             if (error instanceof TypeError) {
-                                this.errorDisplay({ success: false },
+                                this.errorDisplay({
+                                        success: false
+                                    },
                                     "Network error occured.")
-                            }
-                            else {
-                                this.errorDisplay({ success: false },
+                            } else {
+                                this.errorDisplay({
+                                        success: false
+                                    },
                                     error.message)
                             }
                             throw error
@@ -877,44 +879,55 @@
                                 enabled: true
                             },
                             canClickTarget: false,
-                            buttons: [
-                                {
-                                    text: 'Next',
-                                    action: () => this._tour.next()
-                                }
-                            ],
+                            buttons: [{
+                                text: 'Next',
+                                action: () => this._tour.next()
+                            }],
                         }
                     })
                     if (this.$refs["shepherd-layoutTab"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-layoutTab"].$el, on: 'bottom' },
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutTab"].$el,
+                                on: 'bottom'
+                            },
                             text: 'These tabs bring you to commonly used page of our website',
 
                         })
                     }
                     if (this.$refs["shepherd-roleSelect"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-roleSelect"].$el, on: 'bottom' },
+                            attachTo: {
+                                element: this.$refs["shepherd-roleSelect"].$el,
+                                on: 'bottom'
+                            },
                             text: 'If you have multiple user role, you mean view the same page from different persepctive.',
 
                         })
                     }
                     if (this.$refs["shepherd-layoutNavigation"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-layoutNavigation"].$el, on: 'right' },
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigation"].$el,
+                                on: 'right'
+                            },
                             text: 'All page of our website are listed here. (You may expand menu by move your cursor over this region)',
                             canClickTarget: true,
                         })
                     }
                     if (this.$refs["shepherd-layoutNavigationToggle"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-layoutNavigationToggle"].$el, on: 'right' },
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigationToggle"].$el,
+                                on: 'right'
+                            },
                             text: 'You may keep the menu expanding (or not) by click this.',
                             canClickTarget: true,
                             beforeShowPromise: () =>
                                 new Promise((resolve, reject) => {
                                     this.miniSync = false
-                                    this.$refs["shepherd-layoutNavigationToggle"].$el.dispatchEvent(new MouseEvent("click"))
+                                    this.$refs["shepherd-layoutNavigationToggle"].$el.dispatchEvent(
+                                        new MouseEvent("click"))
                                     setTimeout(() => {
                                         resolve();
                                     }, 100);
@@ -923,24 +936,34 @@
                     }
                     if (this.$refs["shepherd-layoutNavigationRoleGroup"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-layoutNavigationRoleGroup"], on: 'right' },
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigationRoleGroup"],
+                                on: 'right'
+                            },
                             text: 'Pages avaliable to specific user group are listed here.',
                         })
                     }
                     if (this.$refs["shepherd-userMenu"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-userMenu"].$el, on: 'bottom' },
+                            attachTo: {
+                                element: this.$refs["shepherd-userMenu"].$el,
+                                on: 'bottom'
+                            },
                             text: 'You mean check and modify your account in this menu.',
 
                         })
                     }
                     if (this.$refs["shepherd-userProfile"]) {
                         this._tour.addStep({
-                            attachTo: { element: this.$refs["shepherd-userProfile"].$el, on: 'left' },
+                            attachTo: {
+                                element: this.$refs["shepherd-userProfile"].$el,
+                                on: 'left'
+                            },
                             text: 'You mean check and modify your profile here.<br>Make sure you verify your email account, if you would like to acquire priveledge.',
                             beforeShowPromise: () =>
                                 new Promise((resolve, reject) => {
-                                    this.$refs["shepherd-userMenu"].$el.dispatchEvent(new MouseEvent("click"))
+                                    this.$refs["shepherd-userMenu"].$el.dispatchEvent(
+                                        new MouseEvent("click"))
 
                                     setTimeout(() => {
                                         resolve();
@@ -954,8 +977,7 @@
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
-            mounted() {
-            }
+            mounted() {}
         })
     </script>
     {% macro echartsCDN() %}
@@ -974,7 +996,7 @@
     </script>
     {% endmacro %}
     {% macro vueGridLayout() %}
-    <script src="https://cdn.jsdelivr.net/npm/vue-grid-layout@2.3.12/dist/vue-grid-layout.umd.min.js"></script>
+    <script src="{{ url_for('static', filename='lib/vue-grid-layout.umd.js') }}"></script>
     {% endmacro %}
 
     {% block body %}{% endblock %}

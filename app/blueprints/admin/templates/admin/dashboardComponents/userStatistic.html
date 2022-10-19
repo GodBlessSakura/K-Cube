@@ -10,83 +10,111 @@
 </script>
 {% endmacro %}
 {% macro script() %}
-<script src="https://unpkg.com/vue-iro-color-picker@2.0.0/dist/VueIroColorPicker.umd.min.js"></script>
 <script>
     (() => {
         widgetName = 'User Statistic'
         widgetComponentName = '{{widgetComponentName}}'
         KCube.widgetName.push(widgetName)
         KCube.widgetOptions[widgetName] = {
+            widgetName: 'User Statistic',
             component: widgetComponentName,
-            requests: [{
-                url: "{{ url_for('RESTful.role.query', listRolePermission=True) }}",
-                method: "GET",
-            }, ]
         }
     })();
     Vue.component(widgetComponentName, {
-        props: ['responds'],
-        watch: {
-            "responds": {
-                handler(newVal, oldVal) {
-                    let bin = newVal["{{ url_for('RESTful.role.query', listRolePermission=True) }}"]
-                        .users
-                        .map(user => user.roles).reduce((bin, roles) => {
-                            roles.forEach(role => {
-                                let b = bin.filter(bin.name == role)
-                                b.length > 0 ? b[0].value++ : bin.push({
-                                    value: 1,
-                                    name: role
-                                })
-                            });
-                            return bin
-                        }, [])
-                    let option = {
-                        tooltip: {
-                            trigger: 'item'
-                        },
-                        legend: {
-                            top: '5%',
-                            left: 'center'
-                        },
-                        series: [{
-                            type: 'pie',
-                            radius: ['40%', '70%'],
-                            avoidLabelOverlap: false,
-                            itemStyle: {
-                                borderRadius: 10,
-                                borderColor: '#fff',
-                                borderWidth: 2
-                            },
-                            label: {
-                                show: false,
-                                position: 'center'
-                            },
-                            emphasis: {
-                                label: {
-                                    show: true,
-                                    fontSize: '40',
-                                    fontWeight: 'bold'
-                                }
-                            },
-                            labelLine: {
-                                show: false
-                            },
-                            data: bin
-                        }]
-                    };
-                    console.log(option)
-                    chart.setOption(option)
-                },
-                deep: true
-            }
-
-        },
         data: () => ({}),
-        methods: {},
+        methods: {
+            loadData() {
+                fetch("{{ url_for('RESTful.role.query', listUser=True) }}", {
+                        method: "GET",
+                        cache: dashboardOption.cacheMode,
+                        headers: {
+                            'Content-Type': 'application/json',
+                            "Cache-Control": dashboardOption.cacheControl
+                        },
+                    }).then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.users) {
+                            let element = this.$refs.canvas
+                            this.chart = echarts.init(element);
+                            let bin = body.users.map(user => user.roles).reduce((bin, roles) => {
+                                roles.forEach(role => {
+                                    let b = bin.filter(b => b.name == role)
+                                    b.length > 0 ? b[0].value++ : bin.push({
+                                        value: 1,
+                                        name: role
+                                    })
+                                });
+                                return bin
+                            }, [])
+                            let option = {
+                                tooltip: {
+                                    trigger: 'item'
+                                },
+                                legend: {
+                                    top: '5%',
+                                    left: 'center'
+                                },
+                                title: [{
+
+                                    text: 'Total # of user: ' + body.users.length,
+                                    textAlign: 'center',
+                                    right: '5%',
+                                    bottom: '5%',
+                                    textStyle: {
+                                        fontSize: 15
+                                    }
+                                }, ],
+                                series: [{
+                                    type: 'pie',
+                                    radius: ['40%', '70%'],
+                                    avoidLabelOverlap: false,
+                                    itemStyle: {
+                                        borderRadius: 10,
+                                        borderColor: '#fff',
+                                        borderWidth: 2
+                                    },
+                                    label: {
+                                        formatter: '{c}',
+                                        position: 'inside'
+                                    },
+                                    emphasis: {
+                                        label: {
+                                            show: true,
+                                            fontSize: '40',
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    labelLine: {
+                                        show: false
+                                    },
+                                    data: bin
+                                }]
+                            };
+                            this.chart.setOption(option)
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
+
+            }
+        },
         template: '#' + widgetComponentName,
         delimiters: ['${', '}'],
-        mounted: function () {},
+        mounted: function () {
+            new ResizeObserver(() => {
+                if(this.chart)this.chart.resize()
+            }).observe(this.$el)
+            this.loadData()
+        },
     })
 </script>
 {% endmacro %}
