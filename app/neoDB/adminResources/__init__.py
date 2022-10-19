@@ -81,3 +81,37 @@ class adminDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def user_statistic(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {"user": dict(record["user"].items()), "roles": record["roles"]}
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def deltaGraph_statistic(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {"user": dict(record["user"].items()), "roles": record["roles"]}
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

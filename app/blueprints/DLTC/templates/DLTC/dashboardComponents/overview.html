@@ -1,10 +1,11 @@
+{% set widgetComponentName = 'kcube-' + request.blueprint + '-overview' %}
 {% macro componentContent() %}
 <div style="height: 100%; width: 100%;">
     <div ref="canvas" style="height: 99%; width: 99%;"></div>
 </div>
 {% endmacro %}
 {% macro component() %}
-<script type="text/x-template" id="kcube-DLTC-overview">
+<script type="text/x-template" id="{{widgetComponentName}}">
     {{ componentContent()}}
 </script>
 {% endmacro %}
@@ -13,7 +14,7 @@
 <script>
     (() => {
         widgetName = 'overview'
-        widgetComponentName = 'kcube-DLTC-overview'
+        widgetComponentName = '{{widgetComponentName}}'
         KCube.widgetName.push(widgetName)
         KCube.widgetOptions[widgetName] = {
             component: widgetComponentName,
@@ -30,7 +31,7 @@
                 handler(newVal, oldVal) {
                     let element = this.$refs.canvas
                     let chart = echarts.init(element);
-                    let dates = newVal["{{ url_for('RESTful.branch.query', pullSummary=True) }}"]
+                    let dates = newVal["{{ url_for('user.', pullSummary=True) }}"]
                         .branches
                         .filter(branch => branch.canPullDate).map(branch => new Date(branch.canPullDate
                             .split('T')[0]))

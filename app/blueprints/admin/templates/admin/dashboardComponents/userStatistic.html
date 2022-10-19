@@ -1,0 +1,94 @@
+{% set widgetComponentName = 'kcube-' + request.blueprint + '-userStatistic' %}
+{% macro componentContent() %}
+<div style="height: 100%; width: 100%;">
+    <div ref="canvas" style="height: 99%; width: 99%;"></div>
+</div>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="{{widgetComponentName}}">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<script src="https://unpkg.com/vue-iro-color-picker@2.0.0/dist/VueIroColorPicker.umd.min.js"></script>
+<script>
+    (() => {
+        widgetName = 'User Statistic'
+        widgetComponentName = '{{widgetComponentName}}'
+        KCube.widgetName.push(widgetName)
+        KCube.widgetOptions[widgetName] = {
+            component: widgetComponentName,
+            requests: [{
+                url: "{{ url_for('RESTful.role.query', listRolePermission=True) }}",
+                method: "GET",
+            }, ]
+        }
+    })();
+    Vue.component(widgetComponentName, {
+        props: ['responds'],
+        watch: {
+            "responds": {
+                handler(newVal, oldVal) {
+                    let bin = newVal["{{ url_for('RESTful.role.query', listRolePermission=True) }}"]
+                        .users
+                        .map(user => user.roles).reduce((bin, roles) => {
+                            roles.forEach(role => {
+                                let b = bin.filter(bin.name == role)
+                                b.length > 0 ? b[0].value++ : bin.push({
+                                    value: 1,
+                                    name: role
+                                })
+                            });
+                            return bin
+                        }, [])
+                    let option = {
+                        tooltip: {
+                            trigger: 'item'
+                        },
+                        legend: {
+                            top: '5%',
+                            left: 'center'
+                        },
+                        series: [{
+                            type: 'pie',
+                            radius: ['40%', '70%'],
+                            avoidLabelOverlap: false,
+                            itemStyle: {
+                                borderRadius: 10,
+                                borderColor: '#fff',
+                                borderWidth: 2
+                            },
+                            label: {
+                                show: false,
+                                position: 'center'
+                            },
+                            emphasis: {
+                                label: {
+                                    show: true,
+                                    fontSize: '40',
+                                    fontWeight: 'bold'
+                                }
+                            },
+                            labelLine: {
+                                show: false
+                            },
+                            data: bin
+                        }]
+                    };
+                    console.log(option)
+                    chart.setOption(option)
+                },
+                deep: true
+            }
+
+        },
+        data: () => ({}),
+        methods: {},
+        template: '#' + widgetComponentName,
+        delimiters: ['${', '}'],
+        mounted: function () {},
+    })
+</script>
+{% endmacro %}
+{{ component() }}
+{{ script() }}
