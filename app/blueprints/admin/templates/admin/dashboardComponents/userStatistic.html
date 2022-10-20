@@ -26,11 +26,7 @@
             loadData() {
                 fetch("{{ url_for('RESTful.role.query', listUser=True) }}", {
                         method: "GET",
-                        cache: dashboardOption.cacheMode,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            "Cache-Control": dashboardOption.cacheControl
-                        },
+                        ...dashboardOption.fetchOption
                     }).then(response => {
                         try {
                             return response.json()
@@ -44,23 +40,38 @@
                         if (body.users) {
                             let element = this.$refs.canvas
                             this.chart = echarts.init(element);
-                            let bin = body.users.map(user => user.roles).reduce((bin, roles) => {
-                                roles.forEach(role => {
-                                    let b = bin.filter(b => b.name == role)
-                                    b.length > 0 ? b[0].value++ : bin.push({
-                                        value: 1,
-                                        name: role
-                                    })
-                                });
+                            let bin = body.users.reduce((bin, user) => {
+                                let roles = user.roles
+                                let name = roles.join(' & ')
+                                let b = bin[0].filter(b => b.name == name)
+                                b.length > 0 ? b[0].value++ : bin[0].push({
+                                    value: 1,
+                                    name: name
+                                })
+                                console.log(user.user.verified)
+                                name = name + (user.user.verified ? " (verified)" : " (not verified)")
+                                b = bin[1].filter(b => b.name == name)
+                                b.length > 0 ? b[0].value++ : bin[1].push({
+                                    value: 1,
+                                    name: name,
+                                    itemStyle: {
+                                        color: user.user.verified ? 'lightGreen' : 'pink'
+                                    },
+                                })
                                 return bin
-                            }, [])
+                            }, [
+                                [],
+                                []
+                            ])
                             let option = {
                                 tooltip: {
                                     trigger: 'item'
                                 },
                                 legend: {
-                                    top: '5%',
-                                    left: 'center'
+                                    type: 'scroll',
+                                    orient: 'vertical',
+                                    right: 0,
+                                    data: bin[0]
                                 },
                                 title: [{
 
@@ -74,7 +85,8 @@
                                 }, ],
                                 series: [{
                                     type: 'pie',
-                                    radius: ['40%', '70%'],
+                                    radius: ['20%', '55%'],
+                                    center: ['30%', '50%'],
                                     avoidLabelOverlap: false,
                                     itemStyle: {
                                         borderRadius: 10,
@@ -95,7 +107,32 @@
                                     labelLine: {
                                         show: false
                                     },
-                                    data: bin
+                                    data: bin[0]
+                                }, {
+                                    type: 'pie',
+                                    radius: ['60%', '90%'],
+                                    center: ['30%', '50%'],
+                                    avoidLabelOverlap: false,
+                                    itemStyle: {
+                                        borderRadius: 10,
+                                        borderColor: '#fff',
+                                        borderWidth: 2
+                                    },
+                                    label: {
+                                        formatter: '{c}',
+                                        position: 'inside'
+                                    },
+                                    emphasis: {
+                                        label: {
+                                            show: true,
+                                            fontSize: '40',
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    labelLine: {
+                                        show: false
+                                    },
+                                    data: bin[1]
                                 }]
                             };
                             this.chart.setOption(option)
@@ -111,7 +148,7 @@
         delimiters: ['${', '}'],
         mounted: function () {
             new ResizeObserver(() => {
-                if(this.chart)this.chart.resize()
+                if (this.chart) this.chart.resize()
             }).observe(this.$el)
             this.loadData()
         },

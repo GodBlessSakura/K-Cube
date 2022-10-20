@@ -32,12 +32,7 @@
             loadData() {
                 fetch("{{ url_for('admin.getDBStatistic') }}", {
                         method: "GET",
-                        cache: dashboardOption.cacheMode,
-                        headers: {
-                            'Content-Type': 'application/json',
-                            "Cache-Control": dashboardOption.cacheControl
-                        },
-
+                        ...dashboardOption.fetchOption
                     }).then(response => {
                         try {
                             return response.json()
@@ -72,6 +67,7 @@
                                     id: "node",
                                     type: 'pie',
                                     radius: ['40%', '70%'],
+                                    center: ['30%', '50%'],
                                     itemStyle: {
                                         borderRadius: 10,
                                         borderColor: '#fff',
@@ -122,6 +118,7 @@
                                     id: "edge",
                                     type: 'pie',
                                     radius: ['40%', '70%'],
+                                    center: ['30%', '50%'],
                                     itemStyle: {
                                         borderRadius: 10,
                                         borderColor: '#fff',
