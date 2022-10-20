@@ -9,9 +9,8 @@ from flask import (
     abort,
     g,
 )
-import os
+from app.filePath_provider import listOfdashboardComponentsPaths, imagesUrl
 from app.authorizer import authorize_with
-from app.blueprints.collaborate import collaborate
 
 instructor = Blueprint("instructor", __name__, template_folder="templates")
 
@@ -20,46 +19,7 @@ instructor = Blueprint("instructor", __name__, template_folder="templates")
 def dashboard():
     return render_template(
         "instructor/dashboard.html",
-        components=[
-            "/".join([instructor.name, "dashboardComponents", f])
-            for f in os.listdir(
-                os.path.join(
-                    instructor.root_path,
-                    instructor.template_folder,
-                    instructor.name,
-                    "dashboardComponents",
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    instructor.root_path,
-                    instructor.template_folder,
-                    instructor.name,
-                    "dashboardComponents",
-                    f,
-                )
-            )
-        ]
-        + [
-            "/".join([collaborate.name, "dashboardComponents", f])
-            for f in os.listdir(
-                os.path.join(
-                    collaborate.root_path,
-                    collaborate.template_folder,
-                    collaborate.name,
-                    "dashboardComponents",
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    collaborate.root_path,
-                    collaborate.template_folder,
-                    collaborate.name,
-                    "dashboardComponents",
-                    f,
-                )
-            )
-        ],
+        components=listOfdashboardComponentsPaths(instructor),
     )
 
 
@@ -73,29 +33,7 @@ def middleware():
 def courseList():
     return render_template(
         "shared/courseList.html",
-        imagesUrl=[
-            url_for(
-                "static",
-                filename=current_app.config["upload_image_directory"].replace("\\", "/")
-                + "/"
-                + f,
-            )
-            for f in os.listdir(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                    f,
-                )
-            )
-        ],
+        imagesUrl=imagesUrl(),
     )
 
 
@@ -181,29 +119,7 @@ def graphimport(deltaGraphId):
 def courseForm():
     return render_template(
         "instructor/courseForm.html",
-        imagesUrl=[
-            url_for(
-                "static",
-                filename=current_app.config["upload_image_directory"].replace("\\", "/")
-                + "/"
-                + f,
-            )
-            for f in os.listdir(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    current_app.root_path,
-                    "static",
-                    current_app.config["upload_image_directory"],
-                    f,
-                )
-            )
-        ],
+        imagesUrl=imagesUrl(),
     )
 
 

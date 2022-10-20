@@ -1,4 +1,4 @@
-{% set widgetComponentName = 'kcube-' + request.blueprint + '-userStatistic' %}
+{% set widgetComponentName = 'kcube-' + request.blueprint + '-materialStatistic' %}
 {% macro componentContent() %}
 <div style="height: 100%; width: 100%;">
     <div ref="canvas" style="height: 99%; width: 99%;"></div>
@@ -12,7 +12,7 @@
 {% macro script() %}
 <script>
     (() => {
-        widgetName = 'User Statistic'
+        widgetName = 'Course Material statistic'
         widgetComponentName = '{{widgetComponentName}}'
         KCube.widgetName.push(widgetName)
         KCube.widgetOptions[widgetName] = {

@@ -7,10 +7,9 @@ from flask import (
     redirect,
     jsonify,
 )
-import os
 from app.authorizer import authorize_with
-from app.blueprints.collaborate import collaborate
 from app.api_driver import get_api_driver
+from app.filePath_provider import listOfdashboardComponentsPaths
 
 admin = Blueprint("admin", __name__, template_folder="templates")
 
@@ -26,46 +25,7 @@ def dashboard():
     print()
     return render_template(
         "admin/dashboard.html",
-        components=[
-            "/".join([admin.name, "dashboardComponents", f])
-            for f in os.listdir(
-                os.path.join(
-                    admin.root_path,
-                    admin.template_folder,
-                    admin.name,
-                    "dashboardComponents",
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    admin.root_path,
-                    admin.template_folder,
-                    admin.name,
-                    "dashboardComponents",
-                    f,
-                )
-            )
-        ]
-        + [
-            "/".join([collaborate.name, "dashboardComponents", f])
-            for f in os.listdir(
-                os.path.join(
-                    collaborate.root_path,
-                    collaborate.template_folder,
-                    collaborate.name,
-                    "dashboardComponents",
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    collaborate.root_path,
-                    collaborate.template_folder,
-                    collaborate.name,
-                    "dashboardComponents",
-                    f,
-                )
-            )
-        ],
+        components=listOfdashboardComponentsPaths(admin),
     )
 
 

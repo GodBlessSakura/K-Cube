@@ -7,10 +7,9 @@ from flask import (
     redirect,
     abort,
 )
-import os
 from app.authorizer import authorize_with
 from .blueprints.uploads import uploads
-from app.blueprints.collaborate import collaborate
+from app.filePath_provider import listOfdashboardComponentsPaths
 
 DLTC = Blueprint("DLTC", __name__, template_folder="templates")
 DLTC.register_blueprint(uploads, url_prefix="/uploads")
@@ -20,46 +19,7 @@ DLTC.register_blueprint(uploads, url_prefix="/uploads")
 def dashboard():
     return render_template(
         "DLTC/dashboard.html",
-        components=[
-            "/".join([DLTC.name, "dashboardComponents", f])
-            for f in os.listdir(
-                os.path.join(
-                    DLTC.root_path,
-                    DLTC.template_folder,
-                    DLTC.name,
-                    "dashboardComponents",
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    DLTC.root_path,
-                    DLTC.template_folder,
-                    DLTC.name,
-                    "dashboardComponents",
-                    f,
-                )
-            )
-        ]
-        + [
-            "/".join([collaborate.name, "dashboardComponents", f])
-            for f in os.listdir(
-                os.path.join(
-                    collaborate.root_path,
-                    collaborate.template_folder,
-                    collaborate.name,
-                    "dashboardComponents",
-                )
-            )
-            if os.path.isfile(
-                os.path.join(
-                    collaborate.root_path,
-                    collaborate.template_folder,
-                    collaborate.name,
-                    "dashboardComponents",
-                    f,
-                )
-            )
-        ],
+        components=listOfdashboardComponentsPaths(DLTC),
     )
 
 

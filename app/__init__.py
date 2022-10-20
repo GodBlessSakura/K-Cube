@@ -119,7 +119,7 @@ def create_app(config_string):
     @app.route("/index", defaults={"layout": None})
     @app.route("/index/<layout>")
     def index(layout):
-        return render_template("index.html", layout= layout)
+        return render_template("index.html", layout=layout)
 
     @app.route("/comprehensive")
     def comprehensive():
