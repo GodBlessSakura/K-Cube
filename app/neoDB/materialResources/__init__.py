@@ -137,3 +137,23 @@ class materialDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def materialCourseCount(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {
+                        "course": dict(record["course"].items()),
+                        "NumberOfMaterials": record["NumberOfMaterials"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

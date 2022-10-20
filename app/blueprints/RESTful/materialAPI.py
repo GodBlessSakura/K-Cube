@@ -8,10 +8,20 @@ material = Blueprint("material", __name__, url_prefix="material")
 
 @material.get("/")
 def query():
-    if request.args.get("ofUser") and request.args.get("courseCode"):
-        return materialOfUser(request.args.get("courseCode"))
-    if request.args.get("courseCode"):
-        return materialOfCourse(request.args.get("courseCode"))
+    try:
+        if request.args.get("ofUser") and request.args.get("courseCode"):
+            return materialOfUser(request.args.get("courseCode"))
+        if request.args.get("courseCode"):
+            return materialOfCourse(request.args.get("courseCode"))
+        if request.args.get("materialCourseCount"):
+            return jsonify(
+                {
+                    "success": True,
+                    "count": get_api_driver().material.materialCourseCount(),
+                }
+            )
+    except Exception as e:
+        raise e
     return jsonify({"success": False, "message": "incomplete request"})
 
 

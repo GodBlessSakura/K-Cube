@@ -48,7 +48,6 @@
                                     value: 1,
                                     name: name
                                 })
-                                console.log(user.user.verified)
                                 name = name + (user.user.verified ? " (verified)" : " (not verified)")
                                 b = bin[1].filter(b => b.name == name)
                                 b.length > 0 ? b[0].value++ : bin[1].push({
