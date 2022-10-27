@@ -247,7 +247,6 @@
             </v-app-bar>
             <v-navigation-drawer v-if="navBar" :expand-on-hover="navHover" mini-variant :mini-variant.sync="miniSync"
                 mini-variant-width="50" app ref="shepherd-layoutNavigation" eg>
-
                 <v-divider></v-divider>
                 <v-list nav dense>
                     <v-list-item link @click="navHover = !navHover" ref="shepherd-layoutNavigationToggle">
@@ -984,6 +983,7 @@
                 if (window.location == window.parent.location &&
                     (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
                         .getItem("{{request.endpoint}}Toured")))) {
+                    let counter = 0
                     let interval = setInterval(() => {
                         if (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
                                 .getItem("{{request.endpoint}}Toured"))) {
@@ -1008,6 +1008,12 @@
                             if (this.pageIntro && !localStorage
                                 .getItem("{{request.endpoint}}Toured"))
                                 flash("shepherd-pageIntro")
+                            if (counter < 10) {
+                                counter++
+                            } else {
+                                clearInterval(interval)
+
+                            }
                         } else {
                             clearInterval(interval)
                         }
