@@ -1014,8 +1014,16 @@
                                 }),
                             canClickTarget: true,
                         })
-                    }
-                    if (this.pageIntro && !localStorage.getItem("{{request.endpoint}}Toured")) {
+                        if (this.pageIntro && !localStorage.getItem("{{request.endpoint}}Toured")) {
+                            tour.addStep({
+                                attachTo: {
+                                    element: this.$refs["shepherd-pageIntro"].$el,
+                                    on: 'left'
+                                },
+                                text: 'A menu specific to this page is avaliable.',
+                            })
+                        }
+                    } else {
                         tour.addStep({
                             attachTo: {
                                 element: this.$refs["shepherd-pageIntro"].$el,
@@ -1032,6 +1040,7 @@
                                 }),
                             canClickTarget: true,
                         })
+
                     }
                     setTimeout(() => {
                         tour.start();
