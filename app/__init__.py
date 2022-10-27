@@ -114,7 +114,7 @@ def create_app(config_string):
                 return redirect("/instructor/courseList")
             if "DLTC" in g.permission["role"]:
                 return redirect("/DLTC/courseList")
-        return render_template("index.html")
+        return render_template("index.html", layout=None)
 
     @app.route("/index", defaults={"layout": None})
     @app.route("/index/<layout>")
