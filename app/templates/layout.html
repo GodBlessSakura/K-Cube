@@ -88,25 +88,28 @@
                     </v-tabs>
                 </template>
                 <v-spacer></v-spacer>
-                <v-tooltip bottom>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-menu offset-y eager @change="tourInvitation.start()">
-                            <template v-slot:activator="{ on: onMenu }">
-                                <v-btn v-bind="attrs" v-on="{ ...onMenu, ...on }" color="warning" ref="shepherd-help">
-                                    help</v-btn>
-                            </template>
-                            <v-list ref="shepherd-intros">
-                                <v-list-item @click="appIntro()">
-                                    <v-list-item-title>Overview</v-list-item-title>
-                                </v-list-item>
-                                <v-list-item v-show="pageIntro" @click="pageIntro()" ref="shepherd-pageIntro">
-                                    <v-list-item-title>This particular page</v-list-item-title>
-                                </v-list-item>
-                            </v-list>
-                        </v-menu>
+                <v-menu offset-y eager open-on-hover>
+                    <template v-slot:activator="{ on: onMenu }">
+                        <v-btn v-on="{ ...onMenu}" :ripple="{ class: 'warning--text',center: true }"
+                            ref="shepherd-help">
+                            help</v-btn>
                     </template>
-                    A tour of the website
-                </v-tooltip>
+                    <v-list>
+                        <v-list-item>
+                            A tour of the website
+                        </v-list-item>
+                        <v-divider> </v-divider>
+                        <v-list-item @click="appIntro()" :ripple="{ class: 'warning--text',center: true }"
+                            ref="shepherd-appIntro">
+                            <v-list-item-title>Overview</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item v-show="pageIntro" @click="pageIntro()" ref="shepherd-pageIntro"
+                            :ripple="{ class: 'warning--text',center: true }" ref="shepherd-pageIntro">
+                            <v-list-item-title>This particular page</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-menu>
+                </template>
                 {% if session['user'] %}
                 <v-menu offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -978,40 +981,38 @@
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
             mounted() {
-                if (window.location == window.parent.location)
-                    setTimeout(() => {
+                if (window.location == window.parent.location &&
+                    (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
+                        .getItem("{{request.endpoint}}Toured")))) {
+                    let interval = setInterval(() => {
                         if (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
-                                .getItem(
-                                    "{{request.endpoint}}Toured"))) {
-                            this.tourInvitation = this.$shepherd({
-                                defaultStepOptions: {
-                                    classes: 'shadow-md bg-purple-dark',
-                                    scrollTo: true,
-                                    canClickTarget: false,
-                                }
-                            })
-                            if (!localStorage.getItem('layoutToured')) {
-                                this.tourInvitation.addStep({
-                                    attachTo: {
-                                        element: this.$refs["shepherd-intros"].$el,
-                                        on: 'left'
-                                    },
-                                    text: 'You may start a website tour by clicking ' + (this
-                                        .pageIntro ? 'these.' : 'this.'),
-                                    beforeShowPromise: () =>
-                                        new Promise((resolve, reject) => {
-                                            this.$refs["shepherd-help"].$el.dispatchEvent(
-                                                new MouseEvent("click"))
-                                            setTimeout(() => {
-                                                resolve();
-                                            }, 200);
-                                        }),
-                                    canClickTarget: true,
+                                .getItem("{{request.endpoint}}Toured"))) {
+                            let flash = (ref) => {
+                                let el = this.$refs[ref].$el
+                                el.scrollIntoView({
+                                    behavior: "smooth",
+                                    block: "center"
+                                })
+                                let ev = new Event("mousedown")
+                                let offset = el.getBoundingClientRect()
+                                ev.clientX = offset.left + 1
+                                ev.clientY = offset.top + 1
+                                el.dispatchEvent(ev)
+                                this.$nextTick(function () {
+                                    el.dispatchEvent(new Event("mouseup"))
                                 })
                             }
-                            this.tourInvitation.start();
+                            flash("shepherd-help")
+                            if (!localStorage.getItem('layoutToured')) flash(
+                                "shepherd-appIntro")
+                            if (this.pageIntro && !localStorage
+                                .getItem("{{request.endpoint}}Toured"))
+                                flash("shepherd-pageIntro")
+                        } else {
+                            clearInterval(interval)
                         }
-                    }, 200);
+                    }, 500)
+                }
             }
         })
     </script>
