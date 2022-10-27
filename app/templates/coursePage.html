@@ -16,8 +16,17 @@
         </v-card-title>
     </v-row>
     <v-row v-for="row in rows" v-if="!hideGraph">
-        <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column">
-            <v-card v-if="col.userName" :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId !=
+        <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column" v-if="col.userName">
+            <v-card v-if="isPageInIFrame"
+                @click="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))"
+                @click.middle="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))">
+                <v-list-item>
+                    <v-list-item-title>
+                        ${col.userName}
+                    </v-list-item-title>
+                </v-list-item>
+            </v-card>
+            <v-card v-else :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId !=
             null ? '/' + col.userId : '')">
                 <v-list-item>
                     <v-list-item-title>
@@ -87,6 +96,7 @@
     Vue.component('app-content', {
         data: () => ({
             course: null,
+            isPageInIFrame: window.location != window.parent.location,
             rows: [
                 []
             ],
@@ -250,6 +260,9 @@
                 }).finally(() => {
                     this.$root.progress.show = false
                 })
+            },
+            newTab(url) {
+                let w = window.open(url, '_blank')
             },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             openWorkspaceDialogue() {
