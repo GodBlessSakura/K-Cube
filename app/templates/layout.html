@@ -602,13 +602,8 @@
                     .location !== window.parent.location ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,
-                // {% if session['user'] %} 
-                miniSync: true,
-                navHover: true,
-                // {% else %}
                 miniSync: false,
                 navHover: false,
-                // {% endif %}
                 errorSnackBar: {
                     show: false,
                     message: ''
@@ -915,13 +910,22 @@
                             canClickTarget: true,
                         })
                     }
+                    if (this.$refs["shepherd-layoutNavigationRoleGroup"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigationRoleGroup"],
+                                on: 'right'
+                            },
+                            text: 'Pages avaliable to specific user group are listed here.',
+                        })
+                    }
                     if (this.$refs["shepherd-layoutNavigationToggle"]) {
                         this._tour.addStep({
                             attachTo: {
                                 element: this.$refs["shepherd-layoutNavigationToggle"].$el,
                                 on: 'right'
                             },
-                            text: 'You may keep the menu expanding (or not) by click this.',
+                            text: 'You may hide the menu (or unhide) by click this.',
                             canClickTarget: true,
                             beforeShowPromise: () =>
                                 new Promise((resolve, reject) => {
@@ -932,15 +936,6 @@
                                         resolve();
                                     }, 100);
                                 }),
-                        })
-                    }
-                    if (this.$refs["shepherd-layoutNavigationRoleGroup"]) {
-                        this._tour.addStep({
-                            attachTo: {
-                                element: this.$refs["shepherd-layoutNavigationRoleGroup"],
-                                on: 'right'
-                            },
-                            text: 'Pages avaliable to specific user group are listed here.',
                         })
                     }
                     if (this.$refs["shepherd-userMenu"]) {
