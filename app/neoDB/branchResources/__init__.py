@@ -250,10 +250,13 @@ class branchDAO:
             try:
                 return [
                     {
-                        key: value
-                        if not isinstance(value, DateTime)
-                        else str(value.iso_format())
-                        for key, value in record["branch"].items()
+                        "branch": {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["branch"].items()
+                        },
+                        "course": dict(record["course"].items()),
                     }
                     for record in result
                 ]

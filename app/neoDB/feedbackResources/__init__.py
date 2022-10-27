@@ -129,3 +129,30 @@ class feedbackDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def discussionStatistic(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return [
+                    {
+                        "course": dict(record["course"].items()),
+                        "discussion": dict(
+                            {
+                                key: value
+                                if not isinstance(value, DateTime)
+                                else str(value.iso_format())
+                                for key, value in record["discussion"].items()
+                            }.items()
+                        ),
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

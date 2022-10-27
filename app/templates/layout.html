@@ -90,16 +90,16 @@
                 <v-spacer></v-spacer>
                 <v-tooltip bottom>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-menu offset-y>
+                        <v-menu offset-y eager>
                             <template v-slot:activator="{ on: onMenu }">
-                                <v-btn v-bind="attrs" v-on="{ ...onMenu, ...on }" color="warning">
+                                <v-btn v-bind="attrs" v-on="{ ...onMenu, ...on }" color="warning" ref="shepherd-help">
                                     help</v-btn>
                             </template>
                             <v-list>
-                                <v-list-item @click="appIntro()">
+                                <v-list-item @click="appIntro()" ref="shepherd-appIntro">
                                     <v-list-item-title>Overview</v-list-item-title>
                                 </v-list-item>
-                                <v-list-item v-if="pageIntro" @click="pageIntro()">
+                                <v-list-item v-if="pageIntro" @click="pageIntro()" ref="shepherd-pageIntro">
                                     <v-list-item-title>This particular page</v-list-item-title>
                                 </v-list-item>
                             </v-list>
@@ -870,7 +870,6 @@
                 },
                 appIntro() {
                     this._tour = this.$shepherd({
-
                         useModalOverlay: true,
                         defaultStepOptions: {
                             classes: 'shadow-md bg-purple-dark',
@@ -949,7 +948,7 @@
                                 element: this.$refs["shepherd-userMenu"].$el,
                                 on: 'bottom'
                             },
-                            text: 'You mean check and modify your account in this menu.',
+                            text: 'You may check and modify your account in this menu.',
 
                         })
                     }
@@ -959,7 +958,7 @@
                                 element: this.$refs["shepherd-userProfile"].$el,
                                 on: 'left'
                             },
-                            text: 'You mean check and modify your profile here.<br>Make sure you verify your email account, if you would like to acquire priveledge.',
+                            text: 'You may check and modify your profile here.<br>Make sure you verify your email account, if you would like to acquire priveledge.',
                             beforeShowPromise: () =>
                                 new Promise((resolve, reject) => {
                                     this.$refs["shepherd-userMenu"].$el.dispatchEvent(
@@ -971,13 +970,52 @@
                                 }),
                         })
                     }
-
                     this._tour.start();
+                    this._tour.on("complete", function () {
+                        localStorage.setItem('layoutToured', true)
+                    })
                 },
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
-            mounted() {}
+            mounted() {
+                if (!localStorage.getItem('layoutToured')) {
+                    let tour = this.$shepherd({
+                        useModalOverlay: true,
+                        defaultStepOptions: {
+                            classes: 'shadow-md bg-purple-dark',
+                            scrollTo: true,
+                            cancelIcon: {
+                                enabled: true
+                            },
+                            canClickTarget: false,
+                            buttons: [{
+                                text: 'Next',
+                                action: () => tour.next()
+                            }],
+                        }
+                    })
+                    tour.addStep({
+                        attachTo: {
+                            element: this.$refs["shepherd-appIntro"].$el,
+                            on: 'left'
+                        },
+                        text: 'You may start a website tour by clicking this.',
+                        beforeShowPromise: () =>
+                            new Promise((resolve, reject) => {
+                                this.$refs["shepherd-help"].$el.dispatchEvent(
+                                    new MouseEvent("click"))
+                                setTimeout(() => {
+                                    resolve();
+                                }, 100);
+                            }),
+                        canClickTarget: true,
+                    })
+                    setTimeout(() => {
+                        tour.start();
+                    }, 100);
+                }
+            }
         })
     </script>
     {% macro echartsCDN() %}

@@ -9,8 +9,9 @@ feedback = Blueprint("feedback", __name__, url_prefix="feedback")
 @feedback.get("/")
 @authorize_RESTful_with(["canGiveFeedback"])
 def query():
-    if request.args.get("courseCode"):
-        return jsonify(
+    try:
+        if request.args.get("courseCode"):
+            return jsonify(
             {
                 "success": True,
                 "feedbacks": get_api_driver().feedback.list_course_feedback(
@@ -18,6 +19,15 @@ def query():
                 ),
             }
         )
+        if request.args.get("discussionStatistic"):
+            return jsonify(
+                {
+                    "success": True,
+                    "items": get_api_driver().feedback.discussionStatistic(),
+                }
+            )
+    except Exception as e:
+        raise e
     return jsonify({"success": False, "message": "incomplete request"})
 
 

@@ -1,0 +1,35 @@
+{% macro componentContent() %}
+<v-card>
+
+</v-card>
+{% endmacro %}
+{% macro component() %}
+<script type="text/x-template" id="kcube-comprehensive-insight">
+    {{ componentContent()}}
+</script>
+{% endmacro %}
+{% macro script() %}
+<script>
+    Vue.component('kcube-comprehensive-insight', {
+        data: () => ({
+            metricsVisualization: {
+                thickness: 3,
+                metric: undefined,
+                zeroColor: {
+                    r: 0,
+                    g: 0,
+                    b: 255,
+                },
+                oneColor: {
+                    r: 255,
+                    g: 0,
+                    b: 0,
+                },
+            }
+        }),
+        methods: {},
+        template: '#kcube-comprehensive-insight',
+        delimiters: ['${', '}'],
+    })
+</script>
+{% endmacro %}

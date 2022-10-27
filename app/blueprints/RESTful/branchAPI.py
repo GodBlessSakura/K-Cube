@@ -11,7 +11,7 @@ def query():
         return jsonify(
             {
                 "success": True,
-                "branches": get_api_driver().branch.get_canPullSummary(),
+                "items": get_api_driver().branch.get_canPullSummary(),
             }
         )
     return jsonify({"success": False, "message": "incomplete request"})
