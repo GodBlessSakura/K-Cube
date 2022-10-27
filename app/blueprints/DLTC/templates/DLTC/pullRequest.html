@@ -39,7 +39,8 @@
                 </v-autocomplete>
             </v-col>
             <v-col cols="auto">
-                <v-btn @click="changeAtiveTrunk = !changeAtiveTrunk" v-if="!changeAtiveTrunk" ref="shepherd-changeActiveVersion">
+                <v-btn @click="changeAtiveTrunk = !changeAtiveTrunk" v-if="!changeAtiveTrunk"
+                    ref="shepherd-changeActiveVersion">
                     change active version
                 </v-btn>
                 <v-btn @click="setActive()" v-if="changeAtiveTrunk">
@@ -80,20 +81,20 @@
                 .search).get('concept'),
             request: [],
             headers: [{
-                text: 'tag',
-                value: 'tag',
-                groupable: false,
-            },
-            {
-                text: 'owner',
-                value: 'userId',
-                groupable: false,
-            },
-            {
-                text: '',
-                value: 'actions',
-                groupable: false,
-            },
+                    text: 'tag',
+                    value: 'tag',
+                    groupable: false,
+                },
+                {
+                    text: 'owner',
+                    value: 'userId',
+                    groupable: false,
+                },
+                {
+                    text: '',
+                    value: 'actions',
+                    groupable: false,
+                },
             ],
             activeTrunk: undefined,
             selectedNode: undefined,
@@ -106,66 +107,66 @@
                 let treePromise =
                     fetch(
                         "{{ url_for('RESTful.tree.get', courseCode = courseCode, isInstructor = True, isDLTC = False) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
                         }
                     })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            this.request = []
-                            this.trunk = []
-                            if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
-                                body.trunk_nodes.sort(function (a, b) {
-                                    return new Date(b.creationDate) - new Date(a
-                                        .creationDate);
-                                }).forEach(node => {
+                    .then(body => {
+                        this.request = []
+                        this.trunk = []
+                        if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
+                            body.trunk_nodes.sort(function (a, b) {
+                                return new Date(b.creationDate) - new Date(a
+                                    .creationDate);
+                            }).forEach(node => {
 
-                                    let parent = body.trunk_nodes.filter(t => {
-                                        return body.edges.filter(e => e.start == node.id &&
+                                let parent = body.trunk_nodes.filter(t => {
+                                    return body.edges.filter(e => e.start == node.id &&
                                             e.end == t.id).length >
-                                            0
-                                    })[0]
-                                    let trunkVersion = {
-                                        tag: node.property.tag,
-                                        deltaGraphId: node.property.deltaGraphId,
-                                        link: parent ? "{{ url_for('collegue.compare')}}" + node
-                                            .property.deltaGraphId + '/' + parent.property
-                                                .deltaGraphId : "{{ url_for('collegue.graphView')}}" +
+                                        0
+                                })[0]
+                                let trunkVersion = {
+                                    tag: node.property.tag,
+                                    deltaGraphId: node.property.deltaGraphId,
+                                    link: parent ? "{{ url_for('collegue.compare')}}" + node
+                                        .property.deltaGraphId + '/' + parent.property
+                                        .deltaGraphId : "{{ url_for('collegue.graphView')}}" +
                                         node.property
-                                            .deltaGraphId
-                                    }
-                                    this.trunk.push(trunkVersion)
-                                    if (node.isActive) this.activeTrunk = trunkVersion
+                                        .deltaGraphId
+                                }
+                                this.trunk.push(trunkVersion)
+                                if (node.isActive) this.activeTrunk = trunkVersion
 
-                                })
-                                body.branch_nodes.forEach(node => {
-                                    if (node.property.canPull) {
-                                        this.request.push({
-                                            tag: node.property.tag,
-                                            userId: node.userId,
-                                            deltaGraphId: node.property.deltaGraphId
+                            })
+                            body.branch_nodes.forEach(node => {
+                                if (node.property.canPull) {
+                                    this.request.push({
+                                        tag: node.property.tag,
+                                        userId: node.userId,
+                                        deltaGraphId: node.property.deltaGraphId
 
-                                        })
-                                    }
+                                    })
+                                }
 
-                                })
+                            })
 
 
-                            } else {
-                                this.$root.errorDisplay(body,
-                                    'Unexpected error on getting versions information.')
-                            }
-                        })
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
                 Promise.all([treePromise]).then(_ => {
                     this.$root.progress.show = false
                 })
@@ -177,15 +178,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.trunk.patch') }}" + this.selectedNode.deltaGraphId, {
-                    method: 'PATCH',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        active: true,
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            active: true,
+                        })
                     })
-                })
                     .then(response => {
                         return response.json()
                     })
@@ -218,34 +219,45 @@
                             enabled: true
                         },
                         canClickTarget: false,
-                        buttons: [
-                            {
-                                text: 'Next',
-                                action: () => self._tour.next()
-                            }
-                        ],
+                        buttons: [{
+                            text: 'Next',
+                            action: () => self._tour.next()
+                        }],
                     }
                 })
                 if (self.$refs["shepherd-activeVersion"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-activeVersion"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-activeVersion"].$el,
+                            on: 'bottom'
+                        },
                         text: "Step 1: Click to view current version",
                     })
                 }
                 if (self.$refs["shepherd-compare"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-compare"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-compare"].$el,
+                            on: 'bottom'
+                        },
                         text: "Step 2: Click to preview the instrcutors' versions",
                     })
                 }
                 if (self.$refs["shepherd-changeActiveVersion"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-changeActiveVersion"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-changeActiveVersion"].$el,
+                            on: 'bottom'
+                        },
                         text: "Step3: Change the public version to any one",
                     })
                 }
 
                 self._tour.start();
+                self._tour.on("complete", function () {
+                    localStorage.setItem(
+                        "{{request.endpoint}}Toured", true)
+                })
             }
             this.loadData()
         },

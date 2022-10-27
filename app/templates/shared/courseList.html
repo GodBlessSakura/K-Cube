@@ -482,7 +482,8 @@
             colPerRow: 3,
             allCourses: [],
             courses: [],
-            searchText: new URLSearchParams(window.location.search).get('search') ? new URLSearchParams(window.location.search).get('search') : "",
+            searchText: new URLSearchParams(window.location.search).get('search') ? new URLSearchParams(
+                window.location.search).get('search') : "",
             course: null,
             // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
             num_courses_wo_filter: null,
@@ -512,16 +513,16 @@
             ],
             courseCode: '',
             courseCodeRules: [v => !!v || 'Course code is required',
-            v => (v && v.length > 3 && v.length < 101) ||
+                v => (v && v.length > 3 && v.length < 101) ||
                 'Course code should be anything between 4 and 100 charactors',
-            v => (v && /{{regExpRules["courseCode"]}}/.test(v)) ||
+                v => (v && /{{regExpRules["courseCode"]}}/.test(v)) ||
                 'Course code can only contains alphanumeric characters and space.'
             ],
             courseName: '',
             courseNameRules: [v => !!v || 'Course name is required',
-            v => (v && v.length > 3 && v.length < 101) ||
+                v => (v && v.length > 3 && v.length < 101) ||
                 'Course name should be anything between 4 and 100 charactors',
-            v => (v && /{{regExpRules["courseName"]}}/.test(v)) ||
+                v => (v && /{{regExpRules["courseName"]}}/.test(v)) ||
                 'Course name can only contains alphanumeric characters and space.'
             ],
             imageURL: '',
@@ -532,20 +533,20 @@
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                    // {% if request.blueprint == "DLTC" %}
-                    "{{ url_for('RESTful.course.query', internal=True) }}",
-                    // {% elif request.blueprint == "instructor" %}
-                    "{{ url_for('RESTful.course.query', instructor=True) }}",
-                    // {% else %}
-                    "{{ url_for('RESTful.course.query', list=True) }}",
-                    // {% endif %}
-                    {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                        // {% if request.blueprint == "DLTC" %}
+                        "{{ url_for('RESTful.course.query', internal=True) }}",
+                        // {% elif request.blueprint == "instructor" %}
+                        "{{ url_for('RESTful.course.query', instructor=True) }}",
+                        // {% else %}
+                        "{{ url_for('RESTful.course.query', list=True) }}",
+                        // {% endif %}
+                        {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -559,7 +560,8 @@
                         this.$root.progress.show = false
                         if (body.courses) {
                             // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
-                            if (body.courses.filter(c => c.isTeaching).length == 0) this.filter.joined = false
+                            if (body.courses.filter(c => c.isTeaching).length == 0) this.filter.joined =
+                                false
                             // {% endif %}
                             body.courses.sort((a, b) => {
                                 if (a.concept.name < b.concept.name) {
@@ -582,10 +584,12 @@
                             })
                             this.search()
                             // {% if request.blueprint == "instructor" %}
-                            let unexposedCourse = this.allCourses.filter(course => course.isTeaching && !course.hasExposedGraph)
+                            let unexposedCourse = this.allCourses.filter(course => course.isTeaching && !
+                                course.hasExposedGraph)
                             if (unexposedCourse.length > 0) {
                                 this.$root.errorDisplay({},
-                                    unexposedCourse.length + ' course' + (unexposedCourse > 1 ? 's' : '') + ' that you are teaching has no published graph.')
+                                    unexposedCourse.length + ' course' + (unexposedCourse > 1 ? 's' :
+                                        '') + ' that you are teaching has no published graph.')
                                 this.$nextTick(() => {
                                     let el = this.$refs[unexposedCourse[0].courseCode][0].$el
                                     el.scrollIntoView({
@@ -643,18 +647,18 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.course
-                        .courseCode), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            courseName: this.courseName,
-                            imageURL: this.imageURL,
-                            name: this.courseCode,
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                courseName: this.courseName,
+                                imageURL: this.imageURL,
+                                name: this.courseCode,
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -682,12 +686,12 @@
                 this.$root.progress.show = true
                 this.course = course
                 fetch("{{ url_for('RESTful.course.query') }}/" + course.courseCode + "/instructors", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -718,16 +722,16 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(course
-                        .courseCode), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            join: true
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: true
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -743,7 +747,8 @@
                                 'Assignment failed for unknown reason.',
                                 () => {
                                     this.$root.actionSnackBar.show = false
-                                    this.allCourses[this.allCourses.map(c => c.courseCode).indexOf(course.courseCode)].isTeaching = true
+                                    this.allCourses[this.allCourses.map(c => c.courseCode)
+                                        .indexOf(course.courseCode)].isTeaching = true
                                     this.search()
                                 })
 
@@ -758,16 +763,16 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(course
-                        .courseCode), {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            join: false
+                            .courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: false
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -783,7 +788,8 @@
                                 'Assignment failed for unknown reason.',
                                 () => {
                                     this.$root.actionSnackBar.show = false
-                                    this.allCourses[this.allCourses.map(c => c.courseCode).indexOf(course.courseCode)].isTeaching = false
+                                    this.allCourses[this.allCourses.map(c => c.courseCode)
+                                        .indexOf(course.courseCode)].isTeaching = false
                                     this.search()
                                     // window.location.href = "{{ url_for('instructor.courseList') }}?joined=false"
                                 })
@@ -792,7 +798,9 @@
             },
             clearQueryString() {
                 var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname
-                window.history.pushState({ path: newurl }, '', newurl)
+                window.history.pushState({
+                    path: newurl
+                }, '', newurl)
             },
             // {% endif %}
             // {% if request.blueprint == "DLTC" %}
@@ -804,17 +812,17 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.course.patch') }}" + this.course
-                    .courseCode, {
-                    method: 'PATCH',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: userId,
-                        assignment: true
-                    })
-                })
+                        .courseCode, {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userId: userId,
+                                assignment: true
+                            })
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -841,17 +849,17 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.course.patch') }}" + this.course
-                    .courseCode, {
-                    method: 'PATCH',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: userId,
-                        assignment: false
-                    })
-                })
+                        .courseCode, {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userId: userId,
+                                assignment: false
+                            })
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -874,7 +882,7 @@
             courseIsInternal(course) {
                 this.course = course
                 this.$root.actionDisplay("This set " + course.courseCode + " " + (this.course.isInternal ===
-                    false ? "internal" : "public"),
+                        false ? "internal" : "public"),
                     "proceed", () => {
                         if (this.$root.progress.show == true) {
                             this.$root.bePatientSnackBar.show = true
@@ -882,16 +890,16 @@
                         }
                         this.$root.progress.show = true
                         fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.course
-                            .courseCode), {
-                            method: 'PATCH',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                isInternal: this.course.isInternal === false ? true : false
+                                .courseCode), {
+                                method: 'PATCH',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    isInternal: this.course.isInternal === false ? true : false
+                                })
                             })
-                        })
                             .then(response => {
                                 try {
                                     return response.json()
@@ -907,8 +915,10 @@
                                     'Update failed for unknown reason.',
                                     () => {
                                         this.$root.actionSnackBar.show = false
-                                        let index = this.allCourses.map(c => c.courseCode).indexOf(course.courseCode)
-                                        this.allCourses[index].isInternal = !this.allCourses[index].isInternal;
+                                        let index = this.allCourses.map(c => c.courseCode).indexOf(
+                                            course.courseCode)
+                                        this.allCourses[index].isInternal = !this.allCourses[index]
+                                            .isInternal;
                                         this.search()
                                     })
                             })
@@ -922,12 +932,12 @@
                 this.$root.progress.show = true
                 this.course = course
                 fetch("{{ url_for('RESTful.course.query') }}" + course.courseCode + "/instructors", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -960,8 +970,7 @@
             search() {
                 if (this.searchText == "") {
                     this.courses = this.allCourses.slice()
-                }
-                else {
+                } else {
                     this.courses = this.allCourses.filter(c =>
                         c.courseCode.toLowerCase().includes(this.searchText.toLowerCase()) ||
                         c.courseName.toLowerCase().includes(this.searchText.toLowerCase())
@@ -971,7 +980,8 @@
                 // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
                 this.num_courses_wo_search_text = this.allCourses.length
                 this.num_courses_wo_filter = this.courses.length
-                this.filter_length = Object.keys(this.filter).map(key => this.filter[key]).filter(value => value).length
+                this.filter_length = Object.keys(this.filter).map(key => this.filter[key]).filter(value =>
+                    value).length
                 if (this.filter_length > 0) {
                     this.courses = this.courses.filter(c =>
                         !(this.filter.public && c.isInternal) &&
@@ -1001,52 +1011,71 @@
                             enabled: true
                         },
                         canClickTarget: false,
-                        buttons: [
-                            {
-                                text: 'Next',
-                                action: () => self._tour.next()
-                            }
-                        ],
+                        buttons: [{
+                            text: 'Next',
+                            action: () => self._tour.next()
+                        }],
                     }
                 })
-                if (self.$refs["shepherd-newWorkspace"] && self.$refs["shepherd-newWorkspace"].length > 0) {
+                if (self.$refs["shepherd-newWorkspace"] && self.$refs["shepherd-newWorkspace"].length >
+                    0) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-newWorkspace"][0].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-newWorkspace"][0].$el,
+                            on: 'bottom'
+                        },
                         text: 'Click to create an empty workspace',
                     })
                 }
-                if (self.$refs["shepherd-recentVisit"] && self.$refs["shepherd-recentVisit"].length > 0) {
+                if (self.$refs["shepherd-recentVisit"] && self.$refs["shepherd-recentVisit"].length >
+                    0) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-recentVisit"][0].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-recentVisit"][0].$el,
+                            on: 'bottom'
+                        },
                         text: "Click to enter a recently visited workspace",
                     })
                 }
                 if (self.$refs["shepherd-searchText"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-searchText"], on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-searchText"],
+                            on: 'bottom'
+                        },
                         text: "You may search courses with it's code or it's name",
                     })
                 }
                 if (self.$refs["shepherd-filter"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-filter"], on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-filter"],
+                            on: 'bottom'
+                        },
                         text: "Click to apply filter on courses",
                     })
                 }
                 if (self.$refs["shepherd-joinNewCourse"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-joinNewCourse"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-joinNewCourse"].$el,
+                            on: 'bottom'
+                        },
                         text: "Click to manage course duty",
                     })
                 }
                 if (self.$refs["shepherd-joinNewCourse"]) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-joinNewCourse"].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-joinNewCourse"].$el,
+                            on: 'bottom'
+                        },
                         text: "Make sure the course you are teaching are labeled as 'on-duty'",
                         beforeShowPromise: () =>
                             new Promise((resolve, reject) => {
                                 this.miniSync = false
-                                this.$refs["shepherd-joinNewCourse"].$el.dispatchEvent(new MouseEvent("click"))
+                                this.$refs["shepherd-joinNewCourse"].$el.dispatchEvent(
+                                    new MouseEvent("click"))
                                 setTimeout(() => {
                                     resolve();
                                 }, 100);
@@ -1055,29 +1084,48 @@
                 }
                 if (self.$refs["shepherd-joined"] && self.$refs["shepherd-joined"].length > 0) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-joined"][0].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-joined"][0].$el,
+                            on: 'bottom'
+                        },
                         text: "Click to toggle the label",
                     })
                 }
-                if (self.$refs["shepherd-listCourseInstructor"] && self.$refs["shepherd-listCourseInstructor"].length > 0) {
+                if (self.$refs["shepherd-listCourseInstructor"] && self.$refs[
+                        "shepherd-listCourseInstructor"].length > 0) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-listCourseInstructor"][0].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-listCourseInstructor"][0].$el,
+                            on: 'bottom'
+                        },
                         text: "Click to assign/unassign instructors",
                     })
                 }
-                if (self.$refs["shepherd-manageVersions"] && self.$refs["shepherd-manageVersions"].length > 0) {
+                if (self.$refs["shepherd-manageVersions"] && self.$refs["shepherd-manageVersions"]
+                    .length > 0) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-manageVersions"][0].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-manageVersions"][0].$el,
+                            on: 'bottom'
+                        },
                         text: "Click to enter the version management panel",
                     })
                 }
-                if (self.$refs["shepherd-approveUpdates"] && self.$refs["shepherd-approveUpdates"].length > 0) {
+                if (self.$refs["shepherd-approveUpdates"] && self.$refs["shepherd-approveUpdates"]
+                    .length > 0) {
                     self._tour.addStep({
-                        attachTo: { element: self.$refs["shepherd-approveUpdates"][0].$el, on: 'bottom' },
+                        attachTo: {
+                            element: self.$refs["shepherd-approveUpdates"][0].$el,
+                            on: 'bottom'
+                        },
                         text: "Click to view update requests from instructors",
                     })
                 }
                 self._tour.start();
+                self._tour.on("complete", function () {
+                    localStorage.setItem(
+                        "{{request.endpoint}}Toured", true)
+                })
             }
             self.loadData()
             self.search()
