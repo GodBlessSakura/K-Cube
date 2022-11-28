@@ -43,7 +43,6 @@ def getCourse(courseCode, userId):
             return jsonify(
                 {"success": True, "triples": result, "course": course, "graph": graph}
             )
-
     return jsonify({"success": False, "message": "incomplete request"})
 
 
@@ -52,7 +51,8 @@ def lastModifiedGraph(course, courseCode, userId):
     graph = get_api_driver().graph.get_course_instructor_lastModified_graph(
         courseCode=courseCode, userId=userId
     )
-    graph["isExposed"] = False
+    if graph:
+        graph["isExposed"] = True
     result = get_api_driver().triple.get_course_instructor_lastModified_triple(
         courseCode=courseCode, userId=userId
     )

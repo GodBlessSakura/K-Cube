@@ -330,9 +330,9 @@ class workspaceDAO:
     def commit_workspace_as_patch_n_expose(self, deltaGraphId, userId, tag):
         def _query(tx):
             commit_query = cypher["commit_workspace_as_patch.cyp"]
-            from ..branchResources import cypher as branch_cypher
+            from ..graphResources import cypher as graph_cypher
 
-            expose_query = branch_cypher["set_isExposed.cyp"]
+            expose_query = graph_cypher["set_isExposed.cyp"]
             result = tx.run(
                 commit_query, deltaGraphId=deltaGraphId, userId=userId, tag=tag
             )
@@ -351,7 +351,7 @@ class workspaceDAO:
                         key: value
                         if not isinstance(value, DateTime)
                         else str(value.iso_format())
-                        for key, value in record["branch"].items()
+                        for key, value in record["graph"].items()
                     }
                     for record in result
                 ][0]
@@ -365,9 +365,9 @@ class workspaceDAO:
     def commit_workspace_as_fork_n_expose(self, deltaGraphId, userId, tag):
         def _query(tx):
             commit_query = cypher["commit_workspace_as_fork.cyp"]
-            from ..branchResources import cypher as branch_cypher
+            from ..graphResources import cypher as graph_cypher
 
-            expose_query = branch_cypher["set_isExposed.cyp"]
+            expose_query = graph_cypher["set_isExposed.cyp"]
             result = tx.run(
                 commit_query, deltaGraphId=deltaGraphId, userId=userId, tag=tag
             )
@@ -386,7 +386,7 @@ class workspaceDAO:
                         key: value
                         if not isinstance(value, DateTime)
                         else str(value.iso_format())
-                        for key, value in record["branch"].items()
+                        for key, value in record["graph"].items()
                     }
                     for record in result
                 ][0]

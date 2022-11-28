@@ -117,7 +117,7 @@ class graphDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
-    
+
     def get_course_instructor_lastModified_graph(self, courseCode, userId):
         fname = sys._getframe().f_code.co_name
 
@@ -135,6 +135,8 @@ class graphDAO:
                         },
                         labels=list(record["workspace"].labels),
                     )
+                    if record["workspace"] is not None
+                    else None
                     for record in result
                 ]
                 return graphs[0] if len(graphs) > 0 else None
@@ -143,4 +145,3 @@ class graphDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
-

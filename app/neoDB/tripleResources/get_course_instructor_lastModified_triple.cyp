@@ -14,7 +14,7 @@ UNION
     WITH workspace, course, user
     MATCH (workspace)-[oldWork:WORK_ON]->(subject)
     WITH DISTINCT workspace, subject
-    MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(wt:GraphConcept)
+    OPTIONAL MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(wt:GraphConcept)
     WITH wr, wh, wt, subject, workspace
     CALL{
         WITH wr, wh, wt, subject

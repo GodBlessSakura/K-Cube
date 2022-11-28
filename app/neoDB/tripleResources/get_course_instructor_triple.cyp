@@ -3,15 +3,15 @@ MATCH (user:User{userId: $userId})-[:USER_TEACH]->(course)
 WITH course, user
 CALL{
     WITH course, user
-    MATCH (course)<-[:BRANCH_DESCRIBE{userId: user.userId}]-(workspace:Workspace)-[oldWork:WORK_ON]->(subject)
-    WITH DISTINCT workspace
-    MATCH (h:GraphConcept)-[r:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(t:GraphConcept)
+    MATCH (course)<-[:BRANCH_DESCRIBE{userId: user.userId}]-(branch:Branch)
+    WITH DISTINCT branch
+    MATCH (h:GraphConcept)-[r:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: branch.deltaGraphId}]->(t:GraphConcept)
     RETURN h.name as h_name, r.name as r_name, t.name as t_name, r.value as r_value
 UNION
     WITH course, user
     MATCH (course)<-[:BRANCH_DESCRIBE{userId: user.userId}]-(workspace:Workspace)-[oldWork:WORK_ON]->(subject)
     WITH DISTINCT workspace, subject
-    MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(wt:GraphConcept)
+    OPTIONAL MATCH (wh:GraphConcept)-[wr:DELTA_GRAPH_RELATIONSHIP{deltaGraphId: workspace.deltaGraphId}]->(wt:GraphConcept)
     WITH wr, wh, wt, subject, workspace
     CALL{
         WITH wr, wh, wt, subject

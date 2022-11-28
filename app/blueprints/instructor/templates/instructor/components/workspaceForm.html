@@ -61,9 +61,9 @@
             repoTagRules: [
                 v => !!v || 'Repository tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
-                    'Repository tag name should be anything between 4 and 100 charactors',
+                'Repository tag name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
-                    'Repository tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
+                'Repository tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             w_tag: new Date().toLocaleString('en-US', {
                 day: '2-digit',
@@ -77,9 +77,9 @@
             wTagRules: [
                 v => !!v || 'Tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
-                    'Tag name should be anything between 4 and 100 charactors',
+                'Tag name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["w_tag"]}}/.test(v)) ||
-                    'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
+                'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
         }),
         methods: {
@@ -88,94 +88,95 @@
                 this.$root.progress.show = true
                 let treePromise =
                     fetch(
-                        "{{ url_for('RESTful.tree.get') }}" + this.courseCode + "?isInstructor=True&amp;isDLTC=False", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
+                        "{{ url_for('RESTful.tree.get') }}" + this.courseCode +
+                        "?isInstructor=True&amp;isDLTC=False", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
                         }
                     })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
-                            }
-                        })
-                        .then(body => {
-                            this.repositories = []
+                    .then(body => {
+                        this.repositories = []
+                        this.trunkOrBranch = [];
+                        if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
                             this.trunkOrBranch = [];
-                            if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
-                                this.trunkOrBranch = [];
-                                [body.trunk_nodes, body.branch_nodes].forEach(nodes => {
-                                    nodes.forEach(node => {
-                                        let item = {
-                                            tag: node.property.tag,
-                                            deltaGraphId: node.property.deltaGraphId,
-                                            isActive: node.isActive
-                                        }
-                                        this.trunkOrBranch.push(item)
-                                        if (node.isActive) {
-                                            this.selectedNode = item
-                                        }
-                                    })
+                            [body.trunk_nodes, body.branch_nodes].forEach(nodes => {
+                                nodes.forEach(node => {
+                                    let item = {
+                                        tag: node.property.tag,
+                                        deltaGraphId: node.property.deltaGraphId,
+                                        isActive: node.isActive
+                                    }
+                                    this.trunkOrBranch.push(item)
+                                    if (node.isActive) {
+                                        this.selectedNode = item
+                                    }
                                 })
-                                body.edges.filter(e => e.type == "FORK").filter(e => body.branch_nodes.filter(
-                                    b => b.id == e.start).length > 0).forEach(edge => {
-                                        let branch = body.branch_nodes.filter(b => b.id == edge.start)[0]
-                                        let parent = body.branch_nodes.filter(b => b.id == edge.end)[0]
-                                        parent = parent ? parent : body.trunk_nodes.filter(b => b.id == edge
-                                            .end)[0]
-                                        let versions = 1
-                                        let cursor = edge.start
-                                        let exposedOffset = branch.isExposed ? versions : null
-                                        let pendingToBePulled = 0
-                                        let deltaGraphIds = [parent.property.deltaGraphId, branch.property
-                                            .deltaGraphId
-                                        ]
-                                        let candidate = body.edges.filter(e => e.type == "PATCH" && e.end ==
-                                            cursor)
-                                        let child = body.branch_nodes.filter(b => b.id == cursor)[0]
-                                        while (candidate.length > 0) {
-                                            versions++
-                                            cursor = candidate[0].start
-                                            child = body.branch_nodes.filter(b => b.id == cursor)[0]
-                                            deltaGraphIds.push(child.property.deltaGraphId)
-                                            exposedOffset = child.isExposed ? versions : exposedOffset
-                                            if (child.property.canPull) pendingToBePulled++
-                                            candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
-                                                e.end == cursor)
-                                        }
-                                        let work_on_candidate = body.edges.filter(e => e.type ==
-                                            "WORK_ON" && e.end == cursor)
-                                        let workspaces = work_on_candidate.map(we => {
-                                            return body.workspace_nodes
-                                                .filter(w => w.id == we.start)[0].property
-                                        }).sort(function (a, b) {
-                                            return new Date(b.lastModified) - new Date(a
-                                                .lastModified);
-                                        })
-                                        this.repositories.push({
-                                            tag: branch.property.tag,
-                                            versions: versions,
-                                            id: branch.id,
-                                            workspaces: workspaces,
-                                            deltaGraphIds: deltaGraphIds,
-                                            owned: branch.isOwner,
-                                            exposedOffset: exposedOffset,
-                                            pullRequests: pendingToBePulled,
-                                            creationDate: branch.property.creationDate,
-                                            lastModifiedDate: child.property.creationDate
-                                        })
-                                    })
+                            })
+                            body.edges.filter(e => e.type == "FORK").filter(e => body.branch_nodes.filter(
+                                b => b.id == e.start).length > 0).forEach(edge => {
+                                let branch = body.branch_nodes.filter(b => b.id == edge.start)[0]
+                                let parent = body.branch_nodes.filter(b => b.id == edge.end)[0]
+                                parent = parent ? parent : body.trunk_nodes.filter(b => b.id == edge
+                                    .end)[0]
+                                let versions = 1
+                                let cursor = edge.start
+                                let exposedOffset = branch.isExposed ? versions : null
+                                let pendingToBePulled = 0
+                                let deltaGraphIds = [parent.property.deltaGraphId, branch.property
+                                    .deltaGraphId
+                                ]
+                                let candidate = body.edges.filter(e => e.type == "PATCH" && e.end ==
+                                    cursor)
+                                let child = body.branch_nodes.filter(b => b.id == cursor)[0]
+                                while (candidate.length > 0) {
+                                    versions++
+                                    cursor = candidate[0].start
+                                    child = body.branch_nodes.filter(b => b.id == cursor)[0]
+                                    deltaGraphIds.push(child.property.deltaGraphId)
+                                    exposedOffset = child.isExposed ? versions : exposedOffset
+                                    if (child.property.canPull) pendingToBePulled++
+                                    candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
+                                        e.end == cursor)
+                                }
+                                let work_on_candidate = body.edges.filter(e => e.type ==
+                                    "WORK_ON" && e.end == cursor)
+                                let workspaces = work_on_candidate.map(we => {
+                                    return body.workspace_nodes
+                                        .filter(w => w.id == we.start)[0].property
+                                }).sort(function (a, b) {
+                                    return new Date(b.lastModified) - new Date(a
+                                        .lastModified);
+                                })
+                                this.repositories.push({
+                                    tag: branch.property.tag,
+                                    versions: versions,
+                                    id: branch.id,
+                                    workspaces: workspaces,
+                                    deltaGraphIds: deltaGraphIds,
+                                    owned: branch.isOwner,
+                                    exposedOffset: exposedOffset,
+                                    pullRequests: pendingToBePulled,
+                                    creationDate: branch.property.creationDate,
+                                    lastModifiedDate: child.property.creationDate
+                                })
+                            })
 
-                            } else {
-                                this.$root.errorDisplay(body,
-                                    'Unexpected error on getting versions information.')
-                            }
-                        })
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
                 Promise.all([treePromise]).then(_ => {
                     this.$root.progress.show = false
                 })
@@ -188,17 +189,17 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.workspace.post') }}" + this.selectedNode.deltaGraphId, {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            tag: this.repoTag,
-                            repository: true,
-                            w_tag: this.w_tag
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                tag: this.repoTag,
+                                repository: true,
+                                w_tag: this.w_tag
+                            })
                         })
-                    })
                         .then(response => {
                             return response.json()
                         })
@@ -208,7 +209,13 @@
                                 'Creation failed for unknown reason.',
                                 () => {
                                     this.repositoryCreateDialog = false
-                                    window.location.href = "{{ url_for('instructor.workspace')}}" + body.deltaGraphId
+                                    url = "{{ url_for('instructor.workspace')}}" +
+                                        body.deltaGraphId
+                                    if (window.location !== window.parent.location) {
+                                        let w = window.open(url, '_blank')
+                                    } else {
+                                        window.location.href = url
+                                    }
                                 })
                         })
                 }
