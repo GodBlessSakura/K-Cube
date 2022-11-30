@@ -5,15 +5,18 @@ services:
       dockerfile: ./docker/standalone/Dockerfile
     container_name: KCUBE
     ports:
-      - "127.0.0.1:9000:9000"
+      - "9000:9000"
+    environment:
+      FLASK_APP: app:create_app('default')
+      FLASK_SETTING: ../docker/standalone/config
     depends_on:
       - standaloneNeo4j
   standaloneNeo4j:
     image: neo4j:4.4.15-community
     hostname: neo4j
     ports:
-      - "127.0.0.1:7474:7474"
-      - "127.0.0.1:7687:7687"
+      - "7474:7474"
+      - "7687:7687"
     environment:
       NEO4J_AUTH: neo4j/1234
     container_name: neo4j
