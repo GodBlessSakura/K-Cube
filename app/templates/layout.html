@@ -35,18 +35,25 @@
         [v-cloak] {
             display: none;
         }
+        html {
+            scroll-behavior: smooth;
+        }
     </style>
     <div id="nav" v-cloak>
         <v-app>
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
-            <v-app-bar :value="appBar" app>
-                <a href="{{ url_for('index') }}">
-                    <v-img src="{{ url_for('static', filename='images/logo.png') }}" link max-height="35"
-                        max-width="35">
-                    </v-img>
-                </a>
-                <v-btn text href="{{ url_for('index') }}">KG-Cube</v-btn>
+            <v-app-bar :value="appBar" app color="primary">
+                <v-card color="primary" style="align-items: center;" tile elevation="0">
+                    <a href="{{ url_for('index') }}" style="position:absolute; height:100%; width:100%"></a>
+                    <v-card-title>
+                        <v-avatar class="profile" size="30" tile>
+                            <v-img src="{{ url_for('static', filename='images/logo.png') }}">
+                            </v-img>
+                        </v-avatar>
+                        KCUBE
+                    </v-card-title>
+                </v-card>
                 <template v-if="KCube.tabs && KCube.tabs.length > 0">
                     <v-select @change="switchRole" style="max-width: 200px;" solo hide-details
                         background-color="transparent" flat label="view as" v-model="KCube.view" :items="KCube.roleTab"
@@ -183,12 +190,14 @@
                                                                 :loading="userIdAvaliableChecking"
                                                                 :disabled="!(this.$refs.registerFormUserIdControl && this.$refs.registerFormUserIdControl.valid)"
                                                                 @click="checkUserIdAvaliability($event)">
-                                                                ${registerForm.isUserIdAvaliable? 'Check':'Try again'}
+                                                                ${registerForm.isUserIdAvaliable? 'Check':
+                                                                'Try again'}
                                                             </v-btn>
                                                         </v-col>
                                                         <v-col cols="4">
                                                             <v-checkbox v-model="userIdAvaliableCheckBox"
-                                                                :ripple="false" label='avaliable' readonly></v-checkbox>
+                                                                :ripple="false" label='avaliable' readonly>
+                                                            </v-checkbox>
                                                         </v-col>
                                                     </v-row>
                                                     <v-row>
@@ -243,70 +252,66 @@
                     </v-card>
                 </v-dialog>
                 {% endif %}
-
             </v-app-bar>
-            <v-navigation-drawer v-if="navBar" :expand-on-hover="navHover" mini-variant :mini-variant.sync="miniSync"
-                mini-variant-width="50" app ref="shepherd-layoutNavigation" eg>
-                <v-divider></v-divider>
-                <v-list nav dense>
-                    <v-list-item link @click="navHover = !navHover" ref="shepherd-layoutNavigationToggle">
-                        <v-list-item-icon v-if="!miniSync">
-                        </v-list-item-icon>
-                        <v-list-item-title v-if="!miniSync">
-                            ${navHover?"keep menu open":"close menu"}
-                        </v-list-item-title>
-                        <v-icon v-if="navHover">menu</v-icon>
-                        <v-icon v-else>menu_open</v-icon>
-                    </v-list-item>
-                    <div ref="shepherd-layoutNavigationRoleGroup">
-                        <v-list-group v-for="LG in KCube.navigationListGroup" :value="KCube.currentBlueprint == LG.name"
-                            :prepend-icon="LG.icon">
-                            <template v-slot:activator>
-                                <v-list-item-title>${LG.title}</v-list-item-title>
-                            </template>
-                            <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}" :sort="false">
-                                <v-list-item v-for="L in LG.list" link :href="L.url">
-                                    <v-list-item-icon>
-                                        <v-icon>${L.icon}</v-icon>
-                                    </v-list-item-icon>
-                                    <v-list-item-title>${L.title}</v-list-item-title>
-                                </v-list-item>
-                            </draggable>
-                        </v-list-group>
-                        <v-divider></v-divider>
-                    </div>
-                    <v-list-item link href="{{ url_for('index') }}" ondragstart="event.preventDefault()">
-                        <v-list-item-icon>
-                            <v-icon>device_hub</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Homepage</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item link href="{{ url_for('comprehensive') }}" ondragstart="event.preventDefault()">
-                        <v-list-item-icon>
-                            <v-icon>hub</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Comprehensive</v-list-item-title>
-                    </v-list-item>
-                    <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                        <v-list-item-icon>
-                            <v-icon>work</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Jobs</v-list-item-title>
-                    </v-list-item>
-                </v-list>
-                {% if session['user'] %}
-                <template v-slot:append>
-                    <v-list-item link
-                        href="https://forms.office.com/Pages/ResponsePage.aspx?id=YPc3j4exgUm4L-Xcb1vPRNTurS9MNvJPoBO4A5M58iVUNUwzTjVSMTlZUVpQVTNQWThXVzdUQ1ZDTi4u"
-                        target="_blank" rel="noreferrer noopener">
-                        <v-list-item-icon>
-                            <v-icon>assistant</v-icon>
-                        </v-list-item-icon>
-                        <v-list-item-title>Website feedback or <br> bug report</v-list-item-title>
-                    </v-list-item>
+
+            {% if session['user'] %}
+            <v-menu inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y egar>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn color="success" v-bind="attrs" v-on="on"
+                        style="z-index: 1000; position: fixed; left:12px; bottom:0">
+                        Menu
+                    </v-btn>
                 </template>
-                {% endif %}
-            </v-navigation-drawer>
+                <v-sheet style="max-height: 70vh; overflow-y: scroll">
+                    <v-list style="min-height: 70vh" nav dense>
+                        <div ref="shepherd-layoutNavigationRoleGroup">
+                            <v-list-group v-for="LG in KCube.navigationListGroup"
+                                :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
+                                <template v-slot:activator>
+                                    <v-list-item-title>${LG.title}</v-list-item-title>
+                                </template>
+                                <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}"
+                                    :sort="false">
+                                    <v-list-item v-for="L in LG.list" link :href="L.url">
+                                        <v-list-item-icon>
+                                            <v-icon>${L.icon}</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-title>${L.title}</v-list-item-title>
+                                    </v-list-item>
+                                </draggable>
+                            </v-list-group>
+                            <v-divider></v-divider>
+                        </div>
+                        <v-list-item link href="{{ url_for('index') }}" ondragstart="event.preventDefault()">
+                            <v-list-item-icon>
+                                <v-icon>device_hub</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Homepage</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('comprehensive') }}" ondragstart="event.preventDefault()">
+                            <v-list-item-icon>
+                                <v-icon>hub</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Comprehensive</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
+                            <v-list-item-icon>
+                                <v-icon>work</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Jobs</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link
+                            href="https://forms.office.com/Pages/ResponsePage.aspx?id=YPc3j4exgUm4L-Xcb1vPRNTurS9MNvJPoBO4A5M58iVUNUwzTjVSMTlZUVpQVTNQWThXVzdUQ1ZDTi4u"
+                            target="_blank" rel="noreferrer noopener">
+                            <v-list-item-icon>
+                                <v-icon>assistant</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Website feedback or <br> bug report</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-sheet>
+            </v-menu>
+            {% endif %}
             <v-snackbar style="z-index: 600;" v-model="errorSnackBar.show" timeout="-1">
                 ${ errorSnackBar.message }
                 <template v-slot:action="{ attrs }">
@@ -975,6 +980,15 @@
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
             mounted() {
+                this.$vuetify.theme.themes.light = {
+                    primary: '#ff5722',
+                    secondary: '#ffc107',
+                    accent: '#cddc39',
+                    error: '#e91e63',
+                    warning: '#ffeb3b',
+                    info: '#00bcd4',
+                    success: '#009688'
+                }
                 if (window.location == window.parent.location &&
                     (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
                         .getItem("{{request.endpoint}}Toured")))) {
