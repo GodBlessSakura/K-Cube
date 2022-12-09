@@ -11,8 +11,9 @@ services:
       FLASK_SETTING: ../docker/standalone/config
     depends_on:
       - standaloneNeo4j
+    command: conda run --no-capture-output -n kcubeExecute flask run --host=0.0.0.0 --port=9000
   standaloneNeo4j:
-    image: neo4j:4.4.15-community
+    image: neo4j:4.4.5-community
     hostname: neo4j
     ports:
       - "7474:7474"
