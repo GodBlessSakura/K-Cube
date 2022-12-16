@@ -129,7 +129,7 @@ def create_app(config_string):
     @app.route("/course/<courseCode>")
     def course(courseCode):
         if courseCode is not None:
-            return render_template("coursePage.html", courseCode=courseCode)
+            return render_template("courseGraph.html", courseCode=courseCode, userId = None)
         abort(404)
 
     @app.route("/courseGraph/", defaults={"courseCode": None, "userId": None})

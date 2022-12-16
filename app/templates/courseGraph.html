@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
+{% import 'layout.html' as layout with context %}
 {% import 'component/cyMetricsVisualize.html' as cyMetricsVisualize %}
 {% import 'component/cyOption.html' as cyOption %}
 {% block VueComponent %}
-<v-card style="height: 100%; width: 100%;">
-    <div id="cy" style="height: 100%; width: 100%;"></div>
+<div>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
@@ -56,27 +56,130 @@
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
             src="{{ url_for('material', courseCode = courseCode)}}"></iframe>
     </v-dialog>
-</v-card>
+    <div id="cy" style="height: calc(100vh - 64px); width: 100%;"></div>
+    <v-bottom-sheet v-model="sheet" inset>
+        <template v-slot:activator="{ on, attrs }">
+            <v-bottom-sheet :value="!sheet" :retain-focus="false" inset persistent hide-overlay no-click-animation>
+                <v-sheet>
+                    <v-card-subtitle v-show="course">
+                        ${courseCode} - ${course?.courseName} (by ${"{{userId}}" == "None"? "Department" : "{{userId}}"})
+                    </v-card-subtitle>
+                    <v-btn :ripple="false" color="success" plain block @click="sheet = true" elevation="2">
+                        info, graphs and more
+                        <v-icon right>
+                            menu_open
+                        </v-icon>
+                    </v-btn>
+                </v-sheet>
+            </v-bottom-sheet>
+        </template>
+        <v-sheet>
+            <v-container>
+                <v-row>
+                    <v-btn :ripple="false" color="error" plain block @click="sheet = false" elevation="2">
+                        dismiss
+                        <v-icon right>
+                            clear_all
+                        </v-icon>
+                    </v-btn>
+                </v-row>
+                <v-row>
+                    <v-img contain :src="course?.imageURL" height="200px"></v-img>
+                </v-row>
+                <v-row>
+                    <v-card-title>
+                        ${courseCode} - ${course?.courseName}
+                    </v-card-title>
+                </v-row>
+                <v-row v-if="!hideGraph">
+                    <v-card-title>
+                        Public graph provided by:
+                    </v-card-title>
+                </v-row>
+                <v-row v-for="row in rows" v-if="!hideGraph">
+                    <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column" v-if="col.userName">
+                        <v-btn v-if="col.isViewing" x-small
+                            style="position: fixed;  transform: translate(5%,-50%); z-index:2" rounded color="black"
+                            elevation="0" class="white--text">
+                            <v-icon x-small>visibility</v-icon>&nbsp;
+                            is viewing
+                        </v-btn>
+                        <v-btn outlined large v-if="isPageInIFrame"
+                            @click="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))"
+                            @click.middle="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))">
+                            ${col.userName}
+                        </v-btn>
+                        <v-btn outlined large v-else
+                            :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : '')">
+                            ${col.userName}
+                        </v-btn>
+
+                    </v-col>
+                </v-row>
+                {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                <v-row>
+                    <v-col cols="auto">
+                        <v-card-subtitle>
+                            Last-visited workspace:
+                        </v-card-subtitle>
+                    </v-col>
+                    <v-col cols="auto">
+                        <v-btn v-if="lastModifiedWorkspace===undefined">
+                            <v-progress-circular indeterminate></v-progress-circular>
+                        </v-btn>
+                        <v-btn v-else-if="lastModifiedWorkspace" style="height: 48px;"
+                            :href="'{{ url_for('instructor.workspace')}}' + lastModifiedWorkspace.deltaGraphId">
+                            <v-icon>work</v-icon>
+                        </v-btn>
+                        <v-btn v-else @click="openWorkspaceDialogue()">create workspace</v-btn>
+                    </v-col>
+                    <v-col v-if="lastModifiedWorkspace" cols="auto">
+                        <v-card-subtitle>
+                            workspace tag: ${lastModifiedWorkspace.tag}
+                        </v-card-subtitle>
+                    </v-col>
+                    <v-col cols="auto">
+                        <v-card-subtitle>
+                            Create workspace:
+                        </v-card-subtitle>
+                    </v-col>
+                    <v-col cols="auto">
+                        <v-btn @click="openWorkspaceDialogue()">create workspace <v-icon>add_box</v-icon>
+                        </v-btn>
+                    </v-col>
+                </v-row>
+                <v-row>
+                    <v-col cols="auto">
+                        <v-card-subtitle>
+                            Duty-status:
+                        </v-card-subtitle>
+                    </v-col>
+                    <v-col cols="auto">
+                        <v-btn :outlined="!isTeaching" :color="isTeaching?'success':'grey'"
+                            @click="isTeaching?quit(courseCode):join(courseCode)">
+                            <v-icon v-if="isTeaching" left>check</v-icon>
+                            ${isTeaching?'on-duty':'off-duty'}
+                        </v-btn>
+                    </v-col>
+                </v-row>
+                <v-dialog v-model="workspaceDialogue" max-width="500px" eager>
+                    <kcube-workspace-form ref="workspaceForm"></kcube-workspace-form>
+                </v-dialog>
+                {% endif %}
+            </v-container>
+        </v-sheet>
+    </v-bottom-sheet>
+</div>
 {% endblock %}
 {% block VueComponentScript %}
+{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+{% include "instructor/components/workspaceForm.html" %}
+{% endif %}
 {{ layout.cytoscapeCDN() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
 {{ cyOption.component()}}
 {{ cyOption.script()}}
-<style>
-    .materialPage {
-        height: 100vh;
-        padding: unset;
-        right: 0px;
-        width: 30vw;
-        max-height: unset !important;
-        position: absolute;
-        right: 0px;
-        margin: unset;
-        overflow-x: clip;
-    }
-</style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
     cy = cytoscape({
@@ -140,18 +243,34 @@
         data: () => ({
             metricsBottomSheet: false,
             materialDialogue: true,
+            course: null,
+            isPageInIFrame: window.location != window.parent.location,
+            rows: [
+                []
+            ],
+            hideGraph: new URLSearchParams(window.location.search).get('hideGraph') != null,
+            courseCode: "{{courseCode}}",
+            sheet: false,
+            //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+            lastModifiedWorkspace: undefined,
+            //{% endif %}
+            workspaceDialogue: false,
+            isTeaching: null
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
-                fetch(
-                    "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = userId) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
+                this.lastModifiedWorkspace = undefined
+                let promises = []
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = userId) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -196,17 +315,22 @@
                                 // }
                             })
                             cyLayout.one('layoutstop', function () {
-                                let initOption = { ...coseLayoutOptions }
+                                let initOption = {
+                                    ...coseLayoutOptions
+                                }
                                 initOption.idealEdgeLength = initOption.idealEdgeLength * 2
                                 initOption.numIter = Math.floor(initOption.numIter / 4)
                                 initOption.animate = false
                                 cyLayout = cy.layout(initOption)
                                 cyLayout.one('layoutstop', () => {
-                                    let initOption = { ...coseLayoutOptions }
+                                    let initOption = {
+                                        ...coseLayoutOptions
+                                    }
                                     initOption.animate = false
                                     cyLayout = cy.layout(initOption)
                                     cyLayout.one('layoutstop', () => {
-                                        cy.elements().style('visibility', 'visible')
+                                        cy.elements().style('visibility',
+                                            'visible')
                                     })
                                     cyLayout.run()
                                 })
@@ -225,14 +349,244 @@
                                 'Unexpected error on getting courses information.')
                         }
                     })
-            },
-            newTab(keyword) {
-                this.materialDialogue = true
-                this.$nextTick(function () {
-                    this.$refs.iframe.contentWindow.postMessage(keyword, '*')
+                )
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.course.query', graphs=True, courseCode = courseCode) | safe }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.rows = [
+                            []
+                        ]
+                        let colPerRow = 4
+                        if (body.instructors) {
+                            console.log(body.instructors.map(instructor => instructor.userId))
+                            console.log("{{USER.userId}}")
+                            this.isTeaching = body.instructors.map(instructor => instructor.userId)
+                                .includes("{{USER.userId}}")
+                            body.instructors.forEach(instructor => {
+                                let lastRow = this.rows[this.rows.length - 1]
+                                if (lastRow.length == colPerRow) {
+                                    this.rows.push([])
+                                    lastRow = this.rows[this.rows.length - 1]
+                                }
+                                lastRow.push({
+                                    ...instructor,
+                                    isViewing: instructor.userId == "{{userId}}"
+                                })
+
+                            })
+                            let lastRow = this.rows[this.rows.length - 1]
+                            if (lastRow.length == colPerRow) {
+                                this.rows.push([])
+                                lastRow = this.rows[this.rows.length - 1]
+                            }
+                            lastRow.push({
+                                userName: 'department',
+                                userId: null,
+                                isViewing: "{{userId}}" == "None"
+                            })
+                            while (lastRow.length < colPerRow) {
+                                lastRow.push({})
+                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+                )
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.course.get',  courseCode = courseCode) | safe }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.course) {
+                            this.course = body.course
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting courses information.')
+                        }
+                    })
+                )
+                //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+                promises.push(
+                    fetch(
+                        "{{ url_for('RESTful.workspace.query', lastModified=True, courseCode = courseCode) | safe }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        let colPerRow = 4
+                        if (body.workspaces) {
+                            if (body.workspaces.length > 0) {
+                                this.lastModifiedWorkspace = body.workspaces[0]
+                            } else {
+                                this.lastModifiedWorkspace = null
+                            }
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting workspace information.')
+                        }
+                    })
+                )
+                promises.push(
+                    fetch("{{ url_for('RESTful.course.courseInstructor', courseCode=courseCode) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        if (body.instructors) {
+                            this.isTeaching = body.instructors.filter(instructor => instructor
+                                    .isTeaching)
+                                .map(instructor => instructor.user.userId).includes("{{USER.userId}}")
+
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting instructor assignment information.')
+                        }
+
+                    })
+                )
+                //{% endif %}
+                Promise.all(promises).then(bodies => {
+
+                }).finally(() => {
+                    this.$root.progress.show = false
                 })
-                //let w = window.open(url, '_blank')
-            }
+            },
+            newTab(url) {
+                let w = window.open(url, '_blank')
+            },
+            //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+            openWorkspaceDialogue() {
+                this.$refs.workspaceForm.loadData(this.courseCode);
+                this.workspaceDialogue = true;
+            },
+
+            join(courseCode) {
+                this.$root.actionDisplay("You are joining " + courseCode, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: true
+                            })
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'Assignment failed for unknown reason.',
+                                () => {
+                                    this.$root.actionSnackBar.show = false
+                                    this.isTeaching = true
+                                })
+
+                        })
+                })
+            },
+            quit(courseCode) {
+                this.$root.actionDisplay("You are quiting " + courseCode, "sure", () => {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(courseCode), {
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                join: false
+                            })
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'Assignment failed for unknown reason.',
+                                () => {
+                                    this.$root.actionSnackBar.show = false
+                                    this.isTeaching = false
+                                })
+                        })
+                })
+            },
+            //{% endif %}
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))

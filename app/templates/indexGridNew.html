@@ -2,344 +2,350 @@
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;" tile evelation="0">
-    <v-toolbar color="primary" tile>
+    <v-toolbar color="" tile>
+        <v-tabs v-model="tab" align-with-title>
+            <v-tab key="courses">Courses
+            </v-tab>
+            <v-tab key="about">About KCUBE
+            </v-tab>
+        </v-tabs>
     </v-toolbar>
-    <v-tabs right v-model="tabIndex" style="position: sticky; top: 64px; z-index: 1000" color="primary">
-        <v-tab>The Project
-            <a class="anchor" @click.stop href="#intro"></a>
-        </v-tab>
-        <v-tab>What is KG
-            <a class="anchor" @click.stop href="#kg"></a>
-        </v-tab>
-        <v-tab>People
-            <a class="anchor" @click.stop href="#people"></a>
-        </v-tab>
-        <v-tab>Courses
-            <a class="anchor" @click.stop href="#courseList"></a></v-tab>
-    </v-tabs>
-    <v-container style="width: 100vw; max-width:unset;margin:0">
-        <v-row no-gutter id="intro" class="tabContent">
-            <v-col style="padding:0">
-                <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"></v-parallax>
-            </v-col>
-            <v-col style="padding:0">
-                The KCUBE Objectives
-
-                As on-line education is accelerating, the evolution of cyber-learning in a metaverse-like digital
-                environment is shaping the future of educational technologies. In this paper we give an overall
-                description of the KCUBE project and focus on its two components: (1) Web-based Knowledge Graph (WEB-KG)
-                and (2) Virtual Reality Knowledge Graph (VR-KG).
-            </v-col>
-        </v-row>
-        <v-row no-gutter id="kg" class="tabContent elevate">
-            <v-col style="padding:0">
-                knowledge graphs appeared in curriculum development
-            </v-col>
-            <v-col cols="auto" style="padding:0">
-                <v-img src="{{ url_for('static', filename='images/graph idea.png') }}" height="256" width="256"></v-img>
-            </v-col>
-        </v-row>
-        <v-row no-gutter id="people" class="tabContent">
-            <v-carousel height="400" show-arrows-on-hover>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Owen Ho
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Victoria Ma
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Joy Li
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Marcus Chan
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mary Au
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Larry Lau
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Jolene Kwan
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Victoria Ma
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Victor Cheung
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Network Engineer</v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-            </v-carousel>
-        </v-row>
-    </v-container>
-    <v-container style="height: 80vh; width: 100%;" id="courseList" class="tabContent elevate">
-        <v-row style="height: 20%;">
-            <v-col></v-col>
-            <v-col cols="auto">
-                <v-card elevation="5" style="background-color: rgba(255,255,255,0.75);">
-                    <v-container no-gutters>
-                        <v-row no-gutters>
+    <v-tabs-items v-model="tab" style="width: 100%; max-width:unset; padding: 0; overflow: visible;">
+        <v-tab-item key="courses" eager>
+            <v-container style="height: 80vh; width: 100%;">
+                <v-row ref="shepherd-searchText">
+                    <v-combobox hide-details hide-no-data dense append-icon="" :search-input.sync="searchText" clearable
+                        :items="items">
+                    </v-combobox>
+                </v-row>
+                <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
+                    <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex"
+                        style="flex-direction:column">
+                        <v-card v-if="courses[row*colPerRow + col]"
+                            :href="'{{ url_for('course') }}/' + courses[row*colPerRow + col].courseCode">
+                            <v-list-item three-line>
+                                <v-list-item-content>
+                                    <v-list-item-title>
+                                        ${courses[row*colPerRow + col].courseCode}
+                                    </v-list-item-title>
+                                    <v-list-item-subtitle>
+                                        ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
+                                </v-list-item-content>
+                                <v-list-item-avatar tile size="96">
+                                    <img :src="courses[row*colPerRow + col].imageURL">
+                                </v-list-item-avatar>
+                            </v-list-item>
+                        </v-card>
+                    </v-col>
+                </v-row>
+            </v-container>
+        </v-tab-item>
+        <v-tab-item key="about" eager>
+            <v-container no-margin style="width: 100%; max-width:unset; padding: 0">
+                <v-row no-gutters>
+                    <v-col cols="auto">
+                        <v-tabs vertical right v-model="aboutSectionIndex"
+                            style="position: sticky; top: 64px; z-index: 2" color="primary">
+                            <v-tab>The Project
+                                <a class="anchor" @click.stop href="#aboutSectionIntro"></a>
+                            </v-tab>
+                            <v-tab>What is KG
+                                <a class="anchor" @click.stop href="#aboutSectionKg"></a>
+                            </v-tab>
+                            <v-tab>People
+                                <a class="anchor" @click.stop href="#aboutSectionPeople"></a>
+                            </v-tab>
+                        </v-tabs>
+                    </v-col>
+                    <v-col style="overflow:hidden">
+                        <v-row no-gutters id="aboutSectionIntro" class="aboutSectionContent">
                             <v-col>
-                                <v-autocomplete hide-details hide-no-data ref="searchBar" dense style="width: 100%"
-                                    append-icon="" :menu-props="{ ...(!search && {value:false}) }"
-                                    :search-input.sync="search" label="Show info of ...(course code / course name)"
-                                    clearable :items="items"
-                                    @change="showingEdgeTag.length > 0?showAllPath($event):gotoPage($event)">
-                                </v-autocomplete>
+                                <v-parallax src="https://cdn.vuetifyjs.com/images/parallax/material.jpg"></v-parallax>
+                            </v-col>
+                            <v-col>
+                                The KCUBE Objectives
+
+                                As on-line education is accelerating, the evolution of cyber-learning in a
+                                metaverse-like
+                                digital
+                                environment is shaping the future of educational technologies. In this paper we give an
+                                overall
+                                description of the KCUBE project and focus on its two components: (1) Web-based
+                                Knowledge Graph
+                                (WEB-KG)
+                                and (2) Virtual Reality Knowledge Graph (VR-KG).
                             </v-col>
                         </v-row>
-                        <v-row no-gutters>
-                            <v-col cols="auto">
-                                <v-select style="width: 10vw" v-model="showingEdgeTag" :items="[...edgeTags]"
-                                    label="Show relation" multiple @change="runLayout(500)">
-                                    <template v-slot:prepend-item>
-                                        <v-list-item @click="showingEdgeTag=[];runLayout(500)">
-                                            <v-list-item-content>
-                                                <v-list-item-title>
-                                                    Hide All
-                                                </v-list-item-title>
-                                            </v-list-item-content>
-                                        </v-list-item>
-                                        <v-divider class="mt-2"></v-divider>
-                                        <v-list-item @click="showingEdgeTag=[...edgeTags];runLayout(500)">
-                                            <v-list-item-content>
-                                                <v-list-item-title>
-                                                    Select All
-                                                </v-list-item-title>
-                                            </v-list-item-content>
-                                        </v-list-item>
-                                        <v-divider class="mt-2"></v-divider>
-                                    </template>
-                                    <template v-slot:selection="{ item, index }">
-                                        <span class="grey--text text-caption" v-if="index === 0">
-                                            ${showingEdgeTag.length == 1? showingEdgeTag[0]:
-                                            showingEdgeTag.length+' relation selected'}
-                                        </span>
-                                    </template>
-                                </v-select>
+                        <v-row no-gutters id="aboutSectionKg" class="aboutSectionContent elevate">
+                            <v-col>
+                                knowledge graphs appeared in curriculum development
                             </v-col>
                             <v-col cols="auto">
-                                <v-subheader>Recent visit</v-subheader>
-                            </v-col>
-                            <v-col cols="auto">
-                                <v-chip-group style="width: 60vw">
-                                    <v-chip label v-for="(url, name) in visitedCourseGraph" :href="url">
-                                        ${name.split("_")[0] + " from " + (name.split("_").slice(1).join('_') ==
-                                        "None"?
-                                        'department':name.split("_").slice(1).join('_'))}
-                                    </v-chip>
-                                </v-chip-group>
+                                <v-img src="{{ url_for('static', filename='images/graph idea.png') }}" height="256"
+                                    width="256">
+                                </v-img>
                             </v-col>
                         </v-row>
-                    </v-container>
-                </v-card>
-            </v-col>
-            <v-col></v-col>
-        </v-row>
-        <v-row style="height: 80%;">
-            <div id="cy" style="height: 99%; width: 99%;"></div>
-        </v-row>
-    </v-container>
+                        <v-row no-gutters id="aboutSectionPeople" class="aboutSectionContent">
+                            <v-carousel height="400" show-arrows-on-hover>
+                                <v-carousel-item>
+                                    <v-row align="center">
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Owen Ho
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Victoria Ma
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Joy Li
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                    </v-row>
+                                </v-carousel-item>
+                                <v-carousel-item>
+                                    <v-row align="center">
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Marcus Chan
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Mary Au
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Larry Lau
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                    </v-row>
+                                </v-carousel-item>
+                                <v-carousel-item>
+                                    <v-row align="center">
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Jolene Kwan
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Victoria Ma
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                        <v-col>
+                                            <v-card class="mx-auto" max-width="434" tile>
+                                                <v-img height="100%"
+                                                    src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
+                                                    <v-row align="end" class="fill-height">
+                                                        <v-col align-self="start" class="pa-0" cols="12">
+                                                            <v-avatar class="profile" color="grey" size="164" tile>
+                                                                <v-img>
+                                                                </v-img>
+                                                            </v-avatar>
+                                                        </v-col>
+                                                        <v-col class="py-0">
+                                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
+                                                                <v-list-item-content>
+                                                                    <v-list-item-title class="text-h6">
+                                                                        Victor Cheung
+                                                                    </v-list-item-title>
+                                                                    <v-list-item-subtitle>Network Engineer
+                                                                    </v-list-item-subtitle>
+                                                                </v-list-item-content>
+                                                            </v-list-item>
+                                                        </v-col>
+                                                    </v-row>
+                                                </v-img>
+                                            </v-card>
+                                        </v-col>
+                                    </v-row>
+                                </v-carousel-item>
+                            </v-carousel>
+                        </v-row>
+                    </v-col>
+                </v-row>
+            </v-container>
+            <v-row no-gutters>
+                <v-col style="height:25vh">
+                </v-col>
+            </v-row>
+        </v-tab-item>
+    </v-tabs-items>
+
     <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation inset
         :value="paths?paths.length>0:false">
         <v-container v-if="paths" style="max-height: 40vh; overflow: auto; width: 100%; background-color: white;">
@@ -383,7 +389,8 @@
 </v-card>
 {% endblock %}
 {% block VueComponentScript %}
-{{ layout.cytoscapeCDN() }}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/graphology/0.24.1/graphology.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/graphology-library@0.7.1/dist/graphology-library.min.js"></script>
 <style>
     a.anchor {
         position: absolute;
@@ -408,118 +415,23 @@
         position: relative
     }
 
+
     :target {
         scroll-margin-top: 112px;
     }
 </style>
 <script>
-    cy = cytoscape({
-        style: [{
-                selector: 'core',
-                style: {
-                    "active-bg-size": 0
-                }
-            },
-            {
-                selector: 'node',
-                style: {
-                    'width': 135,
-                    'height': 135,
-                    'background-color': 'white',
-                    'border-width': 1,
-                    'border-color': 'grey',
-                    'text-wrap': 'wrap',
-                    'text-max-width': 60,
-                    'line-height': 1.5,
-                    'label': 'data(label)',
-                    'text-outline-color': 'white',
-                    'text-outline-width': 2,
-                    'font-size': 35,
-                    'background-image': 'data(imageURL)',
-                    'background-fit': 'cover'
-
-                }
-            }, {
-                selector: 'node:selected',
-                style: {
-                    'background-color': 'white',
-                    'border-width': 3,
-
-                }
-            }, {
-                selector: 'edge',
-                style: {
-                    'width': 4,
-                    'line-color': 'grey',
-                    'curve-style': 'bezier',
-                    'z-index': 100,
-                }
-            },
-            {
-                selector: 'edge.irrelevant',
-                style: {
-                    'opacity': 0.25
-                }
-            }, {
-                selector: 'edge.relevant',
-                style: {}
-            }, {
-                selector: 'edge:selected',
-                style: {
-                    'width': 8,
-                    'underlay-color': "data(color)",
-                    'underlay-padding': 2.75,
-                    'underlay-opacity': 1,
-                    'opacity': 1,
-                }
-            },
-            {
-                selector: 'edge.pad',
-                style: {
-                    'width': 2,
-                    'opacity': 0.25,
-                    'z-index': 0,
-                    'overlay-opacity': 0,
-                    'underlay-padding': 0,
-                    'underlay-opacity': 0,
-                }
-            },
-        ],
-        userZoomingEnabled: false,
-        userPanningEnabled: false,
-        boxSelectionEnabled: false,
-    })
-
-    function nodeFactory(data, classes) {
-        let output = {
-            group: 'nodes',
-            data: data,
-            classes: classes,
-            grabbable: false,
-            pannable: false,
-        }
-        return output
-    }
-
-    function edgeFactory(edge) {
-        let output = {
-            group: 'edges',
-            data: {
-                source: edge.start,
-                target: edge.end,
-                color: edge.color,
-            },
-            classes: edge.classes,
-        }
-        return output
-
-    }
-    var animation = null
-    var duration = null
-    var numRow = 4
+    const graph = new graphology.MultiGraph();
     Vue.component('app-content', {
         data: () => ({
-            tabIndex: 0,
+            tab: location.hash.includes("aboutSection") ? 1 : null,
+            aboutSectionIndex: 0,
+            colPerRow: 3,
+            allCourses: [],
+            courses: [],
+            searchText: new URLSearchParams(window.location.search).get('search') ? new URLSearchParams(
+                window.location.search).get('search') : null,
+            course: null,
             paths: undefined,
             focusingNode: false,
             focusingEdge: false,
@@ -527,12 +439,16 @@
             edgeTag: "",
             edgeEnd: "",
             edgeColor: "",
-            search: "",
             edgeTags: new Set(),
             showingEdgeTag: [],
             items: [],
             visitedCourseGraph: JSON.parse(localStorage.getItem('visitedCourseGraph'))
         }),
+        watch: {
+            searchText(newValue, oldValue) {
+                this.search(newValue)
+            }
+        },
         methods: {
             loadData() {
                 this.$root.progress.show = true
@@ -557,7 +473,24 @@
                         this.$root.progress.show = false
                         this.items = []
                         if (body.courses) {
-                            body.courses.forEach(c => {
+                            body.courses.sort((a, b) => {
+                                if (a.concept.name < b.concept.name) {
+                                    return -1;
+                                }
+                                if (a.concept.name > b.concept.name) {
+                                    return 1;
+                                }
+                                return 0;
+                            }).forEach(c => {
+                                this.allCourses.push({
+                                    courseCode: c.concept.name,
+                                    imageURL: c.course.imageURL,
+                                    courseName: c.course.courseName,
+                                    isInternal: c.course.isInternal,
+                                    isTeaching: c.isTeaching,
+                                    workspaces: c.workspaces,
+                                    hasExposedGraph: c.hasExposedGraph,
+                                })
                                 this.items.push({
                                     text: c.concept.name,
                                     value: c.concept.name
@@ -566,18 +499,16 @@
                                     text: c.course.courseName,
                                     value: c.course.courseName
                                 })
-                                cy.add(nodeFactory({
-                                        id: c.concept.name,
-                                        tag: c.course.courseName,
-                                    }, ["course"])).data(
-                                        'imageURL',
-                                        c.course.imageURL,
-                                    ).data("url", "{{ url_for('course')}}" + encodeURIComponent(c
-                                        .concept.name))
-                                    .data("label", c.concept.name)
+                                graph.addNode(c.concept.name, {
+                                    id: c.concept.name,
+                                    tag: c.course.courseName,
+                                    imageURL: c.course.imageURL,
+                                    url: "{{ url_for('course')}}" + encodeURIComponent(c
+                                        .concept.name)
 
+                                });
                             })
-                            cy.elements().style('visibility', 'hidden')
+                            this.search()
                             return body
                         } else {
                             this.$root.errorDisplay(body,
@@ -621,7 +552,7 @@
                     bodies[1].triples.forEach(triple => {
                         let bothCourseExists = true
                         for (let name of [triple.h_name, triple.t_name]) {
-                            if (cy.getElementById(name).length == 0) {
+                            if (!graph.hasNode(name)) {
                                 bothCourseExists = false
                                 break
                             }
@@ -629,133 +560,13 @@
                         if (!bothCourseExists) return
                         let color = colorMap[relationship.indexOf(triple.r_name) % colorMap
                             .length]
-                        cy.add(edgeFactory({
-                            start: triple.h_name,
-                            end: triple.t_name,
+                        graph.addEdge(triple.h_name, triple.t_name, {
+                            tag: triple.r_name,
                             color: color,
-                            classes: [triple.r_name]
-                        })).data("tag", triple.r_name).style("line-color", color)
-                    })
-                    cy.elements().style('visibility', 'hidden')
-                    this.runLayout(0, () => {
-                        cy.elements().style('visibility', 'visible')
-                        cy.edges().style('opacity', 0)
+                        })
                     })
                     this.$root.progress.show = false
                 })
-            },
-            runLayout(duration = 500, layoutDone = () => {}) {
-                let selector = this.showingEdgeTag.map(tag => "[tag='" + tag + "']").join(',')
-                cy.elements().stop(true, false)
-                var x = 0,
-                    y = 0,
-                    level;
-                sorter = (a, b) => {
-                    if (a.data('id')[4] < b.data('id')[4]) {
-                        return -1;
-                    }
-                    if (a.data('id')[4] > b.data('id')[4]) {
-                        return 1;
-                    }
-                    if (this.showingEdgeTag.length > 0) {
-                        if (a.connectedEdges(selector).length > b.connectedEdges(selector).length) {
-                            return -1;
-                        }
-                        if (a.connectedEdges(selector).length < b.connectedEdges(selector).length) {
-                            return 1;
-                        }
-                    }
-                    if (a.data('id') < b.data('id')) {
-                        return -1;
-                    }
-                    if (a.data('id') > b.data('id')) {
-                        return 1;
-                    }
-                    return 0;
-                }
-                cy.nodes().sort(sorter).forEach(node => {
-                    if (level != node.data('id')[4] || y >= numRow) {
-                        x++
-                        if (level != node.data('id')[4]) x++
-                        y = 0
-                    }
-                    level = node.data('id')[4]
-                    node.data("row", y).data("col", x)
-                    y++
-                })
-                if (this.showingEdgeTag.length > 0) {
-                    cy.nodes().sort(sorter).forEach(node => {
-                        node.connectedEdges(selector).forEach(edge => {
-                            let x1, x2, y1, y2
-                            if (edge.source().data('col') < edge.target().data('col')) {
-                                x1 = edge.source().data('col')
-                                x2 = edge.target().data('col')
-                                y1 = edge.source().data('row')
-                                y2 = edge.target().data('row')
-                            } else {
-                                x1 = edge.target().data('col')
-                                x2 = edge.source().data('col')
-                                y1 = edge.target().data('row')
-                                y2 = edge.source().data('row')
-                            }
-                            const m = (y2 - y1) / (x2 - x1)
-                            const c = y1 - x1 * m
-                            x1 = x1 + 1
-                            y1 = m * x1 + c
-                            while (x1 < x2 && (y1 < y2 || m == 0)) {
-                                if (Number.isInteger(y1) && cy.nodes("[col=" + x1 +
-                                        "][row=" + y1 + "]").length > 0) {
-                                    cy.nodes("[col=" + x1 + "][row>=" + y1 + "]")
-                                        .forEach(node => {
-                                            node.data("row", node.data("row") + 1)
-                                        })
-                                }
-                                x1 = x1 + 1
-                                y1 = m * x1 + c
-                            }
-                        })
-                    })
-                    let edges = cy.edges(selector)
-                    edges.animate({
-                        style: {
-                            'opacity': 1
-                        },
-                    }, {
-                        duration: duration
-                    })
-                    cy.edges().subtract(edges).animate({
-                        style: {
-                            'opacity': 0
-                        }
-                    }, {
-                        duration: duration
-                    })
-                } else {
-                    cy.edges().animate({
-                        style: {
-                            'opacity': 0
-                        }
-                    }, {
-                        duration: duration
-                    })
-                }
-                let cyLayout = cy.layout({
-                    name: 'grid',
-                    position: (node) => {
-                        return {
-                            row: node.data('row'),
-                            col: node.data('col')
-                        }
-                    },
-                    animationDuration: duration,
-                    animate: true,
-                    nodeDimensionsIncludeLabels: true,
-                    fit: true,
-                })
-                cyLayout.one('layoutstop', () => {
-                    layoutDone()
-                })
-                cyLayout.run()
             },
             newTab(url) {
                 let w = window.open(url, '_blank')
@@ -771,188 +582,170 @@
                 }
             },
             showAllPath(tagOrId, edgeTag = this.showingEdgeTag) {
-                let selector = edgeTag.map(tag => "edge[tag='" + tag + "']").join(',')
                 if (tagOrId) {
-                    let node = cy.getElementById(tagOrId)
-                    if (node.length == 0) {
-                        node = cy.nodes("[tag='" + tagOrId + "']")
+                    let id = tagOrId
+                    if (!graph.hasNode(tagOrId)) {
+                        let ids = graph.filterNodes((id, attr) => attr.tag == tagOrId)
+                        if (ids.length == 0) return
+                        id = ids[0]
                     }
-                    let successors = node.successors(selector)
-                    let predecessors = node.predecessors(selector)
-                    successorsPath = []
-                    successors.forEach(edge => {
-                        let path = successorsPath.filter(p => p[p.length - 1].id == edge.source().data(
-                            'id'))
-                        if (path.length > 0) {
-                            path = path[path.length - 1]
-                            path.push({
-                                tag: edge.data('tag'),
-                                color: edge.data('color')
-                            })
-                            path.push({
-                                id: edge.target().data('id'),
-                                tag: edge.target().data('tag'),
-                                url: edge.target().data("url"),
-                            })
-                        } else {
-                            if (edge.source().data('id') == node.data('id')) {
-                                successorsPath.push([{
-                                        id: edge.source().data('id'),
-                                        tag: edge.source().data('tag'),
-                                        url: edge.source().data("url"),
-                                        highlight: true,
-                                    },
-                                    {
-                                        tag: edge.data('tag'),
-                                        color: edge.data('color')
-                                    },
-                                    {
-                                        id: edge.target().data('id'),
-                                        tag: edge.target().data('tag'),
-                                        url: edge.target().data("url"),
-                                    }
-                                ])
-                            } else {
-                                let copy = successorsPath.filter(p => p.map(e => e.id)
-                                    .includes(edge.source()
-                                        .data('id')))
-                                if (copy.length > 0) {
-                                    successorsPath.push([...copy[0].slice(0, copy[0].indexOf(e => e
-                                            .id ==
-                                            edge.source()
-                                            .data('id'))),
-                                        {
-                                            id: edge.target().data('id'),
-                                            tag: edge.target().data('tag'),
-                                            url: edge.target().data("url"),
-                                        }
-                                    ])
-                                }
-
-                            }
-                        }
-                    })
                     let predecessorsPath = []
-                    predecessors.forEach(edge => {
-                        let path = predecessorsPath.filter(p =>
-                            p[0].id == edge.target().data('id')
-                        )
-                        if (path.length > 0) {
-                            path = path[0]
-                            path.unshift({
-                                tag: edge.data('tag'),
-                                color: edge.data('color')
-                            })
-                            path.unshift({
-                                id: edge.source().data('id'),
-                                tag: edge.source().data('tag'),
-                                url: edge.source().data("url"),
-                            })
-                        } else {
-                            predecessorsPath.push([{
-                                    id: edge.source().data('id'),
-                                    tag: edge.source().data('tag'),
-                                    url: edge.source().data("url"),
-                                },
-                                {
-                                    tag: edge.data('tag'),
-                                    color: edge.data('color')
-                                },
-                                {
-                                    id: edge.target().data('id'),
-                                    tag: edge.target().data('tag'),
-                                    highlight: edge.target().data('id') == node.data('id'),
-                                    url: edge.target().data("url"),
-                                }
-                            ])
-                        }
-                    })
-                    this.paths = [...successorsPath, ...predecessorsPath]
+                    graphologyLibrary.traversal.dfsFromNode(graph, id,
+                        (node, attr, depth) => {
+                            graphologyLibrary.simplePath.allSimpleEdgeGroupPaths(graph, node, id).forEach(
+                                paths => {
+                                    paths.forEach(path => path.forEach(edge => {
+                                        let tag = graph.getEdgeAttribute(edge, 'tag')
+                                        if (!edgeTag.includes(tag)) return;
+                                        let source = graph.source(edge)
+                                        let target = graph.target(edge)
+                                        let paths = predecessorsPath.filter(sPath => sPath[
+                                                0]
+                                            .id == target)
+                                        if (paths.length == 0) {
+                                            if (predecessorsPath.filter(p => p[p.length - 3]
+                                                    .id == source && p[p.length - 1].id ==
+                                                    target && p[p.length - 2].tag == tag)
+                                                .length != 0) {
+                                                return
+                                            }
+                                            predecessorsPath.push([{
+                                                    ...graph.getNodeAttributes(
+                                                        source),
+                                                },
+                                                graph.getEdgeAttributes(edge),
+                                                {
+                                                    ...graph.getNodeAttributes(
+                                                        target),
+                                                    highlight: target == id,
+                                                }
+
+                                            ])
+                                        } else {
+                                            paths[0].unshift({
+                                                    ...graph
+                                                    .getNodeAttributes(
+                                                        source),
+                                                    highlight: source == id,
+                                                },
+                                                graph.getEdgeAttributes(
+                                                    edge)
+                                            )
+                                        }
+                                    }))
+                                })
+                        }, {
+                            mode: 'inbound'
+                        })
+
+                    let successorsPath = []
+                    graphologyLibrary.traversal.dfsFromNode(graph, id,
+                        (node, attr, depth) => {
+                            graphologyLibrary.simplePath.allSimpleEdgeGroupPaths(graph, id, node).forEach(
+                                paths => {
+                                    paths.forEach(path => path.forEach(edge => {
+                                        let tag = graph.getEdgeAttribute(edge, 'tag')
+                                        if (!edgeTag.includes(tag)) return;
+                                        let source = graph.source(edge)
+                                        let target = graph.target(edge)
+                                        let paths = successorsPath.filter(pPath => pPath[
+                                                pPath
+                                                .length - 1]
+                                            .id == source)
+                                        if (paths.length == 0) {
+                                            if (successorsPath.filter(p => p[0]
+                                                    .id == source && p[2].id == target && p[
+                                                        1].tag == tag && source == id)
+                                                .length != 0) {
+                                                return
+                                            }
+                                            if (source == id) {
+                                                successorsPath.push([{
+                                                        ...graph.getNodeAttributes(
+                                                            source),
+                                                        highlight: true,
+                                                    },
+                                                    graph.getEdgeAttributes(edge),
+                                                    {
+                                                        ...graph.getNodeAttributes(
+                                                            target),
+                                                    }
+                                                ])
+                                            } else {
+                                                let copy = successorsPath.filter(p => p.map(
+                                                    e => e.id).includes(source))
+                                                if (copy.length > 0) {
+                                                    successorsPath.push([...copy[0].slice(0,
+                                                        copy[0].indexOf(
+                                                            e => e.id == source)
+                                                    ), {
+                                                        ...graph
+                                                        .getNodeAttributes(
+                                                            target)
+                                                    }])
+                                                }
+                                            }
+                                        } else {
+                                            paths[0].push(
+                                                graph.getEdgeAttributes(
+                                                    edge), {
+                                                    ...graph
+                                                    .getNodeAttributes(
+                                                        target)
+                                                }
+                                            )
+                                        }
+                                    }))
+                                })
+                        }, {
+                            mode: 'outbound'
+                        })
+
+                    this.paths = [...predecessorsPath, ...successorsPath]
                     this.paths = this.paths.length > 0 ? this.paths : [
                         [{
-                            id: node.data('id'),
-                            tag: node.data('tag'),
-                            url: node.data("url"),
+                            id: graph.getNodeAttribute(id, 'id'),
+                            tag: graph.getNodeAttribute(id, 'tag'),
+                            url: graph.getNodeAttribute(id, 'url'),
                             highlight: true,
                         }]
                     ]
                 }
             },
+            clearFilter(except = null) {
+                Object.keys(this.filter).forEach(key => {
+                    if (key == except) return;
+                    this.filter[key] = false
+                })
+            },
+            search(text = this.searchText) {
+                if (text != "" && typeof text === 'string') {
+                    this.courses = this.allCourses.filter(c =>
+                        c.courseCode.toLowerCase().includes(text.toLowerCase()) ||
+                        c.courseName.toLowerCase().includes(text.toLowerCase())
+                    )
+                } else {
+                    this.courses = this.allCourses.slice()
+                }
+            }
         },
         mounted: function () {
-            let element = document.getElementById("cy")
-            cy.mount(element)
-            element.onmousedown = (e) => {
-                if (e.which == 2) {
-                    let node = cy.nodes().filter(node => {
-                        let box = node.renderedBoundingbox()
-                        return e.layerX >= box.x1 && e.layerX < box.x2 && e.layerY >= box.y1 &&
-                            e.layerY < box.y2
-                    })[0]
-                    this.newTab(node.data("url"))
-                }
-            }
-            self = this
-            cy.on('tap', 'node', (event) => {
-                if (event.target == event.cy) return
-                // if (event.target.classes().includes("pad")) return
-                this.showingEdgeTag.length > 0 ? this.showAllPath(event.target[0].data('id')) : this
-                    .gotoPage(
-                        event.target[0].data('id'))
-                this.focusingEdge = false
-            })
-
-            cy.on('select', 'edge', (event) => {
-                if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
-                let edge = event.target[0]
-                if (!this.showingEdgeTag.includes(edge.data("tag"))) return
-                this.edgeSource = edge.source().data("id")
-                this.edgeEnd = edge.target().data("id")
-                this.edgeTag = edge.data("tag")
-                this.edgeColor = edge.data("color")
-                this.focusingEdge = true
-                this.paths = undefined
-            })
-
-            cy.on('tap', (event) => {
-                if (event.target == event.cy) {
-                    cy.edges().removeClass('irrelevant')
-                    this.focusingEdge = false
-                    this.paths = undefined
-                }
-            })
-            cy.on('unselect', 'edge', (event) => {
-                if (event.target == event.cy || event.target.length < 1 || cy.animated()) return
-                this.focusingEdge = false
-            })
             this.loadData()
-            scroll = (delta) => {
-
-
-            }
 
             function isElementInViewport(el) {
-                if (typeof jQuery === "function" && el instanceof jQuery) {
-                    el = el[0];
-                }
-
                 var rect = el.getBoundingClientRect();
 
                 return (
                     rect.top >= 0 &&
-                    rect.left >= 0 &&
                     rect.bottom <= (window.innerHeight || document.documentElement
-                        .clientHeight) && /* or $(window).height() */
-                    rect.right <= (window.innerWidth || document.documentElement
-                        .clientWidth) /* or $(window).width() */
-                );
+                        .clientHeight))
             }
 
             determineTabIndex = () => {
-                elements = document.getElementsByClassName("tabContent")
+                elements = document.getElementsByClassName("aboutSectionContent")
                 for (i = 0; i < elements.length; i++) {
                     if (isElementInViewport(elements[i])) {
-                        this.tabIndex = i
+                        this.aboutSectionIndex = i
                         break;
                     }
                 }
