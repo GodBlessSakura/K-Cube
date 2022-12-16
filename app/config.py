@@ -10,6 +10,10 @@ class Config:
     DATABASE_ADDRESS = "bolt://127.0.0.1:7687"
     DATABASE = "neo4j"
     DATABASE_PASSWORD = "1234"
+    requireUserVerification = True
+
+class standaloneConfig(Config):
+    requireUserVerification = False
 
 
 class DevelopmentConfig(Config):
@@ -30,4 +34,5 @@ config = {
     "testing": TestingConfig,
     "productin": ProductionConfig,
     "default": DevelopmentConfig,
+    "standalone": standaloneConfig
 }

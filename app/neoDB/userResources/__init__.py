@@ -4,6 +4,7 @@ from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
 from ..resourcesGuard import for_all_methods, reject_invalid
 import sys
+from flask import current_app
 from importlib import resources
 
 cypher = {
@@ -109,7 +110,7 @@ class userDAO:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, userId=userId, role=role, message=message)
+            result = tx.run(query, userId=userId, role=role, message=message, requireUserVerification=current_app.config["requireUserVerification"],)
             return [
                 {
                     "user": dict(record["user"].items()),

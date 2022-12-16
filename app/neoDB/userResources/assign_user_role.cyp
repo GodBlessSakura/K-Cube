@@ -1,6 +1,7 @@
 MATCH
 (permission:Permission{role: $role}),
-(user:User{userId: $userId, verified: true})
+(user:User{userId: $userId})
+WHERE !$requireUserVerification OR ($requireUserVerification AND user.verified)
 MERGE (permission)<-[permission_grant:PRIVILEGED_OF]-(user)
 ON CREATE
 SET
