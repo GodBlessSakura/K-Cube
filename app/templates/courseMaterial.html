@@ -112,6 +112,7 @@
         mounted: function () {
             self = this
             window.onmessage = function (e) {
+                console.log(e)
                 self.search = e.data
             };
             this.loadData()

@@ -255,7 +255,7 @@
             </v-app-bar>
 
             {% if session['user'] %}
-            <v-menu inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y egar>
+            <v-menu v-if="menu" inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y eager>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn color="success" v-bind="attrs" v-on="on"
                         style="z-index: 1000; position: fixed; left:12px; bottom:0">
@@ -603,7 +603,7 @@
             data: () => ({
                 appBar: new URLSearchParams(window.location.search).get('bar') === "false" || window
                     .location !== window.parent.location ? false : true,
-                navBar: new URLSearchParams(window.location.search).get('bar') === "false" || window
+                menu: new URLSearchParams(window.location.search).get('bar') === "false" || window
                     .location !== window.parent.location ? false : true,
                 KCube: KCube,
                 tabIndex: KCube.currentTabIndex,

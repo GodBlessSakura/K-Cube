@@ -52,7 +52,7 @@
     </v-tooltip>
     {% endif %}
     <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
-        hide-overlay persistent no-click-animation>
+        hide-overlay persistent no-click-animation eager>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
             src="{{ url_for('material', courseCode = courseCode)}}"></iframe>
     </v-dialog>
@@ -242,7 +242,7 @@
     Vue.component('app-content', {
         data: () => ({
             metricsBottomSheet: false,
-            materialDialogue: true,
+            materialDialogue: false,
             course: null,
             isPageInIFrame: window.location != window.parent.location,
             rows: [
@@ -505,6 +505,12 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
+            openMaterialDialogue(id) {
+                this.materialDialogue = true
+                this.$nextTick(function () {
+                    this.$refs.iframe.contentWindow.postMessage(id, '*')
+                })
+            },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             openWorkspaceDialogue() {
                 this.$refs.workspaceForm.loadData(this.courseCode);
@@ -595,15 +601,11 @@
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]
             })
             self = this
-            this.$nextTick(function () {
-                this.materialDialogue = false
-            })
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
-                this.newTab(event.target[0].data('id'))
+                this.openMaterialDialogue(event.target[0].data('id'))
             })
             document.body.addEventListener("mouseup", (event) => {
-                console.log("click")
                 self.materialDialogue = false
             })
             this.loadData()
