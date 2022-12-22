@@ -110,7 +110,7 @@ class userDAO:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, userId=userId, role=role, message=message, requireUserVerification=current_app.config["requireUserVerification"],)
+            result = tx.run(query, userId=userId, role=role, message=message, REQUIRE_USER_VERIFICATION=current_app.config["REQUIRE_USER_VERIFICATION"],)
             return [
                 {
                     "user": dict(record["user"].items()),
