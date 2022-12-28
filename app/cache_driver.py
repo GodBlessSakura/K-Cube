@@ -1,5 +1,5 @@
 from flask_caching import Cache
-
+from flask import session, g
 
 cache = Cache(config={"CACHE_TYPE": "SimpleCache"})
 
