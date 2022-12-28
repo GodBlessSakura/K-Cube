@@ -75,8 +75,8 @@
                         <v-btn
                             @click="iframeOverlay = true;courseGraphIndex = courseGraphIndex - 1 &lt; 0? allCourses.length - 1:courseGraphIndex - 1">
                             <v-icon left>arrow_back</v-icon>
-                            ${allCourses[courseGraphIndex - 1 &lt; 0? allCourses.length - 1:courseGraphIndex -
-                            1].courseCode}
+                            ${allCourses.length> 0 ? (allCourses[courseGraphIndex - 1 &lt; 0? allCourses.length - 1:courseGraphIndex -
+                            1].courseCode) : ''}
                         </v-btn>
                     </v-col>
                     <v-col>
@@ -86,8 +86,8 @@
                     <v-col cols="1" align="center" align-self="center">
                         <v-btn
                             @click="iframeOverlay = true;courseGraphIndex = courseGraphIndex + 1 >= allCourses.length? 0:courseGraphIndex + 1">
-                            ${allCourses[courseGraphIndex + 1 >= allCourses.length? 0:courseGraphIndex +
-                            1].courseCode}
+                            ${allCourses.length> 0 ? (allCourses[courseGraphIndex + 1 >= allCourses.length? 0:courseGraphIndex +
+                            1].courseCode) : ''}
                             <v-icon right>arrow_forward</v-icon>
                         </v-btn>
                     </v-col>
