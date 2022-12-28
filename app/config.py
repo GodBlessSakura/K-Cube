@@ -14,6 +14,7 @@ class Config:
 
 class standaloneConfig(Config):
     REQUIRE_USER_VERIFICATION = False
+    DATABASE_ADDRESS = "bolt://neo4j:7687"
 
 
 class DevelopmentConfig(Config):
