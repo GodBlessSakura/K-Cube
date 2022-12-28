@@ -55,7 +55,6 @@ def register():
             user = get_api_driver().user.create_user(
                 userId=userId, password=password, email=email, userName=userName
             )
-            verify()
         except ConstraintError:
             return jsonify(
                 {
@@ -63,9 +62,11 @@ def register():
                     "message": "The chosen UserId is already token. Choose another one.",
                 }
             )
-
         if user:
             session["user"] = user
+            from app.cache_driver import load_info_from_cache
+            load_info_from_cache()
+            verify()
             return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete register request"})
 

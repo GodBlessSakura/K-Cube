@@ -188,14 +188,9 @@ def create_app(config_string):
 
     @app.before_request
     def load_info_from_cache():
-        from app.cache_driver import user_permission, user_info
-
-        if "user" in session and "userId" in session["user"]:
-            g.permission = user_permission(session["user"]["userId"])
-            g.user = user_info(session["user"]["userId"])
-        else:
-            g.permission = None
-            g.user = None
+        from app.cache_driver import load_info_from_cache
+        load_info_from_cache()
+        
 
     @app.context_processor
     def inject_permission():
