@@ -51,10 +51,9 @@
         course plan
     </v-tooltip>
     {% endif %}
-    <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
-        hide-overlay persistent no-click-animation eager>
-        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
-            src="{{ url_for('material', courseCode = courseCode)}}"></iframe>
+    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
+        persistent no-click-animation eager>
+        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
     </v-dialog>
     <div id="cy" style="height: calc(100vh - 64px); width: 100%;"></div>
     <v-bottom-sheet v-model="sheet" inset>
@@ -62,7 +61,8 @@
             <v-bottom-sheet :value="!sheet" :retain-focus="false" inset persistent hide-overlay no-click-animation>
                 <v-sheet>
                     <v-card-subtitle v-show="course">
-                        ${courseCode} - ${course?.courseName} (by ${"{{userId}}" == "None"? "Department" : "{{userId}}"})
+                        ${courseCode} - ${course?.courseName} (by ${"{{userId}}" == "None"? "Department" :
+                        "{{userId}}"})
                     </v-card-subtitle>
                     <v-btn :ripple="false" color="success" plain block @click="sheet = true" elevation="2">
                         info, graphs and more
@@ -181,6 +181,17 @@
 {{ cyOption.component()}}
 {{ cyOption.script()}}
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
+<style>
+    .entityPage {
+        height: 70vh;
+        padding: unset;
+        width: 60vw;
+        max-height: unset !important;
+        position: absolute;
+        margin: unset;
+        overflow: clip;
+    }
+</style>
 <script>
     cy = cytoscape({
         style: cyStyles.simpleStyle,
@@ -242,7 +253,7 @@
     Vue.component('app-content', {
         data: () => ({
             metricsBottomSheet: false,
-            materialDialogue: false,
+            entityDialogue: false,
             course: null,
             isPageInIFrame: window.location != window.parent.location,
             rows: [
@@ -505,11 +516,10 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            openMaterialDialogue(id) {
-                this.materialDialogue = true
-                this.$nextTick(function () {
-                    this.$refs.iframe.contentWindow.postMessage(id, '*')
-                })
+            openentityDialogue(id) {
+                console.log(this.$refs.iframe)
+                this.$refs.iframe.src = "{{ url_for('concept')}}" + id
+                this.entityDialogue = true
             },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             openWorkspaceDialogue() {
@@ -603,10 +613,10 @@
             self = this
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
-                this.openMaterialDialogue(event.target[0].data('id'))
+                this.openentityDialogue(event.target[0].data('id'))
             })
             document.body.addEventListener("mouseup", (event) => {
-                self.materialDialogue = false
+                self.entityDialogue = false
             })
             this.loadData()
         },

@@ -23,6 +23,15 @@ def query():
                 "entities": get_api_driver().entity.list_mutual_entity(),
             }
         )
+    if request.args.get("name") is not None:
+        return jsonify(
+            {
+                "success": True,
+                "graphs": get_api_driver().entity.list_entity_graph(
+                    name=request.args.get("name")
+                ),
+            }
+        )
     return jsonify({"success": False, "message": "incomplete request"})
 
 

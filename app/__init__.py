@@ -162,6 +162,13 @@ def create_app(config_string):
             return render_template("courseMaterial.html", courseCode=courseCode)
         abort(404)
 
+    @app.route("/concept/", defaults={"name": None})
+    @app.route("/concept/<name>")
+    def concept(name):
+        if name is not None:
+            return render_template("concept.html", name=name)
+        abort(404)
+
     from . import api_driver
 
     api_driver.init_app(app)

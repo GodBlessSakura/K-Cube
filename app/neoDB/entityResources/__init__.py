@@ -37,6 +37,26 @@ class entityDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def list_entity_graph(self, name):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, name=name)
+            try:
+                return [
+                    {
+                        "course": dict(record["course"].items()),
+                        "userId": record["userId"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def list_mutual_entity(self):
         fname = sys._getframe().f_code.co_name
 
@@ -103,7 +123,8 @@ class entityDAO:
                 "OPTIONAL MATCH (p)<-[:USER_PROPOSE]-(proposer)"
                 "OPTIONAL MATCH (teacher)-[:USER_TEACH]->(course)"
                 "\n"
-                "WITH count(DISTINCT teacher) AS nOfTeachers, count(DISTINCT proposer) AS nOfProposers""\n"
+                "WITH count(DISTINCT teacher) AS nOfTeachers, count(DISTINCT proposer) AS nOfProposers"
+                "\n"
                 "RETURN nOfTeachers, nOfProposers",
                 name=name,
                 courseCode=courseCode,

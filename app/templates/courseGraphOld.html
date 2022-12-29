@@ -51,10 +51,10 @@
         course plan
     </v-tooltip>
     {% endif %}
-    <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
+    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition"
         hide-overlay persistent no-click-animation>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
-            src="{{ url_for('material', courseCode = courseCode)}}"></iframe>
+            src="{{ url_for('concept', courseCode = courseCode)}}"></iframe>
     </v-dialog>
 </v-card>
 {% endblock %}
@@ -65,7 +65,7 @@
 {{ cyOption.component()}}
 {{ cyOption.script()}}
 <style>
-    .materialPage {
+    .entityPage {
         height: 100vh;
         padding: unset;
         right: 0px;
@@ -139,7 +139,7 @@
     Vue.component('app-content', {
         data: () => ({
             metricsBottomSheet: false,
-            materialDialogue: true,
+            entityDialogue: true,
         }),
         methods: {
             loadData() {
@@ -227,7 +227,7 @@
                     })
             },
             newTab(keyword) {
-                this.materialDialogue = true
+                this.entityDialogue = true
                 this.$nextTick(function () {
                     this.$refs.iframe.contentWindow.postMessage(keyword, '*')
                 })
@@ -242,7 +242,7 @@
             })
             self = this
             this.$nextTick(function () {
-                this.materialDialogue = false
+                this.entityDialogue = false
             })
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
@@ -250,7 +250,7 @@
             })
             document.body.addEventListener("mouseup", (event) => {
                 console.log("click")
-                self.materialDialogue = false
+                self.entityDialogue = false
             })
             this.loadData()
         },

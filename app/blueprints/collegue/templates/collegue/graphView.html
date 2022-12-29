@@ -29,10 +29,9 @@
         </template>
         <kcube-cy-options-dialog></kcube-cy-options-dialog>
     </v-dialog>
-    <v-dialog v-model="materialDialogue" content-class="materialPage" transition="slide-x-reverse-transition"
+    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition"
         hide-overlay persistent no-click-animation>
-        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"
-            src="{{ url_for('material', courseCode = courseCode)}}"></iframe>
+        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0" src=""></iframe>
     </v-dialog>
 </v-card>
 {% endblock %}
@@ -44,14 +43,12 @@
 {{ cyOption.script()}}
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <style>
-    .materialPage {
-        height: 100vh;
+    .entityPage {
+        height: 70vh;
         padding: unset;
-        right: 0px;
-        width: 30vw;
+        width: 60vw;
         max-height: unset !important;
         position: absolute;
-        right: 0px;
         margin: unset;
         overflow: clip;
     }
@@ -118,19 +115,19 @@
     Vue.component('app-content', {
         data: () => ({
             metricsBottomSheet: false,
-            materialDialogue: true,
+            entityDialogue: true,
         }),
         methods: {
             loadData() {
                 this.$root.progress.show = true
                 fetch(
-                    "{{ url_for('RESTful.graph.get', deltaGraphId = deltaGraphId) }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                })
+                        "{{ url_for('RESTful.graph.get', deltaGraphId = deltaGraphId) }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
                     .then(response => {
                         try {
                             return response.json()
@@ -166,13 +163,17 @@
                                 // }
                             })
                             cyLayout.one('layoutstop', function () {
-                                let initOption = { ...coseLayoutOptions }
+                                let initOption = {
+                                    ...coseLayoutOptions
+                                }
                                 initOption.idealEdgeLength = initOption.idealEdgeLength * 2
                                 initOption.numIter = Math.floor(initOption.numIter / 4)
                                 initOption.animate = false
                                 cyLayout = cy.layout(initOption)
                                 cyLayout.one('layoutstop', () => {
-                                    let initOption = { ...coseLayoutOptions }
+                                    let initOption = {
+                                        ...coseLayoutOptions
+                                    }
                                     initOption.animate = false
                                     cyLayout = cy.layout(initOption)
                                     cyLayout.one('layoutstop', () => {
@@ -190,11 +191,8 @@
                     })
             },
             newTab(keyword) {
-                this.materialDialogue = true
-                this.$nextTick(function () {
-                    this.$refs.iframe.contentWindow.postMessage(keyword, '*')
-                })
-                //let w = window.open(url, '_blank')
+                this.$refs.iframe.src = "{{ url_for('concept')}}" + id
+                this.entityDialogue = true
             }
         },
         mounted: function () {
@@ -205,19 +203,19 @@
             })
             self = this
             this.$nextTick(function () {
-                this.materialDialogue = false
+                this.entityDialogue = false
             })
             cy.on('tap', 'node', (event) => {
                 console.log(event)
                 if (event.target == event.cy) return
                 console.log(event.target.classes())
-                if (event.target.classes().includes("course")) { } else {
+                if (event.target.classes().includes("course")) {} else {
                     this.newTab(event.target[0].data('id'))
                 }
             })
             document.body.addEventListener("mouseup", (event) => {
                 console.log("click")
-                self.materialDialogue = false
+                self.entityDialogue = false
             })
             this.loadData()
         },
