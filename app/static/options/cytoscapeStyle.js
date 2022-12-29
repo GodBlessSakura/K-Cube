@@ -1,19 +1,21 @@
 var cyStylesOptionsDefault = {
     editor: {
-        "font-size": 10,
-        "node-color": '#585858',
-        "line-color": '#585858',
-        "selected-color": '#8b008b',
+        "font-size": 12,
+        "node-color": KCube.colorTheme.info,
+        "line-color": KCube.colorTheme.info,
+        "selected-color": KCube.colorTheme.success,
         "background-color": '#ffffff',
+        'node-size': 17.5,
         showDefaultRelationLabel: false,
         showNodeLabel: true,
     },
     viewer: {
-        "font-size": 10,
-        "node-color": '#585858',
-        "line-color": '#585858',
-        "selected-color": '#8b008b',
+        "font-size": 12,
+        "node-color": KCube.colorTheme.info,
+        "line-color": KCube.colorTheme.info,
+        "selected-color": KCube.colorTheme.success,
         "background-color": '#ffffff',
+        'node-size': 17.5,
         showDefaultRelationLabel: false,
         showNodeLabel: true,
     },
@@ -47,8 +49,10 @@ var cyStyles = {
             }, {
                 selector: 'node',
                 style: {
+                    'height': options["node-size"],
+                    'width': options["node-size"],
                     'label': options.showNodeLabel ? 'data(name)' : '',
-                    'text-max-width': 70,
+                    'text-max-width': 120,
                     'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
@@ -96,8 +100,10 @@ var cyStyles = {
             }, {
                 selector: 'node',
                 style: {
+                    'height': options["node-size"],
+                    'width': options["node-size"],
                     'label': options.showNodeLabel ? 'data(name)' : '',
-                    'text-max-width': 70,
+                    'text-max-width': 120,
                     'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
@@ -161,8 +167,10 @@ var cyStyles = {
             }, {
                 selector: 'node',
                 style: {
+                    'height': options["node-size"],
+                    'width': options["node-size"],
                     'label': options.showNodeLabel ? 'data(name)' : '',
-                    'text-max-width': 70,
+                    'text-max-width': 120,
                     'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
@@ -281,8 +289,10 @@ var cyStyles = {
             }, {
                 selector: 'node',
                 style: {
+                    'height': options["node-size"],
+                    'width': options["node-size"],
                     'label': options.showNodeLabel ? 'data(name)' : '',
-                    'text-max-width': 70,
+                    'text-max-width': 120,
                     'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],
@@ -369,8 +379,10 @@ var cyStyles = {
             }, {
                 selector: 'node',
                 style: {
+                    'height': options["node-size"],
+                    'width': options["node-size"],
                     'label': options.showNodeLabel ? 'data(name)' : '',
-                    'text-max-width': 70,
+                    'text-max-width': 120,
                     'text-wrap': 'ellipsis',
                     'font-size': options["font-size"],
                     'background-color': options["node-color"],

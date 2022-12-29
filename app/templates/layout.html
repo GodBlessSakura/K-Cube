@@ -35,6 +35,7 @@
         [v-cloak] {
             display: none;
         }
+
         html {
             scroll-behavior: smooth;
         }
@@ -255,7 +256,8 @@
             </v-app-bar>
 
             {% if session['user'] %}
-            <v-menu v-if="menu" inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y eager>
+            <v-menu v-if="menu" inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y
+                eager>
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn color="success" v-bind="attrs" v-on="on"
                         style="z-index: 1000; position: fixed; left:12px; bottom:0">
@@ -354,10 +356,17 @@
         </v-app>
 
     </div>
-
-
     <script>
         KCube = {
+            colorTheme: {
+                primary: '#ff9800',
+                secondary: '#ffc107',
+                accent: '#cddc39',
+                error: '#e91e63',
+                warning: '#ffeb3b',
+                info: '#00bcd4',
+                success: '#009688'
+            },
             widgetName: [], // names of widget would be pushed into this array if the page is a dashboard
             widgetOptions: {}, // array of object
             visibility: ["private", "collaborator", "instructor", "colleague", "public"],
@@ -980,15 +989,7 @@
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),
             mounted() {
-                this.$vuetify.theme.themes.light = {
-                    primary: '#ff5722',
-                    secondary: '#ffc107',
-                    accent: '#cddc39',
-                    error: '#e91e63',
-                    warning: '#ffeb3b',
-                    info: '#00bcd4',
-                    success: '#009688'
-                }
+                this.$vuetify.theme.themes.light = KCube.colorTheme
                 if (window.location == window.parent.location &&
                     (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
                         .getItem("{{request.endpoint}}Toured")))) {
