@@ -40,7 +40,6 @@
         repositories
     </v-tooltip>
     {% endif %}
-    {% if userId %}
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
             <v-btn absolute style="bottom:3vh;left:30vh" fab v-on="on"
@@ -50,7 +49,6 @@
         </template>
         course plan
     </v-tooltip>
-    {% endif %}
     <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
         persistent no-click-animation eager>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
