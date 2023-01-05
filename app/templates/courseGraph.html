@@ -5,55 +5,67 @@
 {% import 'component/cyOption.html' as cyOption %}
 {% block VueComponent %}
 <div>
+    <div id="cy" style="height: calc(100vh - 64px); width: 100%;"></div>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
-    <v-tooltip top>
-        <template v-slot:activator="{ on, attrs }">
-            <v-btn absolute style="bottom:3vh;left:3vh" fab v-on="on" @click="metricsBottomSheet = true">
-                <v-icon>insights</v-icon>
-            </v-btn>
-        </template>
-        centrality metrics
-    </v-tooltip>
-    <v-dialog max-width="700px">
-        <template v-slot:activator="{ on: menu, attrs }">
-            <v-tooltip top>
-                <template v-slot:activator="{ on: tooltip }">
-                    <v-btn absolute style="bottom:3vh;left:12vh" fab v-bind="attrs" v-on="{ ...tooltip, ...menu }">
-                        <v-icon>palette</v-icon>
-                    </v-btn>
-                </template>
-                graph<br>display<br>options
-            </v-tooltip>
-        </template>
-        <kcube-cy-options-dialog></kcube-cy-options-dialog>
-    </v-dialog>
-    {% if PERMISSION and PERMISSION.role and "instructor" in PERMISSION.role %}
-    <v-tooltip top>
-        <template v-slot:activator="{ on, attrs }">
-            <v-btn absolute style="bottom:3vh;left:21vh" fab v-on="on"
-                href="{{ url_for('instructor.repositories', courseCode = courseCode) }}">
-                <v-icon>table_view</v-icon>
-            </v-btn>
-        </template>
-        repositories
-    </v-tooltip>
-    {% endif %}
-    <v-tooltip top>
-        <template v-slot:activator="{ on, attrs }">
-            <v-btn absolute style="bottom:3vh;left:30vh" fab v-on="on"
-                href="{{ url_for('coursePlan', courseCode = courseCode, userId = userId) }}">
-                <v-icon>calendar_today</v-icon>
-            </v-btn>
-        </template>
-        course plan
-    </v-tooltip>
+    <v-sheet style="position: absolute; top:3vh;left:3vh; ">
+        <v-slide-group show-arrows>
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn fab depressed v-on="on" @click="metricsBottomSheet = true">
+                            <v-icon>insights</v-icon>
+                        </v-btn>
+                    </template>
+                    centrality metrics
+                </v-tooltip>
+            </v-slide-item>
+            <v-slide-item>
+                <v-dialog max-width="700px">
+                    <template v-slot:activator="{ on: menu, attrs }">
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on: tooltip }">
+                                <v-btn fab depressed v-bind="attrs" v-on="{ ...tooltip, ...menu }">
+                                    <v-icon>palette</v-icon>
+                                </v-btn>
+                            </template>
+                            graph<br>display<br>options
+                        </v-tooltip>
+                    </template>
+                    <kcube-cy-options-dialog></kcube-cy-options-dialog>
+                </v-dialog>
+            </v-slide-item>
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn fab depressed v-on="on"
+                            href="{{ url_for('coursePlan', courseCode = courseCode, userId = userId) }}">
+                            <v-icon>calendar_today</v-icon>
+                        </v-btn>
+                    </template>
+                    course plan
+                </v-tooltip>
+            </v-slide-item>
+            {% if PERMISSION and PERMISSION.role and "instructor" in PERMISSION.role %}
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn fab depressed v-on="on"
+                            href="{{ url_for('instructor.repositories', courseCode = courseCode) }}">
+                            <v-icon>table_view</v-icon>
+                        </v-btn>
+                    </template>
+                    repositories
+                </v-tooltip>
+            </v-slide-item>
+            {% endif %}
+        </v-slide-group>
+    </v-sheet>
     <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
         persistent no-click-animation eager>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
     </v-dialog>
-    <div id="cy" style="height: calc(100vh - 64px); width: 100%;"></div>
     <v-bottom-sheet v-model="sheet" inset>
         <template v-slot:activator="{ on, attrs }">
             <v-bottom-sheet :value="!sheet" :retain-focus="false" inset persistent hide-overlay no-click-animation>
