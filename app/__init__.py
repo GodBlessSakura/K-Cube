@@ -130,7 +130,9 @@ def create_app(config_string):
     @app.route("/course/<courseCode>")
     def course(courseCode):
         if courseCode is not None:
-            return render_template("courseGraph.html", courseCode=courseCode, userId = None)
+            return render_template(
+                "courseGraph.html", courseCode=courseCode, userId=None
+            )
         abort(404)
 
     @app.route("/courseGraph/", defaults={"courseCode": None, "userId": None})
@@ -171,6 +173,19 @@ def create_app(config_string):
 
     from . import api_driver
 
+    @app.route(
+        "/relationship/", defaults={"h_name": None, "r_name": None, "t_name": None}
+    )
+    @app.route("/relationship/<h_name>/<r_name>/<t_name>")
+    def relationship(h_name, r_name, t_name):
+        if h_name is not None and r_name is not None and t_name is not None:
+            return render_template(
+                "relationship.html", h_name=h_name, r_name=r_name, t_name=t_name
+            )
+        abort(404)
+
+    from . import api_driver
+
     api_driver.init_app(app)
 
     @app.cli.command("set-admin")
@@ -196,8 +211,8 @@ def create_app(config_string):
     @app.before_request
     def load_info_from_cache():
         from app.cache_driver import load_info_from_cache
+
         load_info_from_cache()
-        
 
     @app.context_processor
     def inject_permission():

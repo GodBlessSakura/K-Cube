@@ -14,6 +14,28 @@
             <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn fab depressed v-on="on">
+                                    <v-icon>content_copy</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item @click="copyJson()">
+                                    <v-list-item-title>json</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>content_copy</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </template>
+                    export
+                </v-tooltip>
+            </v-slide-item>
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
                         <v-btn fab depressed v-on="on" @click="metricsBottomSheet = true">
                             <v-icon>insights</v-icon>
                         </v-btn>
@@ -62,9 +84,13 @@
             {% endif %}
         </v-slide-group>
     </v-sheet>
-    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
-        persistent no-click-animation eager>
-        <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
+    <v-dialog v-model="entityDialogue" content-class="dialogueIframe" transition="slide-x-reverse-transition"
+        hide-overlay persistent no-click-animation eager>
+        <iframe ref="entityIframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
+    </v-dialog>
+    <v-dialog v-model="relationshipDialogue" content-class="dialogueIframe" transition="slide-x-reverse-transition"
+        hide-overlay persistent no-click-animation eager>
+        <iframe ref="relationshipIframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
     </v-dialog>
     <v-bottom-sheet v-model="sheet" inset>
         <template v-slot:activator="{ on, attrs }">
@@ -192,7 +218,7 @@
 {{ cyOption.script()}}
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <style>
-    .entityPage {
+    .dialogueIframe {
         height: 70vh;
         padding: unset;
         width: 60vw;
@@ -264,6 +290,7 @@
         data: () => ({
             metricsBottomSheet: false,
             entityDialogue: false,
+            relationshipDialogue: false,
             course: null,
             isPageInIFrame: window.location != window.parent.location,
             rows: [
@@ -316,6 +343,7 @@
                                     'imageURL',
                                     body.course.imageURL,
                                 ).data('name', body.course.diaplsyName)
+                            this.triples = body.triples
                             body.triples.forEach(triple => {
                                 if (triple.r_value) {
                                     [triple.h_name, triple.t_name].forEach(
@@ -526,10 +554,26 @@
             newTab(url) {
                 let w = window.open(url, '_blank')
             },
-            openentityDialogue(id) {
-                console.log(this.$refs.iframe)
-                this.$refs.iframe.src = "{{ url_for('concept')}}" + id
+            openEntityDialogue(id) {
+                this.$refs.entityIframe.src = "{{ url_for('concept')}}" + id
                 this.entityDialogue = true
+            },
+            openRelationshipDialogue(h, r, t) {
+                this.$refs.relationshipIframe.src = "{{ url_for('relationship')}}" + [h, r, t].join('/')
+                this.relationshipDialogue = true
+            },
+            copyJson() {
+                console.log(JSON.stringify(
+                    this.triples
+                ))
+                navigator.clipboard.writeText(JSON.stringify(
+                    this.triples
+                )).then(() => {
+                    this.$root.responseSnackBar({
+                        success: true,
+                        message: 'json copied to clipboard'
+                    })
+                })
             },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             openWorkspaceDialogue() {
@@ -623,10 +667,17 @@
             self = this
             cy.on('tap', 'node', (event) => {
                 if (event.target == event.cy) return
-                this.openentityDialogue(event.target[0].data('id'))
+                this.openEntityDialogue(event.target[0].data('id'))
+            })
+            cy.on('tap', 'edge', (event) => {
+                if (event.target == event.cy) return
+                this.openRelationshipDialogue(event.target[0].source().data('id'), event.target[0]
+                    .data(
+                        "name"), event.target[0].target().data('id'))
             })
             document.body.addEventListener("mouseup", (event) => {
                 self.entityDialogue = false
+                self.relationshipDialogue = false
             })
             this.loadData()
         },

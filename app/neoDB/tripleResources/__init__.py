@@ -374,3 +374,42 @@ class tripleDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def get_triple_history(self, userId, h_name, r_name, t_name):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                userId=userId,
+                h_name=h_name,
+                r_name=r_name,
+                t_name=t_name,
+            )
+            from neo4j.time import DateTime
+
+            try:
+                return [
+                    {
+                        "relationship": {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["r"].items()
+                        },
+                        "deltaGraph": {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["deltaGraph"].items()
+                        },
+                        "ownerId": dict(record["owner"].items())["userId"] if record["owner"] else None,
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

@@ -85,6 +85,7 @@ def reject_invalid(function):
             raise InvalidRequest("Invalid user name pattern")
         if (
             "userId" in kwargs
+            and kwargs["userId"] is not None
             and re.search(regExpRules["userId"], kwargs["userId"]) == None
         ):
             raise InvalidRequest("Invalid userId pattern.")

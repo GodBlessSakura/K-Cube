@@ -5,32 +5,70 @@
 {% block VueComponent %}
 <v-card style="height: 100%; width: 100%;">
     <div id="cy" style="height: 100%; width: 100%;"></div>
-    <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
-        <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
-    </v-bottom-sheet>
-    <v-tooltip top>
-        <template v-slot:activator="{ on, attrs }">
-            <v-btn absolute style="bottom:3vh;left:3vh" fab v-on="on" @click="metricsBottomSheet = true">
-                <v-icon>insights</v-icon>
-            </v-btn>
-        </template>
-        centrality metrics
-    </v-tooltip>
-    <v-dialog max-width="700px">
-        <template v-slot:activator="{ on: menu, attrs }">
-            <v-tooltip top>
-                <template v-slot:activator="{ on: tooltip }">
-                    <v-btn absolute style="bottom:3vh;left:12vh" fab v-bind="attrs" v-on="{ ...tooltip, ...menu }">
-                        <v-icon>palette</v-icon>
-                    </v-btn>
-                </template>
-                graph<br>display<br>options
-            </v-tooltip>
-        </template>
-        <kcube-cy-options-dialog></kcube-cy-options-dialog>
-    </v-dialog>
-    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition"
-        hide-overlay persistent no-click-animation>
+    <v-sheet style="position: absolute; top:3vh;left:3vh; ">
+        <v-slide-group show-arrows>
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-menu offset-y>
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-btn fab depressed v-on="on">
+                                    <v-icon>content_copy</v-icon>
+                                </v-btn>
+                            </template>
+                            <v-list>
+                                <v-list-item @click="copyJson()">
+                                    <v-list-item-title>json</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>content_copy</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                            </v-list>
+                        </v-menu>
+                    </template>
+                    export
+                </v-tooltip>
+            </v-slide-item>
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn fab depressed v-on="on" @click="metricsBottomSheet = true">
+                            <v-icon>insights</v-icon>
+                        </v-btn>
+                    </template>
+                    centrality metrics
+                </v-tooltip>
+            </v-slide-item>
+            <v-slide-item>
+                <v-dialog max-width="700px">
+                    <template v-slot:activator="{ on: menu, attrs }">
+                        <v-tooltip top>
+                            <template v-slot:activator="{ on: tooltip }">
+                                <v-btn fab depressed v-bind="attrs" v-on="{ ...tooltip, ...menu }">
+                                    <v-icon>palette</v-icon>
+                                </v-btn>
+                            </template>
+                            graph<br>display<br>options
+                        </v-tooltip>
+                    </template>
+                    <kcube-cy-options-dialog></kcube-cy-options-dialog>
+                </v-dialog>
+            </v-slide-item>
+            <v-slide-item v-if="graph">
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-btn fab depressed v-on="on"
+                            :href="'{{ url_for('instructor.repositories') }}' + graph.courseCode">
+                            <v-icon>table_view</v-icon>
+                        </v-btn>
+                    </template>
+                    repositories
+                </v-tooltip>
+            </v-slide-item>
+        </v-slide-group>
+    </v-sheet>
+    <v-dialog v-model="entityDialogue" content-class="entityPage" transition="slide-x-reverse-transition" hide-overlay
+        persistent no-click-animation>
         <iframe ref="iframe" style="height: 100%; width:100%" frameBorder="0" src=""></iframe>
     </v-dialog>
 </v-card>
@@ -116,6 +154,7 @@
         data: () => ({
             metricsBottomSheet: false,
             entityDialogue: true,
+            graph: null
         }),
         methods: {
             loadData() {
@@ -140,6 +179,8 @@
                     .then(body => {
                         this.$root.progress.show = false
                         if (body.graph && body.triples) {
+                            this.graph = body.graph
+                            this.triples = body.triples
                             cy.add(nodeFactory(body.graph.courseCode, ["course"]))
                                 .data(
                                     'imageURL',
@@ -193,7 +234,20 @@
             newTab(keyword) {
                 this.$refs.iframe.src = "{{ url_for('concept')}}" + id
                 this.entityDialogue = true
-            }
+            },
+            copyJson() {
+                console.log(JSON.stringify(
+                    this.triples
+                ))
+                navigator.clipboard.writeText(JSON.stringify(
+                    this.triples
+                )).then(() => {
+                    this.$root.responseSnackBar({
+                        success: true,
+                        message: 'json copied to clipboard'
+                    })
+                })
+            },
         },
         mounted: function () {
             cy.mount(document.getElementById("cy"))

@@ -11,6 +11,23 @@ triple = Blueprint("triple", __name__, url_prefix="triple")
 def query():
     if request.args.get("aggregated"):
         return aggregatedTriple()
+    if (
+        request.args.get("history")
+        and request.args.get("h_name") is not None
+        and request.args.get("r_name") is not None
+        and request.args.get("t_name") is not None
+    ):
+        return jsonify(
+            {
+                "success": True,
+                "history": get_api_driver().triple.get_triple_history(
+                    h_name=request.args.get("h_name"),
+                    r_name=request.args.get("r_name"),
+                    t_name=request.args.get("t_name"),
+                    userId=g.user["userId"] if g.user else None,
+                ),
+            }
+        )
     return jsonify({"success": False, "message": "incomplete request"})
 
 
