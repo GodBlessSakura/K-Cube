@@ -27,6 +27,12 @@
                                         <v-icon>content_copy</v-icon>
                                     </v-list-item-icon>
                                 </v-list-item>
+                                <v-list-item @click="copyCsv()">
+                                    <v-list-item-title>csv</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>content_copy</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
                             </v-list>
                         </v-menu>
                     </template>
@@ -563,15 +569,19 @@
                 this.relationshipDialogue = true
             },
             copyJson() {
-                console.log(JSON.stringify(
-                    this.triples
-                ))
-                navigator.clipboard.writeText(JSON.stringify(
-                    this.triples
-                )).then(() => {
+                this.copy(
+                    JSON.stringify(this.triples), 'json')
+            },
+            copyCsv() {
+                this.copy(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t.t_name].join(
+                    ',')).join('\n'), 'csv')
+            },
+            copy(str, format) {
+                console.log(str)
+                navigator.clipboard.writeText(str).then(() => {
                     this.$root.responseSnackBar({
                         success: true,
-                        message: 'json copied to clipboard'
+                        message: format + ' copied to clipboard'
                     })
                 })
             },
