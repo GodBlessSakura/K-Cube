@@ -29,6 +29,18 @@
                                         <v-icon>content_copy</v-icon>
                                     </v-list-item-icon>
                                 </v-list-item>
+                                <v-list-item @click="downloadJson()">
+                                    <v-list-item-title>json</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>download</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                                <v-list-item @click="downloadCsv()">
+                                    <v-list-item-title>csv</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>download</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
                             </v-list>
                         </v-menu>
                     </template>
@@ -246,8 +258,22 @@
                     JSON.stringify(this.triples), 'json')
             },
             copyCsv() {
-                this.copy(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t.t_name].join(
-                    ',')).join('\n'), 'csv')
+                this.download(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+                        .t_name
+                    ]
+                    .join(
+                        ',')).join('\n'), 'csv')
+            },
+            downloadJson() {
+                this.download(
+                    JSON.stringify(this.triples), 'json')
+            },
+            downloadCsv() {
+                this.download(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+                        .t_name
+                    ]
+                    .join(
+                        ',')).join('\n'), 'csv')
             },
             copy(str, format) {
                 console.log(str)
@@ -257,6 +283,20 @@
                         message: format + ' copied to clipboard'
                     })
                 })
+            },
+            download(str, format) {
+                console.log(str)
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(str));
+                element.setAttribute('download', this.graph.courseCode + '-' + this.graph.deltaGraphId + '.' +
+                    format);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
             },
         },
         mounted: function () {
