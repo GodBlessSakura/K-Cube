@@ -284,6 +284,7 @@
 
     Vue.component('app-content', {
         data: () => ({
+            overwriter_triples: null,
             overwriterLabels: [],
             tag: '',
             tagRules: [v => !!v || 'Tag is required',
