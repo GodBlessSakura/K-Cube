@@ -20,7 +20,7 @@
                                     <v-icon>download</v-icon>
                                 </v-btn>
                             </template>
-                            <v-list>
+                            <v-list v-if="triples">
                                 <v-list-item @click="copyJson()">
                                     <v-list-item-title>json</v-list-item-title>
                                     <v-list-item-icon>
@@ -585,7 +585,7 @@
                     JSON.stringify(this.triples), 'json')
             },
             copyCsv() {
-                this.download(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+                this.copy(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
                         .t_name
                     ]
                     .join(

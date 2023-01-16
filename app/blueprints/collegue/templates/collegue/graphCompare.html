@@ -84,7 +84,7 @@
                         export
                     </v-btn>
                 </template>
-                <v-list>
+                <v-list v-if="overwriter_triples">
                     <v-list-item @click="copyJson()">
                         <v-list-item-title>json</v-list-item-title>
                         <v-list-item-icon>
@@ -528,7 +528,7 @@
                     JSON.stringify(this.overwriter_triples), 'json')
             },
             copyCsv() {
-                this.download(this.overwriter_triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+                this.copy(this.overwriter_triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
                         .t_name
                     ]
                     .join(
