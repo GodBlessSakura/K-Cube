@@ -71,22 +71,63 @@
                 </v-list>
             </v-menu>
         </v-col>
-    </v-row>
-    <v-row>
-        <v-col dense>
-            <v-expansion-panels>
-                <v-expansion-panel>
-                    <v-expansion-panel-header>
-                        Textual import
-                    </v-expansion-panel-header>
-                    <v-expansion-panel-content>
-                        <v-textarea @change="update()" v-model="tripleString" label='json array' persistent-placeholder
-                            :placeholder="'[{&quot;h_name&quot;: &quot;COMP1&quot;, &quot;r_name&quot;: &quot;Has Subtopic&quot;, &quot;t_name&quot;:&quot;Cyber security&quot;, &quot;r_value&quot;:false }]\n triple with undefined r_value is considered as a true edge.'">
-
-                        </v-textarea>
-                    </v-expansion-panel-content>
-                </v-expansion-panel>
-            </v-expansion-panels>
+        <v-col>
+            <v-dialog v-model="importDialogue" width="500">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn v-bind="attrs" v-on="on">
+                        import graph
+                    </v-btn>
+                </template>
+                <v-card>
+                    <v-tabs>
+                        <v-tab>
+                            Json import
+                        </v-tab>
+                        <v-tab>
+                            CSV import
+                        </v-tab>
+                        <v-tab>
+                            File import
+                        </v-tab>
+                        <v-tab-item>
+                            <v-card flat>
+                                <v-textarea v-model="jsonString" label='json array' persistent-placeholder
+                                    :placeholder="'[{&quot;h_name&quot;: &quot;COMP1&quot;, &quot;r_name&quot;: &quot;Has Subtopic&quot;, &quot;t_name&quot;:&quot;Cyber security&quot;, &quot;r_value&quot;:false }]\n triple with true or undefined r_value is considered as an edge creation, false is for edge removal.'">
+                                </v-textarea>
+                                <v-btn @click="jsonTextPreview(jsonString)">
+                                    preview
+                                </v-btn>
+                            </v-card>
+                        </v-tab-item>
+                        <v-tab-item>
+                            <v-card flat>
+                                <v-textarea v-model="csvString" label='CSV' persistent-placeholder
+                                    placeholder="COMP1,Subtopic in,Cyber security">
+                                </v-textarea>
+                                <v-btn @click="csvTextPreview(csvString)">
+                                    preview
+                                </v-btn>
+                            </v-card>
+                        </v-tab-item>
+                        <v-tab-item>
+                            <v-card flat style="height: 227px">
+                                <v-card-text align="center" justify="center">
+                                    <v-icon class="mt-5" size="60">upload</v-icon>
+                                    <p>
+                                        Drop your json / csv file here, or click to select them.
+                                    </p>
+                                    <input @input="onFileDrop($event)" type="file" ref="fileInput"
+                                        style="display:none" />
+                                </v-card-text>
+                            </v-card>
+                            <div @click="$refs?.fileInput?.click()"
+                                style="height: 100%; width: 100%; z-index: 500; position: absolute; top: 0; left: 0"
+                                @drop.prevent="onFileDrop($event)" @dragenter.prevent @dragover.prevent>
+                            </div>
+                        </v-tab-item>
+                    </v-tabs>
+                </v-card>
+            </v-dialog>
         </v-col>
     </v-row>
     <v-row dense style="height: 90%; width: 100%;">
@@ -243,8 +284,11 @@
             greaterVisibility: [],
             proceeded: false,
             confirmed: false,
-            tripleString: '',
+            jsonString: '',
+            csvString: '',
+            userTriples: null,
             metricsBottomSheet: false,
+            importDialogue: false,
         }),
         methods: {
             loadData() {
@@ -373,9 +417,8 @@
                     return
                 }
                 this.$root.progress.show = true
-                let userTriples = JSON.parse(this.tripleString.trim())
                 let acceptedTriple = []
-                userTriples.forEach(triple => {
+                this.userTriples.forEach(triple => {
                     if (!triple.h_name instanceof String ||
                         !triple.t_name instanceof String ||
                         !triple.r_name instanceof String)
@@ -416,75 +459,81 @@
                             })
                     })
             },
-            update() {
-                try {
-                    let triples = JSON.parse(this.tripleString.trim())
+            graphPreview(triples) {
+                console.log(triples)
+                this.userTriples = triples
+                previewCy.edges().forEach(edge => {
+                    edge.data('preview_value', 'undefined')
+                })
+                subjectCy.elements().remove()
+                let unacceptedRelationship = []
+                triples.forEach(triple => {
+                    if (!triple.h_name instanceof String ||
+                        !triple.t_name instanceof String ||
+                        !triple.r_name instanceof String)
+                        return;
+                    if (!this.relationships.includes(triple.r_name)) {
+                        unacceptedRelationship.push(triple.r_name)
+                        return
+                    }
+                    [triple.h_name, triple.t_name].forEach(name => {
+                        if (previewCy.getElementById(name).length == 0) {
+                            previewCy.add(nodeFactory(name))
+                        }
+                    })
+                    let edge = previewCy.getElementById(edgeIdFromNames(triple.h_name,
+                        triple
+                        .r_name,
+                        triple.t_name))[0]
+                    if (edge) {
+                        edge.data({
+                            preview_value: (triple.r_value == undefined || triple.r_value) ?
+                                'true' : 'false'
+                        })
+                    } else {
+                        previewCy.add(previewEdgeFactory(triple))
+                    }
+                });
+                if (unacceptedRelationship.length > 0) {
+                    this.$root.errorDisplay({},
+                        'some relationships are not approved: ' +
+                        unacceptedRelationship.join(', '))
                     previewCy.edges().forEach(edge => {
                         edge.data('preview_value', 'undefined')
                     })
-                    subjectCy.elements().remove()
-                    let unacceptedRelationship = []
-                    triples.forEach(triple => {
-                        if (!triple.h_name instanceof String ||
-                            !triple.t_name instanceof String ||
-                            !triple.r_name instanceof String)
-                            return;
-                        if (!this.relationships.includes(triple.r_name)) {
-                            unacceptedRelationship.push(triple.r_name)
-                            return
-                        }
-                        [triple.h_name, triple.t_name].forEach(name => {
-                            if (previewCy.getElementById(name).length == 0) {
-                                previewCy.add(nodeFactory(name))
-                            }
-                        })
-                        let edge = previewCy.getElementById(edgeIdFromNames(triple.h_name,
-                            triple
-                            .r_name,
-                            triple.t_name))[0]
-                        if (edge) {
-                            edge.data({
-                                preview_value: (triple.r_value == undefined || triple.r_value) ?
-                                    'true' : 'false'
-                            })
-                        } else {
-                            previewCy.add(previewEdgeFactory(triple))
-                        }
-                    });
-                    if (unacceptedRelationship.length > 0) {
-                        this.$root.errorDisplay({},
-                            'some relationships are not approved: ' +
-                            unacceptedRelationship.join(', '))
-                        previewCy.edges().forEach(edge => {
-                            edge.data('preview_value', 'undefined')
-                        })
-                    }
-                    if (previewCy.edges(
-                            '[preview_value = "false"][original_value = "true"],' +
-                            '[preview_value = "true"][original_value = "false"],' +
-                            '[preview_value = "true"][original_value = "undefined"]'
-                        ).length == 0) {
-                        this.isTrival = true
-                    } else {
-                        this.isTrival = false
-                    }
-                    previewCy.elements().style('visibility', 'hidden')
-                    let previewLayout = previewCy.layout({
-                        ...concentricLayoutOptions,
-                        // concentric: function (node) {
-                        //     return previewCyDijkstra.distanceTo(node) * -1
-                        // }
-                    })
+                }
+                if (previewCy.edges(
+                        '[preview_value = "false"][original_value = "true"],' +
+                        '[preview_value = "true"][original_value = "false"],' +
+                        '[preview_value = "true"][original_value = "undefined"]'
+                    ).length == 0) {
+                    this.isTrival = true
+                } else {
+                    this.isTrival = false
+                }
+                this.importDialogue = false
+                previewCy.elements().style('visibility', 'hidden')
+                let previewLayout = previewCy.layout({
+                    ...concentricLayoutOptions,
+                    // concentric: function (node) {
+                    //     return previewCyDijkstra.distanceTo(node) * -1
+                    // }
+                })
+                previewLayout.one('layoutstop', function () {
+                    let previewLayout = previewCy.layout(coseLayoutOptions)
                     previewLayout.one('layoutstop', function () {
-                        let previewLayout = previewCy.layout(coseLayoutOptions)
-                        previewLayout.one('layoutstop', function () {
-                            subjectCy.add(previewCy.elements().clone())
-                            subjectCy.fit(coseLayoutOptions.padding)
-                            previewCy.elements().style('visibility', 'visible')
-                        })
-                        previewLayout.run()
+                        subjectCy.add(previewCy.elements().clone())
+                        subjectCy.fit(coseLayoutOptions.padding)
+                        previewCy.elements().style('visibility', 'visible')
                     })
                     previewLayout.run()
+                })
+                previewLayout.run()
+            },
+            jsonTextPreview(jsonString) {
+                try {
+                    let triples = JSON.parse(jsonString.trim())
+                    this.graphPreview(triples)
                 } catch (e) {
                     console.log(e)
                     previewCy.edges().forEach(edge => {
@@ -492,6 +541,38 @@
                     })
                     this.$root.errorDisplay({},
                         'Textual import is not a valid json string.')
+                }
+            },
+            csvTextPreview(csvString) {
+                let rows = csvString.trim().split('\n')
+                let rowify = (row) => {
+                    let line = row.split(',')
+                    return {
+                        "h_name": line[0],
+                        "r_name": line[1],
+                        "t_name": line[2]
+                    }
+                }
+                this.graphPreview(rows.map(rowify))
+            },
+            onFileDrop(e) {
+                let file
+                if (e.dataTransfer) {
+                    file = e.dataTransfer.files.item(0)
+                } else {
+                    file = this.$refs.fileInput.files.item(0)
+                }
+                switch (file.name.split('.').at(-1)) {
+                    case "json":
+                        file.text().then(text => this.jsonTextPreview(text))
+                        break;
+                    case "csv":
+                        file.text().then(text => this.csvTextPreview(text))
+                        break
+                    default:
+                        this.$root.errorDisplay({},
+                            'Only json or csv file is accepted.');
+
                 }
             }
         },

@@ -130,7 +130,7 @@
                                         </v-btn>
                                         <v-btn style="text-transform: none;" outlined
                                             v-if="focusedNode?.classes.includes('branch') || focusedNode?.classes.includes('trunk')"
-                                            @click="selectFocusedNode();newTab('{{ url_for('instructor.graphimport')}}' + _focusedNode?.data('deltaGraphId'))">
+                                            @click="selectFocusedNode();newTab('{{ url_for('instructor.graphImport')}}' + _focusedNode?.data('deltaGraphId'))">
                                             Import graph
                                         </v-btn>
                                     </v-card-actions>
@@ -225,7 +225,7 @@
                 <v-list-item-title>Merge with another</v-list-item-title>
             </v-list-item>
             <v-list-item v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')"
-                @click="newTab('{{ url_for('instructor.graphimport')}}' + _selectedNode?.data('deltaGraphId'))">
+                @click="newTab('{{ url_for('instructor.graphImport')}}' + _selectedNode?.data('deltaGraphId'))">
                 <v-list-item-title>Import graph</v-list-item-title>
             </v-list-item>
             <v-divider v-if="selectedNodeClasses.includes('branch') || selectedNodeClasses.includes('trunk')">

@@ -46,7 +46,6 @@
     Vue.component('kcube-workspace-form', {
         data: () => ({
             courseCode: null,
-            repositories: [],
             trunkOrBranch: undefined,
             selectedNode: undefined,
             repoTag: new Date().toLocaleString('en-US', {
@@ -106,7 +105,6 @@
                         }
                     })
                     .then(body => {
-                        this.repositories = []
                         this.trunkOrBranch = [];
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
                             this.trunkOrBranch = [];
@@ -123,55 +121,6 @@
                                     }
                                 })
                             })
-                            body.edges.filter(e => e.type == "FORK").filter(e => body.branch_nodes.filter(
-                                b => b.id == e.start).length > 0).forEach(edge => {
-                                let branch = body.branch_nodes.filter(b => b.id == edge.start)[0]
-                                let parent = body.branch_nodes.filter(b => b.id == edge.end)[0]
-                                parent = parent ? parent : body.trunk_nodes.filter(b => b.id == edge
-                                    .end)[0]
-                                let versions = 1
-                                let cursor = edge.start
-                                let exposedOffset = branch.isExposed ? versions : null
-                                let pendingToBePulled = 0
-                                let deltaGraphIds = [parent.property.deltaGraphId, branch.property
-                                    .deltaGraphId
-                                ]
-                                let candidate = body.edges.filter(e => e.type == "PATCH" && e.end ==
-                                    cursor)
-                                let child = body.branch_nodes.filter(b => b.id == cursor)[0]
-                                while (candidate.length > 0) {
-                                    versions++
-                                    cursor = candidate[0].start
-                                    child = body.branch_nodes.filter(b => b.id == cursor)[0]
-                                    deltaGraphIds.push(child.property.deltaGraphId)
-                                    exposedOffset = child.isExposed ? versions : exposedOffset
-                                    if (child.property.canPull) pendingToBePulled++
-                                    candidate = body.edges.filter(e => e.type == "PATCH" && e.end &&
-                                        e.end == cursor)
-                                }
-                                let work_on_candidate = body.edges.filter(e => e.type ==
-                                    "WORK_ON" && e.end == cursor)
-                                let workspaces = work_on_candidate.map(we => {
-                                    return body.workspace_nodes
-                                        .filter(w => w.id == we.start)[0].property
-                                }).sort(function (a, b) {
-                                    return new Date(b.lastModified) - new Date(a
-                                        .lastModified);
-                                })
-                                this.repositories.push({
-                                    tag: branch.property.tag,
-                                    versions: versions,
-                                    id: branch.id,
-                                    workspaces: workspaces,
-                                    deltaGraphIds: deltaGraphIds,
-                                    owned: branch.isOwner,
-                                    exposedOffset: exposedOffset,
-                                    pullRequests: pendingToBePulled,
-                                    creationDate: branch.property.creationDate,
-                                    lastModifiedDate: child.property.creationDate
-                                })
-                            })
-
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting versions information.')

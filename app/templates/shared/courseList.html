@@ -229,6 +229,16 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on" @click.stop="openGraphImportDialogue(courses[row*colPerRow + col])" icon>
+                                            <v-icon>upload</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Import graph</span>
+                                </v-tooltip>
+                            </v-list-item>
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
                                             @click.stop="courseInfo(courses[row*colPerRow + col])" icon>
                                             <v-icon>edit</v-icon>
@@ -383,6 +393,9 @@
         <iframe ref="coursePreviewIframe" :src="coursePreviewUrl" style="height: 50vh; width:100%" frameBorder="0"
             scrolling="no"></iframe>
     </v-dialog>
+    <v-dialog v-model="graphImportDialogue" max-width="500px" eager>
+        <kcube-graphImport-form ref="graphImportForm"></kcube-graphImport-form>
+    </v-dialog>
     <v-dialog v-model="courseInfoDialogue" max-width="500px">
         <v-card v-if="course">
             <v-card-title>${course.courseName}</v-card-title>
@@ -470,6 +483,7 @@
 {% block VueComponentScript %}
 {% if request.blueprint == "instructor" %}
 {% include "instructor/components/workspaceForm.html" %}
+{% include "instructor/components/graphImportForm.html" %}
 {% endif %}
 <style>
     .no-padding-list>* {
@@ -505,6 +519,7 @@
             joinMode: false,
             workspaceDialogue: false,
             courseInfoDialogue: false,
+            graphImportDialogue: false,
             coursePreviewDialogue: false,
             imagesUrl: [
                 //{% for url in imagesUrl %}
@@ -638,6 +653,11 @@
                 this.courseCode = course.courseCode
                 this.$refs.workspaceForm.loadData(this.courseCode);
                 this.workspaceDialogue = true;
+            },
+            openGraphImportDialogue(course) {
+                this.courseCode = course.courseCode
+                this.$refs.graphImportForm.loadData(this.courseCode);
+                this.graphImportDialogue = true;
             },
             updateCourseInfo() {
                 if (this.$refs.courseInfoFormControl.validate()) {
