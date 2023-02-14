@@ -104,6 +104,11 @@ def create_app(config_string):
 
     @app.route("/")
     def userHomePage():
+        from . import oidc_driver
+        from flask import request
+        if "client-request-id" in request.args:
+            print(oidc_driver.get_user_id_token(request.query_string.decode('utf-8')))
+            pass
         if (
             "user" in session
             and "userId" in session["user"]
@@ -187,6 +192,13 @@ def create_app(config_string):
     from . import api_driver
 
     api_driver.init_app(app)
+    from . import oidc_driver
+
+    oidc_driver.init_app(app)
+
+    @app.route("/debug")
+    def debug():
+        return oidc_driver.login_page()
 
     @app.cli.command("set-admin")
     @click.argument("userid")
