@@ -1033,6 +1033,8 @@
                         }
                     }, 500)
                 }
+                var oidcError = new URLSearchParams(window.location.search).get('oidcError')
+                if (oidcError) this.errorDisplay({}, oidcError);
             }
         })
     </script>

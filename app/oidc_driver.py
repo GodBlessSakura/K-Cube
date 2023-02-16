@@ -39,9 +39,9 @@ def oidc_validate(aresp):
         raise oidcError("login atempt not initialized")
 
 
-def jwt_validate(nonce):
+def jwt_assert(jwt):
     try:
-        assert nonce == session["oidc_nonce"]
+        assert jwt["nonce"] == session["oidc_nonce"]
     except AssertionError:
         raise oidcError("login session mismatch")
     except KeyError:
