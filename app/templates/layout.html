@@ -138,6 +138,10 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
+                {% elif "OIDC" in config %}
+                <v-btn text href="{{url_for('odic_login')}}">
+                    login in with PolyU account
+                </v-btn>
                 {% else %}
                 <v-dialog v-model="shouldShowLoginForm" persistent max-width="600px">
                     <template v-slot:activator="{ on, attrs }">

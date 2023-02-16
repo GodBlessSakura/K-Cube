@@ -59,6 +59,7 @@ def create_app(config_string):
     app.register_blueprint(student, url_prefix="/student")
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
+    from .oidc_driver import oidcError
 
     @app.errorhandler(404)
     def not_found(e):
@@ -81,6 +82,10 @@ def create_app(config_string):
                 "error": str(e),
             }
         )
+
+    @app.errorhandler(oidcError)
+    def handle_oidc_error(e):
+        return redirect("/?oidcError=" + e.message)
 
     @app.errorhandler(InvalidRequest)
     def handle_bad_request(e):
@@ -106,8 +111,8 @@ def create_app(config_string):
     def userHomePage():
         from . import oidc_driver
         from flask import request
+
         if "client-request-id" in request.args:
-            print(oidc_driver.get_user_id_token(request.query_string.decode('utf-8')))
             pass
         if (
             "user" in session
@@ -196,9 +201,9 @@ def create_app(config_string):
 
     oidc_driver.init_app(app)
 
-    @app.route("/debug")
-    def debug():
-        return oidc_driver.login_page()
+    @app.route("/odic-login")
+    def odic_login():
+        return oidc_driver.redirect_to_oidc_login()
 
     @app.cli.command("set-admin")
     @click.argument("userid")
