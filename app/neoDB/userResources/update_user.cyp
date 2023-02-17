@@ -1,4 +1,5 @@
 MATCH (user:User {userId: $userId})
+WHERE user.type <> 'oidc'
 SET
 user.verified = CASE user.email = $email
     WHEN true THEN CASE EXISTS(user.verified)
