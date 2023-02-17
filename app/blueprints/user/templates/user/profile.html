@@ -10,24 +10,32 @@
                     {{session['user'].userId}}
                 </v-col>
             </v-row>
+            {% if "OIDC" not in config %}
             <v-row>
                 <v-col cols='2' style="align-items: center;display: grid;">User Name</v-col>
                 <v-col>
                     <v-text-field single-line dense v-model="userName" :rules="userNameRules"> </v-text-field>
                 </v-col>
             </v-row>
+            {% endif %}
             <v-row>
                 <v-col cols='2' style="align-items: center;display: grid;">Email </v-col>
                 <v-col>
+                    {% if "OIDC" not in config %}
                     <v-text-field single-line dense v-model="email" :rules="emailRuels"> </v-text-field>
+                    {% else %}
+                    {{session['user'].email}}
+                    {% endif %}
                 </v-col>
             </v-row>
+            {% if "OIDC" not in config %}
             <v-row>
                 <v-col cols='2' style="align-items: center;display: grid;">
                     Verified
                 </v-col>
                 <v-col>
-                    <v-checkbox readonly {{ ('input-value="true"' if USER.verified else '@click="tryVerification()"')| safe}}
+                    <v-checkbox readonly
+                        {{ ('input-value="true"' if USER.verified else '@click="tryVerification()"')| safe}}
                         :label="{{ 'true' if USER.verified else 'false'}}?'':'send verification mail'">
                     </v-checkbox>
                 </v-col>
@@ -38,6 +46,7 @@
                     <v-btn @click="update()">update</v-btn>
                 </v-col>
             </v-row>
+            {% endif %}
             <v-row>
                 <v-expansion-panels>
                     <v-expansion-panel>
@@ -75,15 +84,15 @@
             userNameRules: [
                 v => !!v || 'Name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
-                    'Name should be anything between 4 and 100 charactors',
+                'Name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["userName"]}}/.test(v)) ||
-                    'Name can only contains alphanumeric characters and space.'
+                'Name can only contains alphanumeric characters and space.'
             ],
             emailRuels: [
                 v => !!v || 'E-mail is required',
                 v => (v && v.length < 320) || 'A valid email should have less then 320 characters',
                 v => (v && /{{regExpRules["email"]}}/.test(v)) ||
-                    'E-mail must be in valid format',
+                'E-mail must be in valid format',
             ],
         }),
         methods: {
@@ -94,12 +103,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('user.refreshPermission') }}", {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -122,16 +131,16 @@
                     }
                     this.$root.progress.show = true
                     fetch("{{ url_for('user.patch') }}", {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            userName: this.userName,
-                            email: this.email
+                            method: 'PATCH',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                userName: this.userName,
+                                email: this.email
+                            })
                         })
-                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -155,12 +164,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('user.verify') }}", {
-                    method: 'POST',
-                    cache: 'no-store',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                })
+                        method: 'POST',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()

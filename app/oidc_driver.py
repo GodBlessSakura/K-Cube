@@ -28,24 +28,21 @@ def oidc_validate(aresp):
     try:
         assert time.time() - session["oidc_state_time"] < 600
     except AssertionError:
-        raise oidcError("login atempt timeout")
+        raise oidcError("Login atempt timeout. Try login again.")
     except KeyError:
-        raise oidcError("login atempt not initialized")
+        raise oidcError("Login atempt not initialized. Try login again.")
     try:
         assert aresp["state"] == session["oidc_state"]
     except AssertionError:
-        raise oidcError("login atempt timeout")
+        raise oidcError("Login atempt timeout. Try login again.")
     except KeyError:
-        raise oidcError("login atempt not initialized")
-
-
-def jwt_assert(jwt):
+        raise oidcError("Login atempt not initialized. Try login again.")
     try:
-        assert jwt["nonce"] == session["oidc_nonce"]
+        assert aresp["id_token"]["nonce"] == session["oidc_nonce"]
     except AssertionError:
-        raise oidcError("login session mismatch")
+        raise oidcError("Login session mismatch. Try login again.")
     except KeyError:
-        raise oidcError("login atempt not initialized")
+        raise oidcError("Login atempt not initialized. Try login again.")
 
 
 def oidc_args():
@@ -107,6 +104,15 @@ def get_user_id_token():
         request_args=oidc_args(session["oidc_state"]),
     )
     return get_oidc_driver().do_user_info_request(state=aresp["state"])
+
+def parse_authorization_response(response):
+    from oic.oic.message import AuthorizationResponse
+    aresp = get_oidc_driver().parse_response(AuthorizationResponse, info=response,
+                              sformat="urlencoded")
+    oidc_validate(aresp)
+    return aresp
+    #jwt_assert(jwt)
+
 
 
 def init_app(app):

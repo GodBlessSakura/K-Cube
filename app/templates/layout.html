@@ -123,16 +123,18 @@
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn text v-bind="attrs" v-on="on" style="text-transform: none !important;"
                             ref="shepherd-userMenu">
-                            {{USER.userName}}<v-icon>arrow_drop_down</v-icon>
+                            {{USER.userName if USER.userName else USER.email}}<v-icon>arrow_drop_down</v-icon>
                         </v-btn>
                     </template>
                     <v-list>
                         <v-list-item href="{{ url_for('user.profile') }}" ref="shepherd-userProfile">
-                            <v-list-item-title>Edit Profile</v-list-item-title>
+                            <v-list-item-title>{% if "OIDC" not in config %}Edit{% endif %} Profile</v-list-item-title>
                         </v-list-item>
+                        {% if "OIDC" not in config %}
                         <v-list-item href="{{ url_for('user.changePassword') }}">
                             <v-list-item-title>Change Password</v-list-item-title>
                         </v-list-item>
+                        {% endif %}
                         <v-list-item href="{{ url_for('user.logout') }}">
                             <v-list-item-title>Logout</v-list-item-title>
                         </v-list-item>
@@ -258,7 +260,6 @@
                 </v-dialog>
                 {% endif %}
             </v-app-bar>
-
             {% if session['user'] %}
             <v-menu v-if="menu" inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y
                 eager>
@@ -355,7 +356,9 @@
 
             </v-app-bar>
             <v-main>
-                <app-content></app-content>
+                <app-content v-show="!atemptOidcLogin"></app-content>
+                <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128"
+                    v-if="atemptOidcLogin"><div>Attampting login</div></v-progress-circular>
             </v-main>
         </v-app>
 
@@ -614,6 +617,8 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
+                atemptOidcLogin: new URLSearchParams(window.location.search).get('client-request-id') !=
+                    null,
                 appBar: new URLSearchParams(window.location.search).get('bar') === "false" || window
                     .location !== window.parent.location ? false : true,
                 menu: new URLSearchParams(window.location.search).get('bar') === "false" || window
@@ -817,8 +822,8 @@
                             .then(body => {
                                 this.progress.show = false
                                 this.responseSnackBar(body, 'incorrect username or password', () => {
-                                    if (body.url && (window.location == "{{ url_for('index') }}")) {
-                                        window.location.href = body.url
+                                    if (body.success) {
+                                        if (body.url) window.location.href = body.url
                                     } else {
                                         window.location.reload()
                                     }
@@ -1033,8 +1038,42 @@
                         }
                     }, 500)
                 }
-                var oidcError = new URLSearchParams(window.location.search).get('oidcError')
-                if (oidcError) this.errorDisplay({}, oidcError);
+                let query_params = new URLSearchParams(window.location.search)
+                if (query_params.get('oidcError')) this.errorDisplay({}, query_params.get('oidcError'));
+                if (query_params.get('client-request-id')) {
+                    fetch("{{ url_for('user.login') }}", {
+                            method: 'POST',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                authorization_response: query_params + window.location.hash
+                            })
+
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.responseSnackBar(body, 'incorrect username or password', () => {
+                                if (body.success) {
+                                    if (body.url) window.location.href = body.url
+                                } else {
+                                    this.atemptOidcLogin = false
+                                    this.$root.errorDisplay(body,
+                                        'Unexpected error occured.')
+                                }
+                            })
+                        })
+
+                }
             }
         })
     </script>

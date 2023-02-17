@@ -65,6 +65,7 @@ def register():
         if user:
             session["user"] = user
             from app.cache_driver import load_info_from_cache
+
             load_info_from_cache()
             verify()
             return jsonify({"success": True})
@@ -154,13 +155,26 @@ def login():
                 userId=userId, password=password
             )
             if user is not None:
-
                 session["user"] = user
                 return jsonify({"success": True, "url": url_for("userHomePage")})
             return jsonify({"success": False})
         except Exception as e:
             print(e)
             return jsonify({"success": False})
+    if "authorization_response" in request.json:
+        from ...oidc_driver import parse_authorization_response, oidcError
+
+        try:
+            jwt = parse_authorization_response(request.json["authorization_response"])
+            jwt = jwt["id_token"]
+            upn = jwt["upn"]
+            print(jwt)
+            user = get_api_driver().user.merge_oidc_user(upn=upn)
+            if user is not None:
+                session["user"] = user
+                return jsonify({"success": True, "url": url_for("userHomePage")})
+        except oidcError as e:
+            return jsonify({"success": False, "message": e.message})
     return jsonify({"success": False, "message": "incomplete login request"})
 
 

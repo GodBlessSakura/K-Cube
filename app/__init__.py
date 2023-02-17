@@ -111,9 +111,6 @@ def create_app(config_string):
     def userHomePage():
         from . import oidc_driver
         from flask import request
-
-        if "client-request-id" in request.args:
-            pass
         if (
             "user" in session
             and "userId" in session["user"]

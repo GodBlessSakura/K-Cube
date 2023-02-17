@@ -45,7 +45,7 @@ regExpRules = {
     "courseCode": "^[a-zA-Z0-9\s]{4,100}$",
     "courseName": "^[a-zA-Z][a-zA-Z0-9\s" + special_charactor + "]{3,99}$",
     "userName": "^[a-zA-Z0-9\s]{4,100}$",
-    "userId": "^[a-zA-Z][a-zA-Z0-9]{3,99}$",
+    "userId": "^[a-zA-Z0-9]{3,100}$",
     "email": "^[-\w\.]+@([\w-]+\.)+[\w-]{2,4}$",
     "name": "^[a-zA-Z0-9"
     + special_charactor

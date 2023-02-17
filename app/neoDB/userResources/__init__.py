@@ -110,7 +110,15 @@ class userDAO:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
-            result = tx.run(query, userId=userId, role=role, message=message, REQUIRE_USER_VERIFICATION=current_app.config["REQUIRE_USER_VERIFICATION"],)
+            result = tx.run(
+                query,
+                userId=userId,
+                role=role,
+                message=message,
+                REQUIRE_USER_VERIFICATION=current_app.config[
+                    "REQUIRE_USER_VERIFICATION"
+                ],
+            )
             return [
                 {
                     "user": dict(record["user"].items()),
@@ -159,6 +167,21 @@ class userDAO:
                     return dict(rows[0]["user"].items())
                 else:
                     return None
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def merge_oidc_user(self, upn):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, email=upn, userId=upn.split("@")[0])
+            rows = [record for record in result]
+            if len(rows) > 0:
+                return dict(rows[0]["user"].items())
+            else:
+                return None
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
