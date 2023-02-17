@@ -357,8 +357,10 @@
             </v-app-bar>
             <v-main>
                 <app-content v-show="!atemptOidcLogin"></app-content>
-                <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128"
-                    v-if="atemptOidcLogin"><div>Attampting login</div></v-progress-circular>
+                <v-progress-circular style="display: block; margin: auto auto" indeterminate size="256"
+                    v-if="atemptOidcLogin">
+                    <div style="display: block; margin: auto auto">Attampting login</div>
+                </v-progress-circular>
             </v-main>
         </v-app>
 
