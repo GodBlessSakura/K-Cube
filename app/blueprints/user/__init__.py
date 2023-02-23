@@ -162,10 +162,10 @@ def login():
             print(e)
             return jsonify({"success": False})
     if "authorization_response" in request.json:
-        from ...oidc_driver import parse_authorization_response, oidcError
+        from ...oidc_driver import parse_authorization_query, oidcError
 
         try:
-            jwt = parse_authorization_response(request.json["authorization_response"])
+            jwt = parse_authorization_query(request.json["authorization_response"])
             jwt = jwt["id_token"]
             upn = jwt["upn"]
             print(jwt)

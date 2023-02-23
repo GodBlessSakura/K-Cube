@@ -141,7 +141,7 @@
                     </v-list>
                 </v-menu>
                 {% elif "OIDC" in config %}
-                <v-btn text href="{{url_for('odic_login')}}">
+                <v-btn text href="{{url_for('odic_login')}}" :disabled="atemptOidcLogin">
                     login in with PolyU account
                 </v-btn>
                 {% else %}
@@ -357,10 +357,16 @@
             </v-app-bar>
             <v-main>
                 <app-content v-show="!atemptOidcLogin"></app-content>
-                <v-progress-circular style="display: block; margin: auto auto" indeterminate size="256"
-                    v-if="atemptOidcLogin">
-                    <div style="display: block; margin: auto auto">Attampting login</div>
-                </v-progress-circular>
+                <div v-if="atemptOidcLogin" style="height: 100%; position: absolute; overflow: hidden; width: 100%;">
+                    <v-progress-circular
+                        style="display: block; position: absolute; inset: 50% 50% 50% 50%; transform: translate(-50%,-50%);"
+                        indeterminate size="256">
+                    </v-progress-circular>
+                    <v-card-title style="height:256px; width: 256px; justify-content: center; align-items: center;
+                    position: absolute; inset: 50% 50% 50% 50%; transform: translate(-50%,-50%);">
+                        Attempting login
+                    </v-card-title>
+                </div>
             </v-main>
         </v-app>
 
@@ -1058,7 +1064,7 @@
                             try {
                                 return response.json()
                             } catch {
-                                this.$root.progress.show = false
+                                this.atemptOidcLogin = false
                                 this.$root.errorDisplay({},
                                     'Unexpected error occured.')
                             }

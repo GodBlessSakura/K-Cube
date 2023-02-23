@@ -105,10 +105,13 @@ def get_user_id_token():
     )
     return get_oidc_driver().do_user_info_request(state=aresp["state"])
 
-def parse_authorization_response(response):
+def parse_authorization_query(response):
     from oic.oic.message import AuthorizationResponse
-    aresp = get_oidc_driver().parse_response(AuthorizationResponse, info=response,
+    try:
+        aresp = get_oidc_driver().parse_response(AuthorizationResponse, info=response,
                               sformat="urlencoded")
+    except:
+        raise oidcError("Login atempt failed. Try login again.")
     oidc_validate(aresp)
     return aresp
     #jwt_assert(jwt)
