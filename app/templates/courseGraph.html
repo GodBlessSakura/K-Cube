@@ -151,7 +151,7 @@
                     </v-card-title>
                 </v-row>
                 <v-row v-for="row in rows" v-if="!hideGraph">
-                    <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column" v-if="col.userName">
+                    <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column" v-if="col.userId">
                         <v-btn v-if="col.isViewing" x-small
                             style="position: fixed;  transform: translate(5%,-50%); z-index:2" rounded color="black"
                             elevation="0" class="white--text">
@@ -161,11 +161,11 @@
                         <v-btn outlined large v-if="isPageInIFrame"
                             @click="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))"
                             @click.middle="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))">
-                            ${col.userName}
+                            ${col.userId}
                         </v-btn>
                         <v-btn outlined large v-else
                             :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : '')">
-                            ${col.userName}
+                            ${col.userId}
                         </v-btn>
 
                     </v-col>
