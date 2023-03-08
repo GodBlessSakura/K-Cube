@@ -6,6 +6,12 @@
     <v-row ref="shepherd-searchText">
         <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
     </v-row>
+    {% if request.blueprint == "instructor"%}
+    <v-tabs :value="filter.joined?0:1" center-active @change="selectTab">
+        <v-tab>My courses</v-tab>
+        <v-tab>All courses</v-tab>
+    </v-tabs>
+    {% endif %}
     {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
     <v-row no-gutters>
         <v-col align-self="center" cols="auto">
@@ -19,20 +25,6 @@
                 <v-chip filter v-model="filter.internal"
                     @click="filter.internal = !filter.internal; filter.public = filter.internal?false:filter.public; search()">
                     internal</v-chip>
-                {% if request.blueprint == "instructor" %}
-                <v-divider vertical style="margin-left: 8px; margin-right: 8px;"></v-divider>
-                <v-chip filter v-model="filter.joined" color="success" :outlined="!filter.joined"
-                    @click="filter.joined = !filter.joined; filter.notJoined = filter.joined?false:filter.notJoined; search()">
-                    on-duty</v-chip>
-                <v-chip filter v-model="filter.notJoined"
-                    @click="filter.notJoined = !filter.notJoined; filter.joined = filter.notJoined?false:filter.joined; search();">
-                    off-duty
-                </v-chip>
-                <v-divider vertical style="margin-left: 8px; margin-right: 8px;"></v-divider>
-                <v-chip filter v-model="filter.working" @click="filter.working = !filter.working; search();" dense
-                    hide-details>working
-                </v-chip>
-                {% endif %}
             </v-slide-group>
         </v-col>
         <v-col align-self="center" cols="auto">
@@ -43,51 +35,16 @@
         {% if request.blueprint == "instructor" %}
         <v-spacer></v-spacer>
         <v-col cols="auto">
-            <v-btn :color="joinMode?'':'success'" @click="joinMode=!joinMode;clearFilter();search()"
+            <v-btn :color="joinMode?'':'success'"
+                @click="joinMode=!joinMode;joinMode?clearFilter([]):null;search()"
                 ref="shepherd-joinNewCourse">
                 <v-icon left>rule</v-icon>${joinMode?'hide duty on-off label':'Manage course duty'}
             </v-btn>
         </v-col>
         {% endif %}
     </v-row>
-    {% endif %}
-    <v-row v-if="courses.length == 0 && num_courses_wo_filter>0">
-        <v-col>There will be ${num_courses_wo_filter} results if no filter is applied.
-            <br>
-            <v-btn @click="clearFilter(); search();">clear filter</v-btn>
-        </v-col>
-    </v-row>
-    <v-row v-if="courses.length == 0 && num_courses_wo_search_text>0">
-        <v-col>There will be ${num_courses_wo_search_text} results if no search text is applied.
-            <br>
-            <v-btn @click="searchText=''; search();">clear search text</v-btn>
-        </v-col>
-    </v-row>
-    <v-row v-if="courses.length == 0 && num_courses_wo_search_text == 0 && num_courses_wo_filter == 0">
-        <v-col>No course with current search text "${searchText}" and filter setting.
-            <br>
-            <v-btn @click="clearFilter(); searchText='';search()">clear search text & filter</v-btn>
-        </v-col>
-    </v-row>
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
         <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
-            {% if request.blueprint == "collaborate" %}
-            <v-card v-if="courses[row*colPerRow + col]"
-                :href="'{{ url_for('collaborate.feedbacks') }}/' + courses[row*colPerRow + col].courseCode">
-                <v-list-item three-line>
-                    <v-list-item-content>
-                        <v-list-item-title>
-                            ${courses[row*colPerRow + col].courseCode}
-                        </v-list-item-title>
-                        <v-list-item-subtitle>
-                            ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
-                    </v-list-item-content>
-                    <v-list-item-avatar tile size="96">
-                        <img :src="courses[row*colPerRow + col].imageURL">
-                    </v-list-item-avatar>
-                </v-list-item>
-            </v-card>
-            {% else %}
             <v-card v-if="courses[row*colPerRow + col]" @click="openCoursePreview(courses[row * colPerRow + col])"
                 :ref="''+courses[row * colPerRow + col].courseCode"
                 :ripple="{class: courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'error--text':''}">
@@ -229,7 +186,8 @@
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
-                                        <v-btn v-bind="attrs" v-on="on" @click.stop="openGraphImportDialogue(courses[row*colPerRow + col])" icon>
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            @click.stop="openGraphImportDialogue(courses[row*colPerRow + col])" icon>
                                             <v-icon>upload</v-icon>
                                         </v-btn>
                                     </template>
@@ -382,7 +340,45 @@
                     {% endif %}
                 </v-card-actions>
             </v-card>
-            {% endif %}
+        </v-col>
+    </v-row>
+    {% elif request.blueprint == "collaborate"  %}
+    <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
+        <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
+            <v-card v-if="courses[row*colPerRow + col]"
+                :href="'{{ url_for('collaborate.feedbacks') }}/' + courses[row*colPerRow + col].courseCode">
+                <v-list-item three-line>
+                    <v-list-item-content>
+                        <v-list-item-title>
+                            ${courses[row*colPerRow + col].courseCode}
+                        </v-list-item-title>
+                        <v-list-item-subtitle>
+                            ${courses[row*colPerRow + col].courseName}</v-list-item-subtitle>
+                    </v-list-item-content>
+                    <v-list-item-avatar tile size="96">
+                        <img :src="courses[row*colPerRow + col].imageURL">
+                    </v-list-item-avatar>
+                </v-list-item>
+            </v-card>
+        </v-col>
+    </v-row>
+    {% endif %}
+    <v-row v-if="courses.length == 0 && num_courses_wo_filter>0">
+        <v-col>There will be ${num_courses_wo_filter} results if no filter is applied.
+            <br>
+            <v-btn @click="clearFilter([]); search();">clear filter</v-btn>
+        </v-col>
+    </v-row>
+    <v-row v-if="courses.length == 0 && num_courses_wo_search_text>0">
+        <v-col>There will be ${num_courses_wo_search_text} results if no search text is applied.
+            <br>
+            <v-btn @click="searchText=''; search();">clear search text</v-btn>
+        </v-col>
+    </v-row>
+    <v-row v-if="courses.length == 0 && num_courses_wo_search_text == 0 && num_courses_wo_filter == 0">
+        <v-col>No course with current search text "${searchText}" and filter setting.
+            <br>
+            <v-btn @click="clearFilter([]); searchText='';search()">clear search text & filter</v-btn>
         </v-col>
     </v-row>
     {% if request.blueprint == "instructor" %}
@@ -485,6 +481,7 @@
 {% include "instructor/components/workspaceForm.html" %}
 {% include "instructor/components/graphImportForm.html" %}
 {% endif %}
+
 <style>
     .no-padding-list>* {
         padding: unset
@@ -575,8 +572,8 @@
                         this.$root.progress.show = false
                         if (body.courses) {
                             // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
-                            if (body.courses.filter(c => c.isTeaching).length == 0) this.filter.joined =
-                                false
+                            // if (body.courses.filter(c => c.isTeaching).length == 0) this.filter.joined =
+                            //     false
                             // {% endif %}
                             body.courses.sort((a, b) => {
                                 if (a.concept.name < b.concept.name) {
@@ -597,7 +594,6 @@
                                     hasExposedGraph: c.hasExposedGraph,
                                 })
                             })
-                            this.search()
                             // {% if request.blueprint == "instructor" %}
                             let unexposedCourse = this.allCourses.filter(course => course.isTeaching && !
                                 course.hasExposedGraph)
@@ -622,6 +618,7 @@
                                 })
                             }
                             // {% endif %}
+                            this.search()
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
@@ -629,6 +626,22 @@
                     })
             },
             // {% if request.blueprint == "instructor" %}
+            selectTab(tab) {
+                let query = new URLSearchParams(window.location.search)
+                if (tab == 0) {
+                    this.filter.joined = true
+                    this.filter.notJoined = false
+                    query.set("duty", true)
+                } else if (tab == 1) {
+                    this.filter.joined = false
+                    this.filter.notJoined = false
+                    query.delete("duty")
+                }
+                this.search()
+                window.history.pushState(
+                    window.history.state, "", window.location.pathname + (query.toString() != '' ? '?' +
+                        query.toString() : ''))
+            },
             courseInfo(course) {
                 this.course = course
                 this.courseInfoDialogue = true
@@ -981,9 +994,9 @@
                     })
             },
             // {% endif %}
-            clearFilter(except = null) {
+            clearFilter(except = ['joined', 'notJoined']) {
                 Object.keys(this.filter).forEach(key => {
-                    if (key == except) return;
+                    if (except.includes(key)) return;
                     this.filter[key] = false
                 })
             },
@@ -996,7 +1009,6 @@
                         c.courseName.toLowerCase().includes(this.searchText.toLowerCase())
                     )
                 }
-
                 // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
                 this.num_courses_wo_search_text = this.allCourses.length
                 this.num_courses_wo_filter = this.courses.length
@@ -1017,7 +1029,7 @@
                         !(this.filter.working && c.workspaces.length == 0)).length
                 }
                 // {% endif %}
-            }
+            },
         },
         mounted: function () {
             self = this
@@ -1151,7 +1163,6 @@
                 })
             }
             self.loadData()
-            self.search()
         },
         template: '#content',
         delimiters: ['${', '}'],
