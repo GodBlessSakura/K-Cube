@@ -25,6 +25,12 @@
                 <v-chip filter v-model="filter.internal"
                     @click="filter.internal = !filter.internal; filter.public = filter.internal?false:filter.public; search()">
                     internal</v-chip>
+                {% if request.blueprint == "instructor" %}
+                <v-divider vertical style="margin-left: 8px; margin-right: 8px;"></v-divider>
+                <v-chip filter v-model="filter.working" @click="filter.working = !filter.working; search();" dense
+                    hide-details>working
+                </v-chip>
+                {% endif %}
             </v-slide-group>
         </v-col>
         <v-col align-self="center" cols="auto">
@@ -35,8 +41,7 @@
         {% if request.blueprint == "instructor" %}
         <v-spacer></v-spacer>
         <v-col cols="auto">
-            <v-btn :color="joinMode?'':'success'"
-                @click="joinMode=!joinMode;joinMode?clearFilter([]):null;search()"
+            <v-btn :color="joinMode?'':'success'" @click="joinMode=!joinMode;joinMode?clearFilter([]):null;search()"
                 ref="shepherd-joinNewCourse">
                 <v-icon left>rule</v-icon>${joinMode?'hide duty on-off label':'Manage course duty'}
             </v-btn>
@@ -342,7 +347,7 @@
             </v-card>
         </v-col>
     </v-row>
-    {% elif request.blueprint == "collaborate"  %}
+    {% elif request.blueprint == "collaborate" %}
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
         <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
             <v-card v-if="courses[row*colPerRow + col]"
@@ -363,10 +368,24 @@
         </v-col>
     </v-row>
     {% endif %}
-    <v-row v-if="courses.length == 0 && num_courses_wo_filter>0">
-        <v-col>There will be ${num_courses_wo_filter} results if no filter is applied.
+    <v-row v-if="courses.length == 0 && num_all_courses_w_filter > 0 && filter.joined">
+        <v-col>There will be ${num_all_courses_w_filter} results in "All courses".
             <br>
-            <v-btn @click="clearFilter([]); search();">clear filter</v-btn>
+            <v-btn @click="filter.joined=false; search();">Go to "All courses"</v-btn>
+        </v-col>
+    </v-row>
+    <v-row v-if="courses.length == 0 && num_joined_courses_wo_filter > 0 && filter.joined">
+        <v-col>There will be ${num_joined_courses_wo_filter} results if no filter is applied.
+            <br>
+            <v-btn @click="clearFilter(); search();">clear filter</v-btn>
+        </v-col>
+    </v-row>
+    <v-row v-if="courses.length == 0 && num_courses_wo_filter>0">
+        <v-col>There will be ${num_courses_wo_filter} results ${filter.joined?'in "All courses" ':""}if no filter is
+            applied.
+            <br>
+            <v-btn @click="clearFilter([]); search();">${filter.joined?'Show "All coureses" without filter':
+                "clear filter"}</v-btn>
         </v-col>
     </v-row>
     <v-row v-if="courses.length == 0 && num_courses_wo_search_text>0">
@@ -505,7 +524,6 @@
                 internal: false,
                 // {% if request.blueprint == "instructor" %}
                 joined: new URLSearchParams(window.location.search).get('duty') != null,
-                notJoined: false,
                 working: false,
                 // {% endif %}
             },
@@ -513,6 +531,8 @@
             instructors: null,
             // {% endif %}
             // {% if request.blueprint == "instructor" %}
+            num_joined_courses_wo_filter: null,
+            num_all_courses_w_filter: null,
             joinMode: false,
             workspaceDialogue: false,
             courseInfoDialogue: false,
@@ -601,19 +621,30 @@
                                 this.$root.errorDisplay({},
                                     unexposedCourse.length + ' course' + (unexposedCourse > 1 ? 's' :
                                         '') + ' that you are teaching has no published graph.')
-                                this.$nextTick(() => {
-                                    let el = this.$refs[unexposedCourse[0].courseCode][0].$el
-                                    el.scrollIntoView({
-                                        behavior: "smooth",
-                                        block: "center"
-                                    })
-                                    let ev = new Event("mousedown")
-                                    let offset = el.getBoundingClientRect()
-                                    ev.clientX = offset.left + 1
-                                    ev.clientY = offset.top + 1
-                                    el.dispatchEvent(ev)
-                                    this.$nextTick(function () {
-                                        el.dispatchEvent(new Event("mouseup"))
+                                this.$nextTick(() => { // need to wait the courses v-card to be rendered
+                                    unexposedCourse.every(c => {
+                                        console.log(c, Object.keys(this.$refs), Object.keys(
+                                                this.$refs)
+                                            .includes(c.courseCode))
+                                        if (Object.keys(this.$refs).includes(c
+                                                .courseCode)) {
+                                            let el = this.$refs[c.courseCode][0].$el
+                                            el.scrollIntoView({
+                                                behavior: "smooth",
+                                                block: "center"
+                                            })
+                                            let ev = new Event("mousedown")
+                                            let offset = el.getBoundingClientRect()
+                                            ev.clientX = offset.left + 1
+                                            ev.clientY = offset.top + 1
+                                            el.dispatchEvent(ev)
+                                            this.$nextTick(function () {
+                                                el.dispatchEvent(new Event(
+                                                    "mouseup"))
+                                            })
+                                            return false
+                                        }
+                                        return true
                                     })
                                 })
                             }
@@ -630,11 +661,9 @@
                 let query = new URLSearchParams(window.location.search)
                 if (tab == 0) {
                     this.filter.joined = true
-                    this.filter.notJoined = false
                     query.set("duty", true)
                 } else if (tab == 1) {
                     this.filter.joined = false
-                    this.filter.notJoined = false
                     query.delete("duty")
                 }
                 this.search()
@@ -994,7 +1023,7 @@
                     })
             },
             // {% endif %}
-            clearFilter(except = ['joined', 'notJoined']) {
+            clearFilter(except = ['joined']) {
                 Object.keys(this.filter).forEach(key => {
                     if (except.includes(key)) return;
                     this.filter[key] = false
@@ -1012,6 +1041,7 @@
                 // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
                 this.num_courses_wo_search_text = this.allCourses.length
                 this.num_courses_wo_filter = this.courses.length
+
                 this.filter_length = Object.keys(this.filter).map(key => this.filter[key]).filter(value =>
                     value).length
                 if (this.filter_length > 0) {
@@ -1019,13 +1049,18 @@
                         !(this.filter.public && c.isInternal) &&
                         !(this.filter.internal && !c.isInternal) &&
                         !(this.filter.joined && !c.isTeaching) &&
-                        !(this.filter.notJoined && c.isTeaching) &&
                         !(this.filter.working && c.workspaces.length == 0)).slice()
                     this.num_courses_wo_search_text = this.allCourses.filter(c =>
                         !(this.filter.public && c.isInternal) &&
                         !(this.filter.internal && !c.isInternal) &&
                         !(this.filter.joined && !c.isTeaching) &&
-                        !(this.filter.notJoined && c.isTeaching) &&
+                        !(this.filter.working && c.workspaces.length == 0)).length
+                    this.num_joined_courses_wo_filter = this.allCourses.filter(c =>
+                        c.isTeaching).length
+                    this.num_all_courses_w_filter = this.allCourses.filter(c =>
+                        !(this.filter.public && c.isInternal) &&
+                        !(this.filter.internal && !c.isInternal) &&
+                        !c.isTeaching &&
                         !(this.filter.working && c.workspaces.length == 0)).length
                 }
                 // {% endif %}
