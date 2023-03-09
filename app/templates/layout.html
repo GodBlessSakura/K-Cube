@@ -44,8 +44,8 @@
         <v-app>
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
-            <v-app-bar :value="appBar" app color="primary">
-                <v-card v-if="appBar" color="primary" style="align-items: center;" tile elevation="0">
+            <v-app-bar :value="appBar" app color="secondary">
+                <v-card v-if="appBar" color="secondary" style="align-items: center;" tile elevation="0">
                     <a href="{{ url_for('index') }}" style="position:absolute; height:100%; width:100%"></a>
                     <v-card-title>
                         <v-avatar class="profile" size="30" tile>
@@ -374,8 +374,8 @@
     <script>
         KCube = {
             colorTheme: {
-                primary: '#ff9800',
-                secondary: '#ffc107',
+                primary: '#F94A29',
+                secondary: '#ffacac',
                 accent: '#cddc39',
                 error: '#e91e63',
                 warning: '#ffeb3b',
