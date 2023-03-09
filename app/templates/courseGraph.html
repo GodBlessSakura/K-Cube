@@ -76,6 +76,7 @@
                     <kcube-cy-options-dialog></kcube-cy-options-dialog>
                 </v-dialog>
             </v-slide-item>
+            {% if userId is not none %}
             <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
@@ -87,6 +88,7 @@
                     course plan
                 </v-tooltip>
             </v-slide-item>
+            {% endif %}
             {% if PERMISSION and PERMISSION.role and "instructor" in PERMISSION.role %}
             <v-slide-item>
                 <v-tooltip top>
@@ -116,12 +118,13 @@
                 <v-sheet>
                     <v-card-subtitle v-show="course">
                         ${courseCode} - ${course?.courseName} (by ${"{{userId}}" == "None"? "Department" :
-                        "{{userId}}"})
+                        "{{userId}}"}) 
+                        Public graph provided by:
                     </v-card-subtitle>
-                    <v-btn :ripple="false" color="success" plain block @click="sheet = true" elevation="2">
+                    <v-btn :ripple="false" color="success" plain block elevation="2" @click="sheet = true">
                         info, graphs and more
                         <v-icon right>
-                            menu_open
+                            expand_less
                         </v-icon>
                     </v-btn>
                 </v-sheet>
@@ -133,7 +136,7 @@
                     <v-btn :ripple="false" color="error" plain block @click="sheet = false" elevation="2">
                         dismiss
                         <v-icon right>
-                            clear_all
+                            expand_more
                         </v-icon>
                     </v-btn>
                 </v-row>
@@ -616,7 +619,8 @@
                 console.log(str)
                 var element = document.createElement('a');
                 element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(str));
-                element.setAttribute('download', this.courseCode + '-' + (new Date()).toLocaleString("en-US", {}) + '.' +
+                element.setAttribute('download', this.courseCode + '-' + (new Date()).toLocaleString(
+                        "en-US", {}) + '.' +
                     format);
 
                 element.style.display = 'none';
