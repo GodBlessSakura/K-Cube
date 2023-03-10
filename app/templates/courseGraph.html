@@ -12,6 +12,11 @@
     <v-sheet style="position: absolute; top:3vh;left:3vh; ">
         <v-slide-group show-arrows>
             <v-slide-item>
+                <v-select outlined item-value="userId" item-text="userName" :items="providers" :value="'{{userId}}' == 'None'? null :
+                '{{userId}}'" @change="goToUserGraph">
+                </v-select>
+            </v-slide-item>
+            <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
                         <v-menu offset-y>
@@ -118,8 +123,7 @@
                 <v-sheet>
                     <v-card-subtitle v-show="course">
                         ${courseCode} - ${course?.courseName} (by ${"{{userId}}" == "None"? "Department" :
-                        "{{userId}}"}) 
-                        Public graph provided by:
+                        "{{userId}}"})
                     </v-card-subtitle>
                     <v-btn :ripple="false" color="success" plain block elevation="2" @click="sheet = true">
                         info, graphs and more
@@ -321,6 +325,7 @@
             hideGraph: new URLSearchParams(window.location.search).get('hideGraph') != null,
             courseCode: "{{courseCode}}",
             sheet: false,
+            providers: [],
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             lastModifiedWorkspace: undefined,
             //{% endif %}
@@ -439,13 +444,17 @@
                         }
                     })
                     .then(body => {
+                        this.providers = body.instructors
+                        this.providers.push({
+                            userName: 'department',
+                            userId: null,
+                        })
+
                         this.rows = [
                             []
                         ]
                         let colPerRow = 4
                         if (body.instructors) {
-                            console.log(body.instructors.map(instructor => instructor.userId))
-                            console.log("{{USER.userId}}")
                             this.isTeaching = body.instructors.map(instructor => instructor.userId)
                                 .includes("{{USER.userId}}")
                             body.instructors.forEach(instructor => {
@@ -629,6 +638,11 @@
                 element.click();
 
                 document.body.removeChild(element);
+            },
+            goToUserGraph(userId) {
+                window.location.href = "{{ url_for('courseGraph') }}" + this.courseCode + (userId !=
+                    null ? '/' +
+                    userId : '')
             },
             //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
             openWorkspaceDialogue() {
