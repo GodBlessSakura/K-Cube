@@ -7,7 +7,7 @@
         <v-col>
             <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
         </v-col>
-        <v-col cols="auto" align-self="center" >
+        <v-col cols="auto" align-self="center">
             <v-btn small text @click="showAdvanceSearch=!showAdvanceSearch">Advance Search</v-btn>
         </v-col>
     </v-row>
@@ -49,9 +49,8 @@
         </v-col>
         <v-spacer></v-spacer>
         <v-col cols="auto">
-            <v-btn :color="joinMode?'':'success'" @click="joinMode=!joinMode;joinMode?clearFilter([]):null;search()"
-                ref="shepherd-joinNewCourse">
-                <v-icon left>rule</v-icon>${joinMode?'hide duty on-off label':'Manage course duty'}
+            <v-btn color="success" @click="dutyDialgue=!dutyDialgue" ref="shepherd-joinNewCourse">
+                <v-icon left>rule</v-icon>Manage course duty
             </v-btn>
         </v-col>
     </v-row>
@@ -218,7 +217,7 @@
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn v-bind="attrs" v-on="on"
                                             @click.stop="openGraphImportDialogue(courses[row*colPerRow + col])" icon>
-                                            <v-icon>upload</v-icon>
+                                            <v-icon>file_upload</v-icon>
                                         </v-btn>
                                     </template>
                                     <span>Import graph</span>
@@ -326,20 +325,6 @@
                     </v-slide-group>
                     {% endif %}
                     {% if request.blueprint == "instructor" %}
-                    <v-tooltip bottom>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-scroll-x-transition>
-                                <v-btn :outlined="!courses[row*colPerRow + col].isTeaching" v-show="joinMode"
-                                    :color="courses[row*colPerRow + col].isTeaching?'success':'grey'" v-bind="attrs"
-                                    v-on="on" ref="shepherd-joined"
-                                    @click.stop="courses[row*colPerRow + col].isTeaching?quit(courses[row*colPerRow + col]):join(courses[row*colPerRow + col])">
-                                    <v-icon v-if="courses[row*colPerRow + col].isTeaching" left>check</v-icon>
-                                    ${courses[row*colPerRow + col].isTeaching?'on-duty':'off-duty'}
-                                </v-btn>
-                            </v-scroll-x-transition>
-                        </template>
-                        ${'click to become '+(courses[row*colPerRow + col].isTeaching?'off-duty':'on-duty')}
-                    </v-tooltip>
                     <v-spacer></v-spacer>
                     <v-btn v-if="courses[row*colPerRow + col].workspaces.length == 0"
                         @click.stop="openWorkspaceDialogue(courses[row*colPerRow + col])">
@@ -426,6 +411,38 @@
         </v-col>
     </v-row>
     {% if request.blueprint == "instructor" %}
+    <v-dialog v-model="dutyDialgue" max-width="80vw">
+        <v-card>
+            <v-card-title>
+                <v-text-field v-model="dutySearchText" label="search""></v-text-field></v-card-title>
+            <v-card-text>
+                <v-subheader>On duty</v-subheader>
+                <v-tooltip bottom v-for=" course in allCourses"
+                    v-if="course.isTeaching && (dutySearchText == '' ? true : (course.courseCode.toLowerCase().includes(dutySearchText.toLowerCase()) || course.courseName.toLowerCase().includes(dutySearchText.toLowerCase())))">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-chip v-bind="attrs" v-on="on" @click="quit(course)" close-icon="expand_more">
+                            ${course.courseCode}
+                            <v-icon right>expand_more</v-icon>
+                        </v-chip>
+                    </template>
+                    ${course .courseName}
+                    </v-tooltip>
+                    </v-card-text>
+                    <v-card-text>
+                        <v-subheader>Off duty</v-subheader>
+                        <v-tooltip bottom v-for="course in allCourses"
+                            v-if="!course.isTeaching && (dutySearchText == '' ? true : (course.courseCode.toLowerCase().includes(dutySearchText.toLowerCase()) || course.courseName.toLowerCase().includes(dutySearchText.toLowerCase())))">
+                            <template v-slot:activator="{ on, attrs  }">
+                                <v-chip v-bind="attrs" v-on="on" @click="join(course)" close-icon="expand_less">
+                                    ${course.courseCode}
+                                    <v-icon right>expand_less</v-icon>
+                                </v-chip>
+                            </template>
+                            ${course .courseName}
+                        </v-tooltip>
+                    </v-card-text>
+        </v-card>
+    </v-dialog>
     <v-dialog v-model="workspaceDialogue" max-width="500px" eager>
         <kcube-workspace-form ref="workspaceForm"></kcube-workspace-form>
     </v-dialog>
@@ -494,9 +511,9 @@
                 <v-tooltip bottom v-for="instructor in instructors" v-if="instructor.isTeaching">
                     <template v-slot:activator="{ on, attrs  }">
                         <v-chip v-bind="attrs" v-on="on" @click="unassign(instructor.user.userId)"
-                            close-icon="file_download">
+                            close-icon="expand_more">
                             ${instructor.user.userName}
-                            <v-icon right>file_download</v-icon>
+                            <v-icon right>expand_more</v-icon>
                         </v-chip>
                     </template>
                     ${instructor.user.email}
@@ -506,9 +523,10 @@
                 <v-subheader>Not assigned</v-subheader>
                 <v-tooltip bottom v-for="instructor in instructors" v-if="!instructor.isTeaching">
                     <template v-slot:activator="{ on, attrs  }">
-                        <v-chip v-bind="attrs" v-on="on" @click="assign(instructor.user.userId)" close-icon="upload">
+                        <v-chip v-bind="attrs" v-on="on" @click="assign(instructor.user.userId)"
+                            close-icon="expand_less">
                             ${instructor.user.userId}
-                            <v-icon right>upload</v-icon>
+                            <v-icon right>expand_less</v-icon>
                         </v-chip>
                     </template>
                     ${instructor.user.email}
@@ -557,9 +575,10 @@
             instructors: null,
             // {% endif %}
             // {% if request.blueprint == "instructor" %}
+            dutySearchText: '',
             num_joined_courses_wo_filter: null,
             num_all_courses_w_filter: null,
-            joinMode: false,
+            dutyDialgue: false,
             workspaceDialogue: false,
             courseInfoDialogue: false,
             graphImportDialogue: false,
