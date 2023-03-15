@@ -4,16 +4,15 @@
 
 <v-container>
     <v-row ref="shepherd-searchText">
-        <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
+        <v-col>
+            <v-text-field v-model="searchText" label="search" @input="search()"></v-text-field>
+        </v-col>
+        <v-col cols="auto" align-self="center" >
+            <v-btn small text @click="showAdvanceSearch=!showAdvanceSearch">Advance Search</v-btn>
+        </v-col>
     </v-row>
-    {% if request.blueprint == "instructor"%}
-    <v-tabs :value="filter.joined?0:1" center-active @change="selectTab">
-        <v-tab>My courses</v-tab>
-        <v-tab>All courses</v-tab>
-    </v-tabs>
-    {% endif %}
-    {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
-    <v-row no-gutters>
+    <v-row no-gutters v-show="showAdvanceSearch">
+        {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
         <v-col align-self="center" cols="auto">
             <span class="mr-4">filters:</span>
         </v-col>
@@ -38,7 +37,16 @@
                 clear <v-icon>close</v-icon>
             </v-btn>
         </v-col>
-        {% if request.blueprint == "instructor" %}
+        {% endif %}
+    </v-row>
+    {% if request.blueprint == "instructor"%}
+    <v-row>
+        <v-col cols="auto">
+            <v-tabs :value="filter.joined?0:1" center-active @change="selectTab">
+                <v-tab>My courses</v-tab>
+                <v-tab>All courses</v-tab>
+            </v-tabs>
+        </v-col>
         <v-spacer></v-spacer>
         <v-col cols="auto">
             <v-btn :color="joinMode?'':'success'" @click="joinMode=!joinMode;joinMode?clearFilter([]):null;search()"
@@ -46,7 +54,24 @@
                 <v-icon left>rule</v-icon>${joinMode?'hide duty on-off label':'Manage course duty'}
             </v-btn>
         </v-col>
-        {% endif %}
+    </v-row>
+
+    {% endif %}
+    {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
+    <v-row no-gutters v-show="filter.joined==true || filter.joined==null">
+        <v-col align-self="center" cols="auto">
+            <span class="mr-4">filters:</span>
+        </v-col>
+        <v-col align-self="center" cols="auto" ref="shepherd-filter">
+            <v-slide-group>
+                <v-chip filter v-model="filter.public"
+                    @click="filter.public = !filter.public; filter.internal = filter.public?false:filter.internal; search()">
+                    public</v-chip>
+                <v-chip filter v-model="filter.internal"
+                    @click="filter.internal = !filter.internal; filter.public = filter.internal?false:filter.public; search()">
+                    internal</v-chip>
+            </v-slide-group>
+        </v-col>
     </v-row>
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
         <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
@@ -515,6 +540,7 @@
             searchText: new URLSearchParams(window.location.search).get('search') ? new URLSearchParams(
                 window.location.search).get('search') : "",
             course: null,
+            showAdvanceSearch: false,
             // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
             num_courses_wo_filter: null,
             num_courses_wo_search_text: null,
