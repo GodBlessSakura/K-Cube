@@ -78,55 +78,7 @@
                         import graph
                     </v-btn>
                 </template>
-                <v-card>
-                    <v-tabs>
-                        <v-tab>
-                            Json import
-                        </v-tab>
-                        <v-tab>
-                            CSV import
-                        </v-tab>
-                        <v-tab>
-                            File import
-                        </v-tab>
-                        <v-tab-item>
-                            <v-card flat>
-                                <v-textarea v-model="jsonString" label='json array' persistent-placeholder
-                                    :placeholder="'[{&quot;h_name&quot;: &quot;COMP1&quot;, &quot;r_name&quot;: &quot;Has Subtopic&quot;, &quot;t_name&quot;:&quot;Cyber security&quot;, &quot;r_value&quot;:false }]\n triple with true or undefined r_value is considered as an edge creation, false is for edge removal.'">
-                                </v-textarea>
-                                <v-btn @click="jsonTextPreview(jsonString)">
-                                    preview
-                                </v-btn>
-                            </v-card>
-                        </v-tab-item>
-                        <v-tab-item>
-                            <v-card flat>
-                                <v-textarea v-model="csvString" label='CSV' persistent-placeholder
-                                    placeholder="COMP1,Subtopic in,Cyber security">
-                                </v-textarea>
-                                <v-btn @click="csvTextPreview(csvString)">
-                                    preview
-                                </v-btn>
-                            </v-card>
-                        </v-tab-item>
-                        <v-tab-item>
-                            <v-card flat style="height: 227px">
-                                <v-card-text align="center" justify="center">
-                                    <v-icon class="mt-5" size="60">upload</v-icon>
-                                    <p>
-                                        Drop your json / csv file here, or click to select them.
-                                    </p>
-                                    <input @input="onFileDrop($event)" type="file" ref="fileInput"
-                                        style="display:none" />
-                                </v-card-text>
-                            </v-card>
-                            <div @click="$refs?.fileInput?.click()"
-                                style="height: 100%; width: 100%; z-index: 500; position: absolute; top: 0; left: 0"
-                                @drop.prevent="onFileDrop($event)" @dragenter.prevent @dragover.prevent>
-                            </div>
-                        </v-tab-item>
-                    </v-tabs>
-                </v-card>
+                <kcube-triplesImport-form @triples="graphPreview($event); importDialogue = false"></kcube-triplesImport-form>
             </v-dialog>
         </v-col>
     </v-row>
@@ -172,6 +124,7 @@
 {{ cyMetricsVisualize.script()}}
 {{ cyOption.component()}}
 {{ cyOption.script()}}
+{% include "instructor/components/triplesImportForm.html" %}
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
     previewCyOption = {
@@ -284,8 +237,6 @@
             greaterVisibility: [],
             proceeded: false,
             confirmed: false,
-            jsonString: '',
-            csvString: '',
             userTriples: null,
             metricsBottomSheet: false,
             importDialogue: false,
@@ -530,51 +481,6 @@
                 })
                 previewLayout.run()
             },
-            jsonTextPreview(jsonString) {
-                try {
-                    let triples = JSON.parse(jsonString.trim())
-                    this.graphPreview(triples)
-                } catch (e) {
-                    console.log(e)
-                    previewCy.edges().forEach(edge => {
-                        edge.data('preview_value', 'undefined')
-                    })
-                    this.$root.errorDisplay({},
-                        'Textual import is not a valid json string.')
-                }
-            },
-            csvTextPreview(csvString) {
-                let rows = csvString.trim().split('\n')
-                let rowify = (row) => {
-                    let line = row.split(',')
-                    return {
-                        "h_name": line[0],
-                        "r_name": line[1],
-                        "t_name": line[2]
-                    }
-                }
-                this.graphPreview(rows.map(rowify))
-            },
-            onFileDrop(e) {
-                let file
-                if (e.dataTransfer) {
-                    file = e.dataTransfer.files.item(0)
-                } else {
-                    file = this.$refs.fileInput.files.item(0)
-                }
-                switch (file.name.split('.').at(-1)) {
-                    case "json":
-                        file.text().then(text => this.jsonTextPreview(text))
-                        break;
-                    case "csv":
-                        file.text().then(text => this.csvTextPreview(text))
-                        break
-                    default:
-                        this.$root.errorDisplay({},
-                            'Only json or csv file is accepted.');
-
-                }
-            }
         },
         mounted: function () {
             previewCy.mount(document.getElementById("preview"))

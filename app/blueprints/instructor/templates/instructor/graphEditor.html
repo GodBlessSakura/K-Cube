@@ -326,6 +326,18 @@
                                 </v-list-item-icon>
                             </v-list-item>
                         </v-list>
+                        <v-dialog max-width="700px" v-model="importDialogue">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-list-item dense v-bind="attrs" v-on="on">
+                                    <v-list-item-title>triples<br>import</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>upload</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                            </template>
+                            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false ">
+                            </kcube-triplesImport-form>
+                        </v-dialog>
                     </v-menu>
                 </v-col>
                 <v-col cols="auto" dense>
@@ -701,6 +713,7 @@
 {{ cyOption.component()}}
 {{ cyOption.script()}}
 {% include "instructor/components/entityEditor.html" %}
+{% include "instructor/components/triplesImportForm.html" %}
 <style>
     .v-chip--active {
         background-color: lightblue;
@@ -874,6 +887,7 @@
             graphLoading: true,
             coursePlanDialogue: false,
             isPhysicsRunning: false,
+            importDialogue: false,
         }),
         computed: {
             fullScreenMode: {
@@ -1084,20 +1098,9 @@
                                     deltaGraphId: this.workspace.deltaGraphId
                                 }
                             }, '*')
-                            this.createWorkspaceTriple(body.triple)
                             if (body.triple) {
-                                if (r_value) {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
-                                        message: 'graphEditor-createTriple',
-                                        payload: body.triple
-                                    }, '*')
-                                } else {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
-                                        message: 'graphEditor-deleteTriple',
-                                        payload: body.triple
-                                    }, '*')
-                                }
-
+                                this.createWorkspaceTriple(body.triple)
+                                this.broadcastCreateWorkspaceTriple(body.triple)
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when creating triple.')
@@ -1144,22 +1147,7 @@
                                     }
                                 }, '*')
                                 this.deleteWorkspaceTriple(body.triple)
-                                let triple = body.triple
-                                let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
-                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
-                                    triple.t_name))[0]
-                                if (edge.data("subject_value") ==
-                                    "true") {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
-                                        message: 'graphEditor-createTriple',
-                                        payload: body.triple
-                                    }, '*')
-                                } else {
-                                    if (this.workspace.isExposed) this.editor_bc.postMessage({
-                                        message: 'graphEditor-deleteTriple',
-                                        payload: body.triple
-                                    }, '*')
-                                }
+                                this.broadcastDeleteWorkspaceTriple(body.triple)
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when deleted triple.')
@@ -1223,6 +1211,20 @@
                 this.edgeStatistic()
                 this.determineTripleOptions()
             },
+            broadcastCreateWorkspaceTriple(triple) {
+                if (triple.r_value) {
+                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                        message: 'graphEditor-createTriple',
+                        payload: body.triple
+                    }, '*')
+                } else {
+                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                        message: 'graphEditor-deleteTriple',
+                        payload: body.triple
+                    }, '*')
+                }
+
+            },
             deleteWorkspaceTriple(triple) {
                 let id = edgeIdFromNames(triple.h_name, triple.r_name, triple.t_name)
                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
@@ -1237,6 +1239,22 @@
                 this.edgeStatistic()
                 this.determineTripleOptions()
                 this.physics(this.isPhysicsRunning)
+            },
+            broadcastDeleteWorkspaceTriple(triple) {
+                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple.r_name,
+                    triple.t_name))[0]
+                if (edge.data("subject_value") ==
+                    "true") {
+                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                        message: 'graphEditor-createTriple',
+                        payload: body.triple
+                    }, '*')
+                } else {
+                    if (this.workspace.isExposed) this.editor_bc.postMessage({
+                        message: 'graphEditor-deleteTriple',
+                        payload: body.triple
+                    }, '*')
+                }
             },
             highlightEdge() {
                 cy.edges(".suppress").removeClass('suppress')
@@ -1858,6 +1876,48 @@
                 this.editor_bc.postMessage({
                     message: 'entityEditor-focus'
                 })
+            },
+            updateTriples(triples) {
+                this.$root.progress.show = true
+                let body = {
+                    triples: JSON.stringify(triples),
+
+                }
+                fetch('{{ url_for("RESTful.workspace.patch", deltaGraphId=deltaGraphId)}}', {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.$root.progress.show = false
+                        if (body.triples) {
+                            body.triples.forEach(triple => {
+                                if (triple.r_value) {
+                                    this.createWorkspaceTriple(triple)
+                                    this.broadcastCreateWorkspaceTriple(triple)
+
+                                } else {
+                                    this.deleteWorkspaceTriple(triple)
+                                    this.broadcastDeleteWorkspaceTriple(triple)
+                                }
+                            })
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error when importing triples.')
+                        }
+                    })
             }
         },
         mounted: function () {

@@ -36,7 +36,6 @@ FOREACH(triple IN [triple IN $triples WHERE triple.r_name IN approved_graph_rela
     MERGE (t:GraphConcept{name: triple.t_name})
     MERGE (h)-[r:DELTA_GRAPH_RELATIONSHIP{name: triple.r_name, deltaGraphId: workspace.deltaGraphId}]->(t)
     SET
-        workspace.lastModified = datetime.transaction(),
         r.creationDate = datetime.transaction(),
         r.value = CASE triple.r_value
             WHEN null
@@ -44,4 +43,5 @@ FOREACH(triple IN [triple IN $triples WHERE triple.r_name IN approved_graph_rela
             ELSE triple.r_value
             END
 )
+SET workspace.lastModified = datetime.transaction()
 RETURN workspace.deltaGraphId as deltaGraphId;

@@ -140,6 +140,20 @@ def patch(deltaGraphId):
                     ),
                 }
             )
+        if "triples" in request.json:
+            import json
+
+            triples = json.loads(request.json["triples"])
+            return jsonify(
+                {
+                    "success": True,
+                    "triples": get_api_driver().workspace.update_from_import(
+                        deltaGraphId=deltaGraphId,
+                        userId=g.user["userId"],
+                        triples=triples,
+                    ),
+                }
+            )
     return jsonify({"success": False, "message": "incomplete request"})
 
 

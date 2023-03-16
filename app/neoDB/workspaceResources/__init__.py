@@ -274,6 +274,33 @@ class workspaceDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def update_from_import(self, deltaGraphId, triples, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query,
+                deltaGraphId=deltaGraphId,
+                triples=triples,
+                userId=userId,
+            )
+            try:
+                return [
+                    {
+                        "h_name": record["h.name"],
+                        "r_name": record["r.name"],
+                        "t_name": record["t.name"],
+                        "r_value": record["r.value"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def delete_workspace(self, deltaGraphId, userId):
         fname = sys._getframe().f_code.co_name
 
