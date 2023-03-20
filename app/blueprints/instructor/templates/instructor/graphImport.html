@@ -78,7 +78,9 @@
                         import graph
                     </v-btn>
                 </template>
-                <kcube-triplesImport-form @triples="graphPreview($event); importDialogue = false"></kcube-triplesImport-form>
+                <kcube-triplesImport-form
+                    @json-error="previewCy.edges().forEach(edge => {edge.data('preview_value', 'undefined')})"
+                    @triples="graphPreview($event); importDialogue = false"></kcube-triplesImport-form>
             </v-dialog>
         </v-col>
     </v-row>

@@ -68,6 +68,7 @@
                     this.$emit('triples', triples)
                 } catch (e) {
                     console.log(e)
+                    this.$emit('json-error')
                     // previewCy.edges().forEach(edge => {
                     //     edge.data('preview_value', 'undefined')
                     // })
