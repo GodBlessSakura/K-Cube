@@ -68,9 +68,9 @@
                     this.$emit('triples', triples)
                 } catch (e) {
                     console.log(e)
-                    previewCy.edges().forEach(edge => {
-                        edge.data('preview_value', 'undefined')
-                    })
+                    // previewCy.edges().forEach(edge => {
+                    //     edge.data('preview_value', 'undefined')
+                    // })
                     this.$root.errorDisplay({},
                         'Textual import is not a valid json string.')
                 }
