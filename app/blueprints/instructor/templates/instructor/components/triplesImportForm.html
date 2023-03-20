@@ -85,6 +85,7 @@
                         "t_name": line[2]
                     }
                 }
+                let triples = rows.map(rowify)
                 this.$emit('triples', triples)
             },
             onFileDrop(e) {
