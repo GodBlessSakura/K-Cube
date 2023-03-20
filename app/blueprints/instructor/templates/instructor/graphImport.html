@@ -78,8 +78,7 @@
                         import graph
                     </v-btn>
                 </template>
-                <kcube-triplesImport-form
-                    @json-error="previewCy.edges().forEach(edge => {edge.data('preview_value', 'undefined')})"
+                <kcube-triplesImport-form @json-error="clearPreview()"
                     @triples="graphPreview($event); importDialogue = false"></kcube-triplesImport-form>
             </v-dialog>
         </v-col>
@@ -355,6 +354,11 @@
             fit() {
                 previewCy.fit()
                 subjectCy.fit()
+            },
+            clearPreview() {
+                previewCy.edges().forEach(edge => {
+                    edge.data('preview_value', 'undefined')
+                })
             },
             submit() {
                 if (!this.$refs.control.validate()) {
