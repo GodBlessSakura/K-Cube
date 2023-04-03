@@ -1,13 +1,13 @@
-CREATE CONSTRAINT user_uid_constraint IF NOT EXISTS ON (n:User) ASSERT n.userId IS UNIQUE;
-CREATE CONSTRAINT user_email_constraint IF NOT EXISTS ON (n:User) ASSERT n.email IS UNIQUE;
-CREATE CONSTRAINT permission_uid_constraint IF NOT EXISTS ON (n:Permission) ASSERT n.role IS UNIQUE;
-CREATE CONSTRAINT deltaGraph_uid_constraint IF NOT EXISTS ON (n:DeltaGraph) ASSERT n.deltaGraphId IS UNIQUE;
-CREATE CONSTRAINT course_uid_constraint IF NOT EXISTS ON (n:Course) ASSERT n.courseName IS UNIQUE;
-CREATE CONSTRAINT GraphConcept_uid_constraint IF NOT EXISTS ON (n:GraphConcept) ASSERT n.name IS UNIQUE;
-CREATE CONSTRAINT GraphRelationship_uid_constraint IF NOT EXISTS ON (n:GraphRelationship) ASSERT n.name IS UNIQUE;
-CREATE CONSTRAINT job_uid_constraint IF NOT EXISTS ON (n:Job) ASSERT n.jobId IS UNIQUE;
-CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS ON (n:Student) ASSERT n.studentId IS UNIQUE;
-CREATE CONSTRAINT MetaConcept_uid_constraint IF NOT EXISTS ON (n:MetaConcept) ASSERT n.name IS UNIQUE;
+CREATE CONSTRAINT user_uid_constraint IF NOT EXISTS FOR (n:User) REQUIRE n.userId IS UNIQUE;
+CREATE CONSTRAINT user_email_constraint IF NOT EXISTS FOR (n:User) REQUIRE n.email IS UNIQUE;
+CREATE CONSTRAINT permission_uid_constraint IF NOT EXISTS FOR (n:Permission) REQUIRE n.role IS UNIQUE;
+CREATE CONSTRAINT deltaGraph_uid_constraint IF NOT EXISTS FOR (n:DeltaGraph) REQUIRE n.deltaGraphId IS UNIQUE;
+CREATE CONSTRAINT course_uid_constraint IF NOT EXISTS FOR (n:Course) REQUIRE n.courseName IS UNIQUE;
+CREATE CONSTRAINT GraphConcept_uid_constraint IF NOT EXISTS FOR (n:GraphConcept) REQUIRE n.name IS UNIQUE;
+CREATE CONSTRAINT GraphRelationship_uid_constraint IF NOT EXISTS FOR (n:GraphRelationship) REQUIRE n.name IS UNIQUE;
+CREATE CONSTRAINT job_uid_constraint IF NOT EXISTS FOR (n:Job) REQUIRE n.jobId IS UNIQUE;
+CREATE CONSTRAINT student_uid_constraint IF NOT EXISTS FOR (n:Student) REQUIRE n.studentId IS UNIQUE;
+CREATE CONSTRAINT MetaConcept_uid_constraint IF NOT EXISTS FOR (n:MetaConcept) REQUIRE n.name IS UNIQUE;
 MERGE (p:Permission {role: "admin"})
 SET
     p = {
