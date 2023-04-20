@@ -16,6 +16,9 @@ function recursiveSearch(tree, name) {
 
 function traversal(name, triples, activities) {
     let activity = activities.filter(a => a.name == name)
+    // {% if request.blueprint != "instructor" and request.blueprint != "DLTC"  %}
+    if (activities.length == 0) return null
+    // {% endif %}
     let node = {
         name: name,
         desc: activity.length > 0 ? activity[0].desc : name,

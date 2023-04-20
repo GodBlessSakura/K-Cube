@@ -22,6 +22,14 @@ def dashboard():
         components=listOfdashboardComponentsPaths(DLTC),
     )
 
+@DLTC.route("/coursePlan/", defaults={"courseCode": None})
+@DLTC.route("/coursePlan/<courseCode>")
+def coursePlan(courseCode):
+    if courseCode is not None:
+        return render_template(
+            "shared/coursePlan/coursePlan.html", courseCode=courseCode
+        )
+    abort(404)
 
 @DLTC.before_request
 @authorize_with([], True, ["DLTC", "admin"])

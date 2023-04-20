@@ -57,6 +57,7 @@
 
     {% endif %}
     {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
+    {% if request.blueprint == "instructor"  %}
     <v-row no-gutters v-show="filter.joined==true || filter.joined==null">
         <v-col align-self="center" cols="auto">
             <span class="mr-4">filters:</span>
@@ -72,6 +73,7 @@
             </v-slide-group>
         </v-col>
     </v-row>
+    {% endif %}
     <v-row v-for="row in [...Array(Math.ceil(courses.length/colPerRow)).keys()]">
         <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex" style="flex-direction:column">
             <v-card v-if="courses[row*colPerRow + col]" @click="openCoursePreview(courses[row * colPerRow + col])"
@@ -161,6 +163,18 @@
                                 </v-tooltip>
                             </v-list-item>
                             {% elif request.blueprint == "DLTC" %}
+                            <v-list-item>
+                                <v-tooltip bottom>
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-btn v-bind="attrs" v-on="on"
+                                            :href="'{{ url_for('DLTC.coursePlan') }}/' + courses[row*colPerRow + col].courseCode"
+                                            icon>
+                                            <v-icon>edit_calendar</v-icon>
+                                        </v-btn>
+                                    </template>
+                                    <span>Course Plan</span>
+                                </v-tooltip>
+                            </v-list-item>
                             <v-list-item>
                                 <v-tooltip bottom>
                                     <template v-slot:activator="{ on, attrs }">
@@ -270,6 +284,18 @@
                     <v-slide-group style="padding: unset">
                         <v-slide-item>
                             <v-subheader style="height: auto; font-size: small;">page</v-subheader>
+                        </v-slide-item>
+                        <v-slide-item>
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn v-bind="attrs" v-on="on" color="info"
+                                        :href="'{{ url_for('DLTC.coursePlan') }}/' + courses[row*colPerRow + col].courseCode"
+                                        icon>
+                                        <v-icon>edit_calendar</v-icon>
+                                    </v-btn>
+                                </template>
+                                <span>Course Plan</span>
+                            </v-tooltip>
                         </v-slide-item>
                         <v-slide-item>
                             <v-tooltip bottom>

@@ -1942,7 +1942,7 @@
             self = this
             let loadDataPromise = this.loadData().then(_ => {
                 console.log
-                this.editor_bc = new BroadcastChannel(this.subject.courseCode + "-editor")
+                this.editor_bc = new BroadcastChannel("{{courseCode}}-{{request.blueprint}}-editor"),
                 this.editor_bc.onmessage = (e) => {
                     const {
                         message,

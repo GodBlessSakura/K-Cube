@@ -45,7 +45,7 @@ SET
         canApproveRelationship : false,
         canWriteAllCourseBranch : false,
         canReadAllCourseBranch : false,
-        canWriteAllCourseMaterial : false,
+        canWriteAllCourseMaterial : true,
         canViewInternalCourse : true,
         canSetInternalCourse : true,
         canCreateCourse : true,
@@ -59,7 +59,7 @@ SET
         canAssignCourse : true,
         canWriteTeachingCourseBranch : false,
         canReadTeachingCourseBranch : false,
-        canWriteTeachingCourseMaterial : false,
+        canWriteTeachingCourseMaterial : true,
         canGiveFeedback : true,
         canReplyFeedback : true
     };

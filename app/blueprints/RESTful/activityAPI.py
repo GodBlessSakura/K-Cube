@@ -8,12 +8,14 @@ activity = Blueprint("activity", __name__, url_prefix="activity")
 
 @activity.get("/")
 def query():
-    if request.args.get("userId") and request.args.get("courseCode"):
-        return activityOfUser(
-            request.args.get("userId"), request.args.get("courseCode")
-        )
-    if request.args.get("ofUser") and request.args.get("courseCode"):
-        return activityOfUser(g.user["userId"], request.args.get("courseCode"))
+    if request.args.get("courseCode"):
+        if request.args.get("userId"):
+            return activityOfUser(
+                request.args.get("userId"), request.args.get("courseCode")
+            )
+        if request.args.get("ofUser"):
+            return activityOfUser(g.user["userId"], request.args.get("courseCode"))
+        return activityOfDepartment(request.args.get("courseCode"))
 
     return jsonify({"success": False, "message": "incomplete request"})
 
@@ -25,6 +27,20 @@ def activityOfUser(userId, courseCode):
                 "success": True,
                 "activities": get_api_driver().activity.get_user_course_activities(
                     courseCode=courseCode, userId=userId
+                ),
+            }
+        )
+    except Exception as e:
+        raise e
+
+
+def activityOfDepartment(courseCode):
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "activities": get_api_driver().activity.get_department_course_activities(
+                    courseCode=courseCode
                 ),
             }
         )
@@ -47,16 +63,30 @@ def post(courseCode, name):
         and courseCode
         and name
     ):
-        return jsonify(
-            {
-                "success": True,
-                "activity": get_api_driver().activity.set_user_course_activities(
-                    courseCode=courseCode,
-                    name=name,
-                    week=float(request.json["week"]),
-                    userId=g.user["userId"],
-                    desc=request.json["desc"],
-                ),
-            }
-        )
+        if "DLTC" in request.json and request.json["DLTC"] :
+            if "DLTC" in g.permission["role"]:
+                return jsonify(
+                {
+                    "success": True,
+                    "activity": get_api_driver().activity.set_department_course_activities(
+                        courseCode=courseCode,
+                        name=name,
+                        week=float(request.json["week"]),
+                        userId=g.user["userId"],
+                        desc=request.json["desc"],
+                    ),
+                })
+        else:
+            return jsonify(
+                {
+                    "success": True,
+                    "activity": get_api_driver().activity.set_user_course_activities(
+                        courseCode=courseCode,
+                        name=name,
+                        week=float(request.json["week"]),
+                        userId=g.user["userId"],
+                        desc=request.json["desc"],
+                    ),
+                }
+            )
     return jsonify({"success": False, "message": "incomplete request"})

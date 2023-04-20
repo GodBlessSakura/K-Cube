@@ -156,7 +156,7 @@ def create_app(config_string):
     @app.route("/coursePlan/<courseCode>", defaults={"userId": None})
     @app.route("/coursePlan/<courseCode>/<userId>")
     def coursePlan(courseCode, userId):
-        if courseCode is not None and userId is not None:
+        if courseCode is not None:
             return render_template(
                 "shared/coursePlan/coursePlan.html",
                 courseCode=courseCode,

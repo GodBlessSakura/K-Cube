@@ -75,7 +75,7 @@
 <script>
     Vue.component('app-content', {
         data: () => ({
-            editor_bc: new BroadcastChannel("{{courseCode}}-editor"),
+            editor_bc: new BroadcastChannel("{{courseCode}}-{{request.blueprint}}-editor"),
             visible: true,
             courseCode: "{{courseCode}}",
             materialForm: false,

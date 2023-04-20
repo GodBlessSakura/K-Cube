@@ -19,7 +19,7 @@
             <v-text-field background-color="transparent" dense hide-details flat solo v-model="node.desc"
                 @change="node.notSync=true;patchEntity(node, node.week)"
                 :readonly="{{'false' if request.blueprint == 'instructor' else'true'}}"></v-text-field>
-            {% if request.blueprint == "instructor" %}
+            {% if request.blueprint == "instructor" or request.blueprint == "DLTC"  %}
             <v-list-item-action style="margin: unset" v-show="hovering && !dragging && !deck">
                 <v-btn icon x-small @click="climb(-1)" v-show="node.week > 1">
                     <v-icon x-small>arrow_drop_up</v-icon>
@@ -101,7 +101,7 @@
             },
         },
         data: () => ({
-            editor_bc: new BroadcastChannel("{{courseCode}}-editor"),
+            editor_bc: new BroadcastChannel("{{courseCode}}-{{request.blueprint}}-editor"),
             parentHovered: false,
             showAction: false,
             dragging: false,
@@ -112,7 +112,7 @@
             keys: {}
         }),
         methods: {
-            // {% if request.blueprint == "instructor" %}
+            // {% if request.blueprint == "instructor" or request.blueprint == "DLTC" %}
             add(event, week) {
                 let entity = this.node.schedule[week][event.newIndex]
                 this.patchEntity(entity, week)
@@ -121,20 +121,24 @@
                 let promises = []
                 if (entity.notSync || entity.week != week) {
                     entity.week = week
+                    body = {
+                        desc: entity.desc,
+                        week: entity.week,
+                        //{% if request.blueprint == "DLTC" %}
+                        DLTC: true
+                        //{% endif %}
+                    }
                     promises.push(fetch(
-                        "{{ url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
-                        encodeURIComponent(
-                            entity.name), {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            desc: entity.desc,
-                            week: entity.week
-                        })
-                    })
+                            "{{url_for('RESTful.activity.post', courseCode = courseCode) | safe}}" +
+                            encodeURIComponent(
+                                entity.name), {
+                                method: 'POST',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(body)
+                            })
                         .then(response => {
                             try {
                                 return response.json()
@@ -147,12 +151,21 @@
                         .then(body => {
                             this.$root.progress.show = false
                             if (body.activity) {
-                                let { _vue, parent, children, schedule, ...orphan } = entity
+                                let {
+                                    _vue,
+                                    parent,
+                                    children,
+                                    schedule,
+                                    ...orphan
+                                } = entity
                                 _vue.editor_bc.postMessage({
                                     message: 'scheduleItem-activityUpdate-' + orphan.name,
                                     payload: orphan
                                 }, '*')
-                                return { request: "activity", espond: body.activity }
+                                return {
+                                    request: "activity",
+                                    espond: body.activity
+                                }
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error on setting courses plan information.')
@@ -160,22 +173,23 @@
                             }
                         }))
                 }
-                if (entity.parent === undefined || (entity.parent && this.node.name != entity.parent.name && this.node.name != entity.name)) {
+                if (entity.parent === undefined || (entity.parent && this.node.name != entity.parent.name &&
+                        this.node.name != entity.name)) {
                     if (workspaceDeltagraphId)
                         promises.push(fetch("{{ url_for('RESTful.triple.put') }}" + workspaceDeltagraphId, {
-                            method: 'PUT',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                h_name: entity.name,
-                                r_name: tree_edge_name,
-                                t_name: this.node.name,
-                                r_value: true,
-                                exclusive_head: true,
+                                method: 'PUT',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({
+                                    h_name: entity.name,
+                                    r_name: tree_edge_name,
+                                    t_name: this.node.name,
+                                    r_value: true,
+                                    exclusive_head: true,
+                                })
                             })
-                        })
                             .then(response => {
                                 try {
                                     return response.json()
@@ -191,7 +205,8 @@
                                         let oldParent = entity.parent
                                         console.log(oldParent)
                                         oldParent._vue.editor_bc.postMessage({
-                                            message: 'scheduleItem-scheduleUpdate-' + oldParent.name,
+                                            message: 'scheduleItem-scheduleUpdate-' + oldParent
+                                                .name,
                                             payload: serializeScheduleItemNode(oldParent)
                                         }, '*')
                                     }
@@ -205,7 +220,10 @@
                                         payload: body.triple,
                                         workspaceDeltagraphId: workspaceDeltagraphId
                                     }, '*')
-                                    return { request: "triple", espond: body.triple }
+                                    return {
+                                        request: "triple",
+                                        espond: body.triple
+                                    }
                                 } else {
                                     this.$root.errorDisplay(body,
                                         'Unexpected error when deleted triple.')
@@ -221,17 +239,27 @@
                     entity.notSync = false
                     let request = data.map(r => r.request)
                     if (!request.includes("triple") && request.includes("activity")) {
-                        let { _vue, parent, children, schedule, ...orphan } = entity
+                        let {
+                            _vue,
+                            parent,
+                            children,
+                            schedule,
+                            ...orphan
+                        } = entity
                         this.editor_bc.postMessage({
                             message: 'scheduleItem-itemClimbed-' + this.node.name,
                             payload: orphan
                         }, '*')
                     }
-                    this.$emit('countNotSync', { scroll: false })
+                    this.$emit('countNotSync', {
+                        scroll: false
+                    })
 
                 }).catch((reason) => {
                     entity.syncError = true
-                    this.$emit('countNotSync', { scroll: true })
+                    this.$emit('countNotSync', {
+                        scroll: true
+                    })
                     throw reason
                 }).finally(() => {
                     entity._vue.$forceUpdate()
@@ -241,21 +269,29 @@
                 console.log(this.node.parent)
                 let newWeek = this.node.week + offset
                 if (newWeek > 0 && newWeek <= weekInSemester) {
-                    let { _vue, parent, children, schedule, ...orphan } = this.node
+                    let {
+                        _vue,
+                        parent,
+                        children,
+                        schedule,
+                        ...orphan
+                    } = this.node
                     orphan.week = newWeek
-                    this.node.parent._vue.updateActivity(orphan, true, this.node,)
+                    this.node.parent._vue.updateActivity(orphan, true, this.node, )
                 }
             },
             updateActivity(activity, needPatch = false, foundChild = undefined) {
                 console.log(foundChild)
                 console.log(this.node)
                 if (!foundChild) {
-                    foundChild = flattenSchedule(this.node.schedule).filter(node => node.name == activity.name)[0]
+                    foundChild = flattenSchedule(this.node.schedule).filter(node => node.name == activity.name)[
+                        0]
                 }
                 let oldWeek = foundChild.week
                 let newWeek = Number(activity.week)
                 manipulateAndHighlight = () => {
-                    let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild.name)
+                    let index = this.node.schedule[oldWeek].findIndex(sibling => sibling.name == foundChild
+                        .name)
                     this.node.schedule[oldWeek].splice(index, 1)
                     if (!(newWeek in this.node.schedule)) this.node.schedule[newWeek] = []
                     this.node.schedule[newWeek].push(foundChild)
@@ -282,8 +318,7 @@
                     this.patchEntity(foundChild, newWeek).then(result => {
                         manipulateAndHighlight()
                     })
-                }
-                else {
+                } else {
                     foundChild.week = newWeek
                     foundChild.desc = activity.desc
                     manipulateAndHighlight()
@@ -293,13 +328,11 @@
                 if (target != null) {
                     if (target.name == this.node.name) {
                         this.sync()
-                    }
-                    else {
+                    } else {
                         if (this.$refs.children)
                             this.$refs.children.forEach(child => child.sync(target))
                     }
-                }
-                else {
+                } else {
                     if (this.node.notSync) {
                         this.patchEntity(this.node, this.node.week)
                     }
@@ -312,7 +345,8 @@
                     let oldSpanMax = Math.max(...this.weeks, ...Object.values(this.spans))
                     this.weeks = []
                     this.spans = {}
-                    let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length > 0).map(week => Number(week))
+                    let week = Object.keys(this.node.schedule).filter(week => this.node.schedule[week].length >
+                        0).map(week => Number(week))
                     if (week.length > 0) {
                         let max = Math.max(...week)
                         let min = Math.min(...week)
@@ -323,15 +357,16 @@
                         this.keys[week] = week + ';'
                         if (this.node.schedule[week] && this.node.schedule[week].length > 0) {
                             this.keys[week] += this.node.schedule[week].map(node => node.name).join(';')
-                            this.spans[week] = Math.max(...flattenListOfNode(this.node.schedule[week]).map(n => n.week).filter(w => Number.isInteger(w)))
-                        }
-                        else {
+                            this.spans[week] = Math.max(...flattenListOfNode(this.node.schedule[week]).map(n =>
+                                n.week).filter(w => Number.isInteger(w)))
+                        } else {
                             if (!(week in this.node.schedule)) this.node.schedule[week] = []
                         }
                     }
                     if (!(this.node.week in this.node.schedule)) this.node.schedule[this.node.week] = []
                     if (this.root && this.weeks.length == 0) this.weeks = [this.node.week]
-                    if (oldSpanMin != Math.min(...this.weeks, ...Object.values(this.spans)) || oldSpanMax != Math.max(...this.weeks, ...Object.values(this.spans)))
+                    if (oldSpanMin != Math.min(...this.weeks, ...Object.values(this.spans)) || oldSpanMax !=
+                        Math.max(...this.weeks, ...Object.values(this.spans)))
                         this.$emit('spanChanged')
                 }
             },
@@ -348,20 +383,17 @@
                     if (message == "scheduleItem-itemClimbed-" + this.node.name) {
                         console.log("scheduleItem-itemClimbed-", this.node.name)
                         this.node._vue.updateActivity(payload, false)
-                    }
-                    else if (message == "entityEditor-activity-" + this.node.name) {
+                    } else if (message == "entityEditor-activity-" + this.node.name) {
                         console.log("entityEditor-activity-", this.node.name)
                         this.node.parent._vue.updateActivity(payload, false, this.node)
-                    }
-                    else if (message == "scheduleItem-scheduleUpdate-" + this.node.name) {
+                    } else if (message == "scheduleItem-scheduleUpdate-" + this.node.name) {
                         function adoptChild(node) {
                             for (let week in node.schedule) {
                                 node.schedule[week].forEach(child => {
                                     child.parent = node
                                     child.notSync = false
                                     adoptChild(child)
-                                }
-                                )
+                                })
                             }
                         }
                         this.node.schedule = payload.schedule

@@ -81,7 +81,6 @@
                     <kcube-cy-options-dialog></kcube-cy-options-dialog>
                 </v-dialog>
             </v-slide-item>
-            {% if userId is not none %}
             <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
@@ -93,7 +92,6 @@
                     course plan
                 </v-tooltip>
             </v-slide-item>
-            {% endif %}
             {% if PERMISSION and PERMISSION.role and "instructor" in PERMISSION.role %}
             <v-slide-item>
                 <v-tooltip top>

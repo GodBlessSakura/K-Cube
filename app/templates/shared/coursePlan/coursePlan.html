@@ -61,24 +61,35 @@
                 </draggable>
             </v-col>
         </v-row>
+        {% elif request.blueprint == "DLTC" %}
+        <v-row no-gutters>
+            <v-col>
+                <v-btn @click="constructTimetable(triples,[],true)">recompute</v-btn>
+                <v-btn v-show="preview || unsyncedCount > 0" color="success" @click="submitTable()">submit</v-btn>
+                <v-btn v-show="preview" color="error" @click="loadData()">undo</v-btn>
+            </v-col>
+            <v-col cols="auto">
+            </v-col>
+        </v-row>
         {% endif %}
         <v-row>
             <v-col>
 
             </v-col>
             <v-col cols="auto">
+                {% if request.blueprint == "instructor" %}
                 <v-card-text v-if="graph == null && tree">
-                    {% if request.blueprint == "instructor" %}
                     You have not published a workspace or a graph version.<br>
                     No last-modified workspace was found neither.<br>
                     Course plan is built upond a graph.
-                    {% else %}
-                    No course plan is avaliable.
-                    {% endif %}
                 </v-card-text>
-                <kcube-schedule-item ref="root" root v-else-if="tree" :node="tree"
+                {% endif %}
+                <kcube-schedule-item ref="root" root v-if="tree" :node="tree"
                     @showDetails="showDetails($event[0],$event[1])" @countNotSync="countNotSync($event)">
                 </kcube-schedule-item>
+                <v-card-text v-else>
+                    No course plan is avaliable.
+                </v-card-text>
                 <v-progress-circular indeterminate v-else></v-progress-circular>
             </v-col>
             <v-col>
@@ -152,11 +163,11 @@
 </script>
 <script>
     let tree_edge_name = "Subtopic in"
-    let workspaceDeltagraphId
+    let workspaceDeltagraphId // lazy to remove watchers when this.editor_bc.postMessage
     let weekInSemester = 13
     Vue.component('app-content', {
         data: () => ({
-            editor_bc: new BroadcastChannel("{{courseCode}}-editor"),
+            editor_bc: new BroadcastChannel("{{courseCode}}-{{request.blueprint}}-editor"),
             isEntityEditorVisible: true,
             tree: null,
             x: null,
@@ -222,6 +233,8 @@
                 let graphPromise = fetch(
                         // {% if request.blueprint == "instructor" %}
                         "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = USER.userId) }}?lastModifiedIfNone=True",
+                        // {% elif request.blueprint == "DLTC" %}
+                        "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode) }}",
                         // {% else %}
                         "{{ url_for('RESTful.triple.getCourse', courseCode = courseCode, userId = userId) }}",
                         // {% endif %}
@@ -273,7 +286,7 @@
                 allocate(this.tree, 0, this.tree.numItem)
                 this.tree.parent = null
                 console.log(this.tree)
-                // {% if request.blueprint == "instructor" %}
+                // {% if request.blueprint == "instructor" or request.blueprint == "DLTC"  %}
                 if (!preview)
                     this.$nextTick(() => {
                         this.submitTable()
@@ -486,7 +499,19 @@
                                 })
                         })
                 })
-            }
+            },
+            // {% elif request.blueprint == "DLTC" %}
+            submitTable() {
+                this.preview = false
+                function recursiveSubmit(node) {
+                    if (node.notSync) {
+                        node._vue.sync()
+                    }
+                    flattenSchedule(node.schedule).filter(node => node.notSync).forEach(child =>
+                        recursiveSubmit(child))
+                }
+                recursiveSubmit(this.tree)
+            },
             // {% endif %}
         },
         mounted: function () {
