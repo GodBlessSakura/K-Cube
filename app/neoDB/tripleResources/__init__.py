@@ -375,6 +375,64 @@ class tripleDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
+    def get_graph_history_triple(self, userId, deltaGraphId):
+        from ..graphResources import cypher as graph_cypher
+
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            result = tx.run(
+                graph_cypher["get_graph_with_predecessors.cyp"],
+                userId=userId,
+                deltaGraphId=deltaGraphId,
+            )
+            from neo4j.time import DateTime
+
+            deltaGraph = [
+                dict(
+                    {
+                        key: value
+                        if not isinstance(value, DateTime)
+                        else str(value.iso_format())
+                        for key, value in record["graph"].items()
+                    }.items()
+                    | record["course"].items()
+                    | record["owner"].items(),
+                    labels=list(record["graph"].labels),
+                    courseCode=record["courseCode"],
+                )
+                for record in result
+            ]
+            deltaGraphIds = [graph["deltaGraphId"] for graph in deltaGraph]
+            triples = tx.run(
+                cypher["get_graphs_triple.cyp"],
+                userId=userId,
+                deltaGraphIds=deltaGraphIds,
+            )
+
+            try:
+                return {
+                    "triples": [
+                        {
+                            "h_name": record["h_name"],
+                            "t_name": record["t_name"],
+                            "r": {
+                                key: value
+                                if not isinstance(value, DateTime)
+                                else str(value.iso_format())
+                                for key, value in record["r"].items()
+                            },
+                        }
+                        for record in triples
+                    ],
+                    "graphs": deltaGraph,
+                }
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
     def get_triple_history(self, userId, h_name, r_name, t_name):
         fname = sys._getframe().f_code.co_name
 
@@ -404,7 +462,9 @@ class tripleDAO:
                             else str(value.iso_format())
                             for key, value in record["deltaGraph"].items()
                         },
-                        "ownerId": dict(record["owner"].items())["userId"] if record["owner"] else None,
+                        "ownerId": dict(record["owner"].items())["userId"]
+                        if record["owner"]
+                        else None,
                     }
                     for record in result
                 ]

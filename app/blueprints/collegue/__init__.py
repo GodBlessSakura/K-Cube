@@ -52,3 +52,19 @@ def graphView(deltaGraphId):
             deltaGraphId=deltaGraphId,
         )
     abort(404)
+
+@collegue.route(
+    "view/",
+    defaults={
+        "deltaGraphId": None,
+    },
+)
+@collegue.route("history/<deltaGraphId>")
+def versionHistory(deltaGraphId):
+    if deltaGraphId is not None:
+        return render_template(
+            "collegue/versionHistory.html",
+            deltaGraphId=deltaGraphId,
+        )
+    abort(404)
+

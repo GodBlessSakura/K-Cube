@@ -145,3 +145,32 @@ class graphDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def get_graph_with_predecessors(self, userId, deltaGraphId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, userId=userId, deltaGraphId=deltaGraphId)
+            try:
+                graphs = [
+                    dict(
+                        {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["graph"].items()
+                        }.items()
+                        | record["course"].items()
+                        | record["owner"].items(),
+                        labels=list(record["graph"].labels),
+                    courseCode=record["courseCode"],
+                    )
+                    for record in result
+                ]
+                return graphs[0] if len(graphs) > 0 else None
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

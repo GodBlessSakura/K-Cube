@@ -28,6 +28,14 @@ def query():
                 ),
             }
         )
+
+    if request.args.get("history") and request.args.get("deltaGraphId") is not None:
+        json = get_api_driver().triple.get_graph_history_triple(
+            deltaGraphId=request.args.get("deltaGraphId"),
+            userId=g.user["userId"] if g.user else None,
+        )
+        json["success"] = True
+        return jsonify(json        )
     return jsonify({"success": False, "message": "incomplete request"})
 
 
