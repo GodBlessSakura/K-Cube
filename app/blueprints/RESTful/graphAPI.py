@@ -53,7 +53,7 @@ def get_compare(overwriterId, overwriteeId):
         )
 
 
-@graph.get("/", defaults={"overwriteeId": None})
+@graph.get("/", defaults={"deltaGraphId": None})
 @graph.get("/<deltaGraphId>/")
 def get(deltaGraphId):
     return jsonify(

@@ -78,7 +78,7 @@
                         import graph
                     </v-btn>
                 </template>
-                <kcube-triplesImport-form @json-error="clearPreview()"
+                <kcube-triplesImport-form @json-error="clearPreview()" :courseCode="graph?.courseCode"
                     @triples="graphPreview($event); importDialogue = false"></kcube-triplesImport-form>
             </v-dialog>
         </v-col>

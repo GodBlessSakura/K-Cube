@@ -10,6 +10,9 @@
         <v-tab>
             File import
         </v-tab>
+        <v-tab>
+            Version import
+        </v-tab>
         <v-tab-item>
             <v-card flat>
                 <v-textarea v-model="jsonString" label='json array' persistent-placeholder
@@ -45,6 +48,33 @@
                 @drop.prevent="onFileDrop($event)" @dragenter.prevent @dragover.prevent>
             </div>
         </v-tab-item>
+        <v-tab-item>
+            <v-card flat style="height: 227px">
+                <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId"
+                    v-model="selectedNode"
+                    label="base on version (★ for the active version provided by the department):">
+                    <template v-slot:selection="data">
+                        <template>
+                            <v-chip>
+                                <v-list-item-content v-text="data.item.tag">
+                                </v-list-item-content>
+                                <v-icon v-if="data.item.isActive" small>star</v-icon>
+                            </v-chip>
+                        </template>
+                    </template>
+                    <template v-slot:item="data">
+                        <template>
+                            <v-list-item-content v-text="data.item.tag">
+                            </v-list-item-content>
+                            <v-icon v-if="data.item.isActive" small>star</v-icon>
+                        </template>
+                    </template>
+                </v-autocomplete>
+                <v-btn @click="versionPreview()">
+                    preview
+                </v-btn>
+            </v-card>
+        </v-tab-item>
     </v-tabs>
 </v-card>
 {% endmacro %}
@@ -56,11 +86,66 @@
 {% macro script() %}
 <script>
     Vue.component('kcube-triplesImport-form', {
+        props: {
+            courseCode: String
+        },
         data: () => ({
             jsonString: '',
             csvString: '',
+            selectedNode: null,
+            trunkOrBranch: undefined,
         }),
+        watch: {
+            courseCode: function (newValue, oldValue) {
+                this.loadData(newValue)
+            }
+        },
         methods: {
+            loadData(courseCode) {
+                console.log("meow")
+                let treePromise =
+                    fetch(
+                        "{{ url_for('RESTful.tree.get') }}" + this.courseCode +
+                        "?isInstructor=True&amp;isDLTC=False", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            }
+                        })
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
+                    })
+                    .then(body => {
+                        this.trunkOrBranch = [];
+                        if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
+                            this.trunkOrBranch = [];
+                            [body.trunk_nodes, body.branch_nodes].forEach(nodes => {
+                                nodes.forEach(node => {
+                                    let item = {
+                                        tag: node.property.tag,
+                                        deltaGraphId: node.property.deltaGraphId,
+                                        isActive: node.isActive
+                                    }
+                                    this.trunkOrBranch.push(item)
+                                    if (node.isActive) {
+                                        this.selectedNode = item
+                                    }
+                                })
+                            })
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
+                Promise.all([treePromise]).then(_ => {})
+            },
             jsonTextPreview(jsonString) {
                 try {
                     let triples = JSON.parse(jsonString.trim())
@@ -86,6 +171,37 @@
                 let triples = rows.map(rowify)
                 this.$emit('triples', triples)
             },
+            versionPreview() {
+                if (this.selectedNode) {
+                    fetch(
+
+                            "{{ url_for('RESTful.graph.get') }}/" + this.selectedNode.deltaGraphId, {
+                                method: 'GET',
+                                cache: 'no-store',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            if (body.graph && body.triples) {
+                                this.$emit('triples', body.triples)
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error on getting versions information.')
+                            }
+                        })
+
+                }
+            },
             onFileDrop(e) {
                 let file
                 if (e.dataTransfer) {
@@ -109,6 +225,9 @@
 
         },
         template: '#kcube-triplesImport-form',
+        mounted() {
+            this.loadData(this.courseCode)
+        },
         delimiters: ['${', '}'],
     })
 </script>
