@@ -142,23 +142,6 @@ def repositoryVersions(courseCode, id):
     )
 
 
-@instructor.route("/disambiguation", defaults={"courseCode": None})
-@instructor.route("/disambiguation/<courseCode>")
-def disambiguation(courseCode):
-    from app.api_driver import get_api_driver
-
-    return render_template(
-        "instructor/disambiguation.html",
-        courseCode=courseCode if courseCode is not None else "",
-        courseCodes=[
-            c["concept"]["name"]
-            for c in get_api_driver().course.list_internal_course(
-                userId=g.user["userId"]
-            )
-        ],
-        names=[e["concept"]["name"] for e in get_api_driver().entity.list_entity()],
-    )
-
 
 @instructor.route("/entityEditor", defaults={"courseCode": None, "name": None})
 @instructor.route("/entityEditor/<courseCode>/", defaults={"name": None})

@@ -34,3 +34,21 @@ def post(id):
 @authorize_with([], True, roles=["DLTC", "instructor", "admin", "operator"])
 def metagraph():
     return render_template("collaborate/metagraph.html")
+
+@collaborate.route("/disambiguation", defaults={"courseCode": None})
+@collaborate.route("/disambiguation/<courseCode>")
+@authorize_with([], True, roles=["DLTC", "instructor", "admin", "operator"])
+def disambiguation(courseCode):
+    from app.api_driver import get_api_driver
+
+    return render_template(
+        "collaborate/disambiguation.html",
+        courseCode=courseCode if courseCode is not None else "",
+        courseCodes=[
+            c["concept"]["name"]
+            for c in get_api_driver().course.list_internal_course(
+                userId=g.user["userId"]
+            )
+        ],
+        names=[e["concept"]["name"] for e in get_api_driver().entity.list_entity()],
+    )

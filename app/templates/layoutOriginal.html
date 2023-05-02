@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Knowledge Graph Visualization</title>
-    <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='images/logo.jpg') }}"> -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/logo.jpg') }}">
 
     <!-- Vuetify stylesheet -->
     <link
@@ -48,11 +48,11 @@
                 <v-card v-if="appBar" color="secondary" style="align-items: center;" tile elevation="0">
                     <a href="{{ url_for('index') }}" style="position:absolute; height:100%; width:100%"></a>
                     <v-card-title>
-                        <!-- <v-avatar class="profile" size="30" tile>
+                        <v-avatar class="profile" size="30" tile>
                             <v-img src="{{ url_for('static', filename='images/logo.png') }}">
                             </v-img>
-                        </v-avatar> -->
-                        KCUBE project
+                        </v-avatar>
+                        KCUBE
                     </v-card-title>
                 </v-card>
                 <template v-if="KCube.tabs && KCube.tabs.length > 0">
@@ -96,7 +96,7 @@
                     </v-tabs>
                 </template>
                 <v-spacer></v-spacer>
-                <!-- <v-menu offset-y eager open-on-hover>
+                <v-menu offset-y eager open-on-hover>
                     <template v-slot:activator="{ on: onMenu }">
                         <v-btn v-on="{ ...onMenu}" :ripple="{ class: 'warning--text',center: true }"
                             ref="shepherd-help">
@@ -116,66 +116,9 @@
                             <v-list-item-title>This particular page</v-list-item-title>
                         </v-list-item>
                     </v-list>
-                </v-menu> -->
+                </v-menu>
                 </template>
                 {% if session['user'] %}
-                <v-menu v-if="menu" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y
-                    eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn color="success" v-bind="attrs" v-on="on">
-                            Menu
-                        </v-btn>
-                    </template>
-                    <v-sheet style="max-height: 70vh; overflow-y: scroll">
-                        <v-list style="min-height: 70vh" nav dense>
-                            <div ref="shepherd-layoutNavigationRoleGroup">
-                                <v-list-group v-for="LG in KCube.navigationListGroup"
-                                    :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
-                                    <template v-slot:activator>
-                                        <v-list-item-title>${LG.title}</v-list-item-title>
-                                    </template>
-                                    <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}"
-                                        :sort="false">
-                                        <v-list-item v-for="L in LG.list" link :href="L.url">
-                                            <v-list-item-icon>
-                                                <v-icon>${L.icon}</v-icon>
-                                            </v-list-item-icon>
-                                            <v-list-item-title>${L.title}</v-list-item-title>
-                                        </v-list-item>
-                                    </draggable>
-                                </v-list-group>
-                                <v-divider></v-divider>
-                            </div>
-                            <v-list-item link href="{{ url_for('index') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>device_hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Homepage</v-list-item-title>
-                            </v-list-item>
-                            <v-list-item link href="{{ url_for('comprehensive') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Comprehensive</v-list-item-title>
-                            </v-list-item>
-                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>work</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Jobs</v-list-item-title>
-                            </v-list-item>
-                            <!-- <v-list-item link
-                                href="https://forms.office.com/Pages/ResponsePage.aspx?id=YPc3j4exgUm4L-Xcb1vPRNTurS9MNvJPoBO4A5M58iVUNUwzTjVSMTlZUVpQVTNQWThXVzdUQ1ZDTi4u"
-                                target="_blank" rel="noreferrer noopener">
-                                <v-list-item-icon>
-                                    <v-icon>assistant</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Website feedback or <br> bug report</v-list-item-title>
-                            </v-list-item> -->
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
                 <v-menu offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn text v-bind="attrs" v-on="on" style="text-transform: none !important;"
@@ -317,6 +260,65 @@
                 </v-dialog>
                 {% endif %}
             </v-app-bar>
+            {% if session['user'] %}
+            <v-menu v-if="menu" inset ref="shepherd-layoutNavigation" :close-on-content-click="false" top offset-y
+                eager>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn color="success" v-bind="attrs" v-on="on"
+                        style="z-index: 1000; position: fixed; left:12px; bottom:0">
+                        Menu
+                    </v-btn>
+                </template>
+                <v-sheet style="max-height: 70vh; overflow-y: scroll">
+                    <v-list style="min-height: 70vh" nav dense>
+                        <div ref="shepherd-layoutNavigationRoleGroup">
+                            <v-list-group v-for="LG in KCube.navigationListGroup"
+                                :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
+                                <template v-slot:activator>
+                                    <v-list-item-title>${LG.title}</v-list-item-title>
+                                </template>
+                                <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}"
+                                    :sort="false">
+                                    <v-list-item v-for="L in LG.list" link :href="L.url">
+                                        <v-list-item-icon>
+                                            <v-icon>${L.icon}</v-icon>
+                                        </v-list-item-icon>
+                                        <v-list-item-title>${L.title}</v-list-item-title>
+                                    </v-list-item>
+                                </draggable>
+                            </v-list-group>
+                            <v-divider></v-divider>
+                        </div>
+                        <v-list-item link href="{{ url_for('index') }}" ondragstart="event.preventDefault()">
+                            <v-list-item-icon>
+                                <v-icon>device_hub</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Homepage</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('comprehensive') }}" ondragstart="event.preventDefault()">
+                            <v-list-item-icon>
+                                <v-icon>hub</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Comprehensive</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
+                            <v-list-item-icon>
+                                <v-icon>work</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Jobs</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item link
+                            href="https://forms.office.com/Pages/ResponsePage.aspx?id=YPc3j4exgUm4L-Xcb1vPRNTurS9MNvJPoBO4A5M58iVUNUwzTjVSMTlZUVpQVTNQWThXVzdUQ1ZDTi4u"
+                            target="_blank" rel="noreferrer noopener">
+                            <v-list-item-icon>
+                                <v-icon>assistant</v-icon>
+                            </v-list-item-icon>
+                            <v-list-item-title>Website feedback or <br> bug report</v-list-item-title>
+                        </v-list-item>
+                    </v-list>
+                </v-sheet>
+            </v-menu>
+            {% endif %}
             <v-snackbar style="z-index: 600;" v-model="errorSnackBar.show" timeout="-1">
                 ${ errorSnackBar.message }
                 <template v-slot:action="{ attrs }">
@@ -390,13 +392,17 @@
                     icon: "co_present",
                     name: "instructor",
                     tabs: [{
-                        title: "homepage",
-                        icon: "home",
-                        url: "/",
+                        title: "dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('instructor.dashboard') }}",
                     }, {
                         title: "course list",
                         icon: "grid_view",
                         url: "{{ url_for('instructor.courseList') }}",
+                    }, {
+                        title: "Course Feedback",
+                        icon: "forum",
+                        url: "{{ url_for('collaborate.feedbacks') }}",
                     }]
                 },
                 //{% endif %}
@@ -405,13 +411,17 @@
                     icon: "groups",
                     name: "DLTC",
                     tabs: [{
-                        title: "homepage",
-                        icon: "home",
-                        url: "/",
+                        title: "dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('DLTC.dashboard') }}",
                     }, {
                         title: "course list",
                         icon: "grid_view",
                         url: "{{ url_for('DLTC.courseList') }}",
+                    }, {
+                        title: "Course Feedback",
+                        icon: "forum",
+                        url: "{{ url_for('collaborate.feedbacks') }}",
                     }]
                 },
                 //{% endif %}
@@ -420,9 +430,13 @@
                     icon: "school",
                     name: "student",
                     tabs: [{
-                        title: "homepage",
-                        icon: "home",
-                        url: "/",
+                        title: "dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('student.dashboard') }}",
+                    }, {
+                        title: "Course Feedback",
+                        icon: "forum",
+                        url: "{{ url_for('collaborate.feedbacks') }}",
                     }]
                 },
                 //{% endif %}
@@ -445,6 +459,11 @@
                     name: "instructor",
                     title: "Instructor's space",
                     list: [{
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('instructor.dashboard') }}",
+                        },
+                        {
                             title: "Courses",
                             icon: "grid_view",
                             url: "{{ url_for('instructor.courseList') }}",
@@ -464,6 +483,11 @@
                             icon: "upload",
                             url: "{{ url_for('instructor.uploadImage') }}",
                         },
+                        {
+                            title: "Disambiguate graph concept",
+                            icon: "change_circle",
+                            url: "{{ url_for('instructor.disambiguation') }}",
+                        },
                     ]
                 },
                 //{% endif %}
@@ -473,6 +497,11 @@
                     name: "DLTC",
                     title: "DLTC",
                     list: [{
+                            title: "Dashboard",
+                            icon: "dashboard",
+                            url: "{{ url_for('DLTC.dashboard') }}",
+                        },
+                        {
                             title: "Manage Courses",
                             icon: "grid_view",
                             url: "{{ url_for('DLTC.courseList') }}",
@@ -495,7 +524,11 @@
                     icon: "school",
                     name: "student",
                     title: "Student",
-                    list: []
+                    list: [{
+                        title: "Dashboard",
+                        icon: "dashboard",
+                        url: "{{ url_for('student.dashboard') }}",
+                    }, ]
                 },
                 //{% endif %}
                 /*{% if PERMISSION 
@@ -507,6 +540,13 @@
                     name: "collaborate",
                     title: "Collaborate",
                     list: [
+                        //{% if PERMISSION and (PERMISSION.canGiveFeedback or PERMISSION.canReplyFeedback) %}
+                        {
+                            title: "Course Feedback",
+                            icon: "forum",
+                            url: "{{ url_for('collaborate.feedbacks') }}",
+                        },
+                        //{% endif %}
                         //{% if PERMISSION and PERMISSION.canProposeRelationship %}
                         {
                             title: "Graph Editing",
@@ -521,11 +561,6 @@
                             title: "Catalogue Navigation",
                             icon: "polyline",
                             url: "{{ url_for('collaborate.metagraph') }}",
-                        },
-                        {
-                            title: "Disambiguate graph concept",
-                            icon: "change_circle",
-                            url: "{{ url_for('collaborate.disambiguation') }}",
                         },
                         //{% else %}
                         //*/

@@ -56,7 +56,7 @@
                     export
                 </v-tooltip>
             </v-slide-item>
-            <v-slide-item>
+            <v-slide-item v-if="!inIframe">
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn fab depressed v-on="on" @click="metricsBottomSheet = true">
@@ -115,7 +115,7 @@
         hide-overlay persistent no-click-animation eager>
         <iframe ref="relationshipIframe" style="height: 100%; width:100%" frameBorder="0"></iframe>
     </v-dialog>
-    <v-bottom-sheet v-model="sheet" inset>
+    <v-bottom-sheet v-model="sheet" v-if="!inIframe" inset>
         <template v-slot:activator="{ on, attrs }">
             <v-bottom-sheet :value="!sheet" :retain-focus="false" inset persistent hide-overlay no-click-animation>
                 <v-sheet>
@@ -311,6 +311,7 @@
     }
     Vue.component('app-content', {
         data: () => ({
+            inIframe: window.location !== window.parent.location,
             triples: null,
             metricsBottomSheet: false,
             entityDialogue: false,

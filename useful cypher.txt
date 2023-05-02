@@ -1,0 +1,4 @@
+// search course that active version is empty (the init version)
+MATCH (course)<-[active_link:TRUNK_DESCRIBE]-(trunk:Trunk)
+WHERE not exists((trunk)-[:PATCH|FORK|TRUNK_PULL|BRANCH_PULL*]->())
+RETURN *

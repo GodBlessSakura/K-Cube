@@ -111,23 +111,23 @@ def create_app(config_string):
     def userHomePage():
         from . import oidc_driver
         from flask import request
-        if (
-            "user" in session
-            and "userId" in session["user"]
-            and "permission" in g
-            and "role" in g.permission
-            and g.permission["role"] is not None
-        ):
-            if "instructor" in g.permission["role"]:
-                return redirect("/instructor/courseList")
-            if "DLTC" in g.permission["role"]:
-                return redirect("/DLTC/courseList")
-        return render_template("index.html", layout=None)
+        # if (
+        #     "user" in session
+        #     and "userId" in session["user"]
+        #     and "permission" in g
+        #     and "role" in g.permission
+        #     and g.permission["role"] is not None
+        # ):
+        #     if "instructor" in g.permission["role"]:
+        #         return redirect("/instructor/courseList")
+        #     if "DLTC" in g.permission["role"]:
+        #         return redirect("/DLTC/courseList")
+        return render_template("index.html", layout="demo")
 
     @app.route("/index", defaults={"layout": None})
     @app.route("/index/<layout>")
     def index(layout):
-        return render_template("index.html", layout=layout)
+        return render_template("index.html", layout="demo")
 
     @app.route("/comprehensive")
     def comprehensive():
