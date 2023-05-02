@@ -976,40 +976,43 @@
                     (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
                         .getItem("{{request.endpoint}}Toured")))) {
                     let counter = 0
-                    let interval = setInterval(() => {
-                        if (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
-                                .getItem("{{request.endpoint}}Toured"))) {
-                            let flash = (ref) => {
-                                let el = this.$refs[ref].$el
-                                el.scrollIntoView({
-                                    behavior: "smooth",
-                                    block: "center"
-                                })
-                                let ev = new Event("mousedown")
-                                let offset = el.getBoundingClientRect()
-                                ev.clientX = offset.left + 1
-                                ev.clientY = offset.top + 1
-                                el.dispatchEvent(ev)
-                                this.$nextTick(function () {
-                                    el.dispatchEvent(new Event("mouseup"))
-                                })
-                            }
-                            flash("shepherd-help")
-                            if (!localStorage.getItem('layoutToured')) flash(
-                                "shepherd-appIntro")
-                            if (this.pageIntro && !localStorage
-                                .getItem("{{request.endpoint}}Toured"))
-                                flash("shepherd-pageIntro")
-                            if (counter < 10) {
-                                counter++
+                    if (this.$refs["shepherd-help"]) {
+                        let interval = setInterval(() => {
+                            if (!localStorage.getItem('layoutToured') || (this.pageIntro && !
+                                    localStorage
+                                    .getItem("{{request.endpoint}}Toured"))) {
+                                let flash = (ref) => {
+                                    let el = this.$refs[ref].$el
+                                    el.scrollIntoView({
+                                        behavior: "smooth",
+                                        block: "center"
+                                    })
+                                    let ev = new Event("mousedown")
+                                    let offset = el.getBoundingClientRect()
+                                    ev.clientX = offset.left + 1
+                                    ev.clientY = offset.top + 1
+                                    el.dispatchEvent(ev)
+                                    this.$nextTick(function () {
+                                        el.dispatchEvent(new Event("mouseup"))
+                                    })
+                                }
+                                flash("shepherd-help")
+                                if (!localStorage.getItem('layoutToured')) flash(
+                                    "shepherd-appIntro")
+                                if (this.pageIntro && !localStorage
+                                    .getItem("{{request.endpoint}}Toured"))
+                                    flash("shepherd-pageIntro")
+                                if (counter < 10) {
+                                    counter++
+                                } else {
+                                    clearInterval(interval)
+
+                                }
                             } else {
                                 clearInterval(interval)
-
                             }
-                        } else {
-                            clearInterval(interval)
-                        }
-                    }, 500)
+                        }, 500)
+                    }
                 }
                 let query_params = new URLSearchParams(window.location.search)
                 if (query_params.get('oidcError')) this.errorDisplay({}, query_params.get('oidcError'));
