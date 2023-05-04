@@ -146,12 +146,6 @@
                                 </v-list-group>
                                 <v-divider></v-divider>
                             </div>
-                            <v-list-item link href="{{ url_for('index') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>device_hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Homepage</v-list-item-title>
-                            </v-list-item>
                             <v-list-item link href="{{ url_for('comprehensive') }}"
                                 ondragstart="event.preventDefault()">
                                 <v-list-item-icon>
@@ -444,11 +438,7 @@
                     icon: "co_present",
                     name: "instructor",
                     title: "Instructor's space",
-                    list: [{
-                            title: "Courses",
-                            icon: "grid_view",
-                            url: "{{ url_for('instructor.courseList') }}",
-                        },
+                    list: [
                         // {
                         //     title: "Schedules",
                         //     icon: "event_note",
@@ -473,11 +463,6 @@
                     name: "DLTC",
                     title: "DLTC",
                     list: [{
-                            title: "Manage Courses",
-                            icon: "grid_view",
-                            url: "{{ url_for('DLTC.courseList') }}",
-                        },
-                        {
                             title: "Create New Course",
                             icon: "library_add",
                             url: "{{ url_for('DLTC.courseForm') }}",
