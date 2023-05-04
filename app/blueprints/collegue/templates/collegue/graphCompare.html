@@ -85,6 +85,12 @@
                     </v-btn>
                 </template>
                 <v-list v-if="overwriter_triples">
+                    <v-list-item @click="downloadPNG()">
+                        <v-list-item-title>graph capture</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-icon>photo_camera</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
                     <v-list-item @click="copyJson()">
                         <v-list-item-title>json</v-list-item-title>
                         <v-list-item-icon>
@@ -545,6 +551,16 @@
                     ]
                     .join(
                         ',')).join('\n'), 'csv')
+            },
+            downloadPNG() {
+                var a = document.createElement("a");
+                a.href = cy.png({
+                    bg: cyStyles.simpleStyle[0].style["background-color"],
+                    full: true,
+                })
+                a.download = "Image.png"
+                a.click()
+                console.log(cy.png())
             },
             copy(str, format) {
                 console.log(str)

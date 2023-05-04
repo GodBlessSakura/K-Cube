@@ -10,6 +10,17 @@
             <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
+                        <v-btn fab depressed @click="downloadPNG()">
+                            <v-icon>photo_camera</v-icon>
+                        </v-btn>
+                    </template>
+                    graph capture
+                </v-tooltip>
+            </v-slide-item>
+            {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
+            <v-slide-item>
+                <v-tooltip top>
+                    <template v-slot:activator="{ on, attrs }">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
                                 <v-btn fab depressed v-on="on">
@@ -47,6 +58,7 @@
                     export
                 </v-tooltip>
             </v-slide-item>
+            {% endif %}
             <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
@@ -275,6 +287,16 @@
                     ]
                     .join(
                         ',')).join('\n'), 'csv')
+            },
+            downloadPNG() {
+                var a = document.createElement("a");
+                a.href = cy.png({
+                    bg: cyStyles.simpleStyle[0].style["background-color"],
+                    full: true,
+                })
+                a.download = "Image.png"
+                a.click()
+                console.log(cy.png())
             },
             copy(str, format) {
                 console.log(str)
