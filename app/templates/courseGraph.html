@@ -632,7 +632,9 @@
                     bg: cyStyles.simpleStyle[0].style["background-color"],
                     full: true,
                 })
-                a.download = "Image.png"
+                a.download = this.courseCode + "-{{userId if userId is not none else 'department'}}-" + (
+                    new Date()).toLocaleString(
+                    "en-US", {}) + ".png"
                 a.click()
                 console.log(cy.png())
             },

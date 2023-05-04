@@ -294,7 +294,7 @@
                     bg: cyStyles.simpleStyle[0].style["background-color"],
                     full: true,
                 })
-                a.download = "Image.png"
+                a.download = this.graph.courseCode + '-' + this.graph.deltaGraphId + ".png"
                 a.click()
                 console.log(cy.png())
             },

@@ -554,11 +554,11 @@
             },
             downloadPNG() {
                 var a = document.createElement("a");
-                a.href = cy.png({
+                a.href = previewCy.png({
                     bg: cyStyles.simpleStyle[0].style["background-color"],
                     full: true,
                 })
-                a.download = "Image.png"
+                a.download = this.rootName + '-' + this.overwriter.deltaGraphId + ".png"
                 a.click()
                 console.log(cy.png())
             },
