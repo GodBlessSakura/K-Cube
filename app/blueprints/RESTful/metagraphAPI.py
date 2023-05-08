@@ -62,3 +62,45 @@ def delete():
         except Exception as e:
             raise e
     return jsonify({"success": False, "message": "incomplete request"})
+
+
+@metagraph.post("/data/", defaults={"name": None})
+@metagraph.post("/data/<path:name>")
+@authorize_RESTful_with([], True, roles=["DLTC", "instructor", "admin", "operator"])
+def postData(name):
+    if "data" in request.json:
+        import json
+        if name:
+            return jsonify(
+                {
+                    "success": True,
+                    "data": get_api_driver().metagraph.set_metagraph_data(
+                        name=name,
+                        data=json.dumps(request.json["data"]),
+                    ),
+                }
+            )
+        elif "batch" in request.json and request.json["batch"]:
+            for entity in request.json["data"]:
+                get_api_driver().metagraph.set_metagraph_data(
+                    name=entity,
+                    data=json.dumps(request.json["data"][entity]),
+                )
+            return jsonify(
+                {
+                    "success": True,
+                }
+            )
+
+    return jsonify({"success": False, "message": "incomplete request"})
+
+
+@metagraph.get("/data")
+def getData():
+    return jsonify(
+        {
+            "success": True,
+            "data": get_api_driver().metagraph.list_metagraph_data(),
+        }
+    )
+    return jsonify({"success": False, "message": "incomplete request"})

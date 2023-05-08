@@ -1,0 +1,948 @@
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 20
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+ERROR - Invalid type for input X. Expected ndarray/AmpligraphDataset object, got <class 'list'>
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 20
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 20
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 20
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+ERROR - x_valid must be passed for early fitting.
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+WARNING - Transaction failed and will be retried in 1.0644559032275611s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 2.3681392542181285s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 4.230886266224206s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 8.679925563560865s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 17.773195875406593s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 1.057818193765759s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 2.06859956535523s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 3.356061566172971s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+WARNING - Transaction failed and will be retried in 9.599368816829225s (Couldn't connect to 127.0.0.1:7687 (resolved to ('127.0.0.1:7687',)):
+Failed to establish connection to ResolvedIPv4Address(('127.0.0.1', 7687)) (reason [WinError 10061] No connection could be made because the target machine actively refused it))
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO - 
+--------- Loss ---------
+INFO - Name : multiclass_nll
+INFO - eta : 0
+INFO - 
+------ Regularizer -----
+INFO - Name : LP
+INFO - lambda : 1e-05
+INFO - p : 3
+INFO - 
+------ Optimizer -----
+INFO - Name : adam
+INFO - lr : 0.0001
+INFO - 
+------ Initializer -----
+INFO - Name : xavier
+INFO - uniform : False
+INFO - Early stopping at epoch:130
+INFO - Best mrr:   1.000000
+INFO -  * Running on https://127.0.0.1:443/ (Press CTRL+C to quit)

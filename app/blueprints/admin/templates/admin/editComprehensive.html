@@ -5,11 +5,11 @@
 <v-card style="height: 100%; width: 100%;">
     <div style="height: 80vh; width: 90vw;">
         <div id="cy" style="height: 100%; width: 100%;"></div>
-        <!-- <v-fab-transition>
-            <v-btn color="primary" absolute bottom right fab @click="">
+        <v-fab-transition>
+            <v-btn color="primary" absolute bottom right fab @click="reComputePosition">
                 <v-icon>fit_screen</v-icon>
             </v-btn>
-        </v-fab-transition> -->
+        </v-fab-transition>
     </div>
 </v-card>
 {% endblock %}
@@ -94,7 +94,7 @@
                                 'Unexpected error occured.')
                         }
                     })
-                dataPromise = fetch("{{ url_for('RESTful.metagraph.getData', aggregated=True) }}", {
+                dataPromise = fetch("{{ url_for('RESTful.metagraph.getData') }}", {
                         method: 'GET',
                         cache: 'no-store',
                     })
@@ -132,9 +132,9 @@
                         this.$root.errorDisplay(body,
                             'Unexpected error on getting draft information.')
                     }
-                    cy.elements().style('visibility', 'hidden')
                     if (body[1].data) {
                         this.data = body[1].data
+                        console.log(this.data)
                         Object.keys(this.data).forEach(entity => {
                             console.log(cy.nodes("[name='" + entity + "']"))
                             this.data[entity] = JSON.parse(this.data[entity])
@@ -149,44 +149,12 @@
                             }
                         })
                         cy.fit()
-                        cy.elements().style('visibility',
-                            'visible')
-                    } else {
-                        cy.elements().style('visibility', 'hidden')
-                        let cyLayout = cy.layout({
-                            ...concentricLayoutOptions,
-                            // concentric: function (node) {
-                            //     return cyDijkstra.distanceTo(node) * -1
-                            // }
-                        })
-                        cyLayout.one('layoutstop', function () {
-                            let initOption = {
-                                ...coseLayoutOptions
-                            }
-                            initOption.idealEdgeLength = initOption.idealEdgeLength * 2
-                            initOption.numIter = Math.floor(initOption.numIter / 4)
-                            initOption.animate = false
-                            cyLayout = cy.layout(initOption)
-                            cyLayout.one('layoutstop', () => {
-                                let initOption = {
-                                    ...coseLayoutOptions
-                                }
-                                initOption.animate = false
-                                cyLayout = cy.layout(initOption)
-                                cyLayout.one('layoutstop', () => {
-                                    cy.elements().style('visibility',
-                                        'visible')
-                                })
-                                cyLayout.run()
-                            })
-                            cyLayout.run()
-                        })
-                        cyLayout.run()
                     }
 
                 })
             },
             reComputePosition() {
+                self = this
                 let cyLayout = cy.layout({
                     ...concentricLayoutOptions,
                     // concentric: function (node) {
@@ -208,7 +176,37 @@
                         initOption.animate = false
                         cyLayout = cy.layout(initOption)
                         cyLayout.one('layoutstop', () => {
-                            cy.nodes().s
+                            self.$root.progress.show = true
+                            cy.nodes().forEach(node => {
+                                self.data[node.data("name")] = {
+                                    ...self.data[node.data("name")],
+                                    ...node.position(),
+                                }
+                            })
+
+                            fetch(
+                                    "{{ url_for('RESTful.metagraph.postData') }}", {
+                                        method: 'POST',
+                                        cache: 'no-store',
+                                        headers: {
+                                            'Content-Type': 'application/json'
+                                        },
+                                        body: JSON.stringify({
+                                            batch: true,
+                                            data: self.data
+                                        })
+                                    })
+                                .then(response => {
+                                    try {
+                                        return response.json()
+                                    } catch {
+                                        self.$root.progress.show =
+                                            false
+                                        self.$root.errorDisplay({},
+                                            'Unexpected error occured.'
+                                        )
+                                    }
+                                })
                         })
                         cyLayout.run()
                     })

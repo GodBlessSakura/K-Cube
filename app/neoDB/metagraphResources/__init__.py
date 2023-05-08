@@ -91,3 +91,53 @@ class metagraphDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+    def set_metagraph_data(self, name, data):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, name=name, data=data)
+            try:
+                return [
+                    {
+                        "h_name": record["h_name"],
+                        "r_name": record["r_name"],
+                        "t_name": record["t_name"],
+                    }
+                    for record in result
+                ][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def set_metagraph_data(self, name, data):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, name=name, data=data)
+            try:
+                return [record["entity.metaData"] for record in result][0]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def list_metagraph_data(self):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query)
+            try:
+                return {record["entity.name"]: record["entity.metaData"] for record in result}
+
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)

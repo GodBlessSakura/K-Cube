@@ -44,3 +44,10 @@ def getDBStatistic():
 @admin.route("/user")
 def user_n_role():
     return render_template("admin/user_n_role.html")
+
+
+
+@admin.route("/editComprehensive")
+def editComprehensive():
+    return render_template("admin/editComprehensive.html")
+
