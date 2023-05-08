@@ -218,6 +218,12 @@ def create_app(config_string):
 
     from .neoDB.resourcesGuard import regExpRules
 
+    from . import kge
+
+    @app.cli.command("embed-comprehensive")
+    def embedComprehensive():
+        kge.embedComprehensive()
+
     @app.context_processor
     def inject_regExpRules():
         return dict(regExpRules=regExpRules)
