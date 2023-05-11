@@ -15,26 +15,41 @@
 
             </v-row>
             <v-row>
-                <v-col cols="auto">
-                    upload course icon (optional)
+                <v-col cols="2">
+                    <div class="v-label theme--light"
+                        style="position: relative;top: 50%; left:50%; transform: translate(-50%, -50%);">
+                        Use existing image for course icon:
+                        (or)
+                    </div>
                 </v-col>
                 <v-col>
-                    <iframe style="width: 100%" frameBorder="0" scrolling="no"
-                        src="{{ url_for('DLTC.uploadImage') }}"></iframe>
+                    <v-autocomplete no-filter label="course icon" v-model="imageURL" :rules="imageURLRules"
+                        :items="imagesUrl" required>
+                        <template v-slot:item="{ item }">
+                            <v-img :src="item" height="40" contain></v-img>
+                        </template>
+                        <template v-slot:selection="{ item }">
+                            <v-img :src="item" height="40" contain></v-img>
+                        </template>
+                    </v-autocomplete>
                 </v-col>
-
-
             </v-row>
-            <v-row>
-                <v-autocomplete label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl" required>
-                    <template v-slot:item="{ item }">
-                        <v-img :src="item" height="40" contain></v-img>
-                    </template>
-                    <template v-slot:selection="{ item }">
-                        <v-img :src="item" height="40" contain></v-img>
-                    </template>
-                </v-autocomplete>
-            </v-row>
+            <v-form ref="imageForm">
+                <v-row>
+                    <v-col cols="2">
+                        <div class="v-label theme--light"
+                            style="position: relative;top: 50%; left:50%; transform: translate(-50%, -50%);">
+                            upload new image (optional):
+                        </div>
+                    </v-col>
+                    <v-col>
+                        <v-file-input accept="image/*" name="file" label="File input" multiple required></v-file-input>
+                    </v-col>
+                    <v-col>
+                        <v-btn @click="uploadImage" color="success">Upload</v-btn>
+                    </v-col>
+                </v-row>
+            </v-form>
             <v-row>
                 <v-btn @click="Submit" color="success">
                     Submit
@@ -109,6 +124,41 @@
                         })
                 }
             },
+            uploadImage() {
+                if (this.$refs.imageForm.validate()) {
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    let formData = new FormData(this.$refs.imageForm.$el)
+                    this.$root.progress.show = true
+                    fetch("{{ url_for(request.blueprint+'.uploads.image') }}", {
+                            method: 'POST',
+                            cache: 'no-store',
+                            body: formData
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false;
+                            this.imagesUrl = this.imagesUrl.concat(body.urls)
+                            this.imageURL = body.urls[0]
+                            body.message = body.urls.length + ' image' + (body.urls.length > 1 ? 's' : '') +
+                                ' uploaded'
+                            this.$root.responseSnackBar(body,
+                                'unexpected error',
+                                this.$refs.imageForm.reset)
+
+                        })
+                }
+            }
 
         },
         mounted: function () {
