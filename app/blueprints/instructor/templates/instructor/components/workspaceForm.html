@@ -87,51 +87,49 @@
                 this.trunkOrBranch = []
                 this.selectedNode = undefined
                 this.$root.progress.show = true
-                this.$nextTick(() => {
-                    let treePromise =
-                        fetch(
-                            "{{ url_for('RESTful.tree.get') }}" + this.courseCode +
-                            "?isInstructor=True&amp;isDLTC=False", {
-                                method: 'GET',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                }
-                            })
-                        .then(response => {
-                            try {
-                                return response.json()
-                            } catch {
-                                this.$root.progress.show = false
-                                this.$root.errorDisplay({},
-                                    'Unexpected error occured.')
+                let treePromise =
+                    fetch(
+                        "{{ url_for('RESTful.tree.get') }}" + this.courseCode +
+                        "?isInstructor=True&amp;isDLTC=False", {
+                            method: 'GET',
+                            cache: 'no-store',
+                            headers: {
+                                'Content-Type': 'application/json'
                             }
                         })
-                        .then(body => {
-                            if (body.edges && body.trunk_nodes && body.branch_nodes && body
-                                .workspace_nodes) {
-                                [body.trunk_nodes, body.branch_nodes].forEach(nodes => {
-                                    nodes.forEach(node => {
-                                        let item = {
-                                            tag: node.property.tag,
-                                            deltaGraphId: node.property
-                                                .deltaGraphId,
-                                            isActive: node.isActive
-                                        }
-                                        this.trunkOrBranch.push(item)
-                                        if (node.isActive) {
-                                            this.selectedNode = item
-                                        }
-                                    })
-                                })
-                            } else {
-                                this.$root.errorDisplay(body,
-                                    'Unexpected error on getting versions information.')
-                            }
-                        })
-                    Promise.all([treePromise]).then(_ => {
-                        this.$root.progress.show = false
+                    .then(response => {
+                        try {
+                            return response.json()
+                        } catch {
+                            this.$root.progress.show = false
+                            this.$root.errorDisplay({},
+                                'Unexpected error occured.')
+                        }
                     })
+                    .then(body => {
+                        if (body.edges && body.trunk_nodes && body.branch_nodes && body
+                            .workspace_nodes) {
+                            [body.trunk_nodes, body.branch_nodes].forEach(nodes => {
+                                nodes.forEach(node => {
+                                    let item = {
+                                        tag: node.property.tag,
+                                        deltaGraphId: node.property
+                                            .deltaGraphId,
+                                        isActive: node.isActive
+                                    }
+                                    this.trunkOrBranch.push(item)
+                                    if (node.isActive) {
+                                        this.selectedNode = item
+                                    }
+                                })
+                            })
+                        } else {
+                            this.$root.errorDisplay(body,
+                                'Unexpected error on getting versions information.')
+                        }
+                    })
+                Promise.all([treePromise]).then(_ => {
+                    this.$root.progress.show = false
                 })
             },
             createRepository() {
