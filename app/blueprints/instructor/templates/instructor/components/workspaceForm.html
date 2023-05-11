@@ -4,7 +4,7 @@
         New repository for ${courseCode}:
     </v-card-title>
     <v-form ref="createRepositoryControl">
-        <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId" no-filter
+        <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId" :filter="v=>v"
             v-model="selectedNode" label="base on version (★ for the active version provided by the department):">
             <template v-slot:selection="data">
                 <template>
@@ -85,7 +85,7 @@
             loadData(courseCode) {
                 this.courseCode = courseCode
                 this.$root.progress.show = true
-                this.trunkOrBranch = undefined
+                this.trunkOrBranch = []
                 this.selectedNode = undefined
                 let treePromise =
                     fetch(
