@@ -85,7 +85,7 @@
             loadData(courseCode) {
                 this.courseCode = courseCode
                 this.$root.progress.show = true
-                this.trunkOrBranch = [];
+                this.trunkOrBranch = undefined
                 this.selectedNode = undefined
                 let treePromise =
                     fetch(
