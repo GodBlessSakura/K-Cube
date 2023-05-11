@@ -84,11 +84,9 @@
         methods: {
             loadData(courseCode) {
                 this.courseCode = courseCode
+                this.trunkOrBranch = []
+                this.selectedNode = undefined
                 this.$root.progress.show = true
-                this.$nextTick(() => {
-                    this.trunkOrBranch = []
-                    this.selectedNode = undefined
-                })
                 let treePromise =
                     fetch(
                         "{{ url_for('RESTful.tree.get') }}" + this.courseCode +
