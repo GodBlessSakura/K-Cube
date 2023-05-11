@@ -4,12 +4,11 @@
         New repository for ${courseCode}:
     </v-card-title>
     <v-form ref="createRepositoryControl">
-        <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId"
-            :search="nodeSearchText" v-model="selectedNode"
+        <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId" v-model="selectedNode"
             label="base on version (★ for the active version provided by the department):">
             <template v-slot:selection="data">
                 <template>
-                    <v-chip>
+                    <v-chip v-if="selectedNode">
                         <v-list-item-content v-text="data.item.tag">
                         </v-list-item-content>
                         <v-icon v-if="data.item.isActive" small>star</v-icon>
@@ -49,7 +48,6 @@
             courseCode: null,
             trunkOrBranch: undefined,
             selectedNode: undefined,
-            nodeSearchText: null,
             repoTag: new Date().toLocaleString('en-US', {
                 day: '2-digit',
                 year: '2-digit',
@@ -88,7 +86,6 @@
                 this.courseCode = courseCode
                 this.trunkOrBranch = []
                 this.selectedNode = undefined
-                this.nodeSearchText = null
                 this.$root.progress.show = true
                 let treePromise =
                     fetch(
