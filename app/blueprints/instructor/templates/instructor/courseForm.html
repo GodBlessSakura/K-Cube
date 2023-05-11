@@ -15,15 +15,29 @@
 
             </v-row>
             <v-row>
-                <v-select label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl" required>
+                <v-col cols="auto">
+                    upload course icon (optional)
+                </v-col>
+                <v-col>
+                    <iframe style="width: 100%" frameBorder="0" scrolling="no"
+                        src="{{ url_for('DLTC.uploadImage') }}"></iframe>
+                </v-col>
+
+
+            </v-row>
+            <v-row>
+                <v-autocomplete label="Image url" v-model="imageURL" :rules="imageURLRules" :items="imagesUrl" required>
                     <template v-slot:item="{ item }">
                         <v-img :src="item" height="40" contain></v-img>
                     </template>
-                </v-select>
+                    <template v-slot:selection="{ item }">
+                        <v-img :src="item" height="40" contain></v-img>
+                    </template>
+                </v-autocomplete>
             </v-row>
             <v-row>
                 <v-btn @click="Submit" color="success">
-                    Merge
+                    Submit
                 </v-btn>
             </v-row>
         </v-container>
@@ -96,6 +110,36 @@
                 }
             },
 
+        },
+        mounted: function () {
+
+            (new BroadcastChannel("*-courseForm")).onmessage = (e) => {
+                const {
+                    message,
+                    payload
+                } = e.data
+                console.log(e.data)
+                if (message.includes("imageUploaded")) {
+                    fetch("{{ url_for(request.blueprint+'.images') }}", {
+                            method: 'GET',
+                            cache: 'no-store',
+                        })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false;
+                            this.imagesUrl = body
+                            this.imageURL = payload[0]
+                        })
+                }
+            }
         },
         template: '#content',
         delimiters: ['${', '}'],

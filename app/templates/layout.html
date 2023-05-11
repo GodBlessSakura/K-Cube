@@ -56,9 +56,9 @@
                     </v-card-title>
                 </v-card>
                 <template v-if="KCube.tabs && KCube.tabs.length > 0">
-                    <v-select @change="switchRole" style="max-width: 200px;" solo hide-details
-                        background-color="transparent" flat label="view as" v-model="KCube.view" :items="KCube.roleTab"
-                        item-text="name" item-value="name" ref="shepherd-roleSelect">
+                    <v-select v-if="KCube.roleTab.length > 1" @change="switchRole" style="max-width: 200px;" solo
+                        hide-details background-color="transparent" flat label="view as" v-model="KCube.view"
+                        :items="KCube.roleTab" item-text="name" item-value="name" ref="shepherd-roleSelect">
                         <template v-slot:item="{ item, on, attrs }">
                             <v-list-item dense v-bind="attrs" v-on="on">
                                 <v-list-item-icon>
@@ -311,36 +311,40 @@
                 </v-dialog>
                 {% endif %}
             </v-app-bar>
-            <v-snackbar style="z-index: 600;" v-model="errorSnackBar.show" timeout="-1">
-                ${ errorSnackBar.message }
+            <v-snackbar :style="snackBars.errorSnackBar.style" ref="errorSnackBar"
+                v-model="snackBars.errorSnackBar.show" timeout="-1">
+                ${ snackBars.errorSnackBar.message }
                 <template v-slot:action="{ attrs }">
-                    <v-btn color="pink" text v-bind="attrs" @click="errorSnackBar.show = false">
+                    <v-btn color="pink" text v-bind="attrs" @click="snackBars.errorSnackBar.show = false">
                         Close
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 500;" v-model="completeSnackBar.show">
-                ${ completeSnackBar.message }
+            <v-snackbar :style="snackBars.completeSnackBar.style" ref="completeSnackBar"
+                v-model="snackBars.completeSnackBar.show">
+                ${ snackBars.completeSnackBar.message }
                 <template v-slot:action="{ attrs }">
-                    <v-btn color="blue" text v-bind="attrs" @click="completeSnackBar.show = false">
+                    <v-btn color="blue" text v-bind="attrs" @click="snackBars.completeSnackBar.show = false">
                         Close
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 650;" v-model="bePatientSnackBar.show" :timeout="2000">
+            <v-snackbar :style="snackBars.bePatientSnackBar.style" ref="bePatientSnackBar"
+                v-model="snackBars.bePatientSnackBar.show" :timeout="2000">
                 A http request is already submitting in progress. Thank you for your patience.
                 <template v-slot:action="{ attrs }">
-                    <v-btn color="blue" text v-bind="attrs" @click="bePatientSnackBar.show = false">
+                    <v-btn color="blue" text v-bind="attrs" @click="snackBars.bePatientSnackBar.show = false">
                         Close
                     </v-btn>
                 </template>
             </v-snackbar>
-            <v-snackbar style="z-index: 250;" v-model="actionSnackBar.show" timeout="-1">
-                ${ actionSnackBar.message }
+            <v-snackbar :style="snackBars.actionSnackBar.style" ref="actionSnackBar"
+                v-model="snackBars.actionSnackBar.show" timeout="-1">
+                ${ snackBars.actionSnackBar.message }
                 <template v-slot:action="{ attrs }">
-                    <v-btn color="blue" text v-bind="attrs" @click="actionSnackBar.action()">
-                        ${actionSnackBar.actionName} </v-btn>
-                    <v-btn color="error" text v-bind="attrs" @click="actionSnackBar.show = false">
+                    <v-btn color="blue" text v-bind="attrs" @click="snackBars.actionSnackBar.action()">
+                        ${snackBars.actionSnackBar.actionName} </v-btn>
+                    <v-btn color="error" text v-bind="attrs" @click="snackBars.actionSnackBar.show = false">
                         Close
                     </v-btn>
                 </template>
@@ -384,10 +388,6 @@
                     icon: "co_present",
                     name: "instructor",
                     tabs: [{
-                        title: "homepage",
-                        icon: "home",
-                        url: "/",
-                    }, {
                         title: "course list",
                         icon: "grid_view",
                         url: "{{ url_for('instructor.courseList') }}",
@@ -399,10 +399,6 @@
                     icon: "groups",
                     name: "DLTC",
                     tabs: [{
-                        title: "homepage",
-                        icon: "home",
-                        url: "/",
-                    }, {
                         title: "course list",
                         icon: "grid_view",
                         url: "{{ url_for('DLTC.courseList') }}",
@@ -413,11 +409,7 @@
                 {
                     icon: "school",
                     name: "student",
-                    tabs: [{
-                        title: "homepage",
-                        icon: "home",
-                        url: "/",
-                    }]
+                    tabs: []
                 },
                 //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and "admin" in PERMISSION.role %}
@@ -449,11 +441,6 @@
                             icon: "library_add",
                             url: "{{ url_for('instructor.courseForm') }}",
                         },
-                        {
-                            title: "Upload Course Icon",
-                            icon: "upload",
-                            url: "{{ url_for('instructor.uploadImage') }}",
-                        },
                     ]
                 },
                 //{% endif %}
@@ -466,11 +453,6 @@
                             title: "Create New Course",
                             icon: "library_add",
                             url: "{{ url_for('DLTC.courseForm') }}",
-                        },
-                        {
-                            title: "Upload Course Icon",
-                            icon: "upload",
-                            url: "{{ url_for('DLTC.uploadImage') }}",
                         },
                     ]
                 },
@@ -590,22 +572,40 @@
                 tabIndex: KCube.currentTabIndex,
                 miniSync: false,
                 navHover: false,
-                errorSnackBar: {
-                    show: false,
-                    message: ''
-                },
-                completeSnackBar: {
-                    show: false,
-                    message: ''
-                },
-                actionSnackBar: {
-                    show: false,
-                    message: '',
-                    actionName: '',
-                    action: () => {}
-                },
-                bePatientSnackBar: {
-                    show: false
+                snackBars: {
+                    errorSnackBar: {
+                        show: false,
+                        message: '',
+                        priority: 2,
+                        style: {
+                            'margin-bottom': 0 + 'px !important'
+                        }
+                    },
+                    completeSnackBar: {
+                        show: false,
+                        message: '',
+                        priority: 1,
+                        style: {
+                            'margin-bottom': 0 + 'px !important'
+                        }
+                    },
+                    actionSnackBar: {
+                        show: false,
+                        message: '',
+                        actionName: '',
+                        action: () => {},
+                        priority: 3,
+                        style: {
+                            'margin-bottom': 0 + 'px !important'
+                        }
+                    },
+                    bePatientSnackBar: {
+                        show: false,
+                        priority: 0,
+                        style: {
+                            'margin-bottom': 0 + 'px !important'
+                        }
+                    },
                 },
                 progress: {
                     show: false
@@ -730,7 +730,7 @@
                 },
                 forgotPassword() {
                     if (this.$root.progress.show == true) {
-                        this.$root.bePatientSnackBar.show = true
+                        this.$root.snackBars.bePatientSnackBar.show = true
                         return
                     }
                     this.$root.progress.show = true
@@ -797,11 +797,11 @@
                 responseSnackBar(body, defaultMessage, onSuccess = () => {}) {
                     if (body.success) {
                         if (body.message) {
-                            this.completeSnackBar.message = body.message
+                            this.snackBars.completeSnackBar.message = body.message
                         } else {
-                            this.completeSnackBar.message = 'success'
+                            this.snackBars.completeSnackBar.message = 'success'
                         }
-                        this.completeSnackBar.show = true
+                        this.snackBars.completeSnackBar.show = true
                         onSuccess()
                     } else {
                         this.errorDisplay(body, defaultMessage)
@@ -809,11 +809,11 @@
                 },
                 errorDisplay(body, defaultMessage) {
                     if (body.message) {
-                        this.errorSnackBar.message = body.message
-                        this.errorSnackBar.show = true
+                        this.snackBars.errorSnackBar.message = body.message
+                        this.snackBars.errorSnackBar.show = true
                     } else {
-                        this.errorSnackBar.message = defaultMessage
-                        this.errorSnackBar.show = true
+                        this.snackBars.errorSnackBar.message = defaultMessage
+                        this.snackBars.errorSnackBar.show = true
                     }
                     if (body.error) {
                         console.error(body.error)
@@ -821,10 +821,10 @@
 
                 },
                 actionDisplay(message, actionName, action) {
-                    this.actionSnackBar.message = message
-                    this.actionSnackBar.action = action
-                    this.actionSnackBar.actionName = actionName
-                    this.actionSnackBar.show = true
+                    this.snackBars.actionSnackBar.message = message
+                    this.snackBars.actionSnackBar.action = action
+                    this.snackBars.actionSnackBar.actionName = actionName
+                    this.snackBars.actionSnackBar.show = true
 
                 },
                 switchRole(role) {
@@ -850,6 +850,21 @@
                             }
                             throw error
                         })
+                },
+                computeSnackBarStyle() {
+                    Object.keys(this.snackBars).forEach(barId => {
+                        let priority = this.snackBars[barId].priority
+                        let margin = 0
+                        Object.keys(this.snackBars).filter(id => this.snackBars[id].priority >
+                            priority).forEach(
+                            id => {
+                                margin += this.$refs[id].$el.firstChild.offsetHeight + 8
+                            })
+                        this.snackBars[barId].style = {
+                            'margin-bottom': margin + 'px !important'
+                        }
+
+                    })
                 },
                 appIntro() {
                     this._tour = this.$shepherd({
@@ -962,6 +977,9 @@
             vuetify: new Vuetify(),
             mounted() {
                 this.$vuetify.theme.themes.light = KCube.colorTheme
+                Object.keys(this.snackBars).forEach(key => {
+                    this.$watch('snackBars.' + key + '.show', this.computeSnackBarStyle)
+                })
                 if (window.location == window.parent.location &&
                     (!localStorage.getItem('layoutToured') || (this.pageIntro && !localStorage
                         .getItem("{{request.endpoint}}Toured")))) {

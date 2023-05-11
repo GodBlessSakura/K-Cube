@@ -11,8 +11,10 @@ from flask import (
 )
 from app.filePath_provider import listOfdashboardComponentsPaths, imagesUrl
 from app.authorizer import authorize_with
+from ..uploads import uploads
 
 instructor = Blueprint("instructor", __name__, template_folder="templates")
+instructor.register_blueprint(uploads, url_prefix="/uploads")
 
 
 @instructor.route("/dashboard")
@@ -35,6 +37,13 @@ def courseList():
         "shared/courseList.html",
         imagesUrl=imagesUrl(),
     )
+
+@instructor.route("/images")
+def images():
+    from flask import jsonify
+    return jsonify(imagesUrl())
+    
+
 
 
 @instructor.route("/versionTree/", defaults={"courseCode": None})

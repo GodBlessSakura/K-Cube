@@ -8,7 +8,7 @@ from flask import (
     abort,
 )
 from app.authorizer import authorize_with
-from .blueprints.uploads import uploads
+from ..uploads import uploads
 from app.filePath_provider import listOfdashboardComponentsPaths
 
 DLTC = Blueprint("DLTC", __name__, template_folder="templates")
@@ -87,6 +87,11 @@ def courseForm():
 
     return courseForm()
 
+
+@DLTC.route("/images")
+def images():
+    from flask import jsonify
+    return jsonify(imagesUrl())
 
 @DLTC.route("/upload")
 def uploadImage():

@@ -2,8 +2,16 @@
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
 <v-form ref="imageForm">
-    <v-file-input accept="image/*" name="file" label="File input" multiple required></v-file-input>
-    <v-btn @click="uploadImage" color="success">Upload</v-btn>
+    <v-container>
+        <v-row>
+            <v-col>
+                <v-file-input accept="image/*" name="file" label="File input" multiple required></v-file-input>
+            </v-col>
+            <v-col>
+                <v-btn @click="uploadImage" color="success">Upload</v-btn>
+            </v-col>
+        </v-row>
+    </v-container>
 </v-form>
 {% endblock %}
 {% block VueComponentScript %}
@@ -21,7 +29,7 @@
                     }
                     let formData = new FormData(this.$refs.imageForm.$el)
                     this.$root.progress.show = true
-                    fetch("{{ url_for('DLTC.uploads.image') }}", {
+                    fetch("{{ url_for(request.blueprint+'.uploads.image') }}", {
                             method: 'POST',
                             cache: 'no-store',
                             body: formData
@@ -36,7 +44,12 @@
                             }
                         })
                         .then(body => {
-                            this.$root.progress.show = false
+                            this.$root.progress.show = false;
+                            (new BroadcastChannel("*-courseForm"))
+                            .postMessage({
+                                message: 'imageUploaded',
+                                payload: body.urls
+                            }, '*')
                             this.$root.responseSnackBar(body,
                                 'unexpected error',
                                 this.$refs.imageForm.reset)

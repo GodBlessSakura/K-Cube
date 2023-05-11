@@ -25,6 +25,7 @@ def image():
     if "file" not in request.files:
         return jsonify({"success": False, "message": "Form input 'file' is empty"})
     files = request.files.getlist("file")
+    urls = []
     try:
         for file in files:
             filename = os.path.split(file.filename)[1]
@@ -37,6 +38,16 @@ def image():
                         filename,
                     )
                 )
+                urls.append(
+                    url_for(
+                        "static",
+                        filename=current_app.config["upload_image_directory"].replace(
+                            "\\", "/"
+                        )
+                        + "/"
+                        + filename,
+                    )
+                )
     except Exception as e:
         return jsonify({"success": False, "message": str(e)})
-    return jsonify({"success": True})
+    return jsonify({"success": True, "urls": urls})
