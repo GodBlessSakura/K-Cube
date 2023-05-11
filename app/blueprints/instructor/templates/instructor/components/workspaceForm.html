@@ -4,7 +4,7 @@
         New repository for ${courseCode}:
     </v-card-title>
     <v-form ref="createRepositoryControl">
-        <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId"
+        <v-autocomplete return-object :items="trunkOrBranch" item-text="tag" item-value="deltaGraphId" no-filter
             v-model="selectedNode" label="base on version (★ for the active version provided by the department):">
             <template v-slot:selection="data">
                 <template>
