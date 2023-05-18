@@ -902,7 +902,7 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    this.$root.actionSnackBar.show = false
+                                    this.$root.snackBars.actionSnackBar.show = false
                                     this.allCourses[this.allCourses.map(c => c.courseCode)
                                         .indexOf(course.courseCode)].isTeaching = true
                                     this.search()
@@ -943,7 +943,7 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    this.$root.actionSnackBar.show = false
+                                    this.$root.snackBars.actionSnackBar.show = false
                                     this.allCourses[this.allCourses.map(c => c.courseCode)
                                         .indexOf(course.courseCode)].isTeaching = false
                                     this.search()
@@ -1069,7 +1069,7 @@
                                 this.$root.responseSnackBar(body,
                                     'Update failed for unknown reason.',
                                     () => {
-                                        this.$root.actionSnackBar.show = false
+                                        this.$root.snackBars.actionSnackBar.show = false
                                         let index = this.allCourses.map(c => c.courseCode).indexOf(
                                             course.courseCode)
                                         this.allCourses[index].isInternal = !this.allCourses[index]

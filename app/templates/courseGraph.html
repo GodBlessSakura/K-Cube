@@ -704,7 +704,7 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    this.$root.actionSnackBar.show = false
+                                    this.$root.snackBars.actionSnackBar.show = false
                                     this.isTeaching = true
                                 })
 
@@ -742,7 +742,7 @@
                             this.$root.responseSnackBar(body,
                                 'Assignment failed for unknown reason.',
                                 () => {
-                                    this.$root.actionSnackBar.show = false
+                                    this.$root.snackBars.actionSnackBar.show = false
                                     this.isTeaching = false
                                 })
                         })

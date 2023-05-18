@@ -490,7 +490,7 @@
                             this.$root.responseSnackBar(body,
                                 'update failed for unknown reason.',
                                 () => {
-                                    this.$root.actionSnackBar.show = false
+                                    this.$root.snackBars.actionSnackBar.show = false
                                     this.graph.isExposed = true
                                     this.editor_bc.postMessage({
                                         message: 'coursePlan-exposureToggle',
