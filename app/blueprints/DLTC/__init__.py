@@ -50,7 +50,7 @@ def versionTree(courseCode):
 
 @DLTC.route("/courseList")
 def courseList():
-    return render_template("shared/courseList.html")
+    return render_template("DLTC/courseList.html")
 
 
 @DLTC.route("/trunk/", defaults={"overwriterId": None, "overwriteeId": None})

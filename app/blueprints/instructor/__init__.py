@@ -34,7 +34,7 @@ def middleware():
 @instructor.route("/courseList")
 def courseList():
     return render_template(
-        "shared/courseList.html",
+        "instructor/courseList.html",
         imagesUrl=imagesUrl(),
     )
 
