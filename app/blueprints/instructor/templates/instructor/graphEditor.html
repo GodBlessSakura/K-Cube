@@ -1882,7 +1882,6 @@
                 this.$root.progress.show = true
                 let body = {
                     triples: JSON.stringify(triples),
-
                 }
                 fetch('{{ url_for("RESTful.workspace.patch", deltaGraphId=deltaGraphId)}}', {
                         method: 'PATCH',

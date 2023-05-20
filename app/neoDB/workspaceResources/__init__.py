@@ -258,6 +258,35 @@ class workspaceDAO:
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
+            from ..relationshipResources import cypher as relationship_cypher
+            from app.authorizer import permission_check
+
+            regconized, privileged = permission_check(["canApproveRelationship"], True)
+            print(privileged)
+            if privileged:
+                approved_relationship = tx.run(
+                    relationship_cypher["list_approved_relationship.cyp"]
+                )
+                approved_relationship = [
+                    record["r.name"] for record in approved_relationship
+                ]
+                unapproved_json_relationship = set(
+                    [
+                        triple["r_name"]
+                        for triple in triples
+                        if ("r_value" not in triple or triple["r_value"] == True)
+                        and triple["r_name"] not in approved_relationship
+                    ]
+                )
+                print(approved_relationship)
+                print([triple for triple in triples])
+                print(unapproved_json_relationship)
+                for relationship in unapproved_json_relationship:
+                    tx.run(
+                        relationship_cypher["create_proposal_and_approval.cyp"],
+                        userId=userId,
+                        name=relationship,
+                    )
             query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,
@@ -278,6 +307,29 @@ class workspaceDAO:
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
+            from ..relationshipResources import cypher as relationship_cypher
+            from app.authorizer import permission_check
+
+            regconized, privileged = permission_check(["canApproveRelationship"], True)
+            if privileged:
+                approved_relationship = tx.run(
+                    relationship_cypher["list_approved_relationship.cyp"]
+                )
+                [record["r.name"] for record in result]
+                unapproved_json_relationship = set(
+                    [
+                        triple["r_name"]
+                        for triple in triples
+                        if (triple["r_value"] == True or "r_value" not in triple)
+                        and triple["r_name"] not in approved_relationship
+                    ]
+                )
+                for relationship in unapproved_json_relationship:
+                    tx.run(
+                        relationship_cypher["create_proposal_and_approval .cyp"],
+                        userId=userId,
+                        name=relationship,
+                    )
             query = cypher[fname + ".cyp"]
             result = tx.run(
                 query,

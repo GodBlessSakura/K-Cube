@@ -380,9 +380,11 @@
                         !triple.t_name instanceof String ||
                         !triple.r_name instanceof String)
                         return;
+                    //{% if not (PERMISSION and PERMISSION.canApproveRelationship) %}
                     if (!this.relationships.includes(triple.r_name)) {
                         return
                     }
+                    //{% endif %}
                     acceptedTriple.push(triple)
                 })
                 let body = {
@@ -429,10 +431,12 @@
                         !triple.t_name instanceof String ||
                         !triple.r_name instanceof String)
                         return;
+                    //{% if not (PERMISSION and PERMISSION.canApproveRelationship) %}
                     if (!this.relationships.includes(triple.r_name)) {
                         unacceptedRelationship.push(triple.r_name)
                         return
                     }
+                    //{% endif %}
                     [triple.h_name, triple.t_name].forEach(name => {
                         if (previewCy.getElementById(name).length == 0) {
                             previewCy.add(nodeFactory(name))
