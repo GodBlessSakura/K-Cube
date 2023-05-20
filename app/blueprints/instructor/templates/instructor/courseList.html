@@ -74,8 +74,10 @@
                     <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex"
                         style="flex-direction:column">
                         <kcube-course-item :course="courses[row * colPerRow + col]"
-                            @join="join(courses[row * colPerRow + col])"
-                            @quit="quit(courses[row * colPerRow + col])">
+                            @click="courses[row * colPerRow + col].workspaces.length == 0?openWorkspaceDialogue(courses[row * colPerRow + col]):(openURL('{{ url_for('instructor.workspace') }}' + courses[row * colPerRow + col]).workspaces[0].deltaGraphId)"
+                            @assignment="courseAssignment(courses[row * colPerRow + col])" @import="openGraphImportDialogue(courses[row * colPerRow + col])"
+                            @info="courseInfo(courses[row * colPerRow + col])" @join="join(courses[row * colPerRow + col])"
+                            @quit="quit(courses[row * colPerRow + col])" @workspace="openWorkspaceDialogue(courses[row * colPerRow + col])">
                         </kcube-course-item>
                     </v-col>
                 </v-row>
@@ -95,8 +97,10 @@
                     <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex"
                         style="flex-direction:column">
                         <kcube-course-item showDutyBtn showBadage :course="space[row * colPerRow + col]"
-                            @join="join(space[row * colPerRow + col])"
-                            @quit="quit(space[row * colPerRow + col])">
+                            @click="space[row * colPerRow + col].workspaces.length == 0?openWorkspaceDialogue(space[row * colPerRow + col]):(openURL('{{ url_for('instructor.workspace') }}' + space[row * colPerRow + col]).workspaces[0].deltaGraphId)"
+                            @assignment="courseAssignment(space[row * colPerRow + col])" @import="openGraphImportDialogue(space[row * colPerRow + col])"
+                            @info="courseInfo(space[row * colPerRow + col])" @join="join(space[row * colPerRow + col])"
+                            @quit="quit(space[row * colPerRow + col])" @workspace="openWorkspaceDialogue(space[row * colPerRow + col])">
                         </kcube-course-item>
                     </v-col>
                 </v-row>
@@ -116,8 +120,10 @@
                     <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex"
                         style="flex-direction:column">
                         <kcube-course-item showDutyBtn :course="publishment[row * colPerRow + col]"
-                            @join="join(publishment[row * colPerRow + col])"
-                            @quit="quit(publishment[row * colPerRow + col])">
+                        @click="publishment[row * colPerRow + col].workspaces.length == 0?openWorkspaceDialogue(publishment[row * colPerRow + col]):(openURL('{{ url_for('instructor.workspace') }}' + publishment[row * colPerRow + col]).workspaces[0].deltaGraphId)"
+                        @assignment="courseAssignment(publishment[row * colPerRow + col])" @import="openGraphImportDialogue(publishment[row * colPerRow + col])"
+                        @info="courseInfo(publishment[row * colPerRow + col])" @join="join(publishment[row * colPerRow + col])"
+                        @quit="quit(publishment[row * colPerRow + col])" @workspace="openWorkspaceDialogue(publishment[row * colPerRow + col])">
                         </kcube-course-item>
                     </v-col>
                 </v-row>
@@ -191,7 +197,7 @@
                 <v-text-field v-model="dutySearchText" label="search""></v-text-field></v-card-title>
             <v-card-text>
                 <v-subheader>On duty</v-subheader>
-                <v-tooltip bottom v-for=" course in allCourses"
+                <v-tooltip bottom v-for="course in allCourses"
                     v-if="course.isTeaching && (dutySearchText == '' ? true : (course.courseCode.toLowerCase().includes(dutySearchText.toLowerCase()) || course.courseName.toLowerCase().includes(dutySearchText.toLowerCase())))">
                     <template v-slot:activator="{ on, attrs }">
                         <v-chip v-bind="attrs" v-on="on" @click="quit(course)" close-icon="expand_more">
