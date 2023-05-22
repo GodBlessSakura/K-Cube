@@ -168,7 +168,7 @@
                     </v-card-title>
                 </v-row>
                 <v-row v-for="row in rows" v-if="!hideGraph">
-                    <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column" v-if="col.userId">
+                    <v-col v-for="col in row" cols="3" class="d-flex" style="flex-direction:column" v-if="col.userName">
                         <v-btn v-if="col.isViewing" x-small
                             style="position: fixed;  transform: translate(5%,-50%); z-index:2" rounded color="black"
                             elevation="0" class="white--text">
@@ -178,11 +178,11 @@
                         <v-btn outlined large v-if="isPageInIFrame"
                             @click="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))"
                             @click.middle="newTab('{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : ''))">
-                            ${col.userId}
+                            ${col.userName}
                         </v-btn>
                         <v-btn outlined large v-else
                             :href="'{{ url_for('courseGraph') }}' + courseCode + (col.userId != null ? '/' + col.userId : '')">
-                            ${col.userId}
+                            ${col.userName}
                         </v-btn>
 
                     </v-col>
@@ -455,20 +455,19 @@
                         }
                     })
                     .then(body => {
-                        this.providers = body.instructors
-                        this.providers.push({
-                            userName: 'department',
-                            userId: null,
-                        })
-
-                        this.rows = [
-                            []
-                        ]
-                        let colPerRow = 4
                         if (body.instructors) {
+                            this.providers = body.instructors
+                            this.providers.push({
+                                userName: 'department',
+                                userId: null,
+                            })
+                            this.rows = [
+                                []
+                            ]
+                            let colPerRow = 4
                             this.isTeaching = body.instructors.map(instructor => instructor.userId)
                                 .includes("{{USER.userId}}")
-                            body.instructors.forEach(instructor => {
+                            this.providers.forEach(instructor => {
                                 let lastRow = this.rows[this.rows.length - 1]
                                 if (lastRow.length == colPerRow) {
                                     this.rows.push([])
@@ -476,23 +475,17 @@
                                 }
                                 lastRow.push({
                                     ...instructor,
-                                    isViewing: instructor.userId == "{{userId}}"
+                                    isViewing: instructor.userId == "{{userId}}" ||
+                                        ("{{userId}}" == "None" && instructor.userId ==
+                                            null)
                                 })
 
                             })
                             let lastRow = this.rows[this.rows.length - 1]
-                            if (lastRow.length == colPerRow) {
-                                this.rows.push([])
-                                lastRow = this.rows[this.rows.length - 1]
-                            }
-                            lastRow.push({
-                                userName: 'department',
-                                userId: null,
-                                isViewing: "{{userId}}" == "None"
-                            })
                             while (lastRow.length < colPerRow) {
                                 lastRow.push({})
                             }
+                            console.log(this.rows)
                         } else {
                             this.$root.errorDisplay(body,
                                 'Unexpected error on getting courses information.')
