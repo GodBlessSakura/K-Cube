@@ -1079,7 +1079,9 @@
     {% macro vueGridLayout() %}
     <script src="{{ url_for('static', filename='lib/vue-grid-layout.umd.js') }}"></script>
     {% endmacro %}
-
+    {% macro socketio() %}
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    {% endmacro %}
     {% block body %}{% endblock %}
 
 </body>

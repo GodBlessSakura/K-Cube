@@ -1,7 +1,5 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
-{% import 'component/cyMetricsVisualize.html' as cyMetricsVisualize %}
-{% import 'component/cyOption.html' as cyOption %}
 {% block VueComponent %}
 <v-container dense
     style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
@@ -22,7 +20,7 @@
             </v-avatar>
         </v-col>
         <v-col>
-            <v-row>
+            <v-row no-gutters>
                 <v-col cols="auto">
                     <v-text-field v-model="workspace.tag" hide-details @input="changeWorkspaceTag"></v-text-field>
                 </v-col>
@@ -113,6 +111,27 @@
                         <span style="font-size:small">
                             Course plan only reflects contents on published graph.<br>
                             The workspace is not published.<br>
+                        </span>
+                    </v-tooltip>
+                </v-col>
+                <v-spacer></v-spacer>
+                <v-col cols="auto">
+                    <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
+                        <template v-slot:activator="{ on }">
+                            <v-dialog max-width="700px">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-list-item dense v-bind="attrs" v-on="on">
+                                        <v-list-item-title>coauthor</v-list-item-title>
+                                        <v-list-item-icon>
+                                            <v-icon>group</v-icon>
+                                        </v-list-item-icon>
+                                    </v-list-item>
+                                </template>
+                                <kcube-coauthor-form deltaGraphId="{{deltaGraphId}}"></kcube-coauthor-form>
+                            </v-dialog>
+                        </template>
+                        <span style="font-size:small">
+                            Allow colleuges to edit the same graph with you.
                         </span>
                     </v-tooltip>
                 </v-col>
@@ -708,11 +727,17 @@
 
 {% endblock %}
 {% block VueComponentScript %}
+{% import 'component/cyMetricsVisualize.html' as cyMetricsVisualize %}
+{% import 'component/cyOption.html' as cyOption %}
+{% import 'instructor/components/coauthorForm.html' as coauthorForm with context%}
 {{ layout.cytoscapeCDN() }}
+{{ layout.socketio() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
 {{ cyOption.component()}}
 {{ cyOption.script()}}
+{{ coauthorForm.component()}}
+{{ coauthorForm.script()}}
 {% include "instructor/components/entityEditor.html" %}
 {% include "instructor/components/triplesImportForm.html" %}
 <style>
@@ -744,6 +769,10 @@
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
+    socket = io();
+    socket.on("connect", (arg) => {
+        socket.emit("graphEditor-joinRoom", "{{deltaGraphId}}")
+    });
     cy = cytoscape({
         style: cyStyles.basicEditStyle,
         wheelSensitivity: 0.15,
@@ -2075,7 +2104,12 @@
                     message: 'entityEditor-isVisible'
                 }, '*')
             })
-
+            socket.on('createWorkspaceTriple', (message) => {
+                this.createWorkspaceTriple(payload)
+            });
+            socket.on('deleteWorkspaceTriple', (message) => {
+                this.deleteWorkspaceTriple(payload)
+            });
             cy.on('tap', 'node', (event) => {
                 this.openEntityEditor(event.target.data("id"))
                 if (self.canUpdateEdge) {

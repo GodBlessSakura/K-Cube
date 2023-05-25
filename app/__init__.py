@@ -33,6 +33,7 @@ def create_app(config_string):
     print(config_string)
     app = Flask(__name__)
     mail.init_app(app)
+
     if config_string is None:
         config_object = config["default"]
     else:
@@ -60,6 +61,9 @@ def create_app(config_string):
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
     from .oidc_driver import oidcError
+    from .socketIO_driver import setup_socketio
+
+    setup_socketio(app)
 
     @app.errorhandler(404)
     def not_found(e):
@@ -111,6 +115,7 @@ def create_app(config_string):
     def userHomePage():
         from . import oidc_driver
         from flask import request
+
         # if (
         #     "user" in session
         #     and "userId" in session["user"]

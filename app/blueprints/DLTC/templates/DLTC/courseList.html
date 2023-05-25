@@ -465,7 +465,7 @@
                             <v-icon right>expand_more</v-icon>
                         </v-chip>
                     </template>
-                    ${course .courseName}
+                    ${course.courseName}
                     </v-tooltip>
                     </v-card-text>
                     <v-card-text>
@@ -478,7 +478,7 @@
                                     <v-icon right>expand_less</v-icon>
                                 </v-chip>
                             </template>
-                            ${course .courseName}
+                            ${course.courseName}
                         </v-tooltip>
                     </v-card-text>
         </v-card>
@@ -565,7 +565,7 @@
                     <template v-slot:activator="{ on, attrs  }">
                         <v-chip v-bind="attrs" v-on="on" @click="assign(instructor.user.userId)"
                             close-icon="expand_less">
-                            ${instructor.user.userId}
+                            ${instructor.user.userName}
                             <v-icon right>expand_less</v-icon>
                         </v-chip>
                     </template>

@@ -154,6 +154,21 @@ def patch(deltaGraphId):
                     ),
                 }
             )
+        if "assignment" in request.json and "userId" in request.json:
+            if request.json["assignment"]:
+                get_api_driver().workspace.assign_coauthor(
+                    deltaGraphId=deltaGraphId,
+                    userId=request.json["userId"],
+                    operatorId=g.user["userId"],
+                )
+                return jsonify({"success": True})
+            else:
+                get_api_driver().workspace.unassign_coauthor(
+                    deltaGraphId=deltaGraphId,
+                    userId=request.json["userId"],
+                    operatorId=g.user["userId"],
+                )
+                return jsonify({"success": True})
     return jsonify({"success": False, "message": "incomplete request"})
 
 
@@ -171,3 +186,18 @@ def delete(deltaGraphId):
             }
         )
     return jsonify({"success": False, "message": "incomplete request"})
+
+
+@workspace.get("/<deltaGraphId>/coauthors")
+def courseInstructor(deltaGraphId):
+    try:
+        return jsonify(
+            {
+                "success": True,
+                "instructors": get_api_driver().workspace.list_coauthor(
+                    deltaGraphId=deltaGraphId
+                ),
+            }
+        )
+    except Exception as e:
+        return jsonify({"success": False, "message": str(e)})

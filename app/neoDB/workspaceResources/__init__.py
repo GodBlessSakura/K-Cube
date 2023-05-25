@@ -500,3 +500,55 @@ class workspaceDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
+
+    def assign_coauthor(self, deltaGraphId, userId, operatorId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, deltaGraphId=deltaGraphId, userId=userId, operatorId=operatorId
+            )
+            try:
+                return True
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def unassign_coauthor(self, deltaGraphId, userId, operatorId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(
+                query, deltaGraphId=deltaGraphId, userId=userId, operatorId=operatorId
+            )
+            try:
+                return True
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+    def list_coauthor(self, deltaGraphId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId)
+            try:
+                return [
+                    {
+                       "user": dict(record["user"].items()),
+                        "isCoauthoring": record["isCoauthoring"],
+                    }
+                    for record in result
+                ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
