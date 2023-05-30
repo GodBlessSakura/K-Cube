@@ -49,6 +49,14 @@ def create_app(config_string):
     if "FLASK_SETTING" in os.environ:
         print("using config file:" + os.environ["FLASK_SETTING"])
         app.config.from_envvar("FLASK_SETTING")
+    
+    if "SCRIPT_NAME" in os.environ:
+        from werkzeug.middleware.dispatcher import DispatcherMiddleware
+        from werkzeug.wrappers import Response
+
+        app.wsgi_app = DispatcherMiddleware(
+            Response("Not Found", status=404), {os.environ["SCRIPT_NAME"]: app.wsgi_app}
+        )
     app.register_blueprint(admin, url_prefix="/admin")
     app.register_blueprint(collaborate, url_prefix="/collaborate")
     app.register_blueprint(instructor, url_prefix="/instructor")
@@ -61,7 +69,6 @@ def create_app(config_string):
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
     from .oidc_driver import oidcError
-
 
     @app.errorhandler(404)
     def not_found(e):
