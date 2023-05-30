@@ -14,8 +14,6 @@ dependencies:
   - flask-caching=1.10.1=pyhd8ed1ab_0
   - flask-mail=0.9.1=py_2
   - flask-wtf=0.15.1=pyhd8ed1ab_0
-  - flask-socketio
-  - eventlet=0.33.1
   - importlib-metadata=4.8.1
   - itsdangerous=2.0.1=pyhd8ed1ab_0
   - jinja2=3.0.2=pyhd8ed1ab_0
@@ -46,4 +44,6 @@ dependencies:
     - typed-ast==1.4.3
     - oic==1.5.0
     - ampligraph==1.4.0
+    - flask-socketio
+    - eventlet
 prefix: C:\Users\csckchan\Anaconda3\envs\kcubeExecute
