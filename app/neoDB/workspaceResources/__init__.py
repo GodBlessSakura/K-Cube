@@ -107,16 +107,19 @@ class workspaceDAO:
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             workspace = [
                 dict(
-                    {
-                        key: value
-                        if not isinstance(value, DateTime)
-                        else str(value.iso_format())
-                        for key, value in record["workspace"].items()
-                    }.items()
-                    | record["course"].items()
-                    | {
-                        "isExposed": record["isExposed"],
-                    }.items(),
+                    dict(
+                        {
+                            key: value
+                            if not isinstance(value, DateTime)
+                            else str(value.iso_format())
+                            for key, value in record["workspace"].items()
+                        }.items()
+                        | {
+                            "isExposed": record["isExposed"],
+                        }.items()
+                    ).items(),
+                    owner=dict(record["owner"].items()),
+                    course=dict(record["course"].items()),
                 )
                 for record in result
             ][0]
@@ -501,7 +504,6 @@ class workspaceDAO:
         with self.driver.session() as session:
             return session.write_transaction(_query)
 
-
     def assign_coauthor(self, deltaGraphId, userId, operatorId):
         fname = sys._getframe().f_code.co_name
 
@@ -533,6 +535,7 @@ class workspaceDAO:
 
         with self.driver.session() as session:
             return session.write_transaction(_query)
+
     def list_coauthor(self, deltaGraphId):
         fname = sys._getframe().f_code.co_name
 
@@ -542,11 +545,25 @@ class workspaceDAO:
             try:
                 return [
                     {
-                       "user": dict(record["user"].items()),
+                        "user": dict(record["user"].items()),
                         "isCoauthoring": record["isCoauthoring"],
                     }
                     for record in result
                 ]
+            except Exception as exception:
+                raise exception
+
+        with self.driver.session() as session:
+            return session.write_transaction(_query)
+
+    def is_coauthor_or_owner(self, deltaGraphId, userId):
+        fname = sys._getframe().f_code.co_name
+
+        def _query(tx):
+            query = cypher[fname + ".cyp"]
+            result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
+            try:
+                return [record for record in result][0]["is_coauthor_or_owner"]
             except Exception as exception:
                 raise exception
 

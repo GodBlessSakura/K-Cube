@@ -82,12 +82,16 @@
                     </v-tooltip>
                 </v-col>
                 <v-col cols="auto">
-                    <v-tooltip color="warning" :value="workspace?.isExposed && ! subject?.isTeaching" bottom>
+                    <v-tooltip color="warning"
+                        :value="workspace?.isExposed && ! subject?.isTeaching && '{{USER.userId}}' == workspace.owner.userId"
+                        bottom>
                         <template v-slot:activator="{ on }">
-                            <v-list-item @click="toggleJoin()">
+                            <v-list-item @click="toggleJoin()"
+                                :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
                                 <v-list-item-title>${subject?.isTeaching?'on-duty':'off-duty'}</v-list-item-title>
                                 <v-list-item-icon>
-                                    <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()">
+                                    <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()"
+                                        :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
                                     </v-simple-checkbox>
                                 </v-list-item-icon>
                             </v-list-item>
@@ -100,10 +104,12 @@
                 <v-col cols="auto">
                     <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
                         <template v-slot:activator="{ on }">
-                            <v-list-item @click="toggleExposure(workspace)">
+                            <v-list-item @click="toggleExposure(workspace)"
+                                :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
                                 <v-list-item-title>published</v-list-item-title>
                                 <v-list-item-icon>
-                                    <v-simple-checkbox :value="workspace?.isExposed" @click="toggleExposure(workspace)">
+                                    <v-simple-checkbox :value="workspace?.isExposed" @click="toggleExposure(workspace)"
+                                        :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
                                     </v-simple-checkbox>
                                 </v-list-item-icon>
                             </v-list-item>
@@ -769,10 +775,6 @@
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
-    socket = io();
-    socket.on("connect", (arg) => {
-        socket.emit("graphEditor-joinRoom", "{{deltaGraphId}}")
-    });
     cy = cytoscape({
         style: cyStyles.basicEditStyle,
         wheelSensitivity: 0.15,
@@ -899,7 +901,7 @@
                 isPatchLeaf: true
             },
             workspace: {
-                tag: ''
+                tag: '',
             },
             deleteSelectBar: false,
             edgeChip: [],
@@ -931,6 +933,52 @@
             }
         },
         methods: {
+            onGetWorkspaceData(body) {
+                if (body.workspace && body.triples && body.subject && body.subject_triples) {
+                    this.workspace = body.workspace
+                    body.subject.canPull = body.subject.canPull ? true : false
+                    this.subject = body.subject
+                    cy.elements().remove();
+                    cy.add(nodeFactory(body.subject.courseCode)).style({
+                        'background-image': body.workspace.imageURL,
+                        'background-fit': 'cover'
+                    })
+                    body.triples.forEach(triple => {
+                        [triple.h_name, triple.t_name].forEach(name => {
+                            if (cy.getElementById(name).length == 0) {
+                                cy.add(nodeFactory(name))
+                            }
+                        })
+                        cy.add(workspaceEdgeFactory(triple))
+                    })
+                    body.subject_triples.forEach(triple => {
+                        [triple.h_name, triple.t_name].forEach(name => {
+                            if (cy.getElementById(name).length == 0) {
+                                cy.add(nodeFactory(name))
+                            }
+                        })
+                        let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
+                            .r_name, triple.t_name))
+                        if (edge.length > 0) {
+                            edge[0].data({
+                                subject_value: triple.r_value ? 'true' : 'false'
+                            })
+                        } else {
+                            cy.add(subjectEdgeFactory(triple))
+                        }
+                    })
+                    this.rootName = body.workspace.name
+                    // let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
+                    //     .rootName +
+                    //     '"]')
+                    this.redoLayout()
+                    this.edgeStatistic()
+
+                } else {
+                    this.$root.errorDisplay(body,
+                        'Unexpected error on getting draft information.')
+                }
+            },
             loadData() {
                 this.$root.progress.show = true
                 let workspacePromise = fetch(
@@ -950,52 +998,7 @@
                                 'Unexpected error occured.')
                         }
                     })
-                    .then(body => {
-                        if (body.workspace && body.triples && body.subject && body.subject_triples) {
-                            this.workspace = body.workspace
-                            body.subject.canPull = body.subject.canPull ? true : false
-                            this.subject = body.subject
-                            cy.elements().remove();
-                            cy.add(nodeFactory(body.subject.courseCode)).style({
-                                'background-image': body.workspace.imageURL,
-                                'background-fit': 'cover'
-                            })
-                            body.triples.forEach(triple => {
-                                [triple.h_name, triple.t_name].forEach(name => {
-                                    if (cy.getElementById(name).length == 0) {
-                                        cy.add(nodeFactory(name))
-                                    }
-                                })
-                                cy.add(workspaceEdgeFactory(triple))
-                            })
-                            body.subject_triples.forEach(triple => {
-                                [triple.h_name, triple.t_name].forEach(name => {
-                                    if (cy.getElementById(name).length == 0) {
-                                        cy.add(nodeFactory(name))
-                                    }
-                                })
-                                let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
-                                    .r_name, triple.t_name))
-                                if (edge.length > 0) {
-                                    edge[0].data({
-                                        subject_value: triple.r_value ? 'true' : 'false'
-                                    })
-                                } else {
-                                    cy.add(subjectEdgeFactory(triple))
-                                }
-                            })
-                            this.rootName = body.workspace.name
-                            // let cyDijkstra = cy.elements().dijkstra('node[id = "' + this
-                            //     .rootName +
-                            //     '"]')
-                            this.redoLayout()
-                            this.edgeStatistic()
-
-                        } else {
-                            this.$root.errorDisplay(body,
-                                'Unexpected error on getting draft information.')
-                        }
-                    })
+                    .then(body => {})
                 let relationshipPromise =
                     fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
                         method: 'GET',
@@ -1176,8 +1179,8 @@
                                         deltaGraphId: this.workspace.deltaGraphId
                                     }
                                 }, '*')
-                                this.deleteWorkspaceTriple(body.triple)
                                 this.broadcastDeleteWorkspaceTriple(body.triple)
+                                this.deleteWorkspaceTriple(body.triple)
                             } else {
                                 this.$root.errorDisplay(body,
                                     'Unexpected error when deleted triple.')
@@ -1245,13 +1248,21 @@
                 if (triple.r_value) {
                     if (this.workspace.isExposed) this.editor_bc.postMessage({
                         message: 'graphEditor-createTriple',
-                        payload: body.triple
+                        payload: triple
                     }, '*')
+                    this.graphEditorSocket.emit('createWorkspaceTriple', {
+                        workspace: this.workspace,
+                        payload: triple
+                    })
                 } else {
                     if (this.workspace.isExposed) this.editor_bc.postMessage({
                         message: 'graphEditor-deleteTriple',
-                        payload: body.triple
+                        payload: triple
                     }, '*')
+                    this.graphEditorSocket.emit('deleteWorkspaceTriple', {
+                        workspace: this.workspace,
+                        payload: triple
+                    })
                 }
 
             },
@@ -1277,13 +1288,21 @@
                     "true") {
                     if (this.workspace.isExposed) this.editor_bc.postMessage({
                         message: 'graphEditor-createTriple',
-                        payload: body.triple
+                        payload: triple
                     }, '*')
+                    this.graphEditorSocket.emit('createWorkspaceTriple', {
+                        workspace: this.workspace,
+                        payload: triple
+                    })
                 } else {
                     if (this.workspace.isExposed) this.editor_bc.postMessage({
                         message: 'graphEditor-deleteTriple',
-                        payload: body.triple
+                        payload: triple
                     }, '*')
+                    this.graphEditorSocket.emit('deleteWorkspaceTriple', {
+                        workspace: this.workspace,
+                        payload: triple
+                    })
                 }
             },
             highlightEdge() {
@@ -1581,6 +1600,13 @@
                                                 labels: ["Workspace"]
                                             }
                                         }, '*')
+                                        this.graphEditorSocket.emit('exposureToggle', {
+                                            workspace: this.workspace,
+                                            payload: {
+                                                ...this.workspace,
+                                                labels: ["Workspace"]
+                                            }
+                                        })
                                     })
                             })
                     })
@@ -1723,10 +1749,16 @@
                                     () => {
                                         this.$root.snackBars.actionSnackBar.show = false
                                         this.subject.isTeaching = !this.subject.isTeaching
-                                        this.editor_bc.postMessage({
-                                            message: 'graphEditor-joinToggle',
-                                            payload: this.subject.isTeaching
-                                        }, '*')
+                                        this.graphEditorSocket.emit(
+                                            'joinToggle', {
+                                                workspace: this.workspace,
+                                                payload: {
+                                                    userId: this.workspace.owner.userId,
+                                                    courseCode: this.subject.courseCode,
+                                                    isTeaching: this.subject.isTeaching
+                                                }
+                                            }
+                                        )
                                     })
 
                             })
@@ -1938,8 +1970,8 @@
                                     this.broadcastCreateWorkspaceTriple(triple)
 
                                 } else {
-                                    this.deleteWorkspaceTriple(triple)
                                     this.broadcastDeleteWorkspaceTriple(triple)
+                                    this.deleteWorkspaceTriple(triple)
                                 }
                             })
                         } else {
@@ -1970,6 +2002,42 @@
             })
             self = this
             let loadDataPromise = this.loadData().then(_ => {
+                this.graphEditorSocket = io('/graphEditor');
+                this.graphEditorSocket.on('connect', () => {
+                    this.graphEditorSocket.emit('start', '{{deltaGraphId}}')
+                })
+                this.graphEditorSocket.on("workspaceData", (response) => {
+                    if (response.success) {
+                        this.onGetWorkspaceData(response)
+                    } else {
+                        this.$root.errorDisplay(response,
+                            'You had no permission for this workspace.')
+                    }
+                })
+                this.graphEditorSocket.on("exposureToggle", (payload) => {
+                    if (payload.deltaGraphId == this.workspace
+                        .deltaGraphId) {
+                        this.workspace = payload
+                    }
+                    if (payload.isExposed && payload.deltaGraphId != this
+                        .workspace
+                        .deltaGraphId && this.workspace.course.name ==
+                        payload.course.name) {
+                        this.workspace.isExposed = false
+                    }
+                })
+                this.graphEditorSocket.on('createWorkspaceTriple', (payload) => {
+                    this.createWorkspaceTriple(payload)
+                });
+                this.graphEditorSocket.on('deleteWorkspaceTriple', (payload) => {
+                    this.deleteWorkspaceTriple(payload)
+                });
+                this.graphEditorSocket.on("joinToggle", (payload) => {
+                    console.log("joinToggle", payload, this.workspace, this.subject)
+                    if (payload.userId == this.workspace.owner.userId && this.subject
+                        .courseCode == payload.courseCode)
+                        this.subject.isTeaching = payload.isTeaching
+                });
                 this.editor_bc = new BroadcastChannel(
                         "{{courseCode}}-{{request.blueprint}}-editor"),
                     this.editor_bc.onmessage = (e) => {
@@ -2079,7 +2147,9 @@
                             this.determineTripleOptions()
                         } else if (message == "entityEditor-visibility") {
                             this.isEntityEditorVisible = payload
-                        } else if (message == "graphEditor-createWorkspaceTriple") {
+                        }
+                        /*
+                        else if (message == "graphEditor-createWorkspaceTriple") {
                             if (payload.deltaGraphId != this.workspace.deltaGraphId && message
                                 .includes('graphEditor')) return
                             this.createWorkspaceTriple(payload)
@@ -2099,17 +2169,12 @@
                                 this.workspace.isExposed = false
                             }
                         }
+                        */
                     }
                 this.editor_bc.postMessage({
                     message: 'entityEditor-isVisible'
                 }, '*')
             })
-            socket.on('createWorkspaceTriple', (message) => {
-                this.createWorkspaceTriple(payload)
-            });
-            socket.on('deleteWorkspaceTriple', (message) => {
-                this.deleteWorkspaceTriple(payload)
-            });
             cy.on('tap', 'node', (event) => {
                 this.openEntityEditor(event.target.data("id"))
                 if (self.canUpdateEdge) {

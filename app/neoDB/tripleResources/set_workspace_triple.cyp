@@ -1,5 +1,5 @@
-MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(user:User{userId: $userId})
-WITH DISTINCT workspace
+MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId}),(user:User{userId: $userId})
+WHERE EXISTS((user)-[:USER_COAUTHOR]->(workspace)) OR EXISTS((user)-[:USER_OWN]->(workspace))
 MATCH (approved_graph_relationship:GraphRelationship{name: $r_name})<-[:USER_APPROVE]-(:User)
 WITH DISTINCT approved_graph_relationship, workspace
 MERGE (h:GraphConcept{name: $h_name})

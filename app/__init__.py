@@ -61,9 +61,7 @@ def create_app(config_string):
     from .authorizer import UnauthorizedRESTfulRequest, UnauthorizedRequest
     from .neoDB.resourcesGuard import InvalidRequest
     from .oidc_driver import oidcError
-    from .socketIO_driver import setup_socketio
 
-    setup_socketio(app)
 
     @app.errorhandler(404)
     def not_found(e):

@@ -1,4 +1,5 @@
-MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId})<-[:USER_OWN]-(:User{userId: $userId})
+MATCH (workspace:Workspace{deltaGraphId: $deltaGraphId}),(user:User{userId: $userId})
+WHERE EXISTS((user)-[:USER_COAUTHOR]->(workspace)) OR EXISTS((user)-[:USER_OWN]->(workspace))
 WITH DISTINCT workspace
 MATCH (h:GraphConcept{name: $h_name})
 MATCH (t:GraphConcept{name: $t_name})
