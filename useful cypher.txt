@@ -2,3 +2,7 @@
 MATCH (course)<-[active_link:TRUNK_DESCRIBE]-(trunk:Trunk)
 WHERE not exists((trunk)-[:PATCH|FORK|TRUNK_PULL|BRANCH_PULL*]->())
 RETURN *
+
+
+//
+CALL apoc.export.csv.all("kcube-1-6-2023.csv", {bulkImport: true})
