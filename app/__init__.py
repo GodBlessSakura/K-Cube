@@ -247,5 +247,6 @@ def create_app(config_string):
     @app.context_processor
     def inject_permission():
         return dict(PERMISSION=g.permission, USER=g.user)
-
+    from werkzeug.contrib.fixers import ProxyFix
+    app.wsgi_app = ProxyFix(app.wsgi_app)
     return app
