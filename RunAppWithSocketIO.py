@@ -97,5 +97,6 @@ if __name__ == "__main__":
     # It will call eventlet.wsgi.server at
     # https://github.com/miguelgrinberg/Flask-SocketIO/blob/main/src/flask_socketio/__init__.py#L679
     import os
-
-    socketio.run(app, host=args.host, port=args.port, environ=os.environ)
+    environ = os.environ
+    environ['wsgi.url_scheme'] = 'https'
+    socketio.run(app, host=args.host, port=args.port, environ=environ)
