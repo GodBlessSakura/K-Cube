@@ -252,11 +252,7 @@ def create_app(config_string):
             self.app = app
 
         def __call__(self, environ, start_response):
-            
-            environ['wsgi.url_scheme'] = scheme
-            scheme = environ.get('HTTP_X_FORWARDED_PROTO')
-            if scheme:
-                environ['wsgi.url_scheme'] = scheme
+            environ['wsgi.url_scheme'] = "https"
             return self.app(environ, start_response)
     app.wsgi_app = ReverseProxied(app.wsgi_app)
 
