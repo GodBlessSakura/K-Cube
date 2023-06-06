@@ -1,10 +1,11 @@
 if __name__ == "__main__":
     from flask_socketio import SocketIO, emit, join_room
     from flask import g
-    from app  import create_app
+    from app import create_app
     from functools import wraps
     import os
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--host")
     parser.add_argument("--port")
@@ -92,4 +93,9 @@ if __name__ == "__main__":
             data["payload"],
             to=workspace["owner"]["userId"] + "-" + workspace["course"]["name"],
         )
-    socketio.run(app, host=args.host, port=args.port)
+
+    # It will call eventlet.wsgi.server at
+    # https://github.com/miguelgrinberg/Flask-SocketIO/blob/main/src/flask_socketio/__init__.py#L679
+    import os
+
+    socketio.run(app, host=args.host, port=args.port, environ=os.environ)
