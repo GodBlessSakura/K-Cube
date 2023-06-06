@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <base href="{{CONFIG.HOSTING_ADDRESS}}">
+    <base href="{{CONFIG.HOSTING_ADDRESS}}" target="_blank">
     <title>Knowledge Graph Visualization</title>
     <!-- <link rel="shortcut icon" href="{{ url_for('static', filename='images/logo.jpg') }}"> -->
 
@@ -452,11 +452,10 @@
                     name: "DLTC",
                     title: "DLTC",
                     list: [{
-                            title: "Create New Course",
-                            icon: "library_add",
-                            url: "{{ url_for('DLTC.courseForm') }}",
-                        },
-                    ]
+                        title: "Create New Course",
+                        icon: "library_add",
+                        url: "{{ url_for('DLTC.courseForm') }}",
+                    }, ]
                 },
                 //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "student" in PERMISSION.role) %}
