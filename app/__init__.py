@@ -247,13 +247,5 @@ def create_app(config_string):
     @app.context_processor
     def inject_permission():
         return dict(PERMISSION=g.permission, USER=g.user)
-    class ReverseProxied(object):
-        def __init__(self, app):
-            self.app = app
-
-        def __call__(self, environ, start_response):
-            environ['wsgi.url_scheme'] = "https"
-            return self.app(environ, start_response)
-    app.wsgi_app = ReverseProxied(app.wsgi_app)
 
     return app
