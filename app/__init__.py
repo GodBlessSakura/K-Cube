@@ -246,6 +246,6 @@ def create_app(config_string):
 
     @app.context_processor
     def inject_permission():
-        return dict(PERMISSION=g.permission, USER=g.user)
+        return dict(PERMISSION=g.permission, USER=g.user, CONFIG=app.config)
 
     return app
