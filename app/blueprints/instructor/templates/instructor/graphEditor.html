@@ -1052,6 +1052,7 @@
                     })
                 return Promise.all([workspacePromise, relationshipPromise, entityPromise]).then(_ => {
                     this.$root.progress.show = false
+                    return _
                 })
             },
             switchStyle() {
