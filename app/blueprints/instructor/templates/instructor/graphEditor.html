@@ -2002,7 +2002,7 @@
             })
             self = this
             let loadDataPromise = this.loadData().then(_ => {
-                this.graphEditorSocket = io('/graphEditor');
+                this.graphEditorSocket = io('ws://{{CONFIG.HOSTING_ADDRESS}}/graphEditor');
                 this.graphEditorSocket.on('connect', () => {
                     this.graphEditorSocket.emit('start', '{{deltaGraphId}}')
                 })
