@@ -120,7 +120,6 @@
                     </v-list>
                 </v-menu> -->
                 </template>
-                {% if session['user'] %}
                 <v-menu v-if="menu" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y
                     eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -172,6 +171,7 @@
                         </v-list>
                     </v-sheet>
                 </v-menu>
+                {% if session['user'] %}
                 <v-menu offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
                         <v-btn text v-bind="attrs" v-on="on" style="text-transform: none !important;"
