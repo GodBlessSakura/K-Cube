@@ -998,7 +998,9 @@
                                 'Unexpected error occured.')
                         }
                     })
-                    .then(body => {})
+                    .then(body => {
+                        return body
+                    })
                 let relationshipPromise =
                     fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
                         method: 'GET',
