@@ -737,7 +737,7 @@
 {% import 'component/cyOption.html' as cyOption %}
 {% import 'instructor/components/coauthorForm.html' as coauthorForm with context%}
 {{ layout.cytoscapeCDN() }}
-{# layout.socketio() #}
+{{ layout.socketio() }}
 {{ cyMetricsVisualize.component()}}
 {{ cyMetricsVisualize.script()}}
 {{ cyOption.component()}}
@@ -2001,7 +2001,9 @@
                     sheet => sheet.selector == 'background-color')[0].style["background-color"]
             })
             self = this
-            let loadDataPromise = this.loadData().then(_ => {
+            let loadDataPromise = this.loadData().then(data => {
+                this.onGetWorkspaceData(data[0]) // not using socketio to get data
+
                 // url = 'ws://' + '{{CONFIG.HOSTING_ADDRESS}}'.split('https://')[1]
                 // console.log(url)
                 // this.graphEditorSocket = io(url + '/graphEditor');
