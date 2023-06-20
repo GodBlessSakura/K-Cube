@@ -2006,7 +2006,9 @@
             self = this
             let loadDataPromise = this.loadData().then(data => {
                 this.onGetWorkspaceData(data[0]) // not using socketio to get data
-
+                this.graphEditorSocket = {
+                    emit: function () {}
+                }
                 // url = 'ws://' + '{{CONFIG.HOSTING_ADDRESS}}'.split('https://')[1]
                 // console.log(url)
                 // this.graphEditorSocket = io(url + '/graphEditor');
