@@ -2002,44 +2002,44 @@
             })
             self = this
             let loadDataPromise = this.loadData().then(_ => {
-                url = 'ws://' + '{{CONFIG.HOSTING_ADDRESS}}'.split('https://')[1]
-                console.log(url)
-                this.graphEditorSocket = io(url + '/graphEditor');
-                this.graphEditorSocket.on('connect', () => {
-                    this.graphEditorSocket.emit('start', '{{deltaGraphId}}')
-                })
-                this.graphEditorSocket.on("workspaceData", (response) => {
-                    if (response.success) {
-                        this.onGetWorkspaceData(response)
-                    } else {
-                        this.$root.errorDisplay(response,
-                            'You had no permission for this workspace.')
-                    }
-                })
-                this.graphEditorSocket.on("exposureToggle", (payload) => {
-                    if (payload.deltaGraphId == this.workspace
-                        .deltaGraphId) {
-                        this.workspace = payload
-                    }
-                    if (payload.isExposed && payload.deltaGraphId != this
-                        .workspace
-                        .deltaGraphId && this.workspace.course.name ==
-                        payload.course.name) {
-                        this.workspace.isExposed = false
-                    }
-                })
-                this.graphEditorSocket.on('createWorkspaceTriple', (payload) => {
-                    this.createWorkspaceTriple(payload)
-                });
-                this.graphEditorSocket.on('deleteWorkspaceTriple', (payload) => {
-                    this.deleteWorkspaceTriple(payload)
-                });
-                this.graphEditorSocket.on("joinToggle", (payload) => {
-                    console.log("joinToggle", payload, this.workspace, this.subject)
-                    if (payload.userId == this.workspace.owner.userId && this.subject
-                        .courseCode == payload.courseCode)
-                        this.subject.isTeaching = payload.isTeaching
-                });
+                // url = 'ws://' + '{{CONFIG.HOSTING_ADDRESS}}'.split('https://')[1]
+                // console.log(url)
+                // this.graphEditorSocket = io(url + '/graphEditor');
+                // this.graphEditorSocket.on('connect', () => {
+                //     this.graphEditorSocket.emit('start', '{{deltaGraphId}}')
+                // })
+                // this.graphEditorSocket.on("workspaceData", (response) => {
+                //     if (response.success) {
+                //         this.onGetWorkspaceData(response)
+                //     } else {
+                //         this.$root.errorDisplay(response,
+                //             'You had no permission for this workspace.')
+                //     }
+                // })
+                // this.graphEditorSocket.on("exposureToggle", (payload) => {
+                //     if (payload.deltaGraphId == this.workspace
+                //         .deltaGraphId) {
+                //         this.workspace = payload
+                //     }
+                //     if (payload.isExposed && payload.deltaGraphId != this
+                //         .workspace
+                //         .deltaGraphId && this.workspace.course.name ==
+                //         payload.course.name) {
+                //         this.workspace.isExposed = false
+                //     }
+                // })
+                // this.graphEditorSocket.on('createWorkspaceTriple', (payload) => {
+                //     this.createWorkspaceTriple(payload)
+                // });
+                // this.graphEditorSocket.on('deleteWorkspaceTriple', (payload) => {
+                //     this.deleteWorkspaceTriple(payload)
+                // });
+                // this.graphEditorSocket.on("joinToggle", (payload) => {
+                //     console.log("joinToggle", payload, this.workspace, this.subject)
+                //     if (payload.userId == this.workspace.owner.userId && this.subject
+                //         .courseCode == payload.courseCode)
+                //         this.subject.isTeaching = payload.isTeaching
+                // });
                 this.editor_bc = new BroadcastChannel(
                         "{{courseCode}}-{{request.blueprint}}-editor"),
                     this.editor_bc.onmessage = (e) => {
