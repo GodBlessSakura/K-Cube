@@ -13,7 +13,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     app = create_app(args.mode)
-    socketio = SocketIO(app)
+    socketio = SocketIO(app , cors_allowed_origins="*")
 
     def load_info_from_cache(function):
         @wraps(function)
