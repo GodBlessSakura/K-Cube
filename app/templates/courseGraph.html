@@ -9,17 +9,17 @@
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
-    <v-sheet v-if="!inIframe" style="position: absolute; top:3vh;left:3vh; ">
-        <v-slide-group show-arrows  v-if="isContentVisible" key="content">
+    <v-sheet v-if="!inIframe" style="position: absolute; top:3vh;left:3vh; width: 450px; height: 150px; ">
+        <v-slide-group show-arrows  key="content">
             <v-slide-item>
                 <v-select outlined item-value="userId" item-text="userName" :items="providers" :value="'{{userId}}' == 'None'? null :
-                '{{userId}}'" @change="goToUserGraph">
+                '{{userId}}'" @change="goToUserGraph" style="width: 150px;height: 80px">
                 </v-select>
             </v-slide-item>
             <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
-                        <v-btn fab depressed @click="downloadPNG()">
+                        <v-btn fab depressed @click="downloadPNG()" height="50">
                             <v-icon>photo_camera</v-icon>
                         </v-btn>
                     </template>
@@ -104,25 +104,25 @@
                     </template>
                     course plan
                 </v-tooltip>
-            </v-slide-item>
-            {% if PERMISSION and PERMISSION.role and "instructor" in PERMISSION.role %}
-            <v-slide-item>
-                <v-tooltip top>
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-btn fab depressed v-on="on"
-                            href="{{ url_for('instructor.repositories', courseCode = courseCode) }}">
-                            <v-icon>table_view</v-icon>
-                        </v-btn>
-                    </template>
-                    repositories
-                </v-tooltip>
-            </v-slide-item>
-            {% endif %}
+{#            </v-slide-item>#}
+{#            {% if PERMISSION and PERMISSION.role and "instructor" in PERMISSION.role %}#}
+{#            <v-slide-item>#}
+{#                <v-tooltip top>#}
+{#                    <template v-slot:activator="{ on, attrs }">#}
+{#                        <v-btn fab depressed v-on="on"#}
+{#                            href="{{ url_for('instructor.repositories', courseCode = courseCode) }}">#}
+{#                            <v-icon>table_view</v-icon>#}
+{#                        </v-btn>#}
+{#                    </template>#}
+{#                    repositories#}
+{#                </v-tooltip>#}
+{#            </v-slide-item>#}
+{#            {% endif %}#}
         </v-slide-group>
 
-            <v-btn @click="toggleContent">
-                点击显示内容
-            </v-btn>
+{#            <v-btn @click="toggleContent">#}
+{#                点击显示内容#}
+{#            </v-btn>#}
 {#           修改结束#}
     </v-sheet>
     <v-dialog v-model="entityDialogue" content-class="dialogueIframe" transition="slide-x-reverse-transition"
@@ -267,6 +267,8 @@
         position: absolute;
         margin: unset;
         overflow: clip;
+
+
     }
 </style>
 <script>
@@ -349,15 +351,15 @@
             workspaceDialogue: false,
             isTeaching: null,
         {#修改开始#}
-            isContentVisible: false,
+        {#    isContentVisible: false,#}
         {#修改结束#}
 
         }),
         methods: {
             {#修改开始#}
-            toggleContent() {
-                this.isContentVisible = !this.isContentVisible;
-                },
+            {#toggleContent() {#}
+            {#    this.isContentVisible = !this.isContentVisible;#}
+            {#    },#}
             {#修改结束#}
             loadData() {
                 this.$root.progress.show = true

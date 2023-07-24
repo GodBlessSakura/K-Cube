@@ -20,7 +20,7 @@
             </v-avatar>
         </v-col>
         <v-col>
-            <v-row no-gutters>
+            <v-row >
                 <v-col cols="auto">
                     <v-text-field v-model="workspace.tag" hide-details @input="changeWorkspaceTag"></v-text-field>
                 </v-col>
@@ -88,7 +88,7 @@
                         <template v-slot:activator="{ on }">
                             <v-list-item @click="toggleJoin()"
                                 :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
-                                <v-list-item-title>${subject?.isTeaching?'on-duty':'off-duty'}</v-list-item-title>
+                                <v-list-item-title class="text-right">${subject?.isTeaching?'on-duty':'off-duty'}</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()"
                                         :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
@@ -106,13 +106,14 @@
                         <template v-slot:activator="{ on }">
                             <v-list-item @click="toggleExposure(workspace)"
                                 :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
-                                <v-list-item-title>published</v-list-item-title>
+                                <v-list-item-title >published</v-list-item-title>
                                 <v-list-item-icon>
                                     <v-simple-checkbox :value="workspace?.isExposed" @click="toggleExposure(workspace)"
                                         :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
                                     </v-simple-checkbox>
                                 </v-list-item-icon>
                             </v-list-item>
+
                         </template>
                         <span style="font-size:small">
                             Course plan only reflects contents on published graph.<br>
@@ -120,31 +121,8 @@
                         </span>
                     </v-tooltip>
                 </v-col>
-                <v-spacer></v-spacer>
-<!--                修改;去掉coauthor-->
-<!--                <v-col cols="auto">-->
-<!--                    <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>-->
-<!--                        <template v-slot:activator="{ on }">-->
-<!--                            <v-dialog max-width="700px">-->
-<!--                                <template v-slot:activator="{ on, attrs }">-->
-<!--                                    <v-list-item dense v-bind="attrs" v-on="on">-->
-<!--                                        <v-list-item-title>coauthor</v-list-item-title>-->
-<!--                                        <v-list-item-icon>-->
-<!--                                            <v-icon>group</v-icon>-->
-<!--                                        </v-list-item-icon>-->
-<!--                                    </v-list-item>-->
-<!--                                </template>-->
-<!--                                <kcube-coauthor-form deltaGraphId="{{deltaGraphId}}"></kcube-coauthor-form>-->
-<!--                            </v-dialog>-->
-<!--                        </template>-->
-<!--                        <span style="font-size:small">-->
-<!--                            Allow colleuges to edit the same graph with you.-->
-<!--                        </span>-->
-<!--                    </v-tooltip>-->
-<!--                </v-col>-->
-                <!--                修改;去掉coauthor结束-->
             </v-row>
-            <v-row no-gutters>
+            <v-row no-gutters class="justify-center align-center">
 <!--                修改instructor中的layout等标签信息-->
                 <v-col cols="auto" dense>
                     <v-menu offset-y>
@@ -271,119 +249,7 @@
                         </v-list>
                     </v-menu>
                 </v-col>
-<!--                <v-col cols="auto" dense>-->
-<!--                    <v-menu offset-y>-->
-<!--                        <template v-slot:activator="{ on, attrs }">-->
-<!--                            <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-<!--                                v-on="on" tile>-->
-<!--                                layout-->
-<!--                            </v-btn>-->
-<!--                        </template>-->
-<!--                        <v-list>-->
-<!--                            <v-list-item dense @click="editorFit()">-->
-<!--                                <v-list-item-title>fit graph</v-list-item-title>-->
-<!--                                <v-list-item-icon>-->
-<!--                                    <v-icon>fit_screen</v-icon>-->
-<!--                                </v-list-item-icon>-->
-<!--                            </v-list-item>-->
-<!--                            <v-list-item dense @click="redoLayout(false)">-->
-<!--                                <v-list-item-title>tidy layout</v-list-item-title>-->
-<!--                                <v-list-item-icon>-->
-<!--                                    <v-icon></v-icon>-->
-<!--                                </v-list-item-icon>-->
-<!--                            </v-list-item>-->
-<!--                            <v-list-item dense @click="physics(!isPhysicsRunning)">-->
-<!--                                <v-list-item-title>layout physics-->
-<!--                                </v-list-item-title>-->
-<!--                                <v-list-item-icon>-->
-<!--                                    <v-simple-checkbox :value="isPhysicsRunning" @click="physics(!isPhysicsRunning)">-->
-<!--                                    </v-simple-checkbox>-->
-<!--                                </v-list-item-icon>-->
-<!--                            </v-list-item>-->
-<!--                            <v-dialog max-width="700px">-->
-<!--                                <template v-slot:activator="{ on, attrs }">-->
-<!--                                    <v-list-item dense v-bind="attrs" v-on="on">-->
-<!--                                        <v-list-item-title>graph<br>options</v-list-item-title>-->
-<!--                                        <v-list-item-icon>-->
-<!--                                            <v-icon>palette</v-icon>-->
-<!--                                        </v-list-item-icon>-->
-<!--                                    </v-list-item>-->
-<!--                                </template>-->
-<!--                                <kcube-cy-options-dialog></kcube-cy-options-dialog>-->
-<!--                            </v-dialog>-->
-<!--                        </v-list>-->
-<!--                    </v-menu>-->
-<!--                </v-col>-->
-<!--                <v-col cols="auto" dense>-->
-<!--                    <v-menu offset-y>-->
-<!--                        <template v-slot:activator="{ on, attrs }">-->
-<!--                            <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-<!--                                v-on="on" tile>-->
-<!--                                visualization-->
-<!--                            </v-btn>-->
-<!--                        </template>-->
-<!--                        <v-list>-->
-<!--                            &lt;!&ndash; <v-list-item dense @click="edgeStyleDialogue = true">-->
-<!--                        <v-list-item-title>edge style<br>option</v-list-item-title>-->
-<!--                        <v-list-item-icon>-->
-<!--                            <v-icon>settings</v-icon>-->
-<!--                        </v-list-item-icon>-->
-<!--                    </v-list-item> &ndash;&gt;-->
-<!--                            <v-list-item dense @click="metricsBottomSheet = true">-->
-<!--                                <v-list-item-title>centrality<br>metrics</v-list-item-title>-->
-<!--                                <v-list-item-icon>-->
-<!--                                    <v-icon>insights</v-icon>-->
-<!--                                </v-list-item-icon>-->
-<!--                            </v-list-item>-->
-<!--                        </v-list>-->
-<!--                    </v-menu>-->
-<!--                </v-col>-->
-<!--                <v-col cols="auto" dense>-->
-<!--                    <v-menu offset-y>-->
-<!--                        <template v-slot:activator="{ on, attrs }">-->
-<!--                            <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-<!--                                v-on="on" tile>-->
-<!--                                triple tools-->
-<!--                            </v-btn>-->
-<!--                        </template>-->
-<!--                        &lt;!&ndash; <v-list>-->
-<!--                            <v-list-item dense @click="removeUnreachable">-->
-<!--                                <v-list-item-title>remove<br>unreachable</v-list-item-title>-->
-<!--                                <v-list-item-icon>-->
-<!--                                    <v-icon>cleaning_services</v-icon>-->
-<!--                                </v-list-item-icon>-->
-<!--                            </v-list-item>-->
-<!--                        </v-list> &ndash;&gt;-->
-<!--                        <v-dialog max-width="700px" v-model="importDialogue">-->
-<!--                            <template v-slot:activator="{ on, attrs }">-->
-<!--                                <v-list-item dense v-bind="attrs" v-on="on">-->
-<!--                                    <v-list-item-title>triples<br>import</v-list-item-title>-->
-<!--                                    <v-list-item-icon>-->
-<!--                                        <v-icon>upload</v-icon>-->
-<!--                                    </v-list-item-icon>-->
-<!--                                </v-list-item>-->
-<!--                            </template>-->
-<!--                            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"-->
-<!--                                :courseCode="subject.courseCode">-->
-<!--                            </kcube-triplesImport-form>-->
-<!--                        </v-dialog>-->
-<!--                    </v-menu>-->
-<!--                </v-col>-->
-<!--                <v-col cols="auto" dense>-->
-<!--                    <v-menu offset-y>-->
-<!--                        <template v-slot:activator="{ on, attrs }">-->
-<!--                            <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-<!--                                v-on="on" tile>-->
-<!--                                help-->
-<!--                            </v-btn>-->
-<!--                        </template>-->
-<!--                        <v-list>-->
-<!--                            <v-list-item dense @click="tutorial">-->
-<!--                                <v-list-item-title>tutorial</v-list-item-title>-->
-<!--                            </v-list-item>-->
-<!--                        </v-list>-->
-<!--                    </v-menu>-->
-<!--                </v-col>-->
+
             </v-row>
         </v-col>
     </v-row>
@@ -397,11 +263,89 @@
                     :style="{position: 'relative', height: boundingBox.h +'px', width: boundingBox.w +'px', left: boundingBox.x1 +'px', top: boundingBox.y1 +'px'}">
                 </div>
             </div>
+
+<!--            <v-btn variant="outlined">-->
+<!--          实验按钮-->
+<!--            </v-btn>-->
+
+
+    <div class="menu-container-right">
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
+                        v-on="on" tile>
+                        upload
+                    </v-btn>
+                </template>
+                <v-dialog max-width="700px" v-model="importDialogue">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-list-item dense v-bind="attrs" v-on="on">
+                            <v-list-item-title>import</v-list-item-title>
+                            <v-list-item-icon>
+                                <v-icon>upload</v-icon>
+                            </v-list-item-icon>
+                        </v-list-item>
+                    </template>
+                    <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
+                        :courseCode="subject.courseCode">
+                    </kcube-triplesImport-form>
+                </v-dialog>
+            </v-menu>
+            <div class="menu-spacing"></div>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
+                        v-on="on" tile>
+                        download
+                    </v-btn>
+                </template>
+<!--                <v-dialog max-width="700px" v-model="importDialogue">-->
+<!--                    <template v-slot:activator="{ on, attrs }">-->
+<!--                        <v-list-item dense v-bind="attrs" v-on="on">-->
+<!--                            <v-list-item-title>import</v-list-item-title>-->
+<!--                            <v-list-item-icon>-->
+<!--                                <v-icon>upload</v-icon>-->
+<!--                            </v-list-item-icon>-->
+<!--                        </v-list-item>-->
+<!--                    </template>-->
+<!--                    <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"-->
+<!--                        :courseCode="subject.courseCode">-->
+<!--                    </kcube-triplesImport-form>-->
+<!--                </v-dialog>-->
+            </v-menu>
+
+    </div>
+<!--todo 增加add delete功能-->
+    <div class="menu-container">
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
+                        v-on="on" tile>
+                        add
+                    </v-btn>
+
+            </v-menu>
+            <div class="menu-spacing"></div>
+            <v-menu offset-y>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
+                        v-on="on" tile>
+                        delete
+                    </v-btn>
+                </template>
+
+            </v-menu>
+
+    </div>
+
+
         </div>
     </v-row>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
+
+
 
     <v-card>
         <v-bottom-sheet v-model="tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay eager
@@ -750,6 +694,28 @@
 {% include "instructor/components/entityEditor.html" %}
 {% include "instructor/components/triplesImportForm.html" %}
 <style>
+    .menu-container {
+      position: absolute;
+      left: 20px; /* 通过调整 left 属性来控制在页面的左边的位置 */
+      top: 50%; /* 这里可以设置任意合适的垂直位置 */
+      transform: translateY(-50%); /* 将元素的中心点定位在父容器的中心 */
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+    }
+    .menu-container-right {
+      position: absolute;
+      right: 20px; /* 通过调整 left 属性来控制在页面的左边的位置 */
+      top: 50%; /* 这里可以设置任意合适的垂直位置 */
+      transform: translateY(-50%); /* 将元素的中心点定位在父容器的中心 */
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu-spacing {
+    height: 50px; /* 设置间距的高度，可根据需要调整 */
+    }
     .v-chip--active {
         background-color: lightblue;
     }
