@@ -43,10 +43,14 @@
         }
     </style>
     <div id="nav" v-cloak>
+{#    确保在 Vue.js 初始化完成前，页面不会显示未被处理的 Vue 表达式，提升用户体验#}
         <v-app>
+{#        v-app 根组件#}
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
+{#        加载进度条#}
             <v-app-bar :value="appBar" app color="secondary">
+{#            顶部导航栏#}
                 <v-card v-if="appBar" color="secondary" style="align-items: center;" tile elevation="0">
                     <a href="{{ url_for('index') }}" style="position:absolute; height:100%; width:100%"></a>
                     <v-card-title>
@@ -57,6 +61,7 @@
                         KCUBE project
                     </v-card-title>
                 </v-card>
+{#            KCUBE 最左边的布局#}
                 <template v-if="KCube.tabs && KCube.tabs.length > 0">
                     <v-select v-if="KCube.roleTab.length > 1" @change="switchRole" style="max-width: 200px;" solo
                         hide-details background-color="transparent" flat label="view as" v-model="KCube.view"
@@ -82,6 +87,8 @@
                             </v-list-item>
                         </template>
                     </v-select>
+                {#            KCUBE右边的权限显示#}
+
                     <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" icons-and-text
                         ref="shepherd-layoutTab"
                         style="position: absolute; left: 50%; transform: translateX(-50%); width: unset;">
@@ -97,6 +104,8 @@
                         {% endfor %}
                     </v-tabs>
                 </template>
+{#            中间course list按钮#}
+
                 <v-spacer></v-spacer>
                 <!-- <v-menu offset-y eager open-on-hover>
                     <template v-slot:activator="{ on: onMenu }">
@@ -119,7 +128,7 @@
                         </v-list-item>
                     </v-list>
                 </v-menu> -->
-                </template>
+{#                </template>#}
                 <v-menu v-if="menu" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y
                     eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -128,7 +137,8 @@
                         </v-btn>
                     </template>
                     <v-sheet style="max-height: 70vh; overflow-y: scroll">
-                        <v-list style="min-height: 70vh" nav dense>
+{#                        <v-list style="min-height: 70vh" nav dense>#}
+                        <v-list style="height: auto" nav dense>
                             <div ref="shepherd-layoutNavigationRoleGroup">
                                 <v-list-group v-for="LG in KCube.navigationListGroup"
                                     :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
@@ -171,6 +181,7 @@
                         </v-list>
                     </v-sheet>
                 </v-menu>
+{#                menu菜单#}
                 {% if session['user'] %}
                 <v-menu offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -193,8 +204,11 @@
                         </v-list-item>
                     </v-list>
                 </v-menu>
+
+{#                    用户登录之后下拉列表#}
                 {% elif "OIDC" in config %}
                 <v-btn text href="{{url_for('odic_login')}}" :disabled="atemptOidcLogin">
+{#                这里是不是有些错误，odic还是oidc#}
                     login in with PolyU account
                 </v-btn>
                 {% else %}
@@ -312,7 +326,9 @@
                     </v-card>
                 </v-dialog>
                 {% endif %}
+{#            用户登录或注册功能#}
             </v-app-bar>
+{#        结束顶端工具栏#}
             <v-snackbar :style="snackBars.errorSnackBar.style" ref="errorSnackBar"
                 v-model="snackBars.errorSnackBar.show" timeout="-1">
                 ${ snackBars.errorSnackBar.message }
@@ -322,6 +338,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
+{#        错误通知消息模块#}
             <v-snackbar :style="snackBars.completeSnackBar.style" ref="completeSnackBar"
                 v-model="snackBars.completeSnackBar.show">
                 ${ snackBars.completeSnackBar.message }
@@ -331,6 +348,7 @@
                     </v-btn>
                 </template>
             </v-snackbar>
+{#        完成消息通知模块#}
             <v-snackbar :style="snackBars.bePatientSnackBar.style" ref="bePatientSnackBar"
                 v-model="snackBars.bePatientSnackBar.show" :timeout="2000">
                 A http request is already submitting in progress. Thank you for your patience.
@@ -413,6 +431,7 @@
                     name: "student",
                     tabs: []
                 },
+                    {#如果后续有学生workspace的要求，可以加在这里#}
                 //{% endif %}
                 //{% if PERMISSION and PERMISSION.role and "admin" in PERMISSION.role %}
                 {

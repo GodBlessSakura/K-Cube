@@ -7,9 +7,11 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config:
     BOOTSTRAP_SERVE_LOCAL = True
     SECRET_KEY = "Hard to guess string"
-    DATABASE_ADDRESS = "bolt://127.0.0.1:7687"
+    # DATABASE_ADDRESS = "bolt://127.0.0.1:7687"
+    DATABASE_ADDRESS = "bolt://117.50.175.233:7687"
     DATABASE = "neo4j"
-    DATABASE_PASSWORD = "1234"
+    # DATABASE_PASSWORD = "1234"
+    DATABASE_PASSWORD = "@XQ6o7l9"
     REQUIRE_USER_VERIFICATION = True
 
 class standaloneConfig(Config):

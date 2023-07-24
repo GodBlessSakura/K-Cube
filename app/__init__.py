@@ -1,6 +1,8 @@
 from ast import operator
 from flask import Flask, render_template, jsonify, session, g, abort, redirect
 
+
+# 这个mail
 from flask_mail import Mail
 from app.config import config
 from app.cache_driver import cache
@@ -16,6 +18,8 @@ from app.blueprints.collegue import collegue
 from app.blueprints.student import student
 import click
 
+
+# 这个mail是干嘛用的
 mail = Mail()
 import os
 
@@ -41,7 +45,9 @@ def create_app(config_string):
         config_object = config[config_string]
         print(config_object.REQUIRE_USER_VERIFICATION)
     # https://stackoverflow.com/questions/26080872/secret-key-not-set-in-flask-session-using-the-flask-session-extension
-    app.secret_key = "super secret key"
+
+    app.secret_key = "super secret key"  # session信息使用
+
     app.config["SESSION_TYPE"] = "filesystem"
     app.config["upload_image_directory"] = os.path.join("uploads", "image")
     cache.init_app(app)

@@ -6,6 +6,7 @@ if __name__ == "__main__":
     import os
     import argparse
 
+    # 构造命令行参数并根据命令函参数在config.py文件下选择相应的配置选项
     parser = argparse.ArgumentParser()
     parser.add_argument("--host")
     parser.add_argument("--port")
@@ -13,10 +14,12 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     app = create_app(args.mode)
-    socketio = SocketIO(app , cors_allowed_origins="*")
+
+    # 学习下socketio的用法 0703
+    socketio = SocketIO(app , cors_allowed_origins="*") #cors_allowed_origins表示允许跨域请求
 
     def load_info_from_cache(function):
-        @wraps(function)
+        @wraps(function)  # 使用__name__时打印被装饰的函数而不是装饰器内部的函数
         def wrapper(*args, **kwargs):
             from app.cache_driver import load_info_from_cache
 
@@ -25,7 +28,7 @@ if __name__ == "__main__":
 
         return wrapper
 
-    @socketio.on("start", namespace="/graphEditor")
+    @socketio.on("start", namespace="/graphEditor") # 监听到start事件就开始执行下面的start函数，但是好像没有使用，没有找到正在使用的socket.emit(start)事件
     @load_info_from_cache
     def start(deltaGraphId):
         # check if user have edit permission
@@ -60,7 +63,7 @@ if __name__ == "__main__":
         else:
             emit("workspaceData", {"success": False})
 
-    @socketio.event(namespace="/graphEditor")
+    @socketio.event(namespace="/graphEditor")  # 处理自定义事件，当客户端发送名为createWorkspaceTriple的自定义事件时，进入下面的逻辑
     def createWorkspaceTriple(data):
         emit(
             "createWorkspaceTriple",

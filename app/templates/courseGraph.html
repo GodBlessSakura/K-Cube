@@ -10,7 +10,7 @@
         <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
     <v-sheet v-if="!inIframe" style="position: absolute; top:3vh;left:3vh; ">
-        <v-slide-group show-arrows>
+        <v-slide-group show-arrows  v-if="isContentVisible" key="content">
             <v-slide-item>
                 <v-select outlined item-value="userId" item-text="userName" :items="providers" :value="'{{userId}}' == 'None'? null :
                 '{{userId}}'" @change="goToUserGraph">
@@ -27,7 +27,8 @@
                 </v-tooltip>
             </v-slide-item>
             {% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "DLTC" in PERMISSION.role or "instructor" in PERMISSION.role) %}
-            <v-slide-item>
+{#            修改开始#}
+                <v-slide-item>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
                         <v-menu offset-y>
@@ -118,6 +119,11 @@
             </v-slide-item>
             {% endif %}
         </v-slide-group>
+
+            <v-btn @click="toggleContent">
+                点击显示内容
+            </v-btn>
+{#           修改结束#}
     </v-sheet>
     <v-dialog v-model="entityDialogue" content-class="dialogueIframe" transition="slide-x-reverse-transition"
         hide-overlay persistent no-click-animation eager>
@@ -341,9 +347,18 @@
             lastModifiedWorkspace: undefined,
             //{% endif %}
             workspaceDialogue: false,
-            isTeaching: null
+            isTeaching: null,
+        {#修改开始#}
+            isContentVisible: false,
+        {#修改结束#}
+
         }),
         methods: {
+            {#修改开始#}
+            toggleContent() {
+                this.isContentVisible = !this.isContentVisible;
+                },
+            {#修改结束#}
             loadData() {
                 this.$root.progress.show = true
                 this.lastModifiedWorkspace = undefined
