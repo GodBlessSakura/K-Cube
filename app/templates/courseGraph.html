@@ -4,12 +4,13 @@
 {% import 'component/cyMetricsVisualize.html' as cyMetricsVisualize %}
 {% import 'component/cyOption.html' as cyOption %}
 {% block VueComponent %}
+{#    修改http://127.0.0.1/course/COMP2022页面#}
 <div>
     <div id="cy" style="height: calc(100vh - 64px); width: 100%;"></div>
     <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
         <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
     </v-bottom-sheet>
-    <v-sheet v-if="!inIframe" style="position: absolute; top:3vh;left:3vh; width: 450px; height: 150px; ">
+    <v-sheet v-if="!inIframe" style="position: absolute; top:3vh;left:3vh; width: 450px; height: 60px; ">
         <v-slide-group show-arrows  key="content">
             <v-slide-item>
                 <v-select outlined item-value="userId" item-text="userName" :items="providers" :value="'{{userId}}' == 'None'? null :
@@ -33,9 +34,9 @@
                     <template v-slot:activator="{ on, attrs }">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
-                                <v-btn fab depressed v-on="on">
-                                    <v-icon>download</v-icon>
-                                </v-btn>
+{#                                <v-btn fab depressed v-on="on">#}
+{#                                    <v-icon>download</v-icon>#}
+{#                                </v-btn>#}
                             </template>
                             <v-list v-if="triples">
                                 <v-list-item @click="copyJson()">
