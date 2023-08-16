@@ -74,8 +74,7 @@
                     <v-col v-for="col in  [...Array(colPerRow).keys()]" cols="4" class="d-flex"
                         style="flex-direction:column">
                         <kcube-course-item :course="courses[row * colPerRow + col]"
-                            v-if="courses[row*colPerRow + col]" v-on:click="handleOpenURL(row, col)">
-<!--                            @click="courses[row * colPerRow + col].workspaces.length == 0?openWorkspaceDialogue(courses[row * colPerRow + col]):(openURL('{{ url_for('instructor.workspace') }}' + courses[row * colPerRow + col].workspaces[0].deltaGraphId))"-->
+                            v-if="courses[row*colPerRow + col]" v-on:click="handleOpenURL(row, col)"
                             @assignment="courseAssignment(courses[row * colPerRow + col])"
                             @import="openGraphImportDialogue(courses[row * colPerRow + col])"
                             @info="courseInfo(courses[row * colPerRow + col])"

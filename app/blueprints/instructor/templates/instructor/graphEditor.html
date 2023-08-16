@@ -2,16 +2,17 @@
 {% import 'layout.html' as layout with context %}
 {% block VueComponent %}
 <v-container dense
-    style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
+             style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
     <v-btn style="position: fixed; top:0; left:0; height: 96px; width: 96px; min-width: unset; z-index: 1000; background-color: rgba(200, 200, 200, 0.5);
     transform: translate(-50%,-50%) rotate(45deg);" @click="fullScreenMode = !fullScreenMode">
     </v-btn>
     <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small
-        v-if="fullScreenMode" @click="fullScreenMode = !fullScreenMode">north_east
+            v-if="fullScreenMode" @click="fullScreenMode = !fullScreenMode">north_east
     </v-icon>
     <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else
-        @click="fullScreenMode = !fullScreenMode">
-        north_east</v-icon>
+            @click="fullScreenMode = !fullScreenMode">
+        north_east
+    </v-icon>
 
     <v-row no-gutters>
         <v-col cols="auto">
@@ -20,323 +21,526 @@
             </v-avatar>
         </v-col>
         <v-col>
-            <v-row >
-                <v-col cols="auto">
-                    <v-text-field v-model="workspace.tag" hide-details @input="changeWorkspaceTag"></v-text-field>
-                </v-col>
-                <v-col cols="auto">
-                    <v-list-item>
-                        <v-list-item-subtitle># of uncommitted changes: ${activePositiveEdgeCount +
-                            activeNegativeEdgeCount}</v-list-item-subtitle>
-                        <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-list-item-icon v-bind="attrs" v-on="on">
-                                    <v-icon>help_outline</v-icon>
-                                </v-list-item-icon>
-                            </template>
-                            <span style="font-size: small;">
-                                Uncommitted changes are active triple proposal/removal <br>
-                                that is in the workspace but NOT in the patch. <br>
-                                Changes can be previewed in the preview page / "view diff" mode.
-                            </span>
-                        </v-tooltip>
+<!--                        开始编辑上方导航栏信息到v-row结束-->
+
+
+
+            <v-card
+                    color="grey lighten-4"
+                    flat
+                    height="20px"
+                    tile
+            >
+                <v-toolbar dense>
+                    <v-tooltip bottom>
+                        <template slot="activator" slot-scope="{ on, attrs }">
+                            <v-btn v-bind="attrs"
+                                   v-on="on"
+                                   icon>
+                                <span class="material-icons">add</span>
+                            </v-btn>
+                        </template>
+                        <span>add node</span>
+                    </v-tooltip>
+
+
+
+
+            <v-menu offset-y>
+                  <template v-slot:activator="{ on: menu, attrs }">
+                    <v-tooltip bottom>
+                      <template v-slot:activator="{ on: tooltip }">
+                        <v-btn
+                          v-bind="attrs"
+                          v-on="{ ...tooltip, ...menu }"
+                          icon
+                        >
+                        <span class="material-icons">event</span>
+                        </v-btn>
+                      </template>
+                      <span>course plan</span>
+                    </v-tooltip>
+                  </template>
+
+                <v-list>
+                    <v-list-item
+                        @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
+                        <v-list-item-subtitle>open here
+                        </v-list-item-subtitle>
                     </v-list-item>
-                </v-col>
-                <v-divider vertical dense></v-divider>
-                <v-col cols="auto">
-                    <v-tooltip :disabled="workspace?.isExposed" bottom>
-                        <template v-slot:activator="{ on: tooltipOn, attrs: tooltipAttrs }">
-                            <v-menu offset-y>
-                                <template v-slot:activator="{ on: menutipOn, attrs: menuAttrs }">
-                                    <v-list-item v-bind="{...tooltipAttrs,...menuAttrs}"
-                                        v-on="{...tooltipOn,...menutipOn}" ref="shepherd-coursePlan">
-                                        <v-list-item-subtitle>${subject?.courseCode} course plan
-                                        </v-list-item-subtitle>
-                                        <v-list-item-icon>
-                                            <v-icon v-if="!workspace?.isExposed">
-                                                error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </v-list-item>
-                                </template>
-                                <v-list>
-                                    <v-list-item
-                                        @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
-                                        <v-list-item-subtitle>open here
-                                        </v-list-item-subtitle>
-                                    </v-list-item>
-                                    <v-list-item
-                                        @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
-                                        <v-list-item-subtitle>open in new tab
-                                        </v-list-item-subtitle>
-                                        <v-list-item-icon>
-                                            <v-icon>open_in_new</v-icon>
-                                        </v-list-item-icon>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </template>
-                        <span style="font-size: small;">
-                            Course plan only reflects contents on published graph.<br>
-                            The workspace is not published.<br>
-                        </span>
-                    </v-tooltip>
-                </v-col>
-                <v-col cols="auto">
-                    <v-tooltip color="warning"
-                        :value="workspace?.isExposed && ! subject?.isTeaching && '{{USER.userId}}' == workspace.owner.userId"
-                        bottom>
-                        <template v-slot:activator="{ on }">
-                            <v-list-item @click="toggleJoin()"
-                                :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
-                                <v-list-item-title class="text-right">${subject?.isTeaching?'on-duty':'off-duty'}</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()"
-                                        :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
-                                    </v-simple-checkbox>
-                                </v-list-item-icon>
-                            </v-list-item>
-                        </template>
-                        <span style="font-size:small"> An published graph is not shown to student,<br> if instructor
+                    <v-list-item
+                        @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
+                        <v-list-item-subtitle>open in new tab
+                        </v-list-item-subtitle>
+                        <v-list-item-icon>
+                            <v-icon>open_in_new</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+
+                    <v-divider vertical></v-divider>
+
+                    <!--      <v-toolbar-title>Title</v-toolbar-title>-->
+
+    <v-menu offset-y>
+        <template v-slot:activator="{ on: menu, attrs }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn
+                v-bind="attrs"
+                v-on="{ ...tooltip, ...menu }"
+                icon
+              >
+              <span class="material-icons">file_upload</span>
+              </v-btn>
+            </template>
+            <span>upload</span>
+          </v-tooltip>
+        </template>
+
+        <v-dialog max-width="700px" v-model="importDialogue">
+            <template v-slot:activator="{ on, attrs }">
+                <v-list-item dense v-bind="attrs" v-on="on">
+                    <v-list-item-title>import</v-list-item-title>
+                    <v-list-item-icon>
+                        <v-icon>upload</v-icon>
+                    </v-list-item-icon>
+                </v-list-item>
+            </template>
+            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
+                                      :courseCode="subject.courseCode">
+            </kcube-triplesImport-form>
+        </v-dialog>
+    </v-menu>
+
+    <v-menu offset-y>
+        <template v-slot:activator="{ on: menu, attrs }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn
+                v-bind="attrs"
+                v-on="{ ...tooltip, ...menu }"
+                icon
+              >
+              <span class="material-icons">download</span>
+              </v-btn>
+            </template>
+            <span>download</span>
+          </v-tooltip>
+        </template>
+        <v-list>
+            <v-list-item @click="copyJson()">
+                <v-list-item-title>json</v-list-item-title>
+                <v-list-item-icon>
+                    <v-icon>content_copy</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+            <v-list-item @click="copyCsv()">
+                <v-list-item-title>csv</v-list-item-title>
+                <v-list-item-icon>
+                    <v-icon>content_copy</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+            <v-list-item @click="downloadJson()">
+                <v-list-item-title>json</v-list-item-title>
+                <v-list-item-icon>
+                    <v-icon>download</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+            <v-list-item @click="downloadCsv()">
+                <v-list-item-title>csv</v-list-item-title>
+                <v-list-item-icon>
+                    <v-icon>download</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+        </v-list>
+    </v-menu>
+
+
+
+    <v-menu offset-y>
+        <template v-slot:activator="{ on: menu, attrs }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn
+                id="patchMenu"
+                v-bind="attrs"
+                v-on="{ ...tooltip, ...menu }"
+                icon
+              >
+              <span class="material-icons">merge</span>
+              </v-btn>
+            </template>
+            <span>patch</span>
+          </v-tooltip>
+        </template>
+        <v-list>
+            <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>
+                <v-list-item-subtitle># of uncommitted <br> changes: ${activePositiveEdgeCount +
+                    activeNegativeEdgeCount}
+                </v-list-item-subtitle>
+                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-list-item-icon v-bind="attrs" v-on="on">
+                            <v-icon>error_outline</v-icon>
+                        </v-list-item-icon>
+                    </template>
+                    <span style="font-size: small;">
+                        Uncommitted changes are temporary triple proposal/removal <br>
+                        that is in the workspace but NOT in the patch. <br>
+                        As they are not in the patch, they would not be refleced<br>
+                        in any form of patch publishment. <br>
+                    </span>
+                </v-tooltip>
+            </v-list-item>
+            <v-list-item v-if="subject?.isExposed && ! subject?.isTeaching" dense>
+                <v-list-item-subtitle>You haven't join the course<br>(You may join in
+                    "publish patch")
+                </v-list-item-subtitle>
+                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                    <template v-slot:activator="{ on, attrs }">
+                        <v-list-item-icon v-bind="attrs" v-on="on">
+                            <v-icon>error_outline</v-icon>
+                        </v-list-item-icon>
+                    </template>
+                    <span style="font-size: small;">
+                        Student can only view published graph from <br>
+                        instructors who had joined that course.
+                    </span>
+                </v-tooltip>
+            </v-list-item>
+            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
+            <v-list-item dense>
+                <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
+                </v-list-item-subtitle>
+            </v-list-item>
+            <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">
+                <v-list-item-title>sync</v-list-item-title>
+                <v-list-item-icon>
+                    <v-icon>sync</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+            <v-list-item dense v-else>
+                <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch
+                </v-list-item-subtitle>
+                <v-list-item-icon>
+                    <v-icon>done</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+            <v-list-item dense
+                         @click="this.window.open('{{ url_for('instructor.branch')}}' + subject.deltaGraphId + '/' + subject.predecessor, '_blank')">
+                <v-list-item-subtitle style="font-size: small;">view patch &<br>predecessor
+                </v-list-item-subtitle>
+                <v-list-item-icon>
+                    <v-icon>open_in_new</v-icon>
+                </v-list-item-icon>
+            </v-list-item>
+            <v-menu offset-x>
+                <template v-slot:activator="{ on, attrs }">
+                    <v-list-item dense v-bind="attrs" v-on="on">
+                        <v-list-item-subtitle style="font-size: small;">publish patch
+                        </v-list-item-subtitle>
+                        <v-list-item-icon>
+                            <v-icon>chevron_right</v-icon>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </template>
+                <v-list>
+                    <v-list-item dense>
+                        <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
+                    </v-list-item>
+                    <v-list-item dense @click="toggleCanPull()">
+                        <v-list-item-title>submitted</v-list-item-title>
+                        <v-list-item-icon>
+                            <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()">
+                            </v-simple-checkbox>
+                        </v-list-item-icon>
+                    </v-list-item>
+                </v-list>
+            </v-menu>
+        </v-list>
+    </v-menu>
+
+    <v-menu offset-y>
+        <template v-slot:activator="{ on: menu, attrs }">
+          <v-tooltip bottom>
+            <template v-slot:activator="{ on: tooltip }">
+              <v-btn
+                v-bind="attrs"
+                v-on="{ ...tooltip, ...menu }"
+                icon
+              >
+              <span class="material-icons">task_alt</span>
+              </v-btn>
+            </template>
+            <span>commit changes</span>
+          </v-tooltip>
+        </template>
+        <v-list>
+            <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
+                <v-list-item-title>preview changes</v-list-item-title>
+            </v-list-item>
+            <v-tooltip bottom :disabled="activePositiveEdgeCount + activeNegativeEdgeCount != 0">
+                <template v-slot:activator="{ on, attrs }">
+                    <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?
+                    null:showCommitExposeDialogue()" v-bind="attrs" v-on="on">
+                        <v-list-item-title>commit and publish</v-list-item-title>
+                    </v-list-item>
+                </template>
+                <span style="font-size: small;">
+                    There are no uncommitted changes.
+                </span>
+            </v-tooltip>
+            <v-list-item dense @click="deleteSelectBar = true">
+                <v-list-item-title>delete workspace</v-list-item-title>
+            </v-list-item>
+        </v-list>
+    </v-menu>
+
+
+
+                    <v-col cols="auto" align="end">
+                        <v-tooltip color="warning"
+                                   :value="workspace?.isExposed && ! subject?.isTeaching && '{{USER.userId}}' == workspace.owner.userId"
+                                   bottom>
+                            <template v-slot:activator="{ on }">
+                                <v-list-item @click="toggleJoin()"
+                                             :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
+                                    <v-list-item-title class="text-right">${subject?.isTeaching?'on-duty':'off-duty'}
+                                    </v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-simple-checkbox :value="subject?.isTeaching" @click="toggleJoin()"
+                                                           :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
+                                        </v-simple-checkbox>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                            </template>
+                            <span style="font-size:small"> An published graph is not shown to student,<br> if instructor
                             is off-duty.</span>
-                    </v-tooltip>
-                </v-col>
-                <v-divider vertical></v-divider>
-                <v-col cols="auto">
-                    <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
-                        <template v-slot:activator="{ on }">
-                            <v-list-item @click="toggleExposure(workspace)"
-                                :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
-                                <v-list-item-title >published</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-simple-checkbox :value="workspace?.isExposed" @click="toggleExposure(workspace)"
-                                        :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
-                                    </v-simple-checkbox>
-                                </v-list-item-icon>
-                            </v-list-item>
+                        </v-tooltip>
+                    </v-col>
+<!--                    <v-divider vertical></v-divider>-->
+                    <v-col cols="auto">
+                        <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
+                            <template v-slot:activator="{ on }">
+                                <v-list-item @click="toggleExposure(workspace)"
+                                             :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
+                                    <v-list-item-title>published</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-simple-checkbox :value="workspace?.isExposed"
+                                                           @click="toggleExposure(workspace)"
+                                                           :disabled="workspace.owner == null || '{{USER.userId}}' != workspace.owner.userId">
+                                        </v-simple-checkbox>
+                                    </v-list-item-icon>
+                                </v-list-item>
 
-                        </template>
-                        <span style="font-size:small">
+                            </template>
+                            <span style="font-size:small">
                             Course plan only reflects contents on published graph.<br>
                             The workspace is not published.<br>
                         </span>
-                    </v-tooltip>
-                </v-col>
-            </v-row>
-            <v-row no-gutters class="justify-center align-center">
-<!--                修改instructor中的layout等标签信息-->
-                <v-col cols="auto" dense>
-                    <v-menu offset-y>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
-                                v-on="on" tile>
-                                commit changes
-                            </v-btn>
-                        </template>
-                        <v-list>
-                            <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
-                                <v-list-item-title>preview changes</v-list-item-title>
-                            </v-list-item>
-                            <v-tooltip bottom :disabled="activePositiveEdgeCount + activeNegativeEdgeCount != 0">
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?
-                                    null:showCommitExposeDialogue()" v-bind="attrs" v-on="on">
-                                        <v-list-item-title>commit and publish</v-list-item-title>
-                                    </v-list-item>
-                                </template>
-                                <span style="font-size: small;">
-                                    There are no uncommitted changes.
-                                </span>
-                            </v-tooltip>
-                            <v-list-item dense @click="deleteSelectBar = true">
-                                <v-list-item-title>delete workspace</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-menu>
-                </v-col>
-                <v-col cols="auto" dense>
-                    <v-menu offset-y>
-                        <template v-slot:activator="{ on, attrs }">
-                            <v-btn id="patchMenu" small tile outlined elevation="0" style="text-transform: none;"
-                                v-bind="attrs" v-on="on" tile>
-                                patch
-                                <v-icon v-if="!subject?.isPatchLeaf">
-                                    sync
-                                </v-icon>
-                            </v-btn>
-                        </template>
-                        <v-list>
-                            <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>
-                                <v-list-item-subtitle># of uncommitted <br> changes: ${activePositiveEdgeCount +
-                                    activeNegativeEdgeCount}</v-list-item-subtitle>
-                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-list-item-icon v-bind="attrs" v-on="on">
-                                            <v-icon>error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </template>
-                                    <span style="font-size: small;">
-                                        Uncommitted changes are temporary triple proposal/removal <br>
-                                        that is in the workspace but NOT in the patch. <br>
-                                        As they are not in the patch, they would not be refleced<br>
-                                        in any form of patch publishment. <br>
-                                    </span>
-                                </v-tooltip>
-                            </v-list-item>
-                            <v-list-item v-if="subject?.isExposed && ! subject?.isTeaching" dense>
-                                <v-list-item-subtitle>You haven't join the course<br>(You may join in
-                                    "publish patch")</v-list-item-subtitle>
-                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                                    <template v-slot:activator="{ on, attrs }">
-                                        <v-list-item-icon v-bind="attrs" v-on="on">
-                                            <v-icon>error_outline</v-icon>
-                                        </v-list-item-icon>
-                                    </template>
-                                    <span style="font-size: small;">
-                                        Student can only view published graph from <br>
-                                        instructors who had joined that course.
-                                    </span>
-                                </v-tooltip>
-                            </v-list-item>
-                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
-                            <v-list-item dense>
-                                <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
-                                </v-list-item-subtitle>
-                            </v-list-item>
-                            <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">
-                                <v-list-item-title>sync</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-icon>sync</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                            <v-list-item dense v-else>
-                                <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch
-                                </v-list-item-subtitle>
-                                <v-list-item-icon>
-                                    <v-icon>done</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                            <v-list-item dense
-                                @click="this.window.open('{{ url_for('instructor.branch')}}' + subject.deltaGraphId + '/' + subject.predecessor, '_blank')">
-                                <v-list-item-subtitle style="font-size: small;">view patch &<br>predecessor
-                                </v-list-item-subtitle>
-                                <v-list-item-icon>
-                                    <v-icon>open_in_new</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                            <v-menu offset-x>
-                                <template v-slot:activator="{ on, attrs }">
-                                    <v-list-item dense v-bind="attrs" v-on="on">
-                                        <v-list-item-subtitle style="font-size: small;">publish patch
-                                        </v-list-item-subtitle>
-                                        <v-list-item-icon>
-                                            <v-icon>chevron_right</v-icon>
-                                        </v-list-item-icon>
-                                    </v-list-item>
-                                </template>
-                                <v-list>
-                                    <v-list-item dense>
-                                        <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
-                                    </v-list-item>
-                                    <v-list-item dense @click="toggleCanPull()">
-                                        <v-list-item-title>submitted</v-list-item-title>
-                                        <v-list-item-icon>
-                                            <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()">
-                                            </v-simple-checkbox>
-                                        </v-list-item-icon>
-                                    </v-list-item>
-                                </v-list>
-                            </v-menu>
-                        </v-list>
-                    </v-menu>
-                </v-col>
+                        </v-tooltip>
+                    </v-col>
 
-            </v-row>
+
+                </v-toolbar>
+
+            </v-card>
+
+
+                        将布局全部修改成新的0731 vcard之内
+
+<!--                        <v-row no-gutters class="justify-center align-center">-->
+<!--                            &lt;!&ndash;                修改instructor中的layout等标签信息&ndash;&gt;-->
+<!--                            <v-col cols="auto" dense>-->
+<!--                                <v-menu offset-y>-->
+<!--                                    <template v-slot:activator="{ on, attrs }">-->
+<!--                                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
+<!--                                               v-on="on" tile>-->
+<!--                                            commit changes-->
+<!--                                        </v-btn>-->
+<!--                                    </template>-->
+<!--                                    <v-list>-->
+<!--                                        <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">-->
+<!--                                            <v-list-item-title>preview changes</v-list-item-title>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-tooltip bottom :disabled="activePositiveEdgeCount + activeNegativeEdgeCount != 0">-->
+<!--                                            <template v-slot:activator="{ on, attrs }">-->
+<!--                                                <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?-->
+<!--                                                null:showCommitExposeDialogue()" v-bind="attrs" v-on="on">-->
+<!--                                                    <v-list-item-title>commit and publish</v-list-item-title>-->
+<!--                                                </v-list-item>-->
+<!--                                            </template>-->
+<!--                                            <span style="font-size: small;">-->
+<!--                                                There are no uncommitted changes.-->
+<!--                                            </span>-->
+<!--                                        </v-tooltip>-->
+<!--                                        <v-list-item dense @click="deleteSelectBar = true">-->
+<!--                                            <v-list-item-title>delete workspace</v-list-item-title>-->
+<!--                                        </v-list-item>-->
+<!--                                    </v-list>-->
+<!--                                </v-menu>-->
+<!--                            </v-col>-->
+<!--                            <v-col cols="auto" dense>-->
+<!--                                <v-menu offset-y>-->
+<!--                                    <template v-slot:activator="{ on, attrs }">-->
+<!--                                        <v-btn id="patchMenu" small tile outlined elevation="0" style="text-transform: none;"-->
+<!--                                               v-bind="attrs" v-on="on" tile>-->
+<!--                                            patch-->
+<!--                                            <v-icon v-if="!subject?.isPatchLeaf">-->
+<!--                                                sync-->
+<!--                                            </v-icon>-->
+<!--                                        </v-btn>-->
+<!--                                    </template>-->
+<!--                                    <v-list>-->
+<!--                                        <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>-->
+<!--                                            <v-list-item-subtitle># of uncommitted <br> changes: ${activePositiveEdgeCount +-->
+<!--                                                activeNegativeEdgeCount}-->
+<!--                                            </v-list-item-subtitle>-->
+<!--                                            <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">-->
+<!--                                                <template v-slot:activator="{ on, attrs }">-->
+<!--                                                    <v-list-item-icon v-bind="attrs" v-on="on">-->
+<!--                                                        <v-icon>error_outline</v-icon>-->
+<!--                                                    </v-list-item-icon>-->
+<!--                                                </template>-->
+<!--                                                <span style="font-size: small;">-->
+<!--                                                    Uncommitted changes are temporary triple proposal/removal <br>-->
+<!--                                                    that is in the workspace but NOT in the patch. <br>-->
+<!--                                                    As they are not in the patch, they would not be refleced<br>-->
+<!--                                                    in any form of patch publishment. <br>-->
+<!--                                                </span>-->
+<!--                                            </v-tooltip>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-list-item v-if="subject?.isExposed && ! subject?.isTeaching" dense>-->
+<!--                                            <v-list-item-subtitle>You haven't join the course<br>(You may join in-->
+<!--                                                "publish patch")-->
+<!--                                            </v-list-item-subtitle>-->
+<!--                                            <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">-->
+<!--                                                <template v-slot:activator="{ on, attrs }">-->
+<!--                                                    <v-list-item-icon v-bind="attrs" v-on="on">-->
+<!--                                                        <v-icon>error_outline</v-icon>-->
+<!--                                                    </v-list-item-icon>-->
+<!--                                                </template>-->
+<!--                                                <span style="font-size: small;">-->
+<!--                                                    Student can only view published graph from <br>-->
+<!--                                                    instructors who had joined that course.-->
+<!--                                                </span>-->
+<!--                                            </v-tooltip>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>-->
+<!--                                        <v-list-item dense>-->
+<!--                                            <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}-->
+<!--                                            </v-list-item-subtitle>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">-->
+<!--                                            <v-list-item-title>sync</v-list-item-title>-->
+<!--                                            <v-list-item-icon>-->
+<!--                                                <v-icon>sync</v-icon>-->
+<!--                                            </v-list-item-icon>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-list-item dense v-else>-->
+<!--                                            <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch-->
+<!--                                            </v-list-item-subtitle>-->
+<!--                                            <v-list-item-icon>-->
+<!--                                                <v-icon>done</v-icon>-->
+<!--                                            </v-list-item-icon>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-list-item dense-->
+<!--                                                     @click="this.window.open('{{ url_for('instructor.branch')}}' + subject.deltaGraphId + '/' + subject.predecessor, '_blank')">-->
+<!--                                            <v-list-item-subtitle style="font-size: small;">view patch &<br>predecessor-->
+<!--                                            </v-list-item-subtitle>-->
+<!--                                            <v-list-item-icon>-->
+<!--                                                <v-icon>open_in_new</v-icon>-->
+<!--                                            </v-list-item-icon>-->
+<!--                                        </v-list-item>-->
+<!--                                        <v-menu offset-x>-->
+<!--                                            <template v-slot:activator="{ on, attrs }">-->
+<!--                                                <v-list-item dense v-bind="attrs" v-on="on">-->
+<!--                                                    <v-list-item-subtitle style="font-size: small;">publish patch-->
+<!--                                                    </v-list-item-subtitle>-->
+<!--                                                    <v-list-item-icon>-->
+<!--                                                        <v-icon>chevron_right</v-icon>-->
+<!--                                                    </v-list-item-icon>-->
+<!--                                                </v-list-item>-->
+<!--                                            </template>-->
+<!--                                            <v-list>-->
+<!--                                                <v-list-item dense>-->
+<!--                                                    <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>-->
+<!--                                                </v-list-item>-->
+<!--                                                <v-list-item dense @click="toggleCanPull()">-->
+<!--                                                    <v-list-item-title>submitted</v-list-item-title>-->
+<!--                                                    <v-list-item-icon>-->
+<!--                                                        <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()">-->
+<!--                                                        </v-simple-checkbox>-->
+<!--                                                    </v-list-item-icon>-->
+<!--                                                </v-list-item>-->
+<!--                                            </v-list>-->
+<!--                                        </v-menu>-->
+<!--                                    </v-list>-->
+<!--                                </v-menu>-->
+<!--                            </v-col>-->
+
+<!--                        </v-row>-->
         </v-col>
     </v-row>
     <v-row dense style="height: calc(100% - 80px); width: 100%;">
         <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128" v-if="graphLoading">
         </v-progress-circular>
         <div id="editor" style="height: 100%; width: 100%;"
-            v-bind:style="{visibility: graphLoading?'hidden':'visible'}">
+             v-bind:style="{visibility: graphLoading?'hidden':'visible'}">
             <div style="position: absolute; height: 100%; width: 100%;">
                 <div ref="shepherd-graphNode"
-                    :style="{position: 'relative', height: boundingBox.h +'px', width: boundingBox.w +'px', left: boundingBox.x1 +'px', top: boundingBox.y1 +'px'}">
+                     :style="{position: 'relative', height: boundingBox.h +'px', width: boundingBox.w +'px', left: boundingBox.x1 +'px', top: boundingBox.y1 +'px'}">
                 </div>
             </div>
 
-<!--            <v-btn variant="outlined">-->
-<!--          实验按钮-->
-<!--            </v-btn>-->
 
+            <!--            <div class="menu-container-right">-->
+            <!--                <v-menu offset-y>-->
+            <!--                    <template v-slot:activator="{ on, attrs }">-->
+            <!--                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
+            <!--                               v-on="on" tile>-->
+            <!--                            upload-->
+            <!--                        </v-btn>-->
+            <!--                    </template>-->
+            <!--                    <v-dialog max-width="700px" v-model="importDialogue">-->
+            <!--                        <template v-slot:activator="{ on, attrs }">-->
+            <!--                            <v-list-item dense v-bind="attrs" v-on="on">-->
+            <!--                                <v-list-item-title>import</v-list-item-title>-->
+            <!--                                <v-list-item-icon>-->
+            <!--                                    <v-icon>upload</v-icon>-->
+            <!--                                </v-list-item-icon>-->
+            <!--                            </v-list-item>-->
+            <!--                        </template>-->
+            <!--                        <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"-->
+            <!--                                                  :courseCode="subject.courseCode">-->
+            <!--                        </kcube-triplesImport-form>-->
+            <!--                    </v-dialog>-->
+            <!--                </v-menu>-->
+            <!--                <div class="menu-spacing"></div>-->
+            <!--                <v-menu offset-y>-->
+            <!--                    <template v-slot:activator="{ on, attrs }">-->
+            <!--                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
+            <!--                               v-on="on" tile>-->
+            <!--                            download-->
+            <!--                        </v-btn>-->
+            <!--                    </template>-->
 
-    <div class="menu-container-right">
-            <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
-                        v-on="on" tile>
-                        upload
-                    </v-btn>
-                </template>
-                <v-dialog max-width="700px" v-model="importDialogue">
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-list-item dense v-bind="attrs" v-on="on">
-                            <v-list-item-title>import</v-list-item-title>
-                            <v-list-item-icon>
-                                <v-icon>upload</v-icon>
-                            </v-list-item-icon>
-                        </v-list-item>
-                    </template>
-                    <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
-                        :courseCode="subject.courseCode">
-                    </kcube-triplesImport-form>
-                </v-dialog>
-            </v-menu>
-            <div class="menu-spacing"></div>
-            <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
-                        v-on="on" tile>
-                        download
-                    </v-btn>
-                </template>
-<!--                <v-dialog max-width="700px" v-model="importDialogue">-->
-<!--                    <template v-slot:activator="{ on, attrs }">-->
-<!--                        <v-list-item dense v-bind="attrs" v-on="on">-->
-<!--                            <v-list-item-title>import</v-list-item-title>-->
-<!--                            <v-list-item-icon>-->
-<!--                                <v-icon>upload</v-icon>-->
-<!--                            </v-list-item-icon>-->
-<!--                        </v-list-item>-->
-<!--                    </template>-->
-<!--                    <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"-->
-<!--                        :courseCode="subject.courseCode">-->
-<!--                    </kcube-triplesImport-form>-->
-<!--                </v-dialog>-->
-            </v-menu>
+            <!--                </v-menu>-->
 
-    </div>
-<!--todo 增加add delete功能-->
-    <div class="menu-container">
-            <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
-                        v-on="on" tile>
-                        add
-                    </v-btn>
+            <!--            </div>-->
+            <!--            <div class="menu-container">-->
+            <!--                <v-menu offset-y>-->
+            <!--                    <template v-slot:activator="{ on, attrs }">-->
+            <!--                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
+            <!--                               v-on="on" tile>-->
+            <!--                            add-->
+            <!--                        </v-btn>-->
+            <!--                    </template>-->
+            <!--                </v-menu>-->
 
-            </v-menu>
-            <div class="menu-spacing"></div>
-            <v-menu offset-y>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"
-                        v-on="on" tile>
-                        delete
-                    </v-btn>
-                </template>
-
-            </v-menu>
-
-    </div>
+            <!--            </div>-->
 
 
         </div>
@@ -346,16 +550,15 @@
     </v-bottom-sheet>
 
 
-
     <v-card>
         <v-bottom-sheet v-model="tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay eager
-            no-click-animation>
+                        no-click-animation>
             <template v-slot:activator="{ on, attrs }">
                 <v-bottom-sheet :value="!tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay
-                    no-click-animation>
+                                no-click-animation>
                     <v-sheet>
                         <v-btn :ripple="false" color="success" plain block @click="tripleBottomSheet = true"
-                            ref="shepherd-openTripleFormBtn" elevation="2">
+                               ref="shepherd-openTripleFormBtn" elevation="2">
                             open triple form
                             <v-icon right>
                                 menu_open
@@ -378,8 +581,8 @@
                         <v-row ref="shepherd-openTripleFormField">
                             <v-col>
                                 <v-combobox v-model="h_name" :items="concepts" :rules="nameRules" label="head entity"
-                                    persistent-hint @focus="nodeFieldFocus('head')" @input="nodeFieldChange"
-                                    @keydown="disableButtons()">
+                                            persistent-hint @focus="nodeFieldFocus('head')" @input="nodeFieldChange"
+                                            @keydown="disableButtons()">
                                     <template v-slot:no-data>
                                         <v-list-item>
                                             <v-list-item-content>
@@ -396,13 +599,13 @@
                             </v-col>
                             <v-col>
                                 <v-select v-model="r_name" :rules="nameRules" :items="relationships"
-                                    label="relationship" @input="edgeFieldChange" readonly>
+                                          label="relationship" @input="edgeFieldChange" readonly>
                                 </v-select>
                             </v-col>
                             <v-col>
                                 <v-combobox v-model="t_name" :items="concepts" :rules="nameRules" label="tail entity"
-                                    persistent-hint @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"
-                                    @keydown="disableButtons()">
+                                            persistent-hint @focus="nodeFieldFocus('tail')" @input="nodeFieldChange"
+                                            @keydown="disableButtons()">
                                     <template v-slot:no-data>
                                         <v-list-item>
                                             <v-list-item-content>
@@ -421,17 +624,17 @@
                         <v-row ref="shepherd-openTripleFormLinkBtn">
                             <div v-if="diffMode">
                                 <v-btn color="success" @click="createTriple(true)"
-                                    :disabled="!canLinkEdge || !canUpdateEdge">
+                                       :disabled="!canLinkEdge || !canUpdateEdge">
                                     associate
                                 </v-btn>
                                 <v-btn color="indigo lighten-2" @click="createTriple(false)"
-                                    :disabled="!canUnlinkEdge || !canUpdateEdge">
+                                       :disabled="!canUnlinkEdge || !canUpdateEdge">
                                     dissociate
                                 </v-btn>
                                 <v-tooltip top v-if="canDeleteEdge">
                                     <template v-slot:activator="{ on, attrs }">
                                         <v-btn style=" margin-left: auto; margin-right: 0;" v-on="on"
-                                            @click="deleteTriple()" :disabled="!canDeleteEdge || !canUpdateEdge">
+                                               @click="deleteTriple()" :disabled="!canDeleteEdge || !canUpdateEdge">
                                             defer decision
                                         </v-btn>
                                     </template>
@@ -442,11 +645,11 @@
                             </div>
                             <div v-else>
                                 <v-btn color="success" @click="smartLink()"
-                                    :disabled="!canNontrivalLinkEdge || !canUpdateEdge">
+                                       :disabled="!canNontrivalLinkEdge || !canUpdateEdge">
                                     link
                                 </v-btn>
                                 <v-btn style=" margin-left: auto; margin-right: 0;" color="indigo lighten-2"
-                                    @click="smartUnlink()" :disabled="!canNontrivalRemoveEdge || !canUpdateEdge">
+                                       @click="smartUnlink()" :disabled="!canNontrivalRemoveEdge || !canUpdateEdge">
                                     unlink
                                 </v-btn>
                             </div>
@@ -468,17 +671,18 @@
         <v-row no-gutters justify="end">
             <v-col cols="auto" dense>
                 <v-switch style="margin-top:0px" @change="switchStyle()" :disabled="graphLoading" v-model="diffMode"
-                    messages="view diff" prepend-icon="rule" dense>
+                          messages="view diff" prepend-icon="rule" dense>
                 </v-switch>
             </v-col>
             <v-col cols="auto" dense>
                 <v-tooltip top>
                     <template v-slot:activator="{ on, attrs }">
                         <v-badge color="error" :value="(activeNegativeEdgeCount + inactiveNegativeEdgeCount)>0"
-                            :content="activeNegativeEdgeCount + inactiveNegativeEdgeCount">
+                                 :content="activeNegativeEdgeCount + inactiveNegativeEdgeCount">
                             <v-icon v-bind="attrs" v-on="on">playlist_remove</v-icon>
                         </v-badge>
-                    </template> ${activeNegativeEdgeCount + inactiveNegativeEdgeCount} edge negation
+                    </template>
+                    ${activeNegativeEdgeCount + inactiveNegativeEdgeCount} edge negation
                     ${activeNegativeEdgeCount + inactiveNegativeEdgeCount>1?"have":"has"}
                     been declared. Turn 'view diff' mode on to
                     visualize such
@@ -495,39 +699,39 @@
                         </v-btn>
                     </template>
                     <v-btn style="text-transform: none; font-weight: normal;" block tile
-                        @click="edgeChip=[0,3];highlightEdge()">
+                           @click="edgeChip=[0,3];highlightEdge()">
                         ${subject?.labels?.includes("Branch")?"branch":"trunk"}
                     </v-btn>
                     <v-btn style="text-transform: none; font-weight: normal;" block tile
-                        @click="edgeChip=[1,2,4,5];highlightEdge()">
+                           @click="edgeChip=[1,2,4,5];highlightEdge()">
                         workspace
                     </v-btn>
                     <v-btn style="text-transform: none; font-weight: normal;" block tile
-                        @click="edgeChip=[0,1,2];highlightEdge()">
+                           @click="edgeChip=[0,1,2];highlightEdge()">
                         proposal
                     </v-btn>
                     <v-btn style="text-transform: none; font-weight: normal;" block tile
-                        @click="edgeChip=[3,4,5];highlightEdge()">
+                           @click="edgeChip=[3,4,5];highlightEdge()">
                         negation
                     </v-btn>
                     <v-btn style="text-transform: none; font-weight: normal;" block tile
-                        @click="edgeChip=[1,2];highlightEdge()">
+                           @click="edgeChip=[1,2];highlightEdge()">
                         workspace proposal
                     </v-btn>
                     <v-btn style="text-transform: none; font-weight: normal;" block tile
-                        @click="edgeChip=[4,5];highlightEdge()">
+                           @click="edgeChip=[4,5];highlightEdge()">
                         workspace negation
                     </v-btn>
                     <v-btn style="text-transform: none; font-weight: bold;" block tile
-                        @click="edgeChip=[1,4];highlightEdge()">
+                           @click="edgeChip=[1,4];highlightEdge()">
                         active
                     </v-btn>
 
                     <v-tooltip top>
                         <template v-slot:activator="{ on, attrs }">
                             <v-btn v-bind="attrs" v-on="on"
-                                style="text-transform: none; font-weight: bold; -webkit-text-stroke: 0.75px black; color:white"
-                                block tile @click="edgeChip=[2,5];highlightEdge()">
+                                   style="text-transform: none; font-weight: bold; -webkit-text-stroke: 0.75px black; color:white"
+                                   block tile @click="edgeChip=[2,5];highlightEdge()">
                                 inactive
                                 <v-icon right>
                                     help_outline
@@ -569,7 +773,8 @@
                         <v-icon v-bind="attrs" v-on="on" right>
                             help_outline
                         </v-icon>
-                    </template>An inactive edge proposal is created if you are trying to create an already
+                    </template>
+                    An inactive edge proposal is created if you are trying to create an already
                     existing
                     edge
                 </v-tooltip>
@@ -608,7 +813,8 @@
                         <v-icon v-bind="attrs" v-on="on" right>
                             help_outline
                         </v-icon>
-                    </template>An inactive edge negation is created if you are trying to deny a nonexistent
+                    </template>
+                    An inactive edge negation is created if you are trying to deny a nonexistent
                     edge
                 </v-tooltip>
             </v-chip>
@@ -653,7 +859,7 @@
         </v-container>
     </v-dialog>
     <v-dialog v-model="coursePlanDialogue" content-class="coursePlanPage" transition="slide-x-reverse-transition"
-        hide-overlay no-click-animation persistent :retain-focus="false" eager>
+              hide-overlay no-click-animation persistent :retain-focus="false" eager>
         <v-card style="height: 100%; width:100%">
             <v-btn block color="error" plain @click="coursePlanDialogue = false" small elevation="2">
                 dismiss
@@ -662,14 +868,14 @@
                 </v-icon>
             </v-btn>
             <iframe style="height: 100%; width:100%" frameBorder="0"
-                :src="subject?.courseCode?'{{ url_for('instructor.coursePlan')}}' + subject.courseCode:''"></iframe>
+                    :src="subject?.courseCode?'{{ url_for('instructor.coursePlan')}}' + subject.courseCode:''"></iframe>
         </v-card>
     </v-dialog>
     <v-tooltip top>
         <template v-slot:activator="{ on, attrs }">
             <v-fab-transition>
                 <v-btn v-show="!isEntityEditorVisible" v-bind="attrs" v-on="on" @click="backToEntityEditor()" fixed
-                    bottom right fab>
+                       bottom right fab>
                     <v-icon>edit</v-icon>
                 </v-btn>
             </v-fab-transition>
@@ -695,27 +901,29 @@
 {% include "instructor/components/triplesImportForm.html" %}
 <style>
     .menu-container {
-      position: absolute;
-      left: 20px; /* 通过调整 left 属性来控制在页面的左边的位置 */
-      top: 50%; /* 这里可以设置任意合适的垂直位置 */
-      transform: translateY(-50%); /* 将元素的中心点定位在父容器的中心 */
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
+        position: absolute;
+        left: 20px; /* 通过调整 left 属性来控制在页面的左边的位置 */
+        top: 50%; /* 这里可以设置任意合适的垂直位置 */
+        transform: translateY(-50%); /* 将元素的中心点定位在父容器的中心 */
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
     }
+
     .menu-container-right {
-      position: absolute;
-      right: 20px; /* 通过调整 left 属性来控制在页面的左边的位置 */
-      top: 50%; /* 这里可以设置任意合适的垂直位置 */
-      transform: translateY(-50%); /* 将元素的中心点定位在父容器的中心 */
-      z-index: 9999;
-      display: flex;
-      flex-direction: column;
+        position: absolute;
+        right: 20px; /* 通过调整 left 属性来控制在页面的左边的位置 */
+        top: 50%; /* 这里可以设置任意合适的垂直位置 */
+        transform: translateY(-50%); /* 将元素的中心点定位在父容器的中心 */
+        z-index: 9999;
+        display: flex;
+        flex-direction: column;
     }
 
     .menu-spacing {
-    height: 50px; /* 设置间距的高度，可根据需要调整 */
+        height: 50px; /* 设置间距的高度，可根据需要调整 */
     }
+
     .v-chip--active {
         background-color: lightblue;
     }
@@ -744,11 +952,13 @@
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
+    // 创建一个可编辑的知识图谱对象
     cy = cytoscape({
         style: cyStyles.basicEditStyle,
         wheelSensitivity: 0.15,
         boxSelectionEnabled: false,
     });
+
     cyLayout = null
     cytoscapeInstance = [{
         cy: cy,
@@ -758,6 +968,7 @@
         name: 'concentric',
     }
     fitPadding = document.documentElement.clientHeight * 0.05
+    // cola是什么
     colaLayoutOptions = {
         name: 'cola',
         maxSimulationTime: Infinity,
@@ -766,6 +977,7 @@
         edgeLength: 55,
         nodeSpacing: 0
     }
+    //cose是什么
     coseLayoutOptions = {
         name: 'cose',
         padding: fitPadding,
@@ -777,6 +989,7 @@
         animationDuration: 750
     }
 
+    // 新建node用的函数？？
     function nodeFactory(name) {
         let output = {
             group: 'nodes',
@@ -792,6 +1005,7 @@
         return output
     }
 
+    // 新建边的函数？？
     function workspaceEdgeFactory(edge) {
         let output = {
             group: 'edges',
@@ -807,8 +1021,10 @@
         }
         return output
     }
+
     edgeCollections = {}
 
+    // 未区分workspace的边函数
     function subjectEdgeFactory(edge) {
         let output = {
             group: 'edges',
@@ -829,8 +1045,11 @@
         return h_name +
             '.' + r_name + '.' + t_name
     }
+
+
     Vue.component('app-content', {
         data: () => ({
+            // showTooltip: false,
             editor_bc: null,
             isEntityEditorVisible: true,
             boundingBox: {
@@ -843,16 +1062,16 @@
             tag: '',
             tagRules: [v => !!v || 'Tag name is required',
                 v => (v && v.length > 3 && v.length < 101) ||
-                'Tag name should be anything between 4 and 100 charactors',
+                    'Tag name should be anything between 4 and 100 charactors',
                 v => (v && /{{regExpRules["tag"]}}/.test(v)) ||
-                'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
+                    'Tag name can only contains alphanumeric characters, hyphen, comma, colon, dot and space.'
             ],
             relationships: [],
             nameRules: [v => !!v || 'Name is required',
                 v => (v && v.length > 1 && v.length) < 99 ||
-                'Name should be anything between 2 and 99 charactors',
+                    'Name should be anything between 2 and 99 charactors',
                 v => (v && /{{regExpRules["name"]}}/.test(v)) ||
-                'Name can only contains alphanumeric characters and space.'
+                    'Name can only contains alphanumeric characters and space.'
             ],
             h_name: '',
             t_name: '',
@@ -907,7 +1126,7 @@
                     this.workspace = body.workspace
                     body.subject.canPull = body.subject.canPull ? true : false
                     this.subject = body.subject
-                    cy.elements().remove();
+                    cy.elements().remove(); //使用 Cytoscape.js 库，清空图形中的所有元素（节点和边）
                     cy.add(nodeFactory(body.subject.courseCode)).style({
                         'background-image': body.workspace.imageURL,
                         'background-fit': 'cover'
@@ -951,13 +1170,13 @@
             loadData() {
                 this.$root.progress.show = true
                 let workspacePromise = fetch(
-                        "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
-                            method: 'GET',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                        })
+                    "{{ url_for('RESTful.workspace.get', deltaGraphId=deltaGraphId) }}", {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                    })
                     .then(response => {
                         try {
                             return response.json()
@@ -978,31 +1197,31 @@
                             'Content-Type': 'application/json'
                         },
                     })
-                    .then(response => {
-                        try {
-                            return response.json()
-                        } catch {
-                            this.$root.progress.show = false
-                            this.$root.errorDisplay({},
-                                'Unexpected error occured.')
-                        }
-                    })
-                    .then(body => {
-                        if (body.relationships) {
-                            this.relationships = body.relationships
-                            this.r_name = body.relationships.includes('Subtopic in') ? 'Subtopic in' : ''
-                        } else {
-                            this.$root.errorDisplay(body,
-                                'Unexpected error on getting relationship information.')
-                        }
-                    })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            if (body.relationships) {
+                                this.relationships = body.relationships
+                                this.r_name = body.relationships.includes('Subtopic in') ? 'Subtopic in' : ''
+                            } else {
+                                this.$root.errorDisplay(body,
+                                    'Unexpected error on getting relationship information.')
+                            }
+                        })
                 let entityPromise = fetch("{{ url_for('RESTful.entity.query', list=True) }}", {
-                        method: 'GET',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                    })
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1065,6 +1284,7 @@
                 this.inactivePositiveEdgeCount = edgeCollections.inactivePositiveEdge.length
                 this.inactiveNegativeEdgeCount = edgeCollections.inactiveNegativeEdge.length
             },
+            // 创建三元组的函数，需要在创建结点或者创建关系的时候看下
             createTriple(r_value) {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
@@ -1073,18 +1293,18 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple.put', deltaGraphId=deltaGraphId) }}", {
-                            method: 'PUT',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                h_name: this.h_name,
-                                r_name: this.r_name,
-                                t_name: this.t_name,
-                                r_value: r_value,
-                            })
+                        method: 'PUT',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            h_name: this.h_name,
+                            r_name: this.r_name,
+                            t_name: this.t_name,
+                            r_value: r_value,
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -1113,6 +1333,7 @@
                         })
                 }
             },
+            // 可能是进行结点删除时候用的函数
             deleteTriple() {
                 if (this.$root.progress.show == true) {
                     this.$root.bePatientSnackBar.show = true
@@ -1121,17 +1342,17 @@
                 if (this.$refs.tripleForm.validate()) {
                     this.$root.progress.show = true
                     fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
-                            method: 'DELETE',
-                            cache: 'no-store',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                h_name: this.h_name,
-                                r_name: this.r_name,
-                                t_name: this.t_name,
-                            })
+                        method: 'DELETE',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            h_name: this.h_name,
+                            r_name: this.r_name,
+                            t_name: this.t_name,
                         })
+                    })
                         .then(response => {
                             try {
                                 return response.json()
@@ -1312,7 +1533,8 @@
                     } else {
                         this.createTriple(true)
                     }
-                } else {}
+                } else {
+                }
             },
             smartUnlink() {
                 if (this.h_name && this.h_name != '' && this.r_name && this.r_name != '' &&
@@ -1328,7 +1550,8 @@
                             this.deleteTriple(false)
                         }
                     }
-                } else {}
+                } else {
+                }
 
             },
             disableButtons() {
@@ -1342,15 +1565,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.triple.delete', deltaGraphId=deltaGraphId) }}", {
-                        method: 'DELETE',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            unreachable: true,
-                        })
+                    method: 'DELETE',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        unreachable: true,
                     })
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1367,10 +1590,10 @@
                             body.triples.forEach(triple => {
                                 let id = edgeIdFromNames(triple.h_name, triple.r_name,
                                     triple
-                                    .t_name)
+                                        .t_name)
                                 let edge = cy.getElementById(edgeIdFromNames(triple.h_name,
                                     triple
-                                    .r_name,
+                                        .r_name,
                                     triple.t_name))[0]
                                 if (edge) {
                                     if (triple.r_value === null)
@@ -1447,8 +1670,8 @@
                                     "subject_value") != "true") || edge.data("workspace_value") ==
                             "false"
                         this.canNontrivalRemoveEdge = edge.data("workspace_value") == "true" || (edge
-                            .data(
-                                "subject_value") == "true" && edge.data("workspace_value") ==
+                                .data(
+                                    "subject_value") == "true" && edge.data("workspace_value") ==
                             "undefined")
                         this.canLinkEdge = edge.data("workspace_value") != "true"
                         this.canUnlinkEdge = edge.data("workspace_value") != "false"
@@ -1540,80 +1763,80 @@
             toggleExposure(graph) {
                 this.$root.actionDisplay("You are " + (graph.isExposed ? "hiding" : "publishing") +
                     " workspace " + graph.tag, "sure", () => {
-                        if (this.$root.progress.show == true) {
-                            this.$root.bePatientSnackBar.show = true
-                            return
-                        }
-                        this.$root.progress.show = true
-                        fetch("{{ url_for('RESTful.graph.patch') }}" + graph.deltaGraphId, {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    isExposed: !graph.isExposed,
-                                })
-                            })
-                            .then(response => {
-                                return response.json()
-                            })
-                            .then(body => {
-                                this.$root.progress.show = false
-                                this.$root.responseSnackBar(body,
-                                    'update failed for unknown reason.',
-                                    () => {
-                                        this.$root.snackBars.actionSnackBar.show = false
-                                        graph.isExposed = !graph.isExposed
-                                        this.editor_bc.postMessage({
-                                            message: 'graphEditor-exposureToggle',
-                                            payload: {
-                                                ...this.workspace,
-                                                labels: ["Workspace"]
-                                            }
-                                        }, '*')
-                                        this.graphEditorSocket.emit('exposureToggle', {
-                                            workspace: this.workspace,
-                                            payload: {
-                                                ...this.workspace,
-                                                labels: ["Workspace"]
-                                            }
-                                        })
-                                    })
-                            })
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.graph.patch') }}" + graph.deltaGraphId, {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            isExposed: !graph.isExposed,
+                        })
                     })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.snackBars.actionSnackBar.show = false
+                                    graph.isExposed = !graph.isExposed
+                                    this.editor_bc.postMessage({
+                                        message: 'graphEditor-exposureToggle',
+                                        payload: {
+                                            ...this.workspace,
+                                            labels: ["Workspace"]
+                                        }
+                                    }, '*')
+                                    this.graphEditorSocket.emit('exposureToggle', {
+                                        workspace: this.workspace,
+                                        payload: {
+                                            ...this.workspace,
+                                            labels: ["Workspace"]
+                                        }
+                                    })
+                                })
+                        })
+                })
             },
             toggleCanPull() {
                 this.$root.actionDisplay("You are " + (this.subject.canPull ? "unsubmitting" : "submitting") +
                     " patch " + this.subject.tag, "sure", () => {
-                        if (this.$root.progress.show == true) {
-                            this.$root.bePatientSnackBar.show = true
-                            return
-                        }
-                        this.$root.progress.show = true
-                        fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    canPull: !this.subject.canPull
-                                })
-                            })
-                            .then(response => {
-                                return response.json()
-                            })
-                            .then(body => {
-                                this.$root.progress.show = false
-                                this.$root.responseSnackBar(body,
-                                    'update failed for unknown reason.',
-                                    () => {
-                                        this.$root.snackBars.actionSnackBar.show = false
-                                        this.subject.canPull = !this.subject.canPull
-                                    })
-                            })
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.branch.patch') }}" + this.subject.deltaGraphId, {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            canPull: !this.subject.canPull
+                        })
                     })
+                        .then(response => {
+                            return response.json()
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.snackBars.actionSnackBar.show = false
+                                    this.subject.canPull = !this.subject.canPull
+                                })
+                        })
+                })
             },
             commitExpose() {
                 if (this.$root.progress.show == true) {
@@ -1622,18 +1845,18 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.branch.post', overwriterId=deltaGraphId) }}", {
-                        method: 'POST',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            tag: this.tag,
-                            action: this.subject.isPatchLeaf && this.subject.isOwner && this.subject
-                                .labels.includes("Branch") ? "patch" : "fork",
-                            expose: true
-                        })
+                    method: 'POST',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tag: this.tag,
+                        action: this.subject.isPatchLeaf && this.subject.isOwner && this.subject
+                            .labels.includes("Branch") ? "patch" : "fork",
+                        expose: true
                     })
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1659,15 +1882,15 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.workspace.patch', deltaGraphId=deltaGraphId) }}", {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            sync: true
-                        })
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sync: true
                     })
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1689,52 +1912,52 @@
             toggleJoin() {
                 this.$root.actionDisplay("You are " + (this.subject.isTeaching ? "quiting" : "joining") + " " +
                     this.subject.courseCode, "sure", () => {
-                        if (this.$root.progress.show == true) {
-                            this.$root.bePatientSnackBar.show = true
-                            return
-                        }
-                        this.$root.progress.show = true
-                        fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.subject
-                                .courseCode), {
-                                method: 'PATCH',
-                                cache: 'no-store',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({
-                                    join: !this.subject.isTeaching
-                                })
-                            })
-                            .then(response => {
-                                try {
-                                    return response.json()
-                                } catch {
-                                    this.$root.progress.show = false
-                                    this.$root.errorDisplay({},
-                                        'Unexpected error occured.')
-                                }
-                            })
-                            .then(body => {
-                                this.$root.progress.show = false
-                                this.$root.responseSnackBar(body,
-                                    'update failed for unknown reason.',
-                                    () => {
-                                        this.$root.snackBars.actionSnackBar.show = false
-                                        this.subject.isTeaching = !this.subject.isTeaching
-                                        this.graphEditorSocket.emit(
-                                            'joinToggle', {
-                                                workspace: this.workspace,
-                                                payload: {
-                                                    userId: this.workspace.owner.userId,
-                                                    courseCode: this.subject.courseCode,
-                                                    isTeaching: this.subject.isTeaching
-                                                }
-                                            }
-                                        )
-                                    })
-
-                            })
+                    if (this.$root.progress.show == true) {
+                        this.$root.bePatientSnackBar.show = true
+                        return
+                    }
+                    this.$root.progress.show = true
+                    fetch("{{ url_for('RESTful.course.patch') }}" + encodeURIComponent(this.subject
+                        .courseCode), {
+                        method: 'PATCH',
+                        cache: 'no-store',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            join: !this.subject.isTeaching
+                        })
                     })
+                        .then(response => {
+                            try {
+                                return response.json()
+                            } catch {
+                                this.$root.progress.show = false
+                                this.$root.errorDisplay({},
+                                    'Unexpected error occured.')
+                            }
+                        })
+                        .then(body => {
+                            this.$root.progress.show = false
+                            this.$root.responseSnackBar(body,
+                                'update failed for unknown reason.',
+                                () => {
+                                    this.$root.snackBars.actionSnackBar.show = false
+                                    this.subject.isTeaching = !this.subject.isTeaching
+                                    this.graphEditorSocket.emit(
+                                        'joinToggle', {
+                                            workspace: this.workspace,
+                                            payload: {
+                                                userId: this.workspace.owner.userId,
+                                                courseCode: this.subject.courseCode,
+                                                isTeaching: this.subject.isTeaching
+                                            }
+                                        }
+                                    )
+                                })
+
+                        })
+                })
             },
             workspaceDelete() {
                 if (this.$root.progress.show == true) {
@@ -1743,12 +1966,12 @@
                 }
                 this.$root.progress.show = true
                 fetch("{{ url_for('RESTful.workspace.delete', deltaGraphId=deltaGraphId) }}", {
-                        method: 'DELETE',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        }
-                    })
+                    method: 'DELETE',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1891,7 +2114,7 @@
                 let width = 0.35 * document.documentElement.clientWidth
                 let left = (1 - 0.35) * document.documentElement.clientWidth
                 window.open(name ? "{{url_for('instructor.entityEditor')}}/" +
-                    this.subject.courseCode + '/' + name : "",
+                        this.subject.courseCode + '/' + name : "",
                     "",
                     "popup=true,resizable=no, width=" + width + ",left=" + left).focus()
             },
@@ -1917,13 +2140,13 @@
                     triples: JSON.stringify(triples),
                 }
                 fetch('{{ url_for("RESTful.workspace.patch", deltaGraphId=deltaGraphId)}}', {
-                        method: 'PATCH',
-                        cache: 'no-store',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(body)
-                    })
+                    method: 'PATCH',
+                    cache: 'no-store',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
                     .then(response => {
                         try {
                             return response.json()
@@ -1976,7 +2199,8 @@
             let loadDataPromise = this.loadData().then(data => {
                 this.onGetWorkspaceData(data[0]) // not using socketio to get data
                 this.graphEditorSocket = {
-                    emit: function () {}
+                    emit: function () {
+                    }
                 }
                 // url = 'ws://' + '{{CONFIG.HOSTING_ADDRESS}}'.split('https://')[1]
                 // console.log(url)
@@ -2017,7 +2241,7 @@
                 //         this.subject.isTeaching = payload.isTeaching
                 // });
                 this.editor_bc = new BroadcastChannel(
-                        "{{courseCode}}-{{request.blueprint}}-editor"),
+                    "{{courseCode}}-{{request.blueprint}}-editor"),
                     this.editor_bc.onmessage = (e) => {
                         const {
                             message,
@@ -2036,7 +2260,7 @@
                                 workspace_value: "undefined"
                             })
                             let false_edge = cy.edges(
-                                    '[workspace_value = "undefined"][subject_value = "true"]')
+                                '[workspace_value = "undefined"][subject_value = "true"]')
                                 .filter(edge => edge.source().data('id') == triple.h_name)
                             false_edge.data({
                                 workspace_value: "false"
@@ -2056,7 +2280,7 @@
                                     if (!this.concepts.includes(name)) this.concepts.push(name)
                                 })
                             let edge = cy.getElementById(edgeIdFromNames(triple.h_name, triple
-                                .r_name,
+                                    .r_name,
                                 triple.t_name))[0]
 
                             if (edge) {
@@ -2174,7 +2398,8 @@
                 self.t_name = event.target.target().data("id")
                 self.determineTripleOptions()
             })
-            cy.on('tapdrag', 'node', (event) => {})
+            cy.on('tapdrag', 'node', (event) => {
+            })
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()
             })

@@ -34,9 +34,9 @@
                     <template v-slot:activator="{ on, attrs }">
                         <v-menu offset-y>
                             <template v-slot:activator="{ on, attrs }">
-{#                                <v-btn fab depressed v-on="on">#}
-{#                                    <v-icon>download</v-icon>#}
-{#                                </v-btn>#}
+                                <v-btn fab depressed v-on="on">
+                                    <v-icon>download</v-icon>
+                                </v-btn>
                             </template>
                             <v-list v-if="triples">
                                 <v-list-item @click="copyJson()">
@@ -357,11 +357,6 @@
 
         }),
         methods: {
-            {#修改开始#}
-            {#toggleContent() {#}
-            {#    this.isContentVisible = !this.isContentVisible;#}
-            {#    },#}
-            {#修改结束#}
             loadData() {
                 this.$root.progress.show = true
                 this.lastModifiedWorkspace = undefined
