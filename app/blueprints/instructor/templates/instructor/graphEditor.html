@@ -21,8 +21,7 @@
             </v-avatar>
         </v-col>
         <v-col>
-<!--                        开始编辑上方导航栏信息到v-row结束-->
-
+            <!--                        开始编辑上方导航栏信息到v-row结束-->
 
 
             <v-card
@@ -31,273 +30,378 @@
                     height="20px"
                     tile
             >
+                <!--                图编辑的顶端工具栏-->
                 <v-toolbar dense>
-                    <v-tooltip bottom>
-                        <template slot="activator" slot-scope="{ on, attrs }">
-                            <v-btn v-bind="attrs"
-                                   v-on="on"
-                                   icon>
-                                <span class="material-icons">add</span>
-                            </v-btn>
+
+                    <template>
+                        <div>
+                            <v-dialog v-model="dialogVisible" max-width="500px">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-btn v-bind="attrs" v-on="on" icon>
+                                        <span class="material-icons">add</span>
+                                    </v-btn>
+                                </template>
+                                <v-card>
+                                    <v-sheet>
+                                        <v-form ref="tripleForm">
+                                            <v-container>
+                                                <v-row ref="shepherd-openTripleFormField">
+                                                    <v-col>
+                                                        <v-combobox v-model="h_name" :items="concepts"
+                                                                    :rules="nameRules" label="head entity"
+                                                                    persistent-hint @focus="nodeFieldFocus('head')"
+                                                                    @input="nodeFieldChange"
+                                                                    @keydown="disableButtons()">
+                                                            <template v-slot:no-data>
+                                                                <v-list-item>
+                                                                    <v-list-item-content>
+                                                                        <v-list-item-title>
+                                                                            No existing graph concept matching "<strong>${
+                                                                            h_name }</strong>".
+                                                                            New
+                                                                            graph concept would be created. Press
+                                                                            <kbd>enter</kbd> or click elsewhere to
+                                                                            proceed.
+                                                                        </v-list-item-title>
+                                                                    </v-list-item-content>
+                                                                </v-list-item>
+                                                            </template>
+                                                        </v-combobox>
+                                                    </v-col>
+                                                    <v-col>
+                                                        <v-select v-model="r_name" :rules="nameRules"
+                                                                  :items="relationships"
+                                                                  label="relationship" @input="edgeFieldChange"
+                                                                  readonly>
+                                                        </v-select>
+                                                    </v-col>
+                                                    <v-col>
+                                                        <v-combobox v-model="t_name" :items="concepts"
+                                                                    :rules="nameRules" label="tail entity"
+                                                                    persistent-hint @focus="nodeFieldFocus('tail')"
+                                                                    @input="nodeFieldChange"
+                                                                    @keydown="disableButtons()">
+                                                            <template v-slot:no-data>
+                                                                <v-list-item>
+                                                                    <v-list-item-content>
+                                                                        <v-list-item-title>
+                                                                            No existing graph concept matching "<strong>${
+                                                                            t_name }</strong>".
+                                                                            New
+                                                                            graph concept would be created. Press
+                                                                            <kbd>enter</kbd> or click elsewhere to
+                                                                            proceed.
+                                                                        </v-list-item-title>
+                                                                    </v-list-item-content>
+                                                                </v-list-item>
+                                                            </template>
+                                                        </v-combobox>
+                                                    </v-col>
+                                                </v-row>
+                                                <v-row ref="shepherd-openTripleFormLinkBtn">
+                                                    <div v-if="diffMode">
+                                                        <v-btn color="success" @click="createTriple(true)"
+                                                               :disabled="!canLinkEdge || !canUpdateEdge">
+                                                            associate
+                                                        </v-btn>
+                                                        <v-btn color="indigo lighten-2" @click="createTriple(false)"
+                                                               :disabled="!canUnlinkEdge || !canUpdateEdge">
+                                                            dissociate
+                                                        </v-btn>
+                                                        <v-tooltip top v-if="canDeleteEdge">
+                                                            <template v-slot:activator="{ on, attrs }">
+                                                                <v-btn style=" margin-left: auto; margin-right: 0;"
+                                                                       v-on="on"
+                                                                       @click="deleteTriple()"
+                                                                       :disabled="!canDeleteEdge || !canUpdateEdge">
+                                                                    defer decision
+                                                                </v-btn>
+                                                            </template>
+                                                            <span>
+                                    Let others decide whether these concept should be linked or not
+                                </span>
+                                                        </v-tooltip>
+                                                    </div>
+                                                    <div v-else>
+                                                        <v-btn color="success" @click="smartLink()"
+                                                               :disabled="!canNontrivalLinkEdge || !canUpdateEdge">
+                                                            link
+                                                        </v-btn>
+                                                        <v-btn style=" margin-left: auto; margin-right: 0;"
+                                                               color="indigo lighten-2"
+                                                               @click="smartUnlink()"
+                                                               :disabled="!canNontrivalRemoveEdge || !canUpdateEdge">
+                                                            unlink
+                                                        </v-btn>
+                                                        <v-card-actions>
+                                                            <!--                                  <v-btn color="primary" @click="saveNode">Save</v-btn>-->
+                                                            <v-btn style=" margin-left: auto; margin-right: 0;"
+                                                                   color="indigo lighten-2"
+                                                                   @click="dialogVisible = false">Cancel
+                                                            </v-btn>
+                                                        </v-card-actions>
+
+                                                    </div>
+                                                </v-row>
+                                            </v-container>
+                                        </v-form>
+                                    </v-sheet>
+                                </v-card>
+                            </v-dialog>
+                        </div>
+                    </template>
+                    <!--                    将上方tooltip改造成点击之后弹出对话框-->
+
+
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">event</span>
+                                    </v-btn>
+                                </template>
+                                <span>course plan</span>
+                            </v-tooltip>
                         </template>
-                        <span>add node</span>
-                    </v-tooltip>
 
-
-
-
-            <v-menu offset-y>
-                  <template v-slot:activator="{ on: menu, attrs }">
-                    <v-tooltip bottom>
-                      <template v-slot:activator="{ on: tooltip }">
-                        <v-btn
-                          v-bind="attrs"
-                          v-on="{ ...tooltip, ...menu }"
-                          icon
-                        >
-                        <span class="material-icons">event</span>
-                        </v-btn>
-                      </template>
-                      <span>course plan</span>
-                    </v-tooltip>
-                  </template>
-
-                <v-list>
-                    <v-list-item
-                        @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
-                        <v-list-item-subtitle>open here
-                        </v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item
-                        @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
-                        <v-list-item-subtitle>open in new tab
-                        </v-list-item-subtitle>
-                        <v-list-item-icon>
-                            <v-icon>open_in_new</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
+                        <v-list>
+                            <v-list-item
+                                    @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
+                                <v-list-item-subtitle>open here
+                                </v-list-item-subtitle>
+                            </v-list-item>
+                            <v-list-item
+                                    @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
+                                <v-list-item-subtitle>open in new tab
+                                </v-list-item-subtitle>
+                                <v-list-item-icon>
+                                    <v-icon>open_in_new</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
 
                     <v-divider vertical></v-divider>
 
                     <!--      <v-toolbar-title>Title</v-toolbar-title>-->
 
-    <v-menu offset-y>
-        <template v-slot:activator="{ on: menu, attrs }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on: tooltip }">
-              <v-btn
-                v-bind="attrs"
-                v-on="{ ...tooltip, ...menu }"
-                icon
-              >
-              <span class="material-icons">file_upload</span>
-              </v-btn>
-            </template>
-            <span>upload</span>
-          </v-tooltip>
-        </template>
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">file_upload</span>
+                                    </v-btn>
+                                </template>
+                                <span>upload</span>
+                            </v-tooltip>
+                        </template>
 
-        <v-dialog max-width="700px" v-model="importDialogue">
-            <template v-slot:activator="{ on, attrs }">
-                <v-list-item dense v-bind="attrs" v-on="on">
-                    <v-list-item-title>import</v-list-item-title>
-                    <v-list-item-icon>
-                        <v-icon>upload</v-icon>
-                    </v-list-item-icon>
-                </v-list-item>
-            </template>
-            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
-                                      :courseCode="subject.courseCode">
-            </kcube-triplesImport-form>
-        </v-dialog>
-    </v-menu>
+                        <v-dialog max-width="700px" v-model="importDialogue">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-list-item dense v-bind="attrs" v-on="on">
+                                    <v-list-item-title>import</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>upload</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                            </template>
+                            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
+                                                      :courseCode="subject.courseCode">
+                            </kcube-triplesImport-form>
+                        </v-dialog>
+                    </v-menu>
 
-    <v-menu offset-y>
-        <template v-slot:activator="{ on: menu, attrs }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on: tooltip }">
-              <v-btn
-                v-bind="attrs"
-                v-on="{ ...tooltip, ...menu }"
-                icon
-              >
-              <span class="material-icons">download</span>
-              </v-btn>
-            </template>
-            <span>download</span>
-          </v-tooltip>
-        </template>
-        <v-list>
-            <v-list-item @click="copyJson()">
-                <v-list-item-title>json</v-list-item-title>
-                <v-list-item-icon>
-                    <v-icon>content_copy</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-            <v-list-item @click="copyCsv()">
-                <v-list-item-title>csv</v-list-item-title>
-                <v-list-item-icon>
-                    <v-icon>content_copy</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-            <v-list-item @click="downloadJson()">
-                <v-list-item-title>json</v-list-item-title>
-                <v-list-item-icon>
-                    <v-icon>download</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-            <v-list-item @click="downloadCsv()">
-                <v-list-item-title>csv</v-list-item-title>
-                <v-list-item-icon>
-                    <v-icon>download</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-        </v-list>
-    </v-menu>
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">download</span>
+                                    </v-btn>
+                                </template>
+                                <span>download</span>
+                            </v-tooltip>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="copyJson()">
+                                <v-list-item-title>json</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>content_copy</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item @click="copyCsv()">
+                                <v-list-item-title>csv</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>content_copy</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item @click="downloadJson()">
+                                <v-list-item-title>json</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>download</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item @click="downloadCsv()">
+                                <v-list-item-title>csv</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>download</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
 
-
-
-    <v-menu offset-y>
-        <template v-slot:activator="{ on: menu, attrs }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on: tooltip }">
-              <v-btn
-                id="patchMenu"
-                v-bind="attrs"
-                v-on="{ ...tooltip, ...menu }"
-                icon
-              >
-              <span class="material-icons">merge</span>
-              </v-btn>
-            </template>
-            <span>patch</span>
-          </v-tooltip>
-        </template>
-        <v-list>
-            <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>
-                <v-list-item-subtitle># of uncommitted <br> changes: ${activePositiveEdgeCount +
-                    activeNegativeEdgeCount}
-                </v-list-item-subtitle>
-                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-list-item-icon v-bind="attrs" v-on="on">
-                            <v-icon>error_outline</v-icon>
-                        </v-list-item-icon>
-                    </template>
-                    <span style="font-size: small;">
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            id="patchMenu"
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">merge</span>
+                                    </v-btn>
+                                </template>
+                                <span>patch</span>
+                            </v-tooltip>
+                        </template>
+                        <v-list>
+                            <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>
+                                <v-list-item-subtitle># of uncommitted <br> changes: ${activePositiveEdgeCount +
+                                    activeNegativeEdgeCount}
+                                </v-list-item-subtitle>
+                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-list-item-icon v-bind="attrs" v-on="on">
+                                            <v-icon>error_outline</v-icon>
+                                        </v-list-item-icon>
+                                    </template>
+                                    <span style="font-size: small;">
                         Uncommitted changes are temporary triple proposal/removal <br>
                         that is in the workspace but NOT in the patch. <br>
                         As they are not in the patch, they would not be refleced<br>
                         in any form of patch publishment. <br>
                     </span>
-                </v-tooltip>
-            </v-list-item>
-            <v-list-item v-if="subject?.isExposed && ! subject?.isTeaching" dense>
-                <v-list-item-subtitle>You haven't join the course<br>(You may join in
-                    "publish patch")
-                </v-list-item-subtitle>
-                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
-                    <template v-slot:activator="{ on, attrs }">
-                        <v-list-item-icon v-bind="attrs" v-on="on">
-                            <v-icon>error_outline</v-icon>
-                        </v-list-item-icon>
-                    </template>
-                    <span style="font-size: small;">
+                                </v-tooltip>
+                            </v-list-item>
+                            <v-list-item v-if="subject?.isExposed && ! subject?.isTeaching" dense>
+                                <v-list-item-subtitle>You haven't join the course<br>(You may join in
+                                    "publish patch")
+                                </v-list-item-subtitle>
+                                <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">
+                                    <template v-slot:activator="{ on, attrs }">
+                                        <v-list-item-icon v-bind="attrs" v-on="on">
+                                            <v-icon>error_outline</v-icon>
+                                        </v-list-item-icon>
+                                    </template>
+                                    <span style="font-size: small;">
                         Student can only view published graph from <br>
                         instructors who had joined that course.
                     </span>
-                </v-tooltip>
-            </v-list-item>
-            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
-            <v-list-item dense>
-                <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
-                </v-list-item-subtitle>
-            </v-list-item>
-            <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">
-                <v-list-item-title>sync</v-list-item-title>
-                <v-list-item-icon>
-                    <v-icon>sync</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-            <v-list-item dense v-else>
-                <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch
-                </v-list-item-subtitle>
-                <v-list-item-icon>
-                    <v-icon>done</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-            <v-list-item dense
-                         @click="this.window.open('{{ url_for('instructor.branch')}}' + subject.deltaGraphId + '/' + subject.predecessor, '_blank')">
-                <v-list-item-subtitle style="font-size: small;">view patch &<br>predecessor
-                </v-list-item-subtitle>
-                <v-list-item-icon>
-                    <v-icon>open_in_new</v-icon>
-                </v-list-item-icon>
-            </v-list-item>
-            <v-menu offset-x>
-                <template v-slot:activator="{ on, attrs }">
-                    <v-list-item dense v-bind="attrs" v-on="on">
-                        <v-list-item-subtitle style="font-size: small;">publish patch
-                        </v-list-item-subtitle>
-                        <v-list-item-icon>
-                            <v-icon>chevron_right</v-icon>
-                        </v-list-item-icon>
-                    </v-list-item>
-                </template>
-                <v-list>
-                    <v-list-item dense>
-                        <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
-                    </v-list-item>
-                    <v-list-item dense @click="toggleCanPull()">
-                        <v-list-item-title>submitted</v-list-item-title>
-                        <v-list-item-icon>
-                            <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()">
-                            </v-simple-checkbox>
-                        </v-list-item-icon>
-                    </v-list-item>
-                </v-list>
-            </v-menu>
-        </v-list>
-    </v-menu>
+                                </v-tooltip>
+                            </v-list-item>
+                            <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>
+                            <v-list-item dense>
+                                <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}
+                                </v-list-item-subtitle>
+                            </v-list-item>
+                            <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">
+                                <v-list-item-title>sync</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>sync</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item dense v-else>
+                                <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch
+                                </v-list-item-subtitle>
+                                <v-list-item-icon>
+                                    <v-icon>done</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item dense
+                                         @click="this.window.open('{{ url_for('instructor.branch')}}' + subject.deltaGraphId + '/' + subject.predecessor, '_blank')">
+                                <v-list-item-subtitle style="font-size: small;">view patch &<br>predecessor
+                                </v-list-item-subtitle>
+                                <v-list-item-icon>
+                                    <v-icon>open_in_new</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-menu offset-x>
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-list-item dense v-bind="attrs" v-on="on">
+                                        <v-list-item-subtitle style="font-size: small;">publish patch
+                                        </v-list-item-subtitle>
+                                        <v-list-item-icon>
+                                            <v-icon>chevron_right</v-icon>
+                                        </v-list-item-icon>
+                                    </v-list-item>
+                                </template>
+                                <v-list>
+                                    <v-list-item dense>
+                                        <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>
+                                    </v-list-item>
+                                    <v-list-item dense @click="toggleCanPull()">
+                                        <v-list-item-title>submitted</v-list-item-title>
+                                        <v-list-item-icon>
+                                            <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()">
+                                            </v-simple-checkbox>
+                                        </v-list-item-icon>
+                                    </v-list-item>
+                                </v-list>
+                            </v-menu>
+                        </v-list>
+                    </v-menu>
 
-    <v-menu offset-y>
-        <template v-slot:activator="{ on: menu, attrs }">
-          <v-tooltip bottom>
-            <template v-slot:activator="{ on: tooltip }">
-              <v-btn
-                v-bind="attrs"
-                v-on="{ ...tooltip, ...menu }"
-                icon
-              >
-              <span class="material-icons">task_alt</span>
-              </v-btn>
-            </template>
-            <span>commit changes</span>
-          </v-tooltip>
-        </template>
-        <v-list>
-            <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
-                <v-list-item-title>preview changes</v-list-item-title>
-            </v-list-item>
-            <v-tooltip bottom :disabled="activePositiveEdgeCount + activeNegativeEdgeCount != 0">
-                <template v-slot:activator="{ on, attrs }">
-                    <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">task_alt</span>
+                                    </v-btn>
+                                </template>
+                                <span>commit changes</span>
+                            </v-tooltip>
+                        </template>
+                        <v-list>
+                            <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">
+                                <v-list-item-title>preview changes</v-list-item-title>
+                            </v-list-item>
+                            <v-tooltip bottom :disabled="activePositiveEdgeCount + activeNegativeEdgeCount != 0">
+                                <template v-slot:activator="{ on, attrs }">
+                                    <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?
                     null:showCommitExposeDialogue()" v-bind="attrs" v-on="on">
-                        <v-list-item-title>commit and publish</v-list-item-title>
-                    </v-list-item>
-                </template>
-                <span style="font-size: small;">
+                                        <v-list-item-title>commit and publish</v-list-item-title>
+                                    </v-list-item>
+                                </template>
+                                <span style="font-size: small;">
                     There are no uncommitted changes.
                 </span>
-            </v-tooltip>
-            <v-list-item dense @click="deleteSelectBar = true">
-                <v-list-item-title>delete workspace</v-list-item-title>
-            </v-list-item>
-        </v-list>
-    </v-menu>
-
+                            </v-tooltip>
+                            <v-list-item dense @click="deleteSelectBar = true">
+                                <v-list-item-title>delete workspace</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
 
 
                     <v-col cols="auto" align="end">
@@ -320,7 +424,7 @@
                             is off-duty.</span>
                         </v-tooltip>
                     </v-col>
-<!--                    <v-divider vertical></v-divider>-->
+                    <!--                    <v-divider vertical></v-divider>-->
                     <v-col cols="auto">
                         <v-tooltip color="warning" :value="!workspace?.isExposed && coursePlanDialogue" bottom>
                             <template v-slot:activator="{ on }">
@@ -349,207 +453,32 @@
             </v-card>
 
 
-                        将布局全部修改成新的0731 vcard之内
-
-<!--                        <v-row no-gutters class="justify-center align-center">-->
-<!--                            &lt;!&ndash;                修改instructor中的layout等标签信息&ndash;&gt;-->
-<!--                            <v-col cols="auto" dense>-->
-<!--                                <v-menu offset-y>-->
-<!--                                    <template v-slot:activator="{ on, attrs }">-->
-<!--                                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-<!--                                               v-on="on" tile>-->
-<!--                                            commit changes-->
-<!--                                        </v-btn>-->
-<!--                                    </template>-->
-<!--                                    <v-list>-->
-<!--                                        <v-list-item dense href="{{ url_for('instructor.commit', overwriterId=deltaGraphId) }}">-->
-<!--                                            <v-list-item-title>preview changes</v-list-item-title>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-tooltip bottom :disabled="activePositiveEdgeCount + activeNegativeEdgeCount != 0">-->
-<!--                                            <template v-slot:activator="{ on, attrs }">-->
-<!--                                                <v-list-item dense @click="activePositiveEdgeCount + activeNegativeEdgeCount == 0?-->
-<!--                                                null:showCommitExposeDialogue()" v-bind="attrs" v-on="on">-->
-<!--                                                    <v-list-item-title>commit and publish</v-list-item-title>-->
-<!--                                                </v-list-item>-->
-<!--                                            </template>-->
-<!--                                            <span style="font-size: small;">-->
-<!--                                                There are no uncommitted changes.-->
-<!--                                            </span>-->
-<!--                                        </v-tooltip>-->
-<!--                                        <v-list-item dense @click="deleteSelectBar = true">-->
-<!--                                            <v-list-item-title>delete workspace</v-list-item-title>-->
-<!--                                        </v-list-item>-->
-<!--                                    </v-list>-->
-<!--                                </v-menu>-->
-<!--                            </v-col>-->
-<!--                            <v-col cols="auto" dense>-->
-<!--                                <v-menu offset-y>-->
-<!--                                    <template v-slot:activator="{ on, attrs }">-->
-<!--                                        <v-btn id="patchMenu" small tile outlined elevation="0" style="text-transform: none;"-->
-<!--                                               v-bind="attrs" v-on="on" tile>-->
-<!--                                            patch-->
-<!--                                            <v-icon v-if="!subject?.isPatchLeaf">-->
-<!--                                                sync-->
-<!--                                            </v-icon>-->
-<!--                                        </v-btn>-->
-<!--                                    </template>-->
-<!--                                    <v-list>-->
-<!--                                        <v-list-item v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0" dense>-->
-<!--                                            <v-list-item-subtitle># of uncommitted <br> changes: ${activePositiveEdgeCount +-->
-<!--                                                activeNegativeEdgeCount}-->
-<!--                                            </v-list-item-subtitle>-->
-<!--                                            <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">-->
-<!--                                                <template v-slot:activator="{ on, attrs }">-->
-<!--                                                    <v-list-item-icon v-bind="attrs" v-on="on">-->
-<!--                                                        <v-icon>error_outline</v-icon>-->
-<!--                                                    </v-list-item-icon>-->
-<!--                                                </template>-->
-<!--                                                <span style="font-size: small;">-->
-<!--                                                    Uncommitted changes are temporary triple proposal/removal <br>-->
-<!--                                                    that is in the workspace but NOT in the patch. <br>-->
-<!--                                                    As they are not in the patch, they would not be refleced<br>-->
-<!--                                                    in any form of patch publishment. <br>-->
-<!--                                                </span>-->
-<!--                                            </v-tooltip>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-list-item v-if="subject?.isExposed && ! subject?.isTeaching" dense>-->
-<!--                                            <v-list-item-subtitle>You haven't join the course<br>(You may join in-->
-<!--                                                "publish patch")-->
-<!--                                            </v-list-item-subtitle>-->
-<!--                                            <v-tooltip bottom v-if="activePositiveEdgeCount + activeNegativeEdgeCount">-->
-<!--                                                <template v-slot:activator="{ on, attrs }">-->
-<!--                                                    <v-list-item-icon v-bind="attrs" v-on="on">-->
-<!--                                                        <v-icon>error_outline</v-icon>-->
-<!--                                                    </v-list-item-icon>-->
-<!--                                                </template>-->
-<!--                                                <span style="font-size: small;">-->
-<!--                                                    Student can only view published graph from <br>-->
-<!--                                                    instructors who had joined that course.-->
-<!--                                                </span>-->
-<!--                                            </v-tooltip>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-divider v-if="activePositiveEdgeCount + activeNegativeEdgeCount > 0"></v-divider>-->
-<!--                                        <v-list-item dense>-->
-<!--                                            <v-list-item-subtitle style="font-size: small;">patch:<br>${subject?.tag}-->
-<!--                                            </v-list-item-subtitle>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-list-item dense v-if="!subject?.isPatchLeaf" @click="sync()">-->
-<!--                                            <v-list-item-title>sync</v-list-item-title>-->
-<!--                                            <v-list-item-icon>-->
-<!--                                                <v-icon>sync</v-icon>-->
-<!--                                            </v-list-item-icon>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-list-item dense v-else>-->
-<!--                                            <v-list-item-subtitle style="font-size: small;">Already editing<br>latest patch-->
-<!--                                            </v-list-item-subtitle>-->
-<!--                                            <v-list-item-icon>-->
-<!--                                                <v-icon>done</v-icon>-->
-<!--                                            </v-list-item-icon>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-list-item dense-->
-<!--                                                     @click="this.window.open('{{ url_for('instructor.branch')}}' + subject.deltaGraphId + '/' + subject.predecessor, '_blank')">-->
-<!--                                            <v-list-item-subtitle style="font-size: small;">view patch &<br>predecessor-->
-<!--                                            </v-list-item-subtitle>-->
-<!--                                            <v-list-item-icon>-->
-<!--                                                <v-icon>open_in_new</v-icon>-->
-<!--                                            </v-list-item-icon>-->
-<!--                                        </v-list-item>-->
-<!--                                        <v-menu offset-x>-->
-<!--                                            <template v-slot:activator="{ on, attrs }">-->
-<!--                                                <v-list-item dense v-bind="attrs" v-on="on">-->
-<!--                                                    <v-list-item-subtitle style="font-size: small;">publish patch-->
-<!--                                                    </v-list-item-subtitle>-->
-<!--                                                    <v-list-item-icon>-->
-<!--                                                        <v-icon>chevron_right</v-icon>-->
-<!--                                                    </v-list-item-icon>-->
-<!--                                                </v-list-item>-->
-<!--                                            </template>-->
-<!--                                            <v-list>-->
-<!--                                                <v-list-item dense>-->
-<!--                                                    <v-list-item-subtitle>submit to DLTC</v-list-item-subtitle>-->
-<!--                                                </v-list-item>-->
-<!--                                                <v-list-item dense @click="toggleCanPull()">-->
-<!--                                                    <v-list-item-title>submitted</v-list-item-title>-->
-<!--                                                    <v-list-item-icon>-->
-<!--                                                        <v-simple-checkbox :value="subject?.canPull" @click="toggleCanPull()">-->
-<!--                                                        </v-simple-checkbox>-->
-<!--                                                    </v-list-item-icon>-->
-<!--                                                </v-list-item>-->
-<!--                                            </v-list>-->
-<!--                                        </v-menu>-->
-<!--                                    </v-list>-->
-<!--                                </v-menu>-->
-<!--                            </v-col>-->
-
-<!--                        </v-row>-->
         </v-col>
     </v-row>
+
     <v-row dense style="height: calc(100% - 80px); width: 100%;">
+        <!--        如果图还在加载中就显示转圈圈的进度展示-->
+
         <v-progress-circular style="display: block; margin: auto auto" indeterminate size="128" v-if="graphLoading">
         </v-progress-circular>
+
         <div id="editor" style="height: 100%; width: 100%;"
              v-bind:style="{visibility: graphLoading?'hidden':'visible'}">
             <div style="position: absolute; height: 100%; width: 100%;">
+                <!--               shepherd-graphNode在 tutorial()中使用，暂时没有使用-->
                 <div ref="shepherd-graphNode"
                      :style="{position: 'relative', height: boundingBox.h +'px', width: boundingBox.w +'px', left: boundingBox.x1 +'px', top: boundingBox.y1 +'px'}">
                 </div>
             </div>
-
-
-            <!--            <div class="menu-container-right">-->
-            <!--                <v-menu offset-y>-->
-            <!--                    <template v-slot:activator="{ on, attrs }">-->
-            <!--                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-            <!--                               v-on="on" tile>-->
-            <!--                            upload-->
-            <!--                        </v-btn>-->
-            <!--                    </template>-->
-            <!--                    <v-dialog max-width="700px" v-model="importDialogue">-->
-            <!--                        <template v-slot:activator="{ on, attrs }">-->
-            <!--                            <v-list-item dense v-bind="attrs" v-on="on">-->
-            <!--                                <v-list-item-title>import</v-list-item-title>-->
-            <!--                                <v-list-item-icon>-->
-            <!--                                    <v-icon>upload</v-icon>-->
-            <!--                                </v-list-item-icon>-->
-            <!--                            </v-list-item>-->
-            <!--                        </template>-->
-            <!--                        <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"-->
-            <!--                                                  :courseCode="subject.courseCode">-->
-            <!--                        </kcube-triplesImport-form>-->
-            <!--                    </v-dialog>-->
-            <!--                </v-menu>-->
-            <!--                <div class="menu-spacing"></div>-->
-            <!--                <v-menu offset-y>-->
-            <!--                    <template v-slot:activator="{ on, attrs }">-->
-            <!--                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-            <!--                               v-on="on" tile>-->
-            <!--                            download-->
-            <!--                        </v-btn>-->
-            <!--                    </template>-->
-
-            <!--                </v-menu>-->
-
-            <!--            </div>-->
-            <!--            <div class="menu-container">-->
-            <!--                <v-menu offset-y>-->
-            <!--                    <template v-slot:activator="{ on, attrs }">-->
-            <!--                        <v-btn small tile outlined elevation="0" style="text-transform: none;" v-bind="attrs"-->
-            <!--                               v-on="on" tile>-->
-            <!--                            add-->
-            <!--                        </v-btn>-->
-            <!--                    </template>-->
-            <!--                </v-menu>-->
-
-            <!--            </div>-->
-
-
         </div>
     </v-row>
-    <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>
-        <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>
-    </v-bottom-sheet>
 
+    <!--    进行结点设置，没有发现有用到的地方-->
+    <!--    <v-bottom-sheet v-model="metricsBottomSheet" insert :hide-overlay="true" no-click-animation>-->
+    <!--        <kcube-metrics-visualize-bottom-sheet></kcube-metrics-visualize-bottom-sheet>-->
+    <!--    </v-bottom-sheet>-->
 
+    <!--下方的v-card实现的内容是主页面下方的卡片点击内容-->
     <v-card>
         <v-bottom-sheet v-model="tripleBottomSheet" :retain-focus="false" inset persistent hide-overlay eager
                         no-click-animation>
@@ -1049,6 +978,7 @@
 
     Vue.component('app-content', {
         data: () => ({
+            dialogVisible: false,
             // showTooltip: false,
             editor_bc: null,
             isEntityEditorVisible: true,
@@ -1121,6 +1051,10 @@
             }
         },
         methods: {
+            saveNode() {
+                // Logic to save the node
+                this.dialogVisible = false; // Close the dialog after saving
+            },
             onGetWorkspaceData(body) {
                 if (body.workspace && body.triples && body.subject && body.subject_triples) {
                     this.workspace = body.workspace
