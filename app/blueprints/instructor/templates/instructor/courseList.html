@@ -492,7 +492,7 @@
             },
             handleOpenURL(row, col) {
                 // this.courses[row*colPerRow + col].workspaces.length == 0?openWorkspaceDialogue(courses[row*colPerRow + col]):openURL('{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId)
-                window.location.href = "/course/" + this.courses[row*this.colPerRow + col].courseCode
+                window.location.href = "http://127.0.0.1/course/" + this.courses[row*this.colPerRow + col].courseCode
             },
             openURL(url) {
                 window.location.href = url
