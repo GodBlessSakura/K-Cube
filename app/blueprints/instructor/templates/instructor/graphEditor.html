@@ -1065,13 +1065,29 @@
                         'background-image': body.workspace.imageURL,
                         'background-fit': 'cover'
                     })
+                    let index = 0
                     body.triples.forEach(triple => {
-                        [triple.h_name, triple.t_name].forEach(name => {
-                            if (cy.getElementById(name).length == 0) {
-                                cy.add(nodeFactory(name))
-                            }
-                        })
-                        cy.add(workspaceEdgeFactory(triple))
+                        index += 1
+                        // console.log(body.triples)
+                        // console.log(index)
+                        // console.log(triple.t_name)
+                        const nameList = []
+                        nameList.push(triple.h_name)
+                        nameList.push(triple.t_name)
+                        if (triple.h_name.length !== 0 && triple.t_name.length !== 0){
+                            nameList.forEach(name => {
+                                // console.log(name)
+                                // console.log('--------------------------')
+                                // console.log(cy.getElementById(name).length)
+
+                                if (cy.getElementById(name).length === 0) {
+                                    cy.add(nodeFactory(name))
+                                }
+
+                            })
+                            cy.add(workspaceEdgeFactory(triple))
+                        }
+
                     })
                     body.subject_triples.forEach(triple => {
                         [triple.h_name, triple.t_name].forEach(name => {
@@ -2083,6 +2099,7 @@
                 })
                     .then(response => {
                         try {
+                            console.log(response.json())
                             return response.json()
                         } catch {
                             this.$root.progress.show = false
@@ -2333,6 +2350,9 @@
                 self.determineTripleOptions()
             })
             cy.on('tapdrag', 'node', (event) => {
+            })
+            cy.on('cxttap', 'node', (event) => {
+                console.log('cxttap')
             })
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()

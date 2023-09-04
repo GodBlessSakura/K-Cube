@@ -144,6 +144,8 @@ def patch(deltaGraphId):
             import json
 
             triples = json.loads(request.json["triples"])
+            # print(f' recieve triples = {triples}')
+            # 后端正常收到请求
             return jsonify(
                 {
                     "success": True,
