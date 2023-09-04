@@ -2329,6 +2329,18 @@
                 }, '*')
             })
             cy.on('tap', 'node', (event) => {
+
+            })
+            cy.on('tap', 'edge', (event) => {
+                self.tripleBottomSheet = true;
+                self.h_name = event.target.source().data("id")
+                self.r_name = event.target.data("name")
+                self.t_name = event.target.target().data("id")
+                self.determineTripleOptions()
+            })
+            cy.on('tapdrag', 'node', (event) => {
+            })
+            cy.on('cxttap', 'node', (event) => {
                 this.openEntityEditor(event.target.data("id"))
                 if (self.canUpdateEdge) {
                     self.clearForm()
@@ -2341,18 +2353,6 @@
                 self.disableButtons()
                 self.determineTripleOptions()
                 self.tripleBottomSheet = true;
-            })
-            cy.on('tap', 'edge', (event) => {
-                self.tripleBottomSheet = true;
-                self.h_name = event.target.source().data("id")
-                self.r_name = event.target.data("name")
-                self.t_name = event.target.target().data("id")
-                self.determineTripleOptions()
-            })
-            cy.on('tapdrag', 'node', (event) => {
-            })
-            cy.on('cxttap', 'node', (event) => {
-                console.log('cxttap')
             })
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()
