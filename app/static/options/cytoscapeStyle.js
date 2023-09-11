@@ -84,7 +84,7 @@ var cyStyles = {
                 }
             },
         ].concat(!options.showDefaultRelationLabel ? {
-            selector: 'edge[name = "Subtopic in"]',
+            selector: 'edge[name = "edge[name = "contain_subtopic"],edge[name = "Subtopic in"]"]',
             style: {
                 label: ''
             }
@@ -151,7 +151,7 @@ var cyStyles = {
                 }
             },
         ].concat(!options.showDefaultRelationLabel ? {
-            selector: 'edge[name = "Subtopic in"]',
+            selector: 'edge[name = "edge[name = "contain_subtopic"],edge[name = "Subtopic in"]"]',
             style: {
                 label: ''
             }
@@ -273,7 +273,7 @@ var cyStyles = {
                 }
             },
         ].concat(!options.showDefaultRelationLabel ? {
-            selector: 'edge[name = "Subtopic in"]',
+            selector: 'edge[name = "contain_subtopic"],edge[name = "Subtopic in"]',
             style: {
                 label: ''
             }
@@ -363,7 +363,7 @@ var cyStyles = {
                 }
             },
         ].concat(!options.showDefaultRelationLabel ? {
-            selector: 'edge[name = "Subtopic in"]',
+            selector: 'edge[name = "edge[name = "contain_subtopic"],edge[name = "Subtopic in"]"]',
             style: {
                 label: ''
             }
@@ -425,7 +425,7 @@ var cyStyles = {
                 }
             },
         ].concat(!options.showDefaultRelationLabel ? {
-            selector: 'edge[name = "Subtopic in"]',
+            selector: 'edge[name = "edge[name = "contain_subtopic"],edge[name = "Subtopic in"]"]',
             style: {
                 label: ''
             }

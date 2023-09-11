@@ -318,12 +318,12 @@ class workspaceDAO:
                 approved_relationship = tx.run(
                     relationship_cypher["list_approved_relationship.cyp"]
                 )
-                [record["r.name"] for record in result]
+                # [record["r.name"] for record in result]
                 unapproved_json_relationship = set(
                     [
                         triple["r_name"]
                         for triple in triples
-                        if (triple["r_value"] == True or "r_value" not in triple)
+                        if ("r_value" not in triple or triple["r_value"] == True )
                         and triple["r_name"] not in approved_relationship
                     ]
                 )

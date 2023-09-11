@@ -236,21 +236,21 @@ def create_app(config_string):
 
     from . import kge
 
-    @app.cli.command("embed-comprehensive")
+    @app.cli.command("embed-comprehensive")  # 给flask程序添加 embed-comprehensive 命令，生成embedding层norm训练过后的模型？？
     def embedComprehensive():
         kge.embedComprehensive()
 
-    @app.context_processor
+    @app.context_processor  # 环境处理器 将正则规则加入到环境变量中
     def inject_regExpRules():
         return dict(regExpRules=regExpRules)
 
-    @app.before_request
+    @app.before_request  # 这里在每次请求前都会执行，因为这个是在app的init中，在每次请求前都会先查看cache中的数据。
     def load_info_from_cache():
         from app.cache_driver import load_info_from_cache
 
         load_info_from_cache()
 
-    @app.context_processor
+    @app.context_processor   # 进行权限信息注册
     def inject_permission():
         return dict(PERMISSION=g.permission, USER=g.user, CONFIG=app.config)
 
