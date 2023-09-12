@@ -107,28 +107,6 @@
 {#            中间course list按钮#}
 
                 <v-spacer></v-spacer>
-                <!-- <v-menu offset-y eager open-on-hover>
-                    <template v-slot:activator="{ on: onMenu }">
-                        <v-btn v-on="{ ...onMenu}" :ripple="{ class: 'warning--text',center: true }"
-                            ref="shepherd-help">
-                            help</v-btn>
-                    </template>
-                    <v-list>
-                        <v-list-item>
-                            A tour of the website
-                        </v-list-item>
-                        <v-divider> </v-divider>
-                        <v-list-item @click="appIntro()" :ripple="{ class: 'warning--text',center: true }"
-                            ref="shepherd-appIntro">
-                            <v-list-item-title>Overview</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item v-show="pageIntro" @click="pageIntro()" ref="shepherd-pageIntro"
-                            :ripple="{ class: 'warning--text',center: true }" ref="shepherd-pageIntro">
-                            <v-list-item-title>This particular page</v-list-item-title>
-                        </v-list-item>
-                    </v-list>
-                </v-menu> -->
-{#                </template>#}
                 <v-menu v-if="menu" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y
                     eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -137,7 +115,6 @@
                         </v-btn>
                     </template>
                     <v-sheet style="max-height: 70vh;">
-{#                        <v-list style="min-height: 70vh" nav dense>#}
                         <v-list style="height: auto" nav dense>
                             <div ref="shepherd-layoutNavigationRoleGroup">
                                 <v-list-group v-for="LG in KCube.navigationListGroup"
@@ -147,7 +124,7 @@
                                     </template>
                                     <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}"
                                         :sort="false">
-                                        <v-list-item v-for="L in LG.list" link :href="L.url">
+                                        <v-list-item v-for="L in LG.list" link :href="L.url" style="margin-left: 15px">
                                             <v-list-item-icon>
                                                 <v-icon>${L.icon}</v-icon>
                                             </v-list-item-icon>
@@ -170,14 +147,6 @@
                                 </v-list-item-icon>
                                 <v-list-item-title>Jobs</v-list-item-title>
                             </v-list-item>
-                            <!-- <v-list-item link
-                                href="https://forms.office.com/Pages/ResponsePage.aspx?id=YPc3j4exgUm4L-Xcb1vPRNTurS9MNvJPoBO4A5M58iVUNUwzTjVSMTlZUVpQVTNQWThXVzdUQ1ZDTi4u"
-                                target="_blank" rel="noreferrer noopener">
-                                <v-list-item-icon>
-                                    <v-icon>assistant</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Website feedback or <br> bug report</v-list-item-title>
-                            </v-list-item> -->
                         </v-list>
                     </v-sheet>
                 </v-menu>
@@ -208,7 +177,7 @@
 {#                    用户登录之后下拉列表#}
                 {% elif "OIDC" in config %}
                 <v-btn text href="{{url_for('odic_login')}}" :disabled="atemptOidcLogin">
-{#                这里是不是有些错误，odic还是oidc#}
+{#                这里是在app/__init__.py下的define定义错误 #}
                     login in with PolyU account
                 </v-btn>
                 {% else %}
@@ -370,7 +339,6 @@
                 </template>
             </v-snackbar>
 
-            </v-app-bar>
             <v-main>
                 <app-content v-show="!atemptOidcLogin"></app-content>
                 <div v-if="atemptOidcLogin" style="height: 100%; position: absolute; overflow: hidden; width: 100%;">
@@ -388,6 +356,7 @@
 
     </div>
     <script>
+    // 这部分进行一些内容初始化的设置
         KCube = {
             colorTheme: {
                 primary: '#5D9C59',
@@ -401,7 +370,7 @@
             widgetName: [], // names of widget would be pushed into this array if the page is a dashboard
             widgetOptions: {}, // array of object
             visibility: ["private", "collaborator", "instructor", "colleague", "public"],
-            currentBlueprint: "{{ request.blueprint }}",
+            currentBlueprint: "{{ request.blueprint }}",  // 这个指的是什么blueprint,访问首页之后得到的结果是None
             roleTab: [
                 //{% if PERMISSION and PERMISSION.role and ("admin" in PERMISSION.role or "instructor" in PERMISSION.role) %}
                 {
@@ -452,16 +421,16 @@
                     name: "instructor",
                     title: "Instructor's space",
                     list: [
-                        // {
-                        //     title: "Schedules",
-                        //     icon: "event_note",
-                        //     url: "{{ url_for('instructor.schedule') }}",
-                        // },
                         {
                             title: "Create New Course",
                             icon: "library_add",
                             url: "{{ url_for('instructor.courseForm') }}",
                         },
+                        {
+                            title: "Course List",
+                            icon: "grid_view",
+                            url: "{{ url_for('instructor.courseList') }}",
+                        }
                     ]
                 },
                 //{% endif %}

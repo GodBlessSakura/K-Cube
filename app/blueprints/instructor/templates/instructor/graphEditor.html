@@ -1117,6 +1117,54 @@
                         'Unexpected error on getting draft information.')
                 }
             },
+            // copyJson() {
+            //     this.copy(
+            //         JSON.stringify(this.triples), 'json')
+            // },
+            // copyCsv() {
+            //     this.copy(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+            //             .t_name
+            //         ]
+            //         .join(
+            //             ',')).join('\n'), 'csv')
+            // },
+            downloadJson() {
+                // console.log("triples is ")
+                // console.log()
+                this.download(
+                    JSON.stringify(downloadTriples), 'json')
+            },
+            // downloadCsv() {
+            //     this.download(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+            //             .t_name
+            //         ]
+            //         .join(
+            //             ',')).join('\n'), 'csv')
+            // },
+            copy(str, format) {
+                console.log(str)
+                navigator.clipboard.writeText(str).then(() => {
+                    this.$root.responseSnackBar({
+                        success: true,
+                        message: format + ' copied to clipboard'
+                    })
+                })
+            },
+            download(str, format) {
+                console.log(str)
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(str));
+                element.setAttribute('download', this.courseCode + '-' + (new Date()).toLocaleString(
+                        "en-US", {}) + '.' +
+                    format);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+            },
             loadData() {
                 this.$root.progress.show = true
                 let workspacePromise = fetch(
@@ -1149,6 +1197,7 @@
                     })
                         .then(response => {
                             try {
+                                // console.log(response)
                                 return response.json()
                             } catch {
                                 this.$root.progress.show = false
@@ -2153,6 +2202,9 @@
                     emit: function () {
                     }
                 }
+
+
+
                 // url = 'ws://' + '{{CONFIG.HOSTING_ADDRESS}}'.split('https://')[1]
                 // console.log(url)
                 // this.graphEditorSocket = io(url + '/graphEditor');
@@ -2199,7 +2251,7 @@
                             payload,
                             workspaceDeltagraphId
                         } = e.data
-                        console.log(e.data)
+
                         if (message == "coursePlan-exclusiveHeadTriple") {
                             if (this.workspace.deltaGraphId != workspaceDeltagraphId) return
                             let triple = payload
@@ -2329,6 +2381,7 @@
                 }, '*')
             })
             cy.on('tap', 'node', (event) => {
+                // 左键单击node时触发的行动
 
             })
             cy.on('tap', 'edge', (event) => {

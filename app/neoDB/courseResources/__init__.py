@@ -42,13 +42,29 @@ class courseDAO:
             query = cypher[fname + ".cyp"]
             result = tx.run(query)
             try:
-                return [
-                    {
-                        "course": dict(record["course"].items()),
-                        "concept": dict(record["courseConcept"].items()),
-                    }
-                    for record in result
-                ]
+                a = [
+                        {
+                            "course": dict(record["course"].items()),
+                            "concept": dict(record["courseConcept"].items()),
+                        }
+                        for record in result
+                    ]
+
+                for item in a:
+                    print(f'item is {item}')
+                    item['course']['imageURL'] = '/comp/kcube-dev'+ item['course']['imageURL']
+                    print(item['course']['imageURL'])
+
+
+                # print(f'result is {a}')
+                return a
+                #     [
+                #     {
+                #         "course": dict(record["course"].items()),
+                #         "concept": dict(record["courseConcept"].items()),
+                #     }
+                #     for record in result
+                # ]
             except Exception as exception:
                 raise exception
 
@@ -162,7 +178,7 @@ class courseDAO:
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
             try:
-                return [
+                a = [
                     {
                         "course": dict(record["course"].items()),
                         "concept": dict(record["courseConcept"].items()),
@@ -182,6 +198,10 @@ class courseDAO:
                     }
                     for record in result
                 ]
+
+                for item in a:
+                    item['course']['imageURL'] = '/comp/kcube-dev' + item['course']['imageURL']
+                return a
             except Exception as exception:
                 raise exception
 
