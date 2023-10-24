@@ -80,7 +80,13 @@
                                         deltaGraphId: node.property.deltaGraphId,
                                         isActive: node.isActive
                                     }
-                                    this.trunkOrBranch.push(item)
+                                    if (item.tag.includes("test") || item.tag.includes("Admin") || item.tag.includes("-")) {
+                                        console.log('filter')
+                                    }
+                                    else {
+                                        this.trunkOrBranch.push(item)
+                                    }
+                                    // this.trunkOrBranch.push(item)
                                     if (item.tag == 'init') {
                                         this.selectedNode = item
                                     }

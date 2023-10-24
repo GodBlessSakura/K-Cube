@@ -14,9 +14,11 @@ tree = Blueprint("tree", __name__, url_prefix="tree")
 )
 def get(courseCode):
     if courseCode is not None:
+        # print('import 走这里了1')
         branch_edges = get_api_driver().branch.list_course_branch_edge(
             courseCode=courseCode, userId=g.user["userId"]
         )
+        # print(f'branch_edges is {branch_edges}')
         branch_nodes = get_api_driver().branch.list_course_branch_node(
             courseCode=courseCode, userId=g.user["userId"]
         )
@@ -26,6 +28,7 @@ def get(courseCode):
         trunk_nodes = get_api_driver().trunk.list_course_trunk_node(
             courseCode=courseCode
         )
+        print(f'trunk_nodes is {trunk_nodes}')
         if request.args.get("isInstructor"):
             workspace_edges = get_api_driver().workspace.list_course_workspace_edge(
                 courseCode=courseCode, userId=g.user["userId"]

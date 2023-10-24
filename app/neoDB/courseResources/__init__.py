@@ -20,6 +20,7 @@ class courseDAO:
 
         def _query(tx):
             query = cypher[fname + ".cyp"]
+            print('DLTC 查询到这里了')
             result = tx.run(
                 query,
                 courseName=courseName,
@@ -51,12 +52,8 @@ class courseDAO:
                     ]
 
                 for item in a:
-                    print(f'item is {item}')
                     item['course']['imageURL'] = '/comp/kcube-dev'+ item['course']['imageURL']
-                    print(item['course']['imageURL'])
 
-
-                # print(f'result is {a}')
                 return a
                 #     [
                 #     {
@@ -157,14 +154,26 @@ class courseDAO:
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, userId=userId)
+
             try:
-                return [
+                a = [
                     {
                         "course": dict(record["course"].items()),
                         "concept": dict(record["courseConcept"].items()),
                     }
                     for record in result
                 ]
+                for i in a:
+                    i['course']['imageURL'] = '/comp/kcube-dev' + i['course']['imageURL']
+                return a
+
+                # return [
+                #     {
+                #         "course": dict(record["course"].items()),
+                #         "concept": dict(record["courseConcept"].items()),
+                #     }
+                #     for record in result
+                # ]
             except Exception as exception:
                 raise exception
 

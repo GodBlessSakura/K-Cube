@@ -1,41 +1,36 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
+
 {% block VueComponent %}
 <v-container dense
              style="height: calc(100vh - 64px); width: calc(100vw - 50px); margin: 0; max-width: none; padding: unset">
-    <v-btn style="position: fixed; top:0; left:0; height: 96px; width: 96px; min-width: unset; z-index: 1000; background-color: rgba(200, 200, 200, 0.5);
-    transform: translate(-50%,-50%) rotate(45deg);" @click="fullScreenMode = !fullScreenMode">
-    </v-btn>
-    <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small
-            v-if="fullScreenMode" @click="fullScreenMode = !fullScreenMode">north_east
-    </v-icon>
-    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else
-            @click="fullScreenMode = !fullScreenMode">
-        north_east
-    </v-icon>
+<!--    <v-btn style="position: fixed; top:0; left:0; height: 96px; width: 96px; min-width: unset; z-index: 1000; background-color: rgba(200, 200, 200, 0.5);-->
+<!--    transform: translate(-50%,-50%) rotate(45deg);" @click="fullScreenMode = !fullScreenMode">-->
+<!--    </v-btn>-->
+<!--    <v-icon style="transform: rotate(90deg); position: fixed; top: 12px; left:12px;  z-index: 1001;" small-->
+<!--            v-if="fullScreenMode" @click="fullScreenMode = !fullScreenMode">north_east-->
+<!--    </v-icon>-->
+<!--    <v-icon style="transform: rotate(270deg); position: fixed; top:12px; left:12px; z-index: 1001;" small v-else-->
+<!--            @click="fullScreenMode = !fullScreenMode">-->
+<!--        north_east-->
+<!--    </v-icon>-->
 
-    <v-row no-gutters>
-        <v-col cols="auto">
-            <v-avatar>
-                <v-icon x-large>work</v-icon>
-            </v-avatar>
-        </v-col>
+    <v-row  style="height:200px" v-show="showEditPannel" z-index="3">
         <v-col>
             <!--                        开始编辑上方导航栏信息到v-row结束-->
-
-
             <v-card
                     color="grey lighten-4"
                     flat
                     height="20px"
                     tile
+                    z-index="100"
             >
                 <!--                图编辑的顶端工具栏-->
                 <v-toolbar dense>
 
                     <template>
                         <div>
-                            <v-dialog v-model="dialogVisible" max-width="500px">
+                            <v-dialog  v-model="isDialogVisible" max-width="500px">
                                 <template v-slot:activator="{ on, attrs }">
                                     <v-btn v-bind="attrs" v-on="on" icon>
                                         <span class="material-icons">add</span>
@@ -137,7 +132,7 @@
                                                             <!--                                  <v-btn color="primary" @click="saveNode">Save</v-btn>-->
                                                             <v-btn style=" margin-left: auto; margin-right: 0;"
                                                                    color="indigo lighten-2"
-                                                                   @click="dialogVisible = false">Cancel
+                                                                   @click="isDialogVisible = false">Cancel
                                                             </v-btn>
                                                         </v-card-actions>
 
@@ -451,7 +446,6 @@
                 </v-toolbar>
 
             </v-card>
-
 
         </v-col>
     </v-row>
@@ -881,6 +875,7 @@
 </style>
 <script src="{{ url_for('static', filename='options/cytoscapeStyle.js') }}"></script>
 <script>
+
     // 创建一个可编辑的知识图谱对象
     cy = cytoscape({
         style: cyStyles.basicEditStyle,
@@ -917,6 +912,9 @@
         gravity: 0.15,
         animationDuration: 750
     }
+    function handleClickVList() {
+              console.log(1)
+            }
 
     // 新建node用的函数？？
     function nodeFactory(name) {
@@ -1038,19 +1036,30 @@
             coursePlanDialogue: false,
             isPhysicsRunning: false,
             importDialogue: false,
+            fullScreenMode:true
         }),
-        computed: {
-            fullScreenMode: {
-                get() {
-                    return !this.$root.appBar && !this.$root.navBar
-                },
-                set(value) {
-                    this.$root.appBar = !value
-                    this.$root.navBar = !value
-                }
+        props: {
+          'show-edit-pannel': {
+              type: Boolean,
+              // default: false
+          },
+            'is-dialog-visible':{
+              type: Boolean,
             }
         },
+        // computed: {
+        //     fullScreenMode: {
+        //         get() {
+        //             return !this.$root.appBar && !this.$root.navBar
+        //         },
+        //         set(value) {
+        //             this.$root.appBar = !value
+        //             this.$root.navBar = !value
+        //         }
+        //     }
+        // },
         methods: {
+
             saveNode() {
                 // Logic to save the node
                 this.dialogVisible = false; // Close the dialog after saving

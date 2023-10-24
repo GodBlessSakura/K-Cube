@@ -182,6 +182,7 @@ def delete(deltaGraphId):
 def aggregatedTriple():
     try:
         result = get_api_driver().triple.get_aggregated_triple()
+        print(f'result is {result}')
         return jsonify(
             {
                 "success": True,

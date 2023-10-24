@@ -45,11 +45,27 @@ class trunkDAO:
 
     def list_course_trunk_node(self, courseCode):
         fname = sys._getframe().f_code.co_name
-
+        # 1009 更改active tag修改代码
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, courseCode=courseCode)
             try:
+                # a = result
+                # temp = [
+                #     {
+                #         "id": record["nodes"].id,
+                #         "property": {
+                #             key: value
+                #             if not isinstance(value, DateTime)
+                #             else str(value.iso_format())
+                #             for key, value in record["nodes"].items()
+                #         },
+                #         "isActive": record["isActive"],
+                #     }
+                #     for record in a
+                # ]
+                # print(123)
+                # print(temp)
                 return [
                     {
                         "id": record["nodes"].id,

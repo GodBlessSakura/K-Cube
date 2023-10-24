@@ -11,6 +11,7 @@ def query():
     if request.args.get("list"):
         return courseList()
     if request.args.get("internal"):
+        print('DLTC 查询这里了2')
         return internalCourse()
     if request.args.get("instructor"):
         return instructorCourse()

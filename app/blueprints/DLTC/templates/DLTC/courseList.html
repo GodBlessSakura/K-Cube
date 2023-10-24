@@ -1152,7 +1152,7 @@
             },
             handleOpenURL(row, col) {
                 // this.courses[row*colPerRow + col].workspaces.length == 0?openWorkspaceDialogue(courses[row*colPerRow + col]):openURL('{{ url_for('instructor.workspace') }}' + courses[row*colPerRow + col].workspaces[0].deltaGraphId)
-                window.location.href = "/course/" + this.courses[row*this.colPerRow + col].courseCode
+                window.location.href = "https://wwwuat.polyu.edu.hk/comp/kcube-dev/course/" + this.courses[row*this.colPerRow + col].courseCode
             },
             search() {
                 if (this.searchText == "") {

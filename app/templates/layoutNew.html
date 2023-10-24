@@ -41,41 +41,6 @@
         html {
             scroll-behavior: smooth;
         }
-
-        .app_bar {
-            position: relative;
-            .app-bar-btn {
-                position: absolute;
-                top: 25%;
-                left: 105px;
-            }
-            .app-bar-btn-2 {
-                position: absolute;
-                top: 25%;
-                left: 205px;
-            }
-            .app-bar-btn-3 {
-                position: absolute;
-                top: 25%;
-                left: 305px;
-            }
-            .app-bar-btn-4 {
-                position: absolute;
-                top: 25%;
-                left: 405px;
-            }
-
-        }
-        .switch-role {
-            position: absolute;
-            left:255px;
-        }
-        .course-list {
-            position: absolute;
-            left:195px;
-        }
-
-
     </style>
     <div id="nav" v-cloak>
 {#    确保在 Vue.js 初始化完成前，页面不会显示未被处理的 Vue 表达式，提升用户体验#}
@@ -84,54 +49,150 @@
             <v-progress-linear style="z-index: 300" :active="progress.show" indeterminate rounded height="10">
             </v-progress-linear>
 {#        加载进度条#}
-        <div class="app_bar">
-            <v-app-bar :value="appBar" app color="secondary" absolute="true">
+            <v-app-bar :value="appBar" app color="secondary">
 {#            顶部导航栏#}
-                <v-card v-if="appBar" color="secondary" style="align-items: center;" tile elevation="0">
-                    <a href="{{ url_for('index') }}" style="position:absolute; height:100%; width:100%"></a>
-                    <img src='https://ooo.0x0.ooo/2023/10/24/O79Crj.png'/>
-                </v-card>
-{#            KCUBE 最左边的布局#}
-                <template v-if="KCube.tabs && KCube.tabs.length > 0 && isIndex">
-                    <v-select v-if="KCube.roleTab.length > 1" @change="switchRole" style="max-width: 200px;" solo
-                        hide-details background-color="transparent" flat label="view as" v-model="KCube.view"
-                        :items="KCube.roleTab" item-text="name" item-value="name" variant="solo-filled" class="switch-role">
-                        <template v-slot:item="{ item, on, attrs }">
-                            <v-list-item dense v-bind="attrs" v-on="on">
-                                <v-list-item-icon>
-                                    <v-icon>${item.icon}</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title v-text="item.name"></v-list-item-title>
-                                </v-list-item-content>
+      <v-tabs background-color="#E9A178" hide-slider>
+        <v-tab>
+            <div class="text-center">
+                <v-menu offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="transparent"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      File
+                    </v-btn>
+                  </template>
+                  <v-list>
+                     <v-list-item-group
+                      v-model="selectedItem"
+                      color="#E9A178"
+                      >
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Upload Graph</v-list-item-title>
                             </v-list-item>
-                        </template>
-                        <template v-slot:selection="{ item }">
-                            <v-list-item dense>
-                                <v-list-item-icon>
-                                    <v-icon>${item.icon}</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title v-text="item.name"></v-list-item-title>
-                                </v-list-item-content>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Download Graph</v-list-item-title>
                             </v-list-item>
-                        </template>
-                    </v-select>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">New Course</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Select Course</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Search</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">List Courses</v-list-item-title>
+                            </v-list-item>
+                     </v-list-item-group>
+                  </v-list>
+                </v-menu>
+              </div>
+        </v-tab>
+        <v-tab>
+              <div class="text-center">
+                <v-menu offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="transparent"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      Edit
+                    </v-btn>
+                  </template>
+                  <v-list>
+                     <v-list-item-group
+                      v-model="selectedItem"
+                      color="#E9A178"
+                      >
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Add Node</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Delete Node</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Edit Node</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Add Edge</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Delete Edge</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Edit Edge</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Edit Edge</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Add RDF/Triplet</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Delete RDF/Triplet</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Edit RDF/Triplet</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Edit Preferences</v-list-item-title>
+                            </v-list-item>
+                     </v-list-item-group>
+                  </v-list>
+                </v-menu>
+              </div>
+        </v-tab>
+        <v-tab>
+            <div class="text-center">
+                <v-menu offset-y>
+                  <template v-slot:activator="{ on, attrs }">
+                    <v-btn
+                      color="transparent"
+                      v-bind="attrs"
+                      v-on="on"
+                    >
+                      Mode
+                    </v-btn>
+                  </template>
+                  <v-list>
+                   <v-list-item-group
+                        v-model="selectedItem"
+                        color="#E9A178"
+                      >
+                            <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Browsing Mode</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Instructor Mode</v-list-item-title>
+                            </v-list-item>
+                             <v-list-item>
+                              <v-list-item-title @click="alertsoon()">Admin Mode</v-list-item-title>
+                            </v-list-item>
+                   </v-list-item-group>
+                  </v-list>
+                </v-menu>
+              </div></v-tab>
+      </v-tabs>
                 {#            KCUBE右边的权限显示#}
 
                     <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" icons-and-text
                         ref="shepherd-layoutTab"
-                            class="course-list"
-                        style="transform: translateX(-50%); width: unset;">
-{#                        这里改了靠左格式#}
+                        style="position: absolute; left: 50%; transform: translateX(-50%); width: unset;">
                         {% for i in [0,1,2,3,4,5,6] %}
                         <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">
-                             ${KCube.tabs[{{i}}].title}
-                            <v-icon>
-                                ${KCube.tabs[{{i}}].icon}
-                            </v-icon>
-                            <a style="position: absolute; width: 100%; height: 100%; pointer-events: auto;" @click.stop
-                                :href="KCube.tabs[{{i}}].url"></a>
+{#                             ${KCube.tabs[{{i}}].title}#}
+{#                            <v-icon>#}
+{#                                ${KCube.tabs[{{i}}].icon}#}
+{#                            </v-icon>#}
+                            <h2>KCUBE</h2>
+                            <a herf="https://www.baidu.com"></a>
+{#                            <a style="position: absolute; width: 100%; height: 100%; pointer-events: auto;" @click.stop#}
+{#                                :href="/index"></a>#}
                         </v-tab>
                         {% endfor %}
                     </v-tabs>
@@ -139,422 +200,50 @@
 {#            中间course list按钮#}
 
                 <v-spacer></v-spacer>
-            <div id="navMenu">
-              {% block navblock %}
-{#            instuctorCourseList 的 按钮布局#}
-                <v-menu  v-if="menu && instructorCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                View
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                           <v-list-item link href="{{ url_for('index') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>home</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Home</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseList') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>grid_view</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>All Courses</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseList', working=true) }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>workspaces</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>My Space</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseList', published=true) }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>grid_view</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>My Publishment</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('comprehensive') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>public</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Open Comprehensive</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && instructorCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Edit
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('instructor.courseList', working=true) }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>edit</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>On-duty/Off-duty</v-list-item-title>
-{#                                todo 看下能不能实现一个页面 从而实现全课程查询 #}
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseForm') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>library_add</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>New Course</v-list-item-title>
-                            </v-list-item>
-
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <template v-if="KCube.tabs && KCube.tabs.length > 0 && instructorCourseList">
-                    <v-menu  v-if="KCube.roleTab.length > 1" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-3">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Mode
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item @click="switchRole('instructor')"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Instructor</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item @click="switchRole('DLTC')"
-                                         ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>DLTC</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('admin.user_n_role') }}"
-                                         ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Admin</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                </template>
-{#           DLTCCourseList 的 按钮布局 #}
-                <v-menu  v-if="menu && DLTCCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                View
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('index') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>home</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Home</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('DLTC.courseList') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>grid_view</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>All Courses</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('comprehensive') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Open Comprehensive</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && DLTCCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Edit
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>work</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Assign Active Version</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>work</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Assign Course Instructor</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseForm') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>library_add</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>New Course</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <template v-if="KCube.tabs && KCube.tabs.length > 0 && DLTCCourseList">
-                    <v-menu  v-if="KCube.roleTab.length > 1" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-3">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Mode
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item @click="switchRole('instructor')"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Instructor</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item @click="switchRole('DLTC')"
-                                         ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>DLTC</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('admin.user_n_role') }}"
-                                         ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Admin</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                </template>
-{#           instructorWorkspace 的 按钮布局 #}
-                <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                View
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('index') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>home</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Home</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseList') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>grid_view</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>All Courses</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item @click="alert('coming soon!!!')"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Open Course Plan</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                File
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>work</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Import Graph</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>work</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Export Graph</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-3">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on" @click="showInstructorWorkplace">
-                                Edit
-                            </v-btn>
-                        </div>
-
-                    </template>
+{#                <v-menu v-if="menu" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y#}
+{#                    eager>#}
+{#                    <template v-slot:activator="{ on, attrs }">#}
+{#                        <v-btn color="success" v-bind="attrs" v-on="on">#}
+{#                            Menu#}
+{#                        </v-btn>#}
+{#                    </template>#}
 {#                    <v-sheet style="max-height: 70vh;">#}
 {#                        <v-list style="height: auto" nav dense>#}
-{#                            <v-list-item  @click="handleAddEntity">#}
+{#                            <div ref="shepherd-layoutNavigationRoleGroup">#}
+{#                                <v-list-group v-for="LG in KCube.navigationListGroup"#}
+{#                                    :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">#}
+{#                                    <template v-slot:activator>#}
+{#                                        <v-list-item-title>${LG.title}</v-list-item-title>#}
+{#                                    </template>#}
+{#                                    <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}"#}
+{#                                        :sort="false">#}
+{#                                        <v-list-item v-for="L in LG.list" link :href="L.url" style="margin-left: 15px">#}
+{#                                            <v-list-item-icon>#}
+{#                                                <v-icon>${L.icon}</v-icon>#}
+{#                                            </v-list-item-icon>#}
+{#                                            <v-list-item-title>${L.title}</v-list-item-title>#}
+{#                                        </v-list-item>#}
+{#                                    </draggable>#}
+{#                                </v-list-group>#}
+{#                                <v-divider></v-divider>#}
+{#                            </div>#}
+{#                            <v-list-item link href="{{ url_for('comprehensive') }}"#}
+{#                                ondragstart="event.preventDefault()">#}
 {#                                <v-list-item-icon>#}
-{#                                    <v-icon>work</v-icon>#}
+{#                                    <v-icon>hub</v-icon>#}
 {#                                </v-list-item-icon>#}
-{#                                <v-list-item-title>Add/Delete Entity</v-list-item-title>#}
+{#                                <v-list-item-title>Comprehensive</v-list-item-title>#}
 {#                            </v-list-item>#}
-{#                            <v-divider></v-divider>#}
 {#                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">#}
 {#                                <v-list-item-icon>#}
 {#                                    <v-icon>work</v-icon>#}
 {#                                </v-list-item-icon>#}
-{#                                <v-list-item-title>Commit Changes</v-list-item-title>#}
-{#                            </v-list-item>#}
-{#                            <v-divider></v-divider>#}
-{#                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">#}
-{#                                <v-list-item-icon>#}
-{#                                    <v-icon>work</v-icon>#}
-{#                                </v-list-item-icon>#}
-{#                                <v-list-item-title>Publish</v-list-item-title>#}
-{#                            </v-list-item>#}
-{#                            <v-divider></v-divider>#}
-{#                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">#}
-{#                                <v-list-item-icon>#}
-{#                                    <v-icon>work</v-icon>#}
-{#                                </v-list-item-icon>#}
-{#                                <v-list-item-title>On-duty</v-list-item-title>#}
+{#                                <v-list-item-title>Jobs</v-list-item-title>#}
 {#                            </v-list-item>#}
 {#                        </v-list>#}
 {#                    </v-sheet>#}
-                </v-menu>
-                <template v-if="KCube.tabs && KCube.tabs.length > 0 && instructorWorkplace">
-                    <v-menu  v-if="KCube.roleTab.length > 1" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-4">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Mode
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>co_present</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Instructor</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                </template>
-{#            下方v-menu 标签里的是原本menu里有的东西，按需索取#}
-                <v-menu  v-if="menu && false" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Edit3
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <div ref="shepherd-layoutNavigationRoleGroup">
-                                <v-list-group v-for="LG in KCube.navigationListGroup"
-                                    :value="KCube.currentBlueprint == LG.name" :prepend-icon="LG.icon">
-                                    <template v-slot:activator>
-                                        <v-list-item-title>${LG.title}</v-list-item-title>
-                                    </template>
-                                    <draggable v-model="LG.list" :group="{name:'url', pull: 'clone', put: false}"
-                                        :sort="false">
-                                        <v-list-item v-for="L in LG.list" link :href="L.url" style="margin-left: 15px">
-                                            <v-list-item-icon>
-                                                <v-icon>${L.icon}</v-icon>
-                                            </v-list-item-icon>
-                                            <v-list-item-title>${L.title}</v-list-item-title>
-                                        </v-list-item>
-                                    </draggable>
-                                </v-list-group>
-                                <v-divider></v-divider>
-                            </div>
-                            <v-list-item link href="{{ url_for('comprehensive') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Comprehensive</v-list-item-title>
-                            </v-list-item>
-                            <v-list-item link href="{{ url_for('job.bubble') }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>work</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Jobs</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-              {% endblock %}
-            </div>
-
-
+{#                </v-menu>#}
+{#                menu菜单#}
                 {% if session['user'] %}
                 <v-menu offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -701,7 +390,6 @@
                 {% endif %}
 {#            用户登录或注册功能#}
             </v-app-bar>
-        </div>
 {#        结束顶端工具栏#}
             <v-snackbar :style="snackBars.errorSnackBar.style" ref="errorSnackBar"
                 v-model="snackBars.errorSnackBar.show" timeout="-1">
@@ -745,9 +433,7 @@
             </v-snackbar>
 
             <v-main>
-                <app-content v-show="!atemptOidcLogin"
-                             :show-edit-pannel="showInstructorWorkPlace"
-                             :is-dialog-visible="showAddDialoge"></app-content>
+                <app-content v-show="!atemptOidcLogin"></app-content>
                 <div v-if="atemptOidcLogin" style="height: 100%; position: absolute; overflow: hidden; width: 100%;">
                     <v-progress-circular
                         style="display: block; position: absolute; inset: 50% 50% 50% 50%; transform: translate(-50%,-50%);"
@@ -958,12 +644,6 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
-                showAddDialoge: false,
-                showInstructorWorkPlace: false,
-                isIndex:false,
-                instructorCourseList: false,
-                DLTCCourseList: false,
-                instructorWorkplace: false,
                 atemptOidcLogin: new URLSearchParams(window.location.search).get('client-request-id') !=
                     null,
                 appBar: new URLSearchParams(window.location.search).get('bar') === "false" || window
@@ -1076,18 +756,6 @@
                 pageIntro: null,
             }),
             methods: {
-                handleAddEntity () {
-                    this.showAddDialoge = false
-                  this.showAddDialoge = !this.showAddDialoge
-                },
-                showInstructorWorkplace () {
-                  this.showInstructorWorkPlace = !this.showInstructorWorkPlace
-                },
-                getPageHref () {
-                    const presentUrl = window.location.href
-                    console.log(presentUrl)
-                    return presentUrl
-                },
                alertsoon() {
                 alert('coming soon')
                },
@@ -1245,7 +913,6 @@
 
                 },
                 switchRole(role) {
-                    console.log(role)
                     role = KCube.roleTab.filter(r => r.name == role)[0]
                     tab = role.tabs[this.tabIndex]
                     window.location.href = tab ? tab.url : role.tabs[0].url
@@ -1284,34 +951,112 @@
 
                     })
                 },
-            },
-            created () {
-                let href = this.getPageHref()
-                let urlIsRoot = window.location.pathname
-                if (href.includes('/index') || urlIsRoot === '/' || urlIsRoot === '/comp/kcube-dev/') {
-                    this.isIndex = true
-                    this.instructorCourseList = false
-                    this.DLTCCourseList  = false
-                    this.instructorWorkplace = false
-                }
-                if (href.includes('/instructor/courseList')) {
-                    this.instructorCourseList = true
-                    this.DLTCCourseList  = false
-                    this.instructorWorkplace = false
-                    this.isIndex = false
-                }
-                if (href.includes('/DLTC/courseList')) {
-                    this.DLTCCourseList  = true
-                    this.instructorCourseList = false
-                    this.instructorWorkplace = false
-                    this.isIndex = false
-                }
-                if (href.includes('/instructor/workspace')) {
-                    this.instructorWorkplace = true
-                    this.DLTCCourseList  = false
-                    this.instructorCourseList = false
-                    this.isIndex = false
-                }
+                appIntro() {
+                    this._tour = this.$shepherd({
+                        useModalOverlay: true,
+                        defaultStepOptions: {
+                            classes: 'shadow-md bg-purple-dark',
+                            cancelIcon: {
+                                enabled: true
+                            },
+                            canClickTarget: false,
+                            buttons: [{
+                                text: 'Next',
+                                action: () => this._tour.next()
+                            }],
+                        }
+                    })
+                    if (this.$refs["shepherd-layoutTab"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutTab"].$el,
+                                on: 'bottom'
+                            },
+                            text: 'These tabs bring you to commonly used page of our website',
+
+                        })
+                    }
+                    if (this.$refs["shepherd-roleSelect"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-roleSelect"].$el,
+                                on: 'bottom'
+                            },
+                            text: 'If you have multiple user role, you mean view the same page from different persepctive.',
+
+                        })
+                    }
+                    if (this.$refs["shepherd-layoutNavigation"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigation"].$el,
+                                on: 'right'
+                            },
+                            text: 'All page of our website are listed here. (You may expand menu by move your cursor over this region)',
+                            canClickTarget: true,
+                        })
+                    }
+                    if (this.$refs["shepherd-layoutNavigationRoleGroup"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigationRoleGroup"],
+                                on: 'right'
+                            },
+                            text: 'Pages avaliable to specific user group are listed here.',
+                        })
+                    }
+                    if (this.$refs["shepherd-layoutNavigationToggle"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-layoutNavigationToggle"].$el,
+                                on: 'right'
+                            },
+                            text: 'You may hide the menu (or unhide) by click this.',
+                            canClickTarget: true,
+                            beforeShowPromise: () =>
+                                new Promise((resolve, reject) => {
+                                    this.miniSync = false
+                                    this.$refs["shepherd-layoutNavigationToggle"].$el.dispatchEvent(
+                                        new MouseEvent("click"))
+                                    setTimeout(() => {
+                                        resolve();
+                                    }, 100);
+                                }),
+                        })
+                    }
+                    if (this.$refs["shepherd-userMenu"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-userMenu"].$el,
+                                on: 'bottom'
+                            },
+                            text: 'You may check and modify your account in this menu.',
+
+                        })
+                    }
+                    if (this.$refs["shepherd-userProfile"]) {
+                        this._tour.addStep({
+                            attachTo: {
+                                element: this.$refs["shepherd-userProfile"].$el,
+                                on: 'left'
+                            },
+                            text: 'You may check and modify your profile here.<br>Make sure you verify your email account, if you would like to acquire priveledge.',
+                            beforeShowPromise: () =>
+                                new Promise((resolve, reject) => {
+                                    this.$refs["shepherd-userMenu"].$el.dispatchEvent(
+                                        new MouseEvent("click"))
+
+                                    setTimeout(() => {
+                                        resolve();
+                                    }, 100);
+                                }),
+                        })
+                    }
+                    this._tour.start();
+                    this._tour.on("complete", function () {
+                        localStorage.setItem('layoutToured', true)
+                    })
+                },
             },
             delimiters: ['${', '}'],
             vuetify: new Vuetify(),

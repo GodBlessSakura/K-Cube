@@ -52,6 +52,7 @@ class graphDAO:
         fname = sys._getframe().f_code.co_name
 
         def _query(tx):
+            print('test function')
             query = cypher[fname + ".cyp"]
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
             try:

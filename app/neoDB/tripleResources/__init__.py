@@ -20,6 +20,8 @@ class tripleDAO:
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query, deltaGraphId=deltaGraphId, userId=userId)
+            for triple_info in result:
+                print(f'triple_info is {triple_info}')
             try:
                 return [
                     {
@@ -330,6 +332,9 @@ class tripleDAO:
         def _query(tx):
             query = cypher[fname + ".cyp"]
             result = tx.run(query)
+            # 这里进行全图展示的数据库检索
+            # for record in result:
+            #     print(f'record is {record}')
             try:
                 return [
                     {

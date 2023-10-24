@@ -116,6 +116,7 @@
                     .then(response => {
                         try {
                             return response.json()
+                            console.log('11111'+ response)
                         } catch {
                             this.$root.progress.show = false
                             this.$root.errorDisplay({},
@@ -125,6 +126,9 @@
                     .then(body => {
                         this.request = []
                         this.trunk = []
+                        console.log('this trunk')
+                        console.log(this.trunk)
+                        console.log('11111')
                         if (body.edges && body.trunk_nodes && body.branch_nodes && body.workspace_nodes) {
                             body.trunk_nodes.sort(function (a, b) {
                                 return new Date(b.creationDate) - new Date(a
@@ -146,6 +150,7 @@
                                         .deltaGraphId
                                 }
                                 this.trunk.push(trunkVersion)
+                                console.log(this.trunk)
                                 if (node.isActive) this.activeTrunk = trunkVersion
 
                             })
@@ -155,7 +160,6 @@
                                         tag: node.property.tag,
                                         userId: node.userId,
                                         deltaGraphId: node.property.deltaGraphId
-
                                     })
                                 }
 

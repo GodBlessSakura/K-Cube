@@ -18,6 +18,8 @@
 {% extends "index3D.html" %}
 {% elif layout.lower() == 'Compound'.lower()%}
 {% extends "indexCompound.html" %}
+{% elif layout.lower() == 'New'.lower()%}
+{% extends "indexNew.html" %}
 {% else %}
 {% extends "indexGrid.html" %}
 {% endif %}
