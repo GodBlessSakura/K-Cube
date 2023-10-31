@@ -2,31 +2,21 @@
 {% import 'layout.html' as layout with context %}  {# layout模板中的数据也一并继承 #}
 {% block VueComponent %} {# 将父组件中定义的模块进行填充 #}
 <v-card style="height: 100%; width: 100%;" tile evelation="0">
-    <v-toolbar color="" tile>
-        <v-tabs v-model="tab" align-with-title>
-            <v-tab key="courses">Knowledge Graphs
-            </v-tab>
-            <!-- <v-tab key="about">About
-            </v-tab> -->
-            <v-tab key="people">KCUBE Team
-            </v-tab>
-        </v-tabs>
-    </v-toolbar>
-    <v-tabs-items v-model="tab" style="width: 100%; max-width:unset; padding: 0; overflow: visible;">
-        <v-tab-item key="courses" eager>
-            <v-container style="width: 100%;">
-                <v-row no-gutters>
-                    <v-img height="200px" src="https://cdn.pixabay.com/photo/2020/07/12/07/47/bee-5396362_1280.jpg">
-                        <v-app-bar flat color="rgba(0, 0, 0, 0)"></v-app-bar>
 
-                        <v-card-title class="text-h5 mb-1 white--text">
-                            The KCUBE Project -
-                        </v-card-title>
-                        <v-card-subtitle class="white--text"> Interactive knowledge graph visualization for course
-                            content from Department of Computing - PolyU
-                        </v-card-subtitle>
-                    </v-img>
-                </v-row>
+
+    <v-container style="width: 100%;">
+{#                <v-row no-gutters>#}
+{#                    <v-img height="200px" src="https://cdn.pixabay.com/photo/2020/07/12/07/47/bee-5396362_1280.jpg">#}
+{#                        <v-app-bar flat color="rgba(0, 0, 0, 0)"></v-app-bar>#}
+{##}
+{#                        <v-card-title class="text-h5 mb-1 white--text">#}
+{#                            The KCUBE Project -#}
+{#                        </v-card-title>#}
+{#                        <v-card-subtitle class="white--text"> Interactive knowledge graph visualization for course#}
+{#                            content from Department of Computing - PolyU#}
+{#                        </v-card-subtitle>#}
+{#                    </v-img>#}
+{#                </v-row>#}
                 <v-row style="height: 65vh;">
                     <v-col cols="1" align="center" align-self="center">
                         <v-btn
@@ -34,7 +24,7 @@
                             <v-icon left>arrow_back</v-icon>
                             ${allCourses.length> 0 ? (allCourses[courseGraphIndex - 1 &lt; 0? allCourses.length -
                             1:courseGraphIndex -
-                            1].courseCode) : ''}
+                            1].courseName) : ''}
                         </v-btn>
                     </v-col>
                     <v-col>
@@ -48,7 +38,7 @@
                             @click="iframeOverlay = true;courseGraphIndex = courseGraphIndex + 1 >= allCourses.length? 0:courseGraphIndex + 1">
                             ${allCourses.length> 0 ? (allCourses[courseGraphIndex + 1 >= allCourses.length?
                             0:courseGraphIndex +
-                            1].courseCode) : ''}
+                            1].courseName) : ''}
                             <v-icon right>arrow_forward</v-icon>
                         </v-btn>
                     </v-col>
@@ -73,6 +63,9 @@
                                             <v-list-item-title>
                                                 ${courses[row*colPerRow + col].courseCode}
                                             </v-list-item-title>
+                                            <v-list-item-title>
+                                                ${courses[row*colPerRow + col].courseName}
+                                            </v-list-item-title>
                                         </v-list-item-content>
                                         <v-list-item-avatar tile size="96">
                                             <img :src="courses[row*colPerRow + col].imageURL">
@@ -84,358 +77,8 @@
                     </v-col>
                 </v-row>
             </v-container>
-        </v-tab-item>
-        <v-tab-item key="people" eager>
-            <v-carousel show-arrows-on-hover>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Prof. LI Qing
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Chair Professor of Data Science and Head
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Prof. George Baciu
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Director of the Graphics And Multimedia
-                                                        Applications
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Prof. CAO Jiannong
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Foundation Professor in Data Science
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Dr HUANG Xiao
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Assistant Professor
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Dr LI Chen Richard
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Research Assistant Professor
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Dr NG Hiu Fung Peter
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Assistant Professor
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr DONG Jun Nan
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>PhD student
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr ZHANG Qinggang
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>PhD student
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr SIN Ping Tat
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>PhD candidate
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr WANG Yaowei
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Research Assistant
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr LI Wentao
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Research Assistant
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr CHAN Cheuk Kin
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Research Assistant
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-                <v-carousel-item>
-                    <v-row align="center">
-                        <v-col>
-                            <v-card class="mx-auto" max-width="434" tile>
-                                <v-img height="100%" src="https://cdn.vuetifyjs.com/images/cards/server-room.jpg">
-                                    <v-row align="end" class="fill-height">
-                                        <v-col align-self="start" class="pa-0" cols="12">
-                                            <v-avatar class="profile" color="grey" size="164" tile>
-                                                <v-img>
-                                                </v-img>
-                                            </v-avatar>
-                                        </v-col>
-                                        <v-col class="py-0">
-                                            <v-list-item color="rgba(0, 0, 0, .4)" dark>
-                                                <v-list-item-content>
-                                                    <v-list-item-title class="text-h6">
-                                                        Mr JIA Ye
-                                                    </v-list-item-title>
-                                                    <v-list-item-subtitle>Research Assistant
-                                                    </v-list-item-subtitle>
-                                                </v-list-item-content>
-                                            </v-list-item>
-                                        </v-col>
-                                    </v-row>
-                                </v-img>
-                            </v-card>
-                        </v-col>
-                    </v-row>
-                </v-carousel-item>
-            </v-carousel>
-        </v-tab-item>
-    </v-tabs-items>
+
+
 
     <v-bottom-sheet :retain-focus="false" hide-overlay persistent no-click-animation inset
         :value="paths?paths.length>0:false">

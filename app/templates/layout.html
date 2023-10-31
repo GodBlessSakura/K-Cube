@@ -48,31 +48,35 @@
                 position: absolute;
                 top: 25%;
                 left: 105px;
+                -webkit-position: absolute;
+                -webkit-top: 25%;
+                -webkit-left: 105px;
             }
             .app-bar-btn-2 {
                 position: absolute;
                 top: 25%;
                 left: 205px;
+                -webkit-position: absolute;
+                -webkit-top: 25%;
+                -webkit-left: 205px;
             }
             .app-bar-btn-3 {
                 position: absolute;
                 top: 25%;
                 left: 305px;
+                -webkit-position: absolute;
+                -webkit-top: 25%;
+                -webkit-left: 305px;
             }
             .app-bar-btn-4 {
                 position: absolute;
                 top: 25%;
                 left: 405px;
+                -webkit-position: absolute;
+                -webkit-top: 25%;
+                -webkit-left: 405px;
             }
 
-        }
-        .switch-role {
-            position: absolute;
-            left:255px;
-        }
-        .course-list {
-            position: absolute;
-            left:195px;
         }
 
 
@@ -92,55 +96,137 @@
                     <img src='https://ooo.0x0.ooo/2023/10/24/O79Crj.png'/>
                 </v-card>
 {#            KCUBE 最左边的布局#}
-                <template v-if="KCube.tabs && KCube.tabs.length > 0 && isIndex">
-                    <v-select v-if="KCube.roleTab.length > 1" @change="switchRole" style="max-width: 200px;" solo
-                        hide-details background-color="transparent" flat label="view as" v-model="KCube.view"
-                        :items="KCube.roleTab" item-text="name" item-value="name" variant="solo-filled" class="switch-role">
-                        <template v-slot:item="{ item, on, attrs }">
-                            <v-list-item dense v-bind="attrs" v-on="on">
-                                <v-list-item-icon>
-                                    <v-icon>${item.icon}</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title v-text="item.name"></v-list-item-title>
-                                </v-list-item-content>
-                            </v-list-item>
-                        </template>
-                        <template v-slot:selection="{ item }">
-                            <v-list-item dense>
-                                <v-list-item-icon>
-                                    <v-icon>${item.icon}</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title v-text="item.name"></v-list-item-title>
-                                </v-list-item-content>
-                            </v-list-item>
-                        </template>
-                    </v-select>
-                {#            KCUBE右边的权限显示#}
 
-                    <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" icons-and-text
-                        ref="shepherd-layoutTab"
-                            class="course-list"
-                        style="transform: translateX(-50%); width: unset;">
-{#                        这里改了靠左格式#}
-                        {% for i in [0,1,2,3,4,5,6] %}
-                        <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">
-                             ${KCube.tabs[{{i}}].title}
-                            <v-icon>
-                                ${KCube.tabs[{{i}}].icon}
-                            </v-icon>
-                            <a style="position: absolute; width: 100%; height: 100%; pointer-events: auto;" @click.stop
-                                :href="KCube.tabs[{{i}}].url"></a>
-                        </v-tab>
-                        {% endfor %}
-                    </v-tabs>
+                  <template v-if="KCube.tabs && KCube.tabs.length > 0 && isIndex">
+                    <v-menu  v-if="menu && isIndex" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div class="app-bar-btn">
+                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
+                                View
+                            </v-btn>
+                        </div>
+
+                    </template>
+                    <v-sheet style="max-height: 70vh;">
+                        <v-list style="height: auto" nav dense>
+                            <v-list-item link href="{{ url_for('instructor.courseList') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>grid_view</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Courses List</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('team') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>home</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Team</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-sheet>
+                </v-menu>
+                    <v-menu  v-if="KCube.roleTab.length > 1" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div class="app-bar-btn-2">
+                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
+                                Mode
+                            </v-btn>
+                        </div>
+
+                    </template>
+                    <v-sheet style="max-height: 70vh;">
+                        <v-list style="height: auto" nav dense>
+                            <v-list-item @click="switchRole('instructor')"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>co_present</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Instructor</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item @click="switchRole('DLTC')"
+                                         ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>co_present</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>DLTC</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('admin.user_n_role') }}"
+                                         ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>co_present</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Admin</v-list-item-title>
+                            </v-list-item>
+                                                        <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('index') }}"
+                                         ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>co_present</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Student</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-sheet>
+                </v-menu>
                 </template>
+{#            下方template标签内为原切换用户的逻辑#}
+{#                <template v-if="KCube.tabs && KCube.tabs.length > 0 && isIndex">#}
+{#                    <v-select v-if="KCube.roleTab.length > 1" @change="switchRole" style="max-width: 200px;" solo#}
+{#                        hide-details background-color="transparent" flat label="view as" v-model="KCube.view"#}
+{#                        :items="KCube.roleTab" item-text="name" item-value="name" variant="solo-filled" class="switch-role">#}
+{#                        <template v-slot:item="{ item, on, attrs }">#}
+{#                            <v-list-item dense v-bind="attrs" v-on="on">#}
+{#                                <v-list-item-icon>#}
+{#                                    <v-icon>${item.icon}</v-icon>#}
+{#                                </v-list-item-icon>#}
+{#                                <v-list-item-content>#}
+{#                                    <v-list-item-title v-text="item.name"></v-list-item-title>#}
+{#                                </v-list-item-content>#}
+{#                            </v-list-item>#}
+{#                        </template>#}
+{#                        <template v-slot:selection="{ item }">#}
+{#                            <v-list-item dense>#}
+{#                                <v-list-item-icon>#}
+{#                                    <v-icon>${item.icon}</v-icon>#}
+{#                                </v-list-item-icon>#}
+{#                                <v-list-item-content>#}
+{#                                    <v-list-item-title v-text="item.name"></v-list-item-title>#}
+{#                                </v-list-item-content>#}
+{#                            </v-list-item>#}
+{#                        </template>#}
+{#                    </v-select>#}
+                {#            KCUBE右边的权限显示#}
+{##}
+{#                    <v-tabs v-model="tabIndex" :optional="tabIndex === undefined" icons-and-text#}
+{#                        ref="shepherd-layoutTab"#}
+{#                            class="course-list"#}
+{#                        style="transform: translateX(-50%); width: unset;">#}
+{#                        这里改了靠左格式#}
+{#                        {% for i in [0,1,2,3,4,5,6] %}#}
+{#                        <v-tab v-if="KCube.tabs[{{i}}]" style="pointer-events: none;">#}
+{#                             ${KCube.tabs[{{i}}].title}#}
+{#                            <v-icon>#}
+{#                                ${KCube.tabs[{{i}}].icon}#}
+{#                            </v-icon>#}
+{#                            <a style="position: absolute; width: 100%; height: 100%; pointer-events: auto;" @click.stop#}
+{#                                :href="KCube.tabs[{{i}}].url"></a>#}
+{#                        </v-tab>#}
+{#                        {% endfor %}#}
+{#                    </v-tabs>#}
+{#                    <v-btn v-if="isIndex"#}
+{#                       color="transparent"#}
+{#                       class="app-bar-btn-5"#}
+{#                       link href="{{ url_for('team') }}">TEAM</v-btn>#}
+{#                </template>#}
 {#            中间course list按钮#}
 
+{#            index页面进行graphs和team数据的切换 #}
                 <v-spacer></v-spacer>
             <div id="navMenu">
-              {% block navblock %}
 {#            instuctorCourseList 的 按钮布局#}
                 <v-menu  v-if="menu && instructorCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
@@ -551,7 +637,6 @@
                         </v-list>
                     </v-sheet>
                 </v-menu>
-              {% endblock %}
             </div>
 
 
@@ -1288,7 +1373,7 @@
             created () {
                 let href = this.getPageHref()
                 let urlIsRoot = window.location.pathname
-                if (href.includes('/index') || urlIsRoot === '/' || urlIsRoot === '/comp/kcube-dev/') {
+                if (href.includes('/index') || href.includes('/team') || urlIsRoot === '/' || urlIsRoot === '/comp/kcube-dev/') {
                     this.isIndex = true
                     this.instructorCourseList = false
                     this.DLTCCourseList  = false

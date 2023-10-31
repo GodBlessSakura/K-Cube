@@ -145,9 +145,9 @@ def create_app(config_string):
     def index(layout):
         return render_template("index.html", layout="demo")
 
-    @app.route("/index/New")
-    def new():
-        return render_template("indexNew.html")
+    @app.route("/team")
+    def team():
+        return render_template("indexTeam.html")
 
     @app.route("/comprehensive")
     def comprehensive():

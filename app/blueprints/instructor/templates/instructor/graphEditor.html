@@ -977,6 +977,7 @@
     Vue.component('app-content', {
         data: () => ({
             dialogVisible: false,
+            downloadTriples: null,
             // showTooltip: false,
             editor_bc: null,
             isEntityEditorVisible: true,
@@ -1077,9 +1078,6 @@
                     let index = 0
                     body.triples.forEach(triple => {
                         index += 1
-                        // console.log(body.triples)
-                        // console.log(index)
-                        // console.log(triple.t_name)
                         const nameList = []
                         nameList.push(triple.h_name)
                         nameList.push(triple.t_name)
@@ -1126,30 +1124,30 @@
                         'Unexpected error on getting draft information.')
                 }
             },
-            // copyJson() {
-            //     this.copy(
-            //         JSON.stringify(this.triples), 'json')
-            // },
-            // copyCsv() {
-            //     this.copy(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
-            //             .t_name
-            //         ]
-            //         .join(
-            //             ',')).join('\n'), 'csv')
-            // },
+            copyJson() {
+                this.copy(
+                    JSON.stringify(this.downloadTriples), 'json')
+            },
+            copyCsv() {
+                this.copy(this.downloadTriples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+                        .t_name
+                    ]
+                    .join(
+                        ',')).join('\n'), 'csv')
+            },
             downloadJson() {
                 // console.log("triples is ")
                 // console.log()
                 this.download(
-                    JSON.stringify(downloadTriples), 'json')
+                    JSON.stringify(this.downloadTriples), 'json')
             },
-            // downloadCsv() {
-            //     this.download(this.triples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
-            //             .t_name
-            //         ]
-            //         .join(
-            //             ',')).join('\n'), 'csv')
-            // },
+            downloadCsv() {
+                this.download(this.downloadTriples.filter(t => t.r_value).map(t => [t.h_name, t.r_name, t
+                        .t_name
+                    ]
+                    .join(
+                        ',')).join('\n'), 'csv')
+            },
             copy(str, format) {
                 console.log(str)
                 navigator.clipboard.writeText(str).then(() => {
@@ -1194,7 +1192,13 @@
                         }
                     })
                     .then(body => {
-                        return body
+                        const triples = body
+                        console.log(1111111)
+                        console.log(triples)
+                        console.log(1111111)
+                        this.downloadTriples = new Array(triples.subject_triples)
+                        this.downloadTriples = this.downloadTriples[0]
+                        return triples
                     })
                 let relationshipPromise =
                     fetch("{{ url_for('RESTful.relationship.query', approved=True) }}", {
