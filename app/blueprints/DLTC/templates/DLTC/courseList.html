@@ -91,10 +91,14 @@
 
                     <!--                    显示课程名字-->
 
+<!--                    <v-badge bordered-->
+<!--                             :icon="courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'priority_high':'work'"-->
+<!--                             offset-x="24" offset-y="24"-->
+<!--                             :color="courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'error':'info'"-->
+<!--                             :value="courses[row*colPerRow + col].workspaces?.length > 0 || courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph">-->
                     <v-badge bordered
-                             :icon="courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'priority_high':'work'"
                              offset-x="24" offset-y="24"
-                             :color="courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph?'error':'info'"
+                             color="transparent"
                              :value="courses[row*colPerRow + col].workspaces?.length > 0 || courses[row * colPerRow + col].isTeaching && !courses[row * colPerRow + col].hasExposedGraph">
                         <v-list-item-avatar tile size="96">
                             <!--                            每节课的图片在这里修改，想办法跳转-->

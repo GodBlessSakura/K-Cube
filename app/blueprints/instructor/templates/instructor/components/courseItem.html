@@ -15,8 +15,11 @@
             </div>
         </v-list-item-content>
 
-        <v-badge bordered :icon="course.isTeaching && !course.hasExposedGraph?'priority_high':'work'" offset-x="24"
-            offset-y="24" :color="course.isTeaching && !course.hasExposedGraph?'error':'info'"
+<!--        <v-badge bordered :icon="course.isTeaching && !course.hasExposedGraph?'priority_high':'work'" offset-x="24"-->
+<!--            offset-y="24" :color="course.isTeaching && !course.hasExposedGraph?'error':'info'"-->
+<!--            :value="(course.workspaces?.length > 0 || course.isTeaching && !course.hasExposedGraph) && showBadage">-->
+<!--            <v-list-item-avatar tile size="96">-->
+        <v-badge color="transparent"
             :value="(course.workspaces?.length > 0 || course.isTeaching && !course.hasExposedGraph) && showBadage">
             <v-list-item-avatar tile size="96">
                 <v-img :src="course.imageURL"></v-img>
@@ -140,7 +143,8 @@
                 <template v-slot:activator="{ on, attrs }">
                     <v-btn v-bind="attrs" v-on="on" color="info" ref="shepherd-recentVisit" @click.stop
                         :href="'{{ url_for('instructor.workspace') }}' + course.workspaces[0].deltaGraphId">
-                        recent visit &nbsp;<v-icon small>work</v-icon>
+                        recent visit &nbsp;
+                        <v-icon small>work</v-icon>
                     </v-btn>
                 </template>
                 ${course.workspaces[0].tag}

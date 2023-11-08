@@ -232,6 +232,35 @@
                     <template v-slot:activator="{ on, attrs }">
                         <div class="app-bar-btn">
                             <v-btn  color="transparent" v-bind="attrs" v-on="on">
+                                Edit
+                            </v-btn>
+                        </div>
+
+                    </template>
+                    <v-sheet style="max-height: 70vh;">
+                        <v-list style="height: auto" nav dense>
+                            <v-list-item link href="{{ url_for('instructor.courseList', working=true) }}" ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>edit</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>On-duty/Off-duty</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('instructor.courseForm') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>library_add</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>New Course</v-list-item-title>
+                            </v-list-item>
+
+                        </v-list>
+                    </v-sheet>
+                </v-menu>
+                <v-menu  v-if="menu && instructorCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div class="app-bar-btn-2">
+                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
                                 View
                             </v-btn>
                         </div>
@@ -252,7 +281,7 @@
                                 <v-list-item-icon>
                                     <v-icon>grid_view</v-icon>
                                 </v-list-item-icon>
-                                <v-list-item-title>All Courses</v-list-item-title>
+                                <v-list-item-title>Course List</v-list-item-title>
                             </v-list-item>
                             <v-divider></v-divider>
                             <v-list-item link href="{{ url_for('instructor.courseList', working=true) }}"
@@ -278,36 +307,6 @@
                                 </v-list-item-icon>
                                 <v-list-item-title>Open Comprehensive</v-list-item-title>
                             </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && instructorCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                Edit
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('instructor.courseList', working=true) }}" ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>edit</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>On-duty/Off-duty</v-list-item-title>
-{#                                todo 看下能不能实现一个页面 从而实现全课程查询 #}
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseForm') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>library_add</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>New Course</v-list-item-title>
-                            </v-list-item>
-
                         </v-list>
                     </v-sheet>
                 </v-menu>
@@ -355,43 +354,6 @@
                     <template v-slot:activator="{ on, attrs }">
                         <div class="app-bar-btn">
                             <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                View
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('index') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>home</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Home</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('DLTC.courseList') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>grid_view</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>All Courses</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('comprehensive') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Open Comprehensive</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && DLTCCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
                                 Edit
                             </v-btn>
                         </div>
@@ -419,6 +381,43 @@
                                     <v-icon>library_add</v-icon>
                                 </v-list-item-icon>
                                 <v-list-item-title>New Course</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-sheet>
+                </v-menu>
+                <v-menu  v-if="menu && DLTCCourseList" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div class="app-bar-btn-2">
+                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
+                                View
+                            </v-btn>
+                        </div>
+
+                    </template>
+                    <v-sheet style="max-height: 70vh;">
+                        <v-list style="height: auto" nav dense>
+                            <v-list-item link href="{{ url_for('index') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>home</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Home</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('DLTC.courseList') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>grid_view</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Course List</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('comprehensive') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>hub</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Open Comprehensive</v-list-item-title>
                             </v-list-item>
                         </v-list>
                     </v-sheet>
@@ -467,43 +466,6 @@
                     <template v-slot:activator="{ on, attrs }">
                         <div class="app-bar-btn">
                             <v-btn  color="transparent" v-bind="attrs" v-on="on">
-                                View
-                            </v-btn>
-                        </div>
-
-                    </template>
-                    <v-sheet style="max-height: 70vh;">
-                        <v-list style="height: auto" nav dense>
-                            <v-list-item link href="{{ url_for('index') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>home</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Home</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item link href="{{ url_for('instructor.courseList') }}"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>grid_view</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>All Courses</v-list-item-title>
-                            </v-list-item>
-                            <v-divider></v-divider>
-                            <v-list-item @click="alert('coming soon!!!')"
-                                ondragstart="event.preventDefault()">
-                                <v-list-item-icon>
-                                    <v-icon>hub</v-icon>
-                                </v-list-item-icon>
-                                <v-list-item-title>Open Course Plan</v-list-item-title>
-                            </v-list-item>
-                        </v-list>
-                    </v-sheet>
-                </v-menu>
-                <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
-                    <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-2">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
                                 File
                             </v-btn>
                         </div>
@@ -529,7 +491,7 @@
                 </v-menu>
                 <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
-                        <div class="app-bar-btn-3">
+                        <div class="app-bar-btn-2">
                             <v-btn  color="transparent" v-bind="attrs" v-on="on" @click="showInstructorWorkplace">
                                 Edit
                             </v-btn>
@@ -567,6 +529,43 @@
 {#                            </v-list-item>#}
 {#                        </v-list>#}
 {#                    </v-sheet>#}
+                </v-menu>
+                <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
+                    <template v-slot:activator="{ on, attrs }">
+                        <div class="app-bar-btn-3">
+                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
+                                View
+                            </v-btn>
+                        </div>
+
+                    </template>
+                    <v-sheet style="max-height: 70vh;">
+                        <v-list style="height: auto" nav dense>
+                            <v-list-item link href="{{ url_for('index') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>home</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Home</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item link href="{{ url_for('instructor.courseList') }}"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>grid_view</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Courses List</v-list-item-title>
+                            </v-list-item>
+                            <v-divider></v-divider>
+                            <v-list-item @click="alert('coming soon!!!')"
+                                ondragstart="event.preventDefault()">
+                                <v-list-item-icon>
+                                    <v-icon>hub</v-icon>
+                                </v-list-item-icon>
+                                <v-list-item-title>Open Course Plan</v-list-item-title>
+                            </v-list-item>
+                        </v-list>
+                    </v-sheet>
                 </v-menu>
                 <template v-if="KCube.tabs && KCube.tabs.length > 0 && instructorWorkplace">
                     <v-menu  v-if="KCube.roleTab.length > 1" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>

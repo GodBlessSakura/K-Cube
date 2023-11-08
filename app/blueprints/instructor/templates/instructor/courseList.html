@@ -55,7 +55,7 @@
     <v-row>
         <v-col cols="auto">
             <v-tabs v-model="tab" center-active>
-                <v-tab>All courses</v-tab>
+                <v-tab>Course List</v-tab>
                 <v-tab>My space</v-tab>
                 <v-tab>My publishment</v-tab>
             </v-tabs>
@@ -503,6 +503,9 @@
                 this.workspaceDialogue = true;
             },
             openGraphImportDialogue(course) {
+                console.log(1111)
+                console.log(course)
+                console.log(2222)
                 this.courseCode = course.courseCode
                 this.$refs.graphImportForm.loadData(this.courseCode);
                 this.graphImportDialogue = true;

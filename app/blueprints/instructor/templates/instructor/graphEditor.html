@@ -1,5 +1,6 @@
 {% extends "layout.html" %}
 {% import 'layout.html' as layout with context %}
+{% include "instructor/components/graphImportForm.html" %}
 
 {% block VueComponent %}
 <v-container dense
@@ -781,6 +782,9 @@
             </v-row>
         </v-container>
     </v-dialog>
+    <v-dialog v-model="graphImportDialogue" max-width="500px" eager>
+        <kcube-graphImport-form ref="graphImportForm"></kcube-graphImport-form>
+    </v-dialog>
     <v-dialog v-model="coursePlanDialogue" content-class="coursePlanPage" transition="slide-x-reverse-transition"
               hide-overlay no-click-animation persistent :retain-focus="false" eager>
         <v-card style="height: 100%; width:100%">
@@ -976,6 +980,7 @@
 
     Vue.component('app-content', {
         data: () => ({
+            graphImportDialogue: false,
             dialogVisible: false,
             downloadTriples: null,
             // showTooltip: false,
@@ -1060,6 +1065,11 @@
         //     }
         // },
         methods: {
+            openGraphImportDialogue(course) {
+                this.courseCode = course.courseCode
+                this.$refs.graphImportForm.loadData(this.courseCode);
+                this.graphImportDialogue = true;
+            },
 
             saveNode() {
                 // Logic to save the node
@@ -1193,11 +1203,11 @@
                     })
                     .then(body => {
                         const triples = body
-                        console.log(1111111)
-                        console.log(triples)
-                        console.log(1111111)
                         this.downloadTriples = new Array(triples.subject_triples)
                         this.downloadTriples = this.downloadTriples[0]
+                        console.log(1111)
+                        console.log(triples)
+                        console.log(2222)
                         return triples
                     })
                 let relationshipPromise =
