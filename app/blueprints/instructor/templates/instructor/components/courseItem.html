@@ -1,5 +1,10 @@
 {% macro componentContent() %}
-
+<!-- <style>
+    .horizontal-list {
+    display: flex;
+    flex-direction: row;
+}
+</style> -->
 <v-card v-if="course"
     @click="$emit('click')"
     :ref="''+course.courseCode" :ripple="{class: course.isTeaching && !course.hasExposedGraph?'error--text':''}">
@@ -13,8 +18,29 @@
                     </v-icon>
                 </v-list-item-title>
             </div>
+            <div >
+                <v-list-item-title>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" :href="'{{ url_for('instructor.coursePlan') }}/' + course.courseCode" icon>
+                                <v-icon>edit_calendar</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Course Plan</span>
+                    </v-tooltip>
+                </v-list-item-title>
+                <v-list-item-title>
+                    <v-tooltip bottom>
+                        <template v-slot:activator="{ on, attrs }">
+                            <v-btn v-bind="attrs" v-on="on" :href="'{{ url_for('instructor.versionTree') }}/' + course.courseCode" icon>
+                                <v-icon>account_tree</v-icon>
+                            </v-btn>
+                        </template>
+                        <span>Versions</span>
+                    </v-tooltip>
+                </v-list-item-title>
+            </div>
         </v-list-item-content>
-
 <!--        <v-badge bordered :icon="course.isTeaching && !course.hasExposedGraph?'priority_high':'work'" offset-x="24"-->
 <!--            offset-y="24" :color="course.isTeaching && !course.hasExposedGraph?'error':'info'"-->
 <!--            :value="(course.workspaces?.length > 0 || course.isTeaching && !course.hasExposedGraph) && showBadage">-->

@@ -465,7 +465,7 @@
                 <v-menu  v-if="menu && instructorWorkplace" ref="shepherd-layoutNavigation" :close-on-content-click="false" bottom offset-y eager>
                     <template v-slot:activator="{ on, attrs }">
                         <div class="app-bar-btn">
-                            <v-btn  color="transparent" v-bind="attrs" v-on="on">
+                            <v-btn  color="transparent"  @click="showDownloadMenuMethod">
                                 File
                             </v-btn>
                         </div>
@@ -557,7 +557,7 @@
                                 <v-list-item-title>Courses List</v-list-item-title>
                             </v-list-item>
                             <v-divider></v-divider>
-                            <v-list-item @click="alert('coming soon!!!')"
+                            <v-list-item @click="showCoursePlanMethod"
                                 ondragstart="event.preventDefault()">
                                 <v-list-item-icon>
                                     <v-icon>hub</v-icon>
@@ -831,7 +831,9 @@
             <v-main>
                 <app-content v-show="!atemptOidcLogin"
                              :show-edit-pannel="showInstructorWorkPlace"
-                             :is-dialog-visible="showAddDialoge"></app-content>
+                             :is-dialog-visible="showAddDialoge"
+                            :show-download-menu="showDownloadMenu"
+                            :show-course-plan="showCoursePlan"></app-content>
                 <div v-if="atemptOidcLogin" style="height: 100%; position: absolute; overflow: hidden; width: 100%;">
                     <v-progress-circular
                         style="display: block; position: absolute; inset: 50% 50% 50% 50%; transform: translate(-50%,-50%);"
@@ -1042,6 +1044,8 @@
         var app = new Vue({
             el: '#nav',
             data: () => ({
+                showCoursePlan:false,
+                showDownloadMenu: false,
                 showAddDialoge: false,
                 showInstructorWorkPlace: false,
                 isIndex:false,
@@ -1164,7 +1168,19 @@
                     this.showAddDialoge = false
                   this.showAddDialoge = !this.showAddDialoge
                 },
+                showCoursePlanMethod() {
+                    this.showInstructorWorkPlace = false
+                    this.showDownloadMenu = false
+                  this.showCoursePlan = !this.showCoursePlan
+                },
+                showDownloadMenuMethod () {
+                    this.showInstructorWorkPlace = false
+                    this.showCoursePlan = false
+                  this.showDownloadMenu = !this.showDownloadMenu
+                },
                 showInstructorWorkplace () {
+                    this.showCoursePlan = false
+                    this.showDownloadMenu = false
                   this.showInstructorWorkPlace = !this.showInstructorWorkPlace
                 },
                 getPageHref () {

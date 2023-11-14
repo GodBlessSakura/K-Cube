@@ -15,8 +15,98 @@
 <!--            @click="fullScreenMode = !fullScreenMode">-->
 <!--        north_east-->
 <!--    </v-icon>-->
+    <v-row  style="height:90px" v-if="showDownloadMenu" z-index="3">
+        <v-col>
+            <!--                        开始编辑上方导航栏信息到v-row结束-->
+            <v-card
+                    color="grey lighten-4"
+                    flat
+                    height="20px"
+                    tile
+                    z-index="100"
+            >
+                <!--                图编辑的顶端工具栏-->
+                <v-toolbar dense>
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">file_upload</span>
+                                    </v-btn>
+                                </template>
+                                <span>upload</span>
+                            </v-tooltip>
+                        </template>
 
-    <v-row  style="height:200px" v-show="showEditPannel" z-index="3">
+                        <v-dialog max-width="700px" v-model="importDialogue">
+                            <template v-slot:activator="{ on, attrs }">
+                                <v-list-item dense v-bind="attrs" v-on="on">
+                                    <v-list-item-title>import</v-list-item-title>
+                                    <v-list-item-icon>
+                                        <v-icon>upload</v-icon>
+                                    </v-list-item-icon>
+                                </v-list-item>
+                            </template>
+                            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
+                                                      :courseCode="subject.courseCode">
+                            </kcube-triplesImport-form>
+                        </v-dialog>
+                    </v-menu>
+
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">download</span>
+                                    </v-btn>
+                                </template>
+                                <span>download</span>
+                            </v-tooltip>
+                        </template>
+                        <v-list>
+                            <v-list-item @click="copyJson()">
+                                <v-list-item-title>json</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>content_copy</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item @click="copyCsv()">
+                                <v-list-item-title>csv</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>content_copy</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item @click="downloadJson()">
+                                <v-list-item-title>json</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>download</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                            <v-list-item @click="downloadCsv()">
+                                <v-list-item-title>csv</v-list-item-title>
+                                <v-list-item-icon>
+                                    <v-icon>download</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </v-toolbar>
+
+            </v-card>
+
+        </v-col>
+    </v-row>
+    <v-row  style="height:90px" v-else-if="showEditPannel" z-index="3">
         <v-col>
             <!--                        开始编辑上方导航栏信息到v-row结束-->
             <v-card
@@ -146,120 +236,6 @@
                             </v-dialog>
                         </div>
                     </template>
-                    <!--                    将上方tooltip改造成点击之后弹出对话框-->
-
-
-                    <v-menu offset-y>
-                        <template v-slot:activator="{ on: menu, attrs }">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on: tooltip }">
-                                    <v-btn
-                                            v-bind="attrs"
-                                            v-on="{ ...tooltip, ...menu }"
-                                            icon
-                                    >
-                                        <span class="material-icons">event</span>
-                                    </v-btn>
-                                </template>
-                                <span>course plan</span>
-                            </v-tooltip>
-                        </template>
-
-                        <v-list>
-                            <v-list-item
-                                    @click="coursePlanDialogue = !coursePlanDialogue; tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
-                                <v-list-item-subtitle>open here
-                                </v-list-item-subtitle>
-                            </v-list-item>
-                            <v-list-item
-                                    @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
-                                <v-list-item-subtitle>open in new tab
-                                </v-list-item-subtitle>
-                                <v-list-item-icon>
-                                    <v-icon>open_in_new</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                        </v-list>
-                    </v-menu>
-
-                    <v-divider vertical></v-divider>
-
-                    <!--      <v-toolbar-title>Title</v-toolbar-title>-->
-
-                    <v-menu offset-y>
-                        <template v-slot:activator="{ on: menu, attrs }">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on: tooltip }">
-                                    <v-btn
-                                            v-bind="attrs"
-                                            v-on="{ ...tooltip, ...menu }"
-                                            icon
-                                    >
-                                        <span class="material-icons">file_upload</span>
-                                    </v-btn>
-                                </template>
-                                <span>upload</span>
-                            </v-tooltip>
-                        </template>
-
-                        <v-dialog max-width="700px" v-model="importDialogue">
-                            <template v-slot:activator="{ on, attrs }">
-                                <v-list-item dense v-bind="attrs" v-on="on">
-                                    <v-list-item-title>import</v-list-item-title>
-                                    <v-list-item-icon>
-                                        <v-icon>upload</v-icon>
-                                    </v-list-item-icon>
-                                </v-list-item>
-                            </template>
-                            <kcube-triplesImport-form @triples="updateTriples($event); importDialogue = false"
-                                                      :courseCode="subject.courseCode">
-                            </kcube-triplesImport-form>
-                        </v-dialog>
-                    </v-menu>
-
-                    <v-menu offset-y>
-                        <template v-slot:activator="{ on: menu, attrs }">
-                            <v-tooltip bottom>
-                                <template v-slot:activator="{ on: tooltip }">
-                                    <v-btn
-                                            v-bind="attrs"
-                                            v-on="{ ...tooltip, ...menu }"
-                                            icon
-                                    >
-                                        <span class="material-icons">download</span>
-                                    </v-btn>
-                                </template>
-                                <span>download</span>
-                            </v-tooltip>
-                        </template>
-                        <v-list>
-                            <v-list-item @click="copyJson()">
-                                <v-list-item-title>json</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-icon>content_copy</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                            <v-list-item @click="copyCsv()">
-                                <v-list-item-title>csv</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-icon>content_copy</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                            <v-list-item @click="downloadJson()">
-                                <v-list-item-title>json</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-icon>download</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                            <v-list-item @click="downloadCsv()">
-                                <v-list-item-title>csv</v-list-item-title>
-                                <v-list-item-icon>
-                                    <v-icon>download</v-icon>
-                                </v-list-item-icon>
-                            </v-list-item>
-                        </v-list>
-                    </v-menu>
-
                     <v-menu offset-y>
                         <template v-slot:activator="{ on: menu, attrs }">
                             <v-tooltip bottom>
@@ -362,7 +338,6 @@
                             </v-menu>
                         </v-list>
                     </v-menu>
-
                     <v-menu offset-y>
                         <template v-slot:activator="{ on: menu, attrs }">
                             <v-tooltip bottom>
@@ -398,8 +373,6 @@
                             </v-list-item>
                         </v-list>
                     </v-menu>
-
-
                     <v-col cols="auto" align="end">
                         <v-tooltip color="warning"
                                    :value="workspace?.isExposed && ! subject?.isTeaching && '{{USER.userId}}' == workspace.owner.userId"
@@ -450,6 +423,57 @@
 
         </v-col>
     </v-row>
+    <v-row  style="height:90px" v-else-if="showCoursePlan" z-index="3">
+        <v-col>
+            <!--                        开始编辑上方导航栏信息到v-row结束-->
+            <v-card
+                    color="grey lighten-4"
+                    flat
+                    height="20px"
+                    tile
+                    z-index="100"
+            >
+                <!--                图编辑的顶端工具栏-->
+                <v-toolbar dense>
+                    <v-menu offset-y>
+                        <template v-slot:activator="{ on: menu, attrs }">
+                            <v-tooltip bottom>
+                                <template v-slot:activator="{ on: tooltip }">
+                                    <v-btn
+                                            v-bind="attrs"
+                                            v-on="{ ...tooltip, ...menu }"
+                                            icon
+                                    >
+                                        <span class="material-icons">event</span>
+                                    </v-btn>
+                                </template>
+                                <span>course plan</span>
+                            </v-tooltip>
+                        </template>
+
+                        <v-list>
+                            <v-list-item
+                                    @click="coursePlanDialogue = !coursePlanDialogue;
+                                            tripleBottomSheet = coursePlanDialogue?false:tripleBottomSheet ">
+                                <v-list-item-subtitle>open here
+                                </v-list-item-subtitle>
+                            </v-list-item>
+                            <v-list-item
+                                    @click="this.window.open('{{ url_for('instructor.coursePlan')}}' + subject.courseCode, 'graphEditorCoursePlanEditor')">
+                                <v-list-item-subtitle>open in new tab
+                                </v-list-item-subtitle>
+                                <v-list-item-icon>
+                                    <v-icon>open_in_new</v-icon>
+                                </v-list-item-icon>
+                            </v-list-item>
+                        </v-list>
+                    </v-menu>
+                </v-toolbar>
+
+            </v-card>
+
+        </v-col>
+    </v-row>
 
     <v-row dense style="height: calc(100% - 80px); width: 100%;">
         <!--        如果图还在加载中就显示转圈圈的进度展示-->
@@ -466,6 +490,8 @@
                 </div>
             </div>
         </div>
+        <div id="subgraph" style="height: 100%; width: 100%; visibility: hidden;"></div>
+        
     </v-row>
 
     <!--    进行结点设置，没有发现有用到的地方-->
@@ -884,8 +910,9 @@
     cy = cytoscape({
         style: cyStyles.basicEditStyle,
         wheelSensitivity: 0.15,
-        boxSelectionEnabled: false,
-    });
+        selectionType: 'single',
+        boxSelectionEnabled: true,
+    }); 
 
     cyLayout = null
     cytoscapeInstance = [{
@@ -980,6 +1007,8 @@
 
     Vue.component('app-content', {
         data: () => ({
+            cy: null,
+            showDownloadWorkList: false,
             graphImportDialogue: false,
             dialogVisible: false,
             downloadTriples: null,
@@ -1051,6 +1080,12 @@
           },
             'is-dialog-visible':{
               type: Boolean,
+            },
+            'show-download-menu':{
+              type: Boolean
+            },
+            'show-course-plan':{
+              type:Boolean
             }
         },
         // computed: {
@@ -2171,7 +2206,7 @@
                 })
                     .then(response => {
                         try {
-                            console.log(response.json())
+                            // console.log(response.json())
                             return response.json()
                         } catch {
                             this.$root.progress.show = false
@@ -2200,6 +2235,7 @@
             }
         },
         mounted: function () {
+            let originalStyle = {}
             window.onmessage = (e) => {
                 const {
                     message,
@@ -2433,6 +2469,38 @@
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()
             })
+            function handleSelection(element) {
+                originalStyle = {
+                'background-color': element.style('background-color'),
+                'line-color': element.style('line-color'),
+                'target-arrow-color': element.style('target-arrow-color'),
+                'source-arrow-color': element.style('source-arrow-color'),
+                'shape': element.style('shape')
+                };
+                  element.style({
+                    'background-color': 'green',
+                    'line-color': 'green',
+                    'target-arrow-color': 'green',
+                    'source-arrow-color': 'green',
+                    'shape': 'rectangle' // change the shape to rectangle
+                });
+            }
+            cy.on('tap', function (event) {
+                console.log('点击空白处成功')
+                if (event.target === cy) {
+                    // 如果点击的是空白处，那么取消所有元素的选中状态并恢复它们的样式
+                    location.reload();
+                }
+            })
+            cy.on('select', function (event) {
+                var selectedElements = cy.$(':selected');
+                console.log(selectedElements.length)
+                console.log(selectedElements)
+                selectedElements.forEach(function (element) {
+                    handleSelection(element);
+                });
+            })
+
             let isPhysicsRunning = localStorage.getItem("{{deltaGraphId}}_isPhysicsRunning")
             if (isPhysicsRunning != null)
                 this.isPhysicsRunning = isPhysicsRunning === 'true'
