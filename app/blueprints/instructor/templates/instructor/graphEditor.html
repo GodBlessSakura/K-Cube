@@ -2469,6 +2469,72 @@
             cy.on('dragfreeon', 'node', (event) => {
                 this.saveLayout()
             })
+            cy.on('mouseover', 'node, edge', (event) => {
+                var ele = event.target;
+                ele.style('background-color', 'orange');  // 对于节点
+                ele.style('line-color', 'orange');  // 对于边
+                ele.style('target-arrow-color', 'orange');  // 对于边
+            })
+
+            cy.on('mouseout', 'node, edge', (event) => {
+                var ele = event.target;
+                ele.style('background-color', '');  // 对于节点
+                ele.style('line-color', '');  // 对于边
+                ele.style('target-arrow-color', '');  // 对于边
+            })
+            cy.on('cxttap', (event) => {
+                if (event.target === cy) {  // 检查是否点击了背景
+                    // 创建菜单
+                    var menu = document.createElement('ul');
+                    menu.style.position = 'fixed';
+                    menu.style.left = event.renderedPosition.x + 'px';
+                    menu.style.top = event.renderedPosition.y + 'px';
+                    menu.style.listStyle = 'none';
+                    menu.style.padding = '10px';
+                    menu.style.backgroundColor = 'white';
+                    menu.style.border = '1px solid black';
+
+                    // 添加菜单项
+                    var items = [
+                        { text: 'create subgraph', url: 'https://www.baidu.com' },
+                        { text: 'download selected', url: 'https://www.google.com' },
+                        { text: 'cancel', url: 'https://www.youtube.com' }
+                    ];
+                    for (var i = 0; i < items.length; i++) {
+                        var item = document.createElement('li');
+                        item.textContent = items[i].text;
+                        item.style.padding = '5px';
+                        item.onclick = (function (i) {  // 使用 IIFE
+                            return function () {
+                                // 这里编写每个菜单的点击行为逻辑
+                                window.location.href = items[i].url;
+                            };
+                        })(i);
+                        menu.appendChild(item);
+
+                        if (i < items.length - 1) {  // 不在最后一个菜单项后添加分隔线
+                        var hr = document.createElement('hr');
+                        menu.appendChild(hr);
+                    }
+                    }
+
+                    // 添加菜单到页面
+                    document.body.appendChild(menu);
+
+                    // 监听鼠标移动事件
+
+                    setTimeout(function () {
+                        document.onmousemove = function (e) {
+                            var x = e.clientX, y = e.clientY,
+                                box = menu.getBoundingClientRect();
+                            if (x < box.left || x > box.right || y < box.top || y > box.bottom) {
+                                document.body.removeChild(menu);
+                                document.onmousemove = null;  // 移除事件监听器
+                            }
+                        };
+                    }, 1000); 
+                }
+            });
             function handleSelection(element) {
                 originalStyle = {
                 'background-color': element.style('background-color'),
